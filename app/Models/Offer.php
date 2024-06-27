@@ -10,4 +10,9 @@ class Offer extends Model
     use HasFactory;
 
     protected $guarded = ['id'];
+
+    public function confirmPayment()
+    {
+        // do reply to guy or click something
+    }
 }
