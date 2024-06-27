@@ -8,12 +8,93 @@ class Robosats
 {
 
     // list of different providers [satstralia, temple, lake, veneto]
-    public $providers = [
+    public array $providers = [
         'satstralia' => 'mainnet/satstralia/',
         'temple' => 'mainnet/temple/',
         'lake' => 'mainnet/lake/',
         'veneto' => 'mainnet/veneto/',
         'exp' => 'mainnet/exp/'
+    ];
+
+    public array $currencies = [
+        '1' => 'USD',
+        '2' => 'EUR',
+        '3' => 'JPY',
+        '4' => 'GBP',
+        '5' => 'AUD',
+        '6' => 'CAD',
+        '7' => 'CHF',
+        '8' => 'CNY',
+        '9' => 'HKD',
+        '10' => 'NZD',
+        '11' => 'SEK',
+        '12' => 'KRW',
+        '13' => 'SGD',
+        '14' => 'NOK',
+        '15' => 'MXN',
+        '16' => 'BYN',
+        '17' => 'RUB',
+        '18' => 'ZAR',
+        '19' => 'TRY',
+        '20' => 'BRL',
+        '21' => 'CLP',
+        '22' => 'CZK',
+        '23' => 'DKK',
+        '24' => 'HRK',
+        '25' => 'HUF',
+        '26' => 'INR',
+        '27' => 'ISK',
+        '28' => 'PLN',
+        '29' => 'RON',
+        '30' => 'ARS',
+        '31' => 'VES',
+        '32' => 'COP',
+        '33' => 'PEN',
+        '34' => 'UYU',
+        '35' => 'PYG',
+        '36' => 'BOB',
+        '37' => 'IDR',
+        '38' => 'ANG',
+        '39' => 'CRC',
+        '40' => 'CUP',
+        '41' => 'DOP',
+        '42' => 'GHS',
+        '43' => 'GTQ',
+        '44' => 'ILS',
+        '45' => 'JMD',
+        '46' => 'KES',
+        '47' => 'KZT',
+        '48' => 'MYR',
+        '49' => 'NAD',
+        '50' => 'NGN',
+        '51' => 'AZN',
+        '52' => 'PAB',
+        '53' => 'PHP',
+        '54' => 'PKR',
+        '55' => 'QAR',
+        '56' => 'SAR',
+        '57' => 'THB',
+        '58' => 'TTD',
+        '59' => 'VND',
+        '60' => 'XOF',
+        '61' => 'TWD',
+        '62' => 'TZS',
+        '63' => 'XAF',
+        '64' => 'UAH',
+        '65' => 'EGP',
+        '66' => 'LKR',
+        '67' => 'MAD',
+        '68' => 'AED',
+        '69' => 'TND',
+        '70' => 'ETB',
+        '71' => 'GEL',
+        '72' => 'UGX',
+        '73' => 'RSD',
+        '74' => 'IRT',
+        '75' => 'BDT',
+        '76' => 'ALL',
+        '300' => 'XAU',
+        '1000' => 'BTC'
     ];
 
     public function request($endpoint) {
@@ -92,7 +173,7 @@ class Robosats
         foreach ($buyOffers as $provider => $offers) {
             $negativePremiumBuyOffers[$provider] = [];
             foreach ($offers as $offer) {
-                if ($offer['premium'] < $minNegativePremium) {
+                if ($offer['premium'] <= $minNegativePremium) {
                     $negativePremiumBuyOffers[$provider][] = $offer;
                 }
             }
@@ -114,7 +195,7 @@ class Robosats
         foreach ($sellOffers as $provider => $offers) {
             $positivePremiumSellOffers[$provider] = [];
             foreach ($offers as $offer) {
-                if ($offer['premium'] > $minPositivePremium) {
+                if ($offer['premium'] >= $minPositivePremium) {
                     $positivePremiumSellOffers[$provider][] = $offer;
                 }
             }
@@ -157,5 +238,10 @@ class Robosats
 
         return $filteredOffers;
     }
+
+    public function initiateSellTrade($offerId, $amount) {
+
+    }
+
 
 }
