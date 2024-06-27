@@ -2,7 +2,13 @@
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote')->hourly();
+
+// Artisan::command('refresh:robosat-offers', function () {
+//
+// })->purpose('refresh robosat offers')->everyMinute();
+
+Schedule::command('refresh:robosat-offers')
+    ->description('refresh robosat offers')
+    ->everyMinute();
