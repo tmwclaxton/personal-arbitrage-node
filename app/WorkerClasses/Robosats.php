@@ -120,7 +120,7 @@ class Robosats
             ];
 
             try {
-                $response = Http::withHeaders($headers)->timeout(15)->get($url);
+                $response = Http::withHeaders($headers)->timeout(30)->get($url);
             } catch (\Exception $e) {
                 continue;
             }
@@ -151,6 +151,10 @@ class Robosats
             $buyOffers[$provider] = [];
             $sellOffers[$provider] = [];
             foreach ($offers as $offer) {
+                // convert $offer['payment_method'] to a json array of payment methods
+                $offer['payment_methods'] = explode(' ', $offer['payment_method']);
+                // remove $offer['payment_method']
+                unset($offer['payment_method']);
                 if ($offer['type'] == 1) {
                     $buyOffers[$provider][] = $offer;
                 } else {
@@ -216,7 +220,7 @@ class Robosats
             $filteredOffers[$provider] = [];
             foreach ($providerOffers as $offer) {
                 // or if it contains the word giftcard
-                if (!in_array($offer['payment_method'], $paymentMethods) && !str_contains(strtolower($offer['payment_method']), 'giftcard')) {
+                if (strpos($offer['payment_methods'], 'Giftcard') === false) {
                     $filteredOffers[$provider][] = $offer;
                 }
             }
@@ -230,8 +234,11 @@ class Robosats
         foreach ($offers as $provider => $providerOffers) {
             $filteredOffers[$provider] = [];
             foreach ($providerOffers as $offer) {
-                if (in_array($offer['payment_method'], $paymentMethods)) {
-                    $filteredOffers[$provider][] = $offer;
+                foreach ($paymentMethods as $paymentMethod) {
+                    if (in_array($paymentMethod, $offer['payment_methods'])) {
+                        $filteredOffers[$provider][] = $offer;
+                        break;
+                    }
                 }
             }
         }
