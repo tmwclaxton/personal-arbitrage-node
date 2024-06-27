@@ -7,9 +7,8 @@ class LightningNode
 
     public string $endpoint = 'http://';
 
-    public function __construct($endpoint)
+    public function __construct()
     {
-        $this->endpoint = $endpoint;
     }
 
 

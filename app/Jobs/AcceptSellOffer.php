@@ -3,19 +3,17 @@
 namespace App\Jobs;
 
 use App\Models\Offer;
-use App\WorkerClasses\LightningNode;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class SendCrypto implements ShouldQueue
+class AcceptSellOffer implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected Offer $offer;
-
     /**
      * Create a new job instance.
      */
@@ -29,9 +27,6 @@ class SendCrypto implements ShouldQueue
      */
     public function handle(): void
     {
-        $lightningNode= new LightningNode();
-
-        // $lightningNode->sendToAddress();
-
+        $this->offer->acceptSellOffer();
     }
 }

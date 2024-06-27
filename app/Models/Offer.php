@@ -11,8 +11,15 @@ class Offer extends Model
 
     protected $guarded = ['id'];
 
+    public function acceptSellOffer()
+    {
+        // send dude revtag
+
+    }
+
     public function confirmPayment()
     {
         // do reply to guy or click something
     }
+
 }
