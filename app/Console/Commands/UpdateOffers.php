@@ -22,6 +22,7 @@ class UpdateOffers extends Command
      */
     protected $description = 'Refresh Robosat offers';
 
+
     /**
      * Execute the console command.
      */
@@ -42,6 +43,26 @@ class UpdateOffers extends Command
         // combine the offers
         $allOffers = array_merge($negativeBuyOffers, $positiveSellOffers);
 
+        // grab all the offers from the database and check if they aren't in allOffers and delete them
+        $dbOffers = Offer::all();
+        foreach ($dbOffers as $dbOffer) {
+            $found = false;
+            foreach ($allOffers as $provider => $offers) {
+                foreach ($offers as $offer) {
+                    if ($dbOffer->robosatsId == $offer['id']) {
+                        $found = true;
+                        break;
+                    }
+                }
+                if ($found) {
+                    break;
+                }
+            }
+            if (!$found) {
+                $dbOffer->delete();
+            }
+        }
+
         // create buy offers in the database
         foreach ($allOffers as $provider => $offers) {
             $provider = ucfirst($provider);
@@ -51,6 +72,9 @@ class UpdateOffers extends Command
 
                 // remove id from the offer
                 unset($offer['id']);
+
+                // change currency using Robosats::CURRENCIES
+                $offer['currency'] = Robosats::CURRENCIES[$offer['currency']];
 
                 // remove '/mainnet/' from the provider
                 $provider = str_replace('Mainnet/', '', $provider);

@@ -20,7 +20,7 @@ return new class extends Migration
             $table->boolean('accepted')->default(false);
             $table->timestamp('expires_at');
             $table->string('type');
-            $table->integer('currency');
+            $table->string('currency');
             $table->decimal('amount', 20, 8)->nullable();
             $table->boolean('has_range');
             $table->decimal('min_amount', 20, 8)->nullable();
