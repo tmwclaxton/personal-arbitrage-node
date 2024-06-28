@@ -69,9 +69,7 @@ setInterval(() => {
             <div class="text-left pl-5 flex flex-col gap-y-1 border-r border-black dark:border-white/70 pr-5">
                 <div class="flex flex-row justify-between items-center"><span class="font-bold text-xl mb-2">Statistics:</span></div>
             </div>
-            <div class="text-left pl-5 flex flex-col gap-y-1 ">
-                <div class="flex flex-row justify-between items-center"><span class="font-bold text-xl mb-2">Upload Robot</span></div>
-            </div>
+
 
         </div>
 

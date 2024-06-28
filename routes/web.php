@@ -90,12 +90,22 @@ Route::get('/', function () {
     ]);
 })->name('welcome');
 
+Route::post('/create-robot', function () {
+    $offerId = request('offer_id');
+    $offer = Offer::find($offerId);
+
+    $robosats = new Robosats();
+    $response = $robosats->createRobot($offer->provider, $offer);
+    return $response;
+})->name('create-robot');
+
+
 Route::post('/accept-offer', function () {
     $robosats = new Robosats();
     $offerId = request('offer_id');
     $offer = Offer::find($offerId);
     $response = $robosats->acceptOffer($offer->robosatsId);
-    return redirect()->route('welcome');
+    return $response;
 })->name('accept-offer');
 
 Route::post('/pay-bond', function () {
@@ -104,7 +114,7 @@ Route::post('/pay-bond', function () {
     $invoice = $transaction->bond_invoice;
     $lightningNode = new LightningNode();
     $response = $lightningNode->payInvoice($invoice);
-    return redirect()->route('welcome');
+    return $response;
 })->name('pay-bond');
 
 Route::post('/pay-escrow', function () {
@@ -115,7 +125,7 @@ Route::post('/pay-escrow', function () {
     // dd($escrowInvoice);
     $lightningNode = new LightningNode();
     $response = $lightningNode->payInvoice($escrowInvoice);
-    return redirect()->route('welcome');
+    return $response;
 })->name('pay-escrow');
 
 
@@ -125,7 +135,7 @@ Route::post('/confirm-payment', function () {
     $transaction = Transaction::where('offer_id', $offerId)->first();
     $robosats = new Robosats();
     $response = $robosats->confirmReceipt($offer->robosatsId, $transaction);
-    return redirect()->route('welcome');
+    return $response;
 })->name('confirm-payment');
 
 // Route::post('/upload-robot'), function () {

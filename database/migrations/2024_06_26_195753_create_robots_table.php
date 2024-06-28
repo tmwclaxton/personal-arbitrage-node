@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Offer;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,6 +14,7 @@ return new class extends Migration
     {
         Schema::create('robots', function (Blueprint $table) {
             $table->id();
+            $table->foreignIdFor(Offer::class)->nullable();
             $table->string('provider');
             $table->string('nickname');
             $table->string('hash_id')->unique();
@@ -24,7 +26,6 @@ return new class extends Migration
             $table->boolean('tg_enabled')->default(false);
             $table->string('tg_token')->nullable();
             $table->string('tg_bot_name')->nullable();
-            $table->boolean('found')->default(false);
             $table->timestamps();
         });
     }

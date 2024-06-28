@@ -15,4 +15,9 @@ class Offer extends Model
     {
         return $this->hasOne(Transaction::class);
     }
+
+    public function robot()
+    {
+        return $this->hasOne(Robot::class);
+    }
 }
