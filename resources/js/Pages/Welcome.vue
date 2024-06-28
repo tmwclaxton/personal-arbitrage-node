@@ -13,7 +13,7 @@ defineProps({
     <Head title="Welcome" />
     <div class="bg-gray-50 text-black/50 dark:bg-black dark:text-white/50">
 
-        <div class="w-full flex flex-row gap-x-8 mx-auto mt-10 justify-center ">
+        <div class="w-full flex flex-row gap-x-8 mx-auto pt-10 justify-center ">
             <div class="flex flex-col" v-for="btcPrice in btcPrices" :key="btcPrice.id">
                 <div class="text-center">
                     <span class="text-2xl font-bold">{{ btcPrice.currency }}</span>
@@ -32,7 +32,7 @@ defineProps({
                 </header>
 
                 <main class="mt-6">
-                    <div class="grid grid-cols-2 gap-4 mx-auto">
+                    <div class="grid grid-cols-3 gap-4 mx-auto">
                         <Offer v-for="offer in offers" :key="offer.robosatsId" :offer="offer" />
                     </div>
                 </main>
