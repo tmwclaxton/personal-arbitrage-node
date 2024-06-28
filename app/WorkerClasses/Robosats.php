@@ -8,6 +8,7 @@ use App\Models\Robot;
 use App\Models\Transaction;
 use Crypt_GPG;
 use Crypt_GPG_Key;
+use Exception;
 use Illuminate\Support\Facades\Http;
 
 class Robosats
@@ -134,18 +135,27 @@ class Robosats
         // change authorization header to Token zK=j,$7B8Xq8,gXegbTeh}(kEdhwv!=,_KIFs]+D | Public -----BEGIN PGP PUBLIC KEY BLOCK-----\\xjMEZn3f1BYJKwYBBAHaRw8BAQdA3Sdx2svJquTWaN42DfUw+iOfJ2KcKTzu\KRzB82h/KEXNTFJvYm9TYXRzIElEIDU0NDhkY2RjMGViOTEyNTY4NjcyZTNj\YzdlZGI1YzRmNWJlMjRkYjkyOTc3MWM4MGY4NGU0MjBkMTZmOTE4MmTCjAQQ\FgoAPgWCZn3f1AQLCQcICZB4gtn47CFAjAMVCAoEFgACAQIZAQKbAwIeARYh\BJevpvEF35RENcr5xXiC2fjsIUCMAADvLwD/bsJksuiEIoL16MQbkFHCiYcX\Acwn+EZfFTiPTnp/190A/2JTXU/kn5B7qhNwaezScy2wEMpk1EerifyWW623\jesCzjgEZn3f1BIKKwYBBAGXVQEFAQEHQEuOVbKKQ24lDukr7ASFm3Vz1UaJ\0ZscIH8JV+yUr8knAwEIB8J4BBgWCgAqBYJmfd/UCZB4gtn47CFAjAKbDBYh\BJevpvEF35RENcr5xXiC2fjsIUCMAADBYQEAs7Q2/DqlsYCb7dutryPREeGF\JYVpbrsoVwDaq7BniIUBAOhkHN5PaRxETCb0lsy+qqre/Fk8C5fyns8XsxyT\VgwF\=IOIH\-----END PGP PUBLIC KEY BLOCK-----\ | Private -----BEGIN PGP PRIVATE KEY BLOCK-----\\xYYEZn3f1BYJKwYBBAHaRw8BAQdA3Sdx2svJquTWaN42DfUw+iOfJ2KcKTzu\KRzB82h/KEX+CQMIqMcrhNNjZNfgrRymY4xrjI3ormGG3tNOu8T1NHuaQl2X\cR0pcvFOdqVHdHImB6KaanYnQAkY+SEZp9iGuNfZx6t56P0KO7nYNioKA369\Js1MUm9ib1NhdHMgSUQgNTQ0OGRjZGMwZWI5MTI1Njg2NzJlM2NjN2VkYjVj\NGY1YmUyNGRiOTI5NzcxYzgwZjg0ZTQyMGQxNmY5MTgyZMKMBBAWCgA+BYJm\fd/UBAsJBwgJkHiC2fjsIUCMAxUICgQWAAIBAhkBApsDAh4BFiEEl6+m8QXf\lEQ1yvnFeILZ+OwhQIwAAO8vAP9uwmSy6IQigvXoxBuQUcKJhxcBzCf4Rl8V\OI9Oen/X3QD/YlNdT+SfkHuqE3Bp7NJzLbAQymTUR6uJ/JZbrbeN6wLHiwRm\fd/UEgorBgEEAZdVAQUBAQdAS45VsopDbiUO6SvsBIWbdXPVRonRmxwgfwlX\7JSvyScDAQgH/gkDCKB4p8Q2hXkx4Fd+eSVQZLpPWoplEuY5mgPgnob8snv1\5sIk6whEFOGuxkgfzygu9wO7SrN/9iiLbAiOVmTHdfB7aWPboNoUZ2LHlrhO\tXvCeAQYFgoAKgWCZn3f1AmQeILZ+OwhQIwCmwwWIQSXr6bxBd+URDXK+cV4\gtn47CFAjAAAwWEBALO0Nvw6pbGAm+3bra8j0RHhhSWFaW67KFcA2quwZ4iF\AQDoZBzeT2kcREwm9JbMvqqq3vxZPAuX8p7PF7Mck1YMBQ==\=i8M+\-----END PGP PRIVATE KEY BLOCK-----\
 
         $headers = $this->headers;
-        $token = "Token ?op~&00R,|k[C/`BG]y6Gnn5e75_l4gy;7B+1SRB | Public -----BEGIN PGP PUBLIC KEY BLOCK-----\\xjMEZn3m+hYJKwYBBAHaRw8BAQdAx3j/jZcezM8mxHoASCcBekJk9Q0UYOQ6\Q5jZOFnhvrHNTFJvYm9TYXRzIElEIDIwMGM1NWI5MTE3ZWRhODJmMDY2OGVi\ZjlkOTFhYjQzN2ExNTBkZThjMGFhNzVjZTMwMTgzYjQ4YWQ2YjU5N2bCjAQQ\FgoAPgWCZn3m+gQLCQcICZDHTVa47JV0jwMVCAoEFgACAQIZAQKbAwIeARYh\BGj9XQOCw/REpAoc3sdNVrjslXSPAABnTQEAvHyJvgTMlPOSpkwG34jY0ifd\jm1p9K2iQwEE/B0CExcBAOO2jD/JZIfDDRKosSdf6tqQEsZNGa15fR65/tPl\9zkLzjgEZn3m+hIKKwYBBAGXVQEFAQEHQDilDG+6S+ZnO0f5Gut/…ex01WuOyVdI8AAGdNAQC8fIm+BMyU85KmTAbfiNjSJ92ObWn0raJD\AQT8HQITFwEA47aMP8lkh8MNEqixJ1/q2pASxk0ZrXl9Hrn+0+X3OQvHiwRm\feb6EgorBgEEAZdVAQUBAQdAOKUMb7pL5mc7R/ka63+TOnHT+gJ8edzkQqHb\pYFEiU0DAQgH/gkDCIr/wQkW6jyM4Od1328+mmE0/5hCrYDHVPgsfMv5M95c\z0vhetMW5LE89Eubb/X99cckpFFUd01sv7oQBiwgAyY5GFverxnSidLWFo10\ue7CeAQYFgoAKgWCZn3m+gmQx01WuOyVdI8CmwwWIQRo/V0DgsP0RKQKHN7H\TVa47JV0jwAA2zMBAPujG4XOBT/78GT8hDzLGoVcCWESqHbPGTC19yyovG4P\AP93xao6hT6zzriEHBbndc9WTVHmxAkqdlEF8K5rh6xfAQ==\=Rq67\-----END PGP PRIVATE KEY BLOCK-----\\";
+        $token = 'Token r:!zC]4OsF{?j0m|/zz~iI<N5:E#v?1i/cswT^NF | Public -----BEGIN PGP PUBLIC KEY BLOCK-----\\xjMEZn3ytRYJKwYBBAHaRw8BAQdAjWM1zWbd7NN96q7eXdDMCPsuKSX+Umn/\IUsLAlu3REbNTFJvYm9TYXRzIElEIGVlMWViYjYwYTcxOTM2ZTRhODQxMTRm\NDNlY2QyNGU3YmFiMDc0MjMzMDdjNmVkMjRiMjA2NWM2Y2Q4OTNkNWbCjAQQ\FgoAPgWCZn3ytQQLCQcICZBzA0EcA3OrwgMVCAoEFgACAQIZAQKbAwIeARYh\BFsFUgRl3aXZMku523MDQRwDc6vCAAAhGAD/SupyYUSnvFvbzWMRAXjA19On\jBHZHfOUuDgYPxOj9fkA/A0FDssKlnWh1tWKWE0wqdy37RcPiOE9cjzjSsb9\EzUBzjgEZn3ytRIKKwYBBAGXVQEFAQEHQBjDDhX+fL+icxnT9gfrJED4iokl\NYVKKInD0Cz3SW8FAwEIB8J4BBgWCgAqBYJmffK1CZBzA0EcA3OrwgKbDBYh\BFsFUgRl3aXZMku523MDQRwDc6vCAACBigEAtRUI7TXd4lbdgR4u5u9Purdc\RnSzwNfMKFGyzdr2d5UA/0p9ko9OgIxzjlWaSLLhjiTSUHZ1mxtqJ2Wwe2X4\AwAK\=FcPU\-----END PGP PUBLIC KEY BLOCK-----\ | Private -----BEGIN PGP PRIVATE KEY BLOCK-----\\xYYEZn3ytRYJKwYBBAHaRw8BAQdAjWM1zWbd7NN96q7eXdDMCPsuKSX+Umn/\IUsLAlu3REb+CQMIEmaOyv0nnDjgrqYfmpVMvqC4ZrMf8z/eLrW8bWbpMef8\hib8Fg27cRel9WT7T9X+Pn9f1I3xC2Ig9OpNxZcz3PVhGIlehjiiQokaMiRi\1c1MUm9ib1NhdHMgSUQgZWUxZWJiNjBhNzE5MzZlNGE4NDExNGY0M2VjZDI0\ZTdiYWIwNzQyMzMwN2M2ZWQyNGIyMDY1YzZjZDg5M2Q1ZsKMBBAWCgA+BYJm\ffK1BAsJBwgJkHMDQRwDc6vCAxUICgQWAAIBAhkBApsDAh4BFiEEWwVSBGXd\pdkyS7nbcwNBHANzq8IAACEYAP9K6nJhRKe8W9vNYxEBeMDX06eMEdkd85S4\OBg/E6P1+QD8DQUOywqWdaHW1YpYTTCp3LftFw+I4T1yPONKxv0TNQHHiwRm\ffK1EgorBgEEAZdVAQUBAQdAGMMOFf58v6JzGdP2B+skQPiKiSU1hUooicPQ\LPdJbwUDAQgH/gkDCOgQ9apc4/fh4Jb99RGHnjpzMsQJrDL5rGeBWh6/6uUJ\t9C2ea0NaBRvp2xmRQXCTtvq55Ijp41SFgGsyulnPt5d1S5T+PZF+yCj7drF\2uTCeAQYFgoAKgWCZn3ytQmQcwNBHANzq8ICmwwWIQRbBVIEZd2l2TJLudtz\A0EcA3OrwgAAgYoBALUVCO013eJW3YEeLubvT7q3XEZ0s8DXzChRss3a9neV\AP9KfZKPToCMc45Vmkiy4Y4k0lB2dZsbaidlsHtl+AMACg==\=+HBt\-----END PGP PRIVATE KEY BLOCK-----\\';
         $headers['Authorization'] = $token;
+        $headers['Referer'] = $this->host . '/robot/';
+        $headers['Priority'] = 'u=1';
 
         try {
-            $response = Http::withHeaders($headers)->timeout(30)->post($url);
+            // Make the GET request with HTTP 1.1
+            $response = Http::withHeaders($headers)
+                ->withOptions(['version' => '1.1'])
+                ->timeout(30)
+                ->get($url);
+            // dd(json_decode($response->body()));
+
         } catch (\Exception $e) {
-            return $e;
+            // Return or log the exception
+            return $e->getMessage();
         }
-        dd($response);
+
+        $json = json_decode($response->body(), true);
 
         //{"nickname":"LowerSignpost52","hash_id":"5448dcdc0eb912568672e3cc7edb5c4f5be24db929771c80f84e420d16f9182d","public_key":"-----BEGIN PGP PUBLIC KEY BLOCK-----\n\nmDMEZn3f1BYJKwYBBAHaRw8BAQdA3Sdx2svJquTWaN42DfUw+iOfJ2KcKTzuKRzB\n82h/KEW0TFJvYm9TYXRzIElEIDU0NDhkY2RjMGViOTEyNTY4NjcyZTNjYzdlZGI1\nYzRmNWJlMjRkYjkyOTc3MWM4MGY4NGU0MjBkMTZmOTE4MmSIjAQQFgoAPgWCZn3f\n1AQLCQcICZB4gtn47CFAjAMVCAoEFgACAQIZAQKbAwIeARYhBJevpvEF35RENcr5\nxXiC2fjsIUCMAADvLwD/bsJksuiEIoL16MQbkFHCiYcXAcwn+EZfFTiPTnp/190A\n/2JTXU/kn5B7qhNwaezScy2wEMpk1EerifyWW623jesCuDgEZn3f1BIKKwYBBAGX\nVQEFAQEHQEuOVbKKQ24lDukr7ASFm3Vz1UaJ0ZscIH8JV+yUr8knAwEIB4h4BBgW\nCgAqBYJmfd/UCZB4gtn47CFAjAKbDBYhBJevpvEF35RENcr5xXiC2fjsIUCMAADB\nYQEAs7Q2/DqlsYCb7dutryPREeGFJYVpbrsoVwDaq7BniIUBAOhkHN5PaRxETCb0\nlsy+qqre/Fk8C5fyns8XsxyTVgwF\n=XLn/\n-----END PGP PUBLIC KEY BLOCK-----\n","encrypted_private_key":"-----BEGIN PGP PRIVATE KEY BLOCK-----\n\nxYYEZn3f1BYJKwYBBAHaRw8BAQdA3Sdx2svJquTWaN42DfUw+iOfJ2KcKTzu\nKRzB82h/KEX+CQMIqMcrhNNjZNfgrRymY4xrjI3ormGG3tNOu8T1NHuaQl2X\ncR0pcvFOdqVHdHImB6KaanYnQAkY+SEZp9iGuNfZx6t56P0KO7nYNioKA369\nJs1MUm9ib1NhdHMgSUQgNTQ0OGRjZGMwZWI5MTI1Njg2NzJlM2NjN2VkYjVj\nNGY1YmUyNGRiOTI5NzcxYzgwZjg0ZTQyMGQxNmY5MTgyZMKMBBAWCgA+BYJm\nfd/UBAsJBwgJkHiC2fjsIUCMAxUICgQWAAIBAhkBApsDAh4BFiEEl6+m8QXf\nlEQ1yvnFeILZ+OwhQIwAAO8vAP9uwmSy6IQigvXoxBuQUcKJhxcBzCf4Rl8V\nOI9Oen/X3QD/YlNdT+SfkHuqE3Bp7NJzLbAQymTUR6uJ/JZbrbeN6wLHiwRm\nfd/UEgorBgEEAZdVAQUBAQdAS45VsopDbiUO6SvsBIWbdXPVRonRmxwgfwlX\n7JSvyScDAQgH/gkDCKB4p8Q2hXkx4Fd+eSVQZLpPWoplEuY5mgPgnob8snv1\n5sIk6whEFOGuxkgfzygu9wO7SrN/9iiLbAiOVmTHdfB7aWPboNoUZ2LHlrhO\ntXvCeAQYFgoAKgWCZn3f1AmQeILZ+OwhQIwCmwwWIQSXr6bxBd+URDXK+cV4\ngtn47CFAjAAAwWEBALO0Nvw6pbGAm+3bra8j0RHhhSWFaW67KFcA2quwZ4iF\nAQDoZBzeT2kcREwm9JbMvqqq3vxZPAuX8p7PF7Mck1YMBQ==\n=i8M+\n-----END PGP PRIVATE KEY BLOCK-----\n","earned_rewards":0,"wants_stealth":true,"last_login":"2024-06-28T21:55:44.015788Z","tg_enabled":false,"tg_token":"POrX-1h9_NOZZvM","tg_bot_name":"BitcoinVeneto_bot"}
-        $json = json_decode($response->body(), true);
 
         $robot = new Robot();
         $robot->provider = $provider;
@@ -156,7 +166,8 @@ class Robosats
         $robot->encrypted_private_key = $json['encrypted_private_key'];
         $robot->earned_rewards = $json['earned_rewards'];
         $robot->wants_stealth = $json['wants_stealth'];
-        $robot->last_login = $json['last_login'];
+        // convert last_login to datetime from 2024-06-28T23:39:02.732620Z to 2024-06-28 23:39:02
+        $robot->last_login = date('Y-m-d H:i:s', strtotime($json['last_login']));
         $robot->tg_enabled = $json['tg_enabled'];
         $robot->tg_token = $json['tg_token'];
         $robot->tg_bot_name = $json['tg_bot_name'];

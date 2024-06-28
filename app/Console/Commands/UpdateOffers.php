@@ -80,6 +80,9 @@ class UpdateOffers extends Command
                 // remove '/mainnet/' from the provider
                 $provider = str_replace('Mainnet/', '', $provider);
 
+                // lowercase the provider
+                $provider = strtolower($provider);
+
                 // // remove the '/' at the end of the provider
                 $provider = rtrim($provider, '/');
                 $offer['provider'] = $provider;

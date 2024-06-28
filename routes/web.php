@@ -95,7 +95,7 @@ Route::post('/create-robot', function () {
     $offer = Offer::find($offerId);
 
     $robosats = new Robosats();
-    $response = $robosats->createRobot($offer->provider, $offer);
+    $response = $robosats->createRobot(lcfirst($offer->provider), $offer);
     return $response;
 })->name('create-robot');
 
