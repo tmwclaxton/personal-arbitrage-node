@@ -322,7 +322,7 @@ class Robosats
     //
     // 1. POST http://192.168.0.18:12596/mainnet/temple/api/order/?order_id=6984
 
-    public function acceptOffer($offerId) {
+    public function acceptFixedPriceOffer($offerId) {
         $offer = Offer::find($offerId);
         $url = $this->host . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $offerId;
         // post request
@@ -334,6 +334,71 @@ class Robosats
         $transaction->offer_id = $offerId;
         $transaction->bond_invoice = $response['bond_invoice'];
         $transaction->status = $response['status'];
+
+        return $response;
+    }
+
+    public function acceptRangeMaxOffer() {
+        // http://umbrel.local:12596/mainnet/temple/api/order/?order_id=7088 post
+        // {"action":"take","amount":"200"}
+    //{
+    // 	"Request Cookies": {
+    // 		"connect.sid": "s:O_hT1AURKtnGyI4H-9coBErosp-5msKa.jLhAUTXuTH470zyj7QhJlMH47LI1V3bxnJakxWdA71U",
+    // 		"UMBREL_PROXY_TOKEN": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm94eVRva2VuIjp0cnVlLCJpYXQiOjE3MTk1Nzk4MTgsImV4cCI6MTcyMDE4NDYxOH0.OvuZ5uXyoPEitInNNr6RgYP2HSiaj7b-Lsu15QTKDBc"
+    // 	}
+    // }
+    }
+
+    public function getMessagesUsingWebsocket() {
+        // ws://umbrel.local:12596/mainnet/temple/ws/chat/7088/?token_sha256_hex=77d249d8ad141757278b875d57a729a0221aec500da11bfaefa985abc89893fc
+
+        // first message we send is our pgp public key for that provider
+        // i,e
+        //    {
+        // 	"type": "message",
+        // 	"message": "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\nmDMEZnsichYJKwYBBAHaRw8BAQdANovtfPCgwEeg3iauWeqDvcvhMzcV8RdFwclW\nPaZO6v20TFJvYm9TYXRzIElEIDBkNTYyNTgwZTM2NGM0ZDY5MTM2ZDMxOWYzZTFj\nYTRkZGRjYzExODZhNGQxMTc3MTA3N2RhYjdlYmI1YzFlMmSIjAQQFgoAPgWCZnsi\ncgQLCQcICZAxiNYePu5GBgMVCAoEFgACAQIZAQKbAwIeARYhBHcp6lmY/wgi/8k6\n9TGI1h4+7kYGAAAGGQEArRmXz1cDuJq0D5TgNXk7wvkKeYfYw69+BnpK/eH9/jQB\nANx3Uu0ZWDlhnejwkzFl0374IpcHk8pVc8/2jEO5WIkHuDgEZnsichIKKwYBBAGX\nVQEFAQEHQIiek/u9KJf7MjKvHdWUuBm+F2OG8cwJNIVt7BMCSw4pAwEIB4h4BBgW\nCgAqBYJmeyJyCZAxiNYePu5GBgKbDBYhBHcp6lmY/wgi/8k69TGI1h4+7kYGAABC\nfAEA1v+L22xPnl6hMP66QE0FzXRQFmFHs5O83yQkI3dtc24BAKJZdxMYKhoAc8pE\nvYNFPHYUz+Oefs+88ca5c3gzQW4J\n=sM0E\n-----END PGP PUBLIC KEY BLOCK-----\n",
+        // 	"nick": "TatteredSurgery892"
+        // }
+
+        // then we receive a message with their pgp public key
+        // i.e
+    }
+
+    public function confirmReceipt($robosatsId, $transactionId, $provider) {
+        //http://umbrel.local:12596/mainnet/temple/api/order/?order_id=7088 POST
+        //{"action":"confirm"}
+        //{
+        // 	"Request Cookies": {
+        // 		"connect.sid": "s:O_hT1AURKtnGyI4H-9coBErosp-5msKa.jLhAUTXuTH470zyj7QhJlMH47LI1V3bxnJakxWdA71U",
+        // 		"UMBREL_PROXY_TOKEN": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm94eVRva2VuIjp0cnVlLCJpYXQiOjE3MTk1Nzk4MTgsImV4cCI6MTcyMDE4NDYxOH0.OvuZ5uXyoPEitInNNr6RgYP2HSiaj7b-Lsu15QTKDBc"
+        // 	}
+        // }
+        $transaction = Transaction::find($transactionId);
+        $url = $this->host . '/mainnet/' . $provider . '/api/order/?order_id=' . $robosatsId;
+        // post request
+        $response = Http::withHeaders($this->headers)->timeout(30)->post($url, ['action' => 'confirm']);
+
+        $transaction->status = "Confirmed";
+        $transaction->save();
+
+        // convert response to json
+        $response = json_decode($response->body(), true);
+
+        return $response;
+
+    }
+
+    // update status of transaction
+    public function updateTransactionStatus($robosatsId, $transactionId) {
+        $transaction = Transaction::find($transactionId);
+        $url = $this->host . '/mainnet/' . $transaction->provider . '/api/order/?order_id=' . $robosatsId;
+        // get request
+        $response = Http::withHeaders($this->headers)->timeout(30)->get($url);
+        // convert response to json
+        $response = json_decode($response->body(), true);
+
+        $transaction->status = $response['status'];
+        $transaction->save();
 
         return $response;
     }

@@ -43,8 +43,13 @@
                     Pay Escrow
                 </primary-button>
 
+
                 <primary-button class="w-full text-center">
-                    Payment Received
+                    Send Revolut Tag
+                </primary-button>
+
+                <primary-button class="w-full text-center">
+                    Confirm Payment Received
                 </primary-button>
             </div>
 
