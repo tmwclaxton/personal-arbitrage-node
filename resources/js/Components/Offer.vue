@@ -31,7 +31,8 @@
 
             <div class="border border-gray-200 my-4"></div>
             <div class="grid grid-cols-2 gap-3">
-                <primary-button class="w-full text-center">
+                <primary-button v-on:click="acceptOffer"
+                    class="w-full text-center">
                     Accept Offer
                 </primary-button>
 
@@ -39,7 +40,8 @@
                     Pay Bond
                 </primary-button>
 
-                <primary-button class="w-full text-center">
+                <primary-button v-on:click="payEscrow"
+                    class="w-full text-center">
                     Pay Escrow
                 </primary-button>
 
@@ -53,6 +55,17 @@
                 </primary-button>
             </div>
 
+            <div class="border border-gray-200 my-4"></div>
+
+            <div class="" v-if="offer.transaction">
+                <!--<p class="mt-2 text-gray-500 font-bold">Transaction ID: {{-->
+                <!--    offer.transaction.id-->
+                <!--}}</p>-->
+                <p class="mt-2 text-gray-500 font-bold">Transaction Status: {{
+                    offer.transaction.status
+                }}</p>
+            </div>
+
 
 
     </div>
@@ -63,7 +76,29 @@ import { Head } from '@inertiajs/vue3';
 import { defineProps } from 'vue';
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 
-defineProps({
-    offer: Object,
-});
+const props = defineProps(['offer']);
+// when accept offer click send post request to /accept-offer with offer_id
+const acceptOffer = () => {
+    console.log('accepting offer');
+
+    axios.post(route('accept-offer'), {
+        offer_id: props.offer.id
+    }).then(response => {
+        console.log(response);
+    }).catch(error => {
+        console.log(error);
+    });
+}
+
+const payEscrow = () => {
+    console.log('paying escrow');
+
+    axios.post(route('pay-escrow'), {
+        offer_id: props.offer.id
+    }).then(response => {
+        console.log(response);
+    }).catch(error => {
+        console.log(error);
+    });
+}
 </script>

@@ -32,7 +32,8 @@ class UpdateOffers extends Command
         // Offer::where('accepted', false)->delete();
 
         // or if they are expired
-        Offer::where('expires_at', '<', now())->delete();
+        // Offer::where('expires_at', '<', now())->delete(); and the transaction also was not accepted
+        Offer::where('expires_at', '<', now())->where('accepted', false)->delete();
 
         $robosats = new Robosats();
         $response = $robosats->getBookOffers();
@@ -58,7 +59,7 @@ class UpdateOffers extends Command
                     break;
                 }
             }
-            if (!$found) {
+            if (!$found && !$dbOffer->accepted) {
                 $dbOffer->delete();
             }
         }

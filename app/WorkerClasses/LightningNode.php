@@ -46,6 +46,19 @@ class LightningNode
         return $this->requestUrl('/v1/external/price');
     }
 
+    public function getLightningWalletBalance()
+    {
+        $response = $this->requestUrl('/v1/lnd/channel');
+        $localBalance = 0;
+        $remoteBalance = 0;
+        foreach ($response as $channel) {
+
+            $localBalance += $channel['localBalance'];
+            $remoteBalance += $channel['remoteBalance'];
+        }
+        return ['localBalance' => $localBalance, 'remoteBalance' => $remoteBalance];
+    }
+
 
     public function getInvoiceDetails($invoice)
     {
@@ -59,10 +72,15 @@ class LightningNode
 
         // post request
         $url = $this->endpoint . '/v1/lnd/lightning/payInvoice';
-        $response = Http::withHeaders($this->headers)->timeout(30)->post($url, [
+
+        $response = Http::withHeaders($this->headers)->post($url, [
             'paymentRequest' => $invoice,
-            'amt' => '0',
+            'amt' => 0,
         ]);
+
+        // dd($response->body());
+
+        return json_decode($response->body(), true);
     }
 
     public function getChannelDetails()
