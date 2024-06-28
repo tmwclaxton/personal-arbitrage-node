@@ -36,11 +36,11 @@
                 </primary-button>
 
                 <primary-button class="w-full text-center">
-                    Send Bond
+                    Pay Bond
                 </primary-button>
 
                 <primary-button class="w-full text-center">
-                    Send Satoshis
+                    Pay Escrow
                 </primary-button>
 
                 <primary-button class="w-full text-center">

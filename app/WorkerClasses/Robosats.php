@@ -3,6 +3,7 @@
 namespace App\WorkerClasses;
 
 use App\Models\Offer;
+use App\Models\Transaction;
 use Crypt_GPG;
 use Crypt_GPG_Key;
 use Illuminate\Support\Facades\Http;
@@ -329,7 +330,10 @@ class Robosats
         // convert response to json
         $response = json_decode($response->body(), true);
 
-
+        $transaction = new Transaction();
+        $transaction->offer_id = $offerId;
+        $transaction->bond_invoice = $response['bond_invoice'];
+        $transaction->status = $response['status'];
 
         return $response;
     }

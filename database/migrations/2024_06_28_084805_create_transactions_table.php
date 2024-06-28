@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('offer_id')->constrained();
-            $table->text('taker_bond_invoice')->nullable();
+            $table->text('bond_invoice')->nullable();
+            $table->text('escrow_invoice')->nullable();
 
             $table->string('status')->default('Waiting for taker bond');
 
