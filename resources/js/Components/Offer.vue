@@ -13,8 +13,11 @@
                     <p class="mt-2 text-gray-500 font-bold">Price: {{ offer.price }} {{ offer.currency }}</p>
                     <p class="mt-2 text-gray-500 font-bold">Type: {{ offer.type }} BTC</p>
                     <p v-if="!offer.has_range"  class="mt-2 text-gray-500">Amount: {{ offer.amount ?? 'N/A' }}</p>
+                    <p v-if="!offer.has_range"  class="mt-0.5 text-gray-500 text-xs">Sats: {{ offer.costInSatsAmount ?? 'N/A' }}</p>
                     <p v-if="offer.has_range" class="mt-2 text-gray-500">Min Amount: {{ offer.min_amount ?? 'N/A' }}</p>
+                    <p v-if="offer.has_range" class="mt-0.5 text-gray-500 text-xs">Sats: {{ offer.costInSatsMinAmount ?? 'N/A' }}</p>
                     <p v-if="offer.has_range" class="mt-2 text-gray-500">Max Amount: {{ offer.max_amount ?? 'N/A' }}</p>
+                    <p v-if="offer.has_range" class="mt-0.5 text-gray-500 text-xs">Sats: {{ offer.costInSatsMaxAmount ?? 'N/A' }}</p>
                     <p class="mt-2 text-gray-500">Premium: {{ offer.premium }}</p>
                     <p class="mt-2 text-gray-500 ">Payment Methods: <br><span class="break-words font-bold">{{ offer.payment_methods }}</span></p>
                     <p class="mt-2 text-gray-500 font-bold">Accepted: {{ offer.accepted ? 'Yes' : 'No' }}</p>
@@ -36,7 +39,7 @@
                     Accept Offer
                 </primary-button>
 
-                <primary-button class="w-full text-center">
+                <primary-button class="w-full text-center" v-on:click="payBond">
                     Pay Bond
                 </primary-button>
 
@@ -47,10 +50,10 @@
 
 
                 <primary-button class="w-full text-center">
-                    Send Revolut Tag
+                    Send Payment Handle
                 </primary-button>
 
-                <primary-button class="w-full text-center">
+                <primary-button class="w-full text-center" v-on:click="confirmPayment">
                     Confirm Payment Received
                 </primary-button>
             </div>
@@ -94,6 +97,30 @@ const payEscrow = () => {
     console.log('paying escrow');
 
     axios.post(route('pay-escrow'), {
+        offer_id: props.offer.id
+    }).then(response => {
+        console.log(response);
+    }).catch(error => {
+        console.log(error);
+    });
+}
+
+const payBond = () => {
+    console.log('paying bond');
+
+    axios.post(route('pay-bond'), {
+        offer_id: props.offer.id
+    }).then(response => {
+        console.log(response);
+    }).catch(error => {
+        console.log(error);
+    });
+}
+
+const confirmPayment = () => {
+    console.log('confirming payment');
+
+    axios.post(route('confirm-payment'), {
         offer_id: props.offer.id
     }).then(response => {
         console.log(response);

@@ -2,6 +2,7 @@
 
 namespace App\WorkerClasses;
 
+use App\Models\AdminDashboard;
 use App\Models\Offer;
 use App\Models\Transaction;
 use Crypt_GPG;
@@ -19,6 +20,8 @@ class Robosats
         'veneto' => 'mainnet/veneto/',
         'exp' => 'mainnet/exp/'
     ];
+    protected string $host = 'http://192.168.0.18:12596';
+    protected string $wsHost = 'ws://192.168.0.18:12596';
 
     public const CURRENCIES = [
         '1' => 'USD',
@@ -101,7 +104,6 @@ class Robosats
         '1000' => 'BTC'
     ];
 
-    protected string $host = 'http://192.168.0.18:12596';
 
     protected array $headers = [
                 "Host" => "192.168.0.18:12596",
@@ -116,7 +118,7 @@ class Robosats
                 "Priority" => "u=4",
                 "Pragma" => "no-cache",
                 "Cache-Control" => "no-cache",
-                "Authorization" => "Token ]/BrZA\"PFF_pctRBKY;b7%,>=xWs;[0M`[I+DQ.A" // <--- tokenSHA256
+                "Authorization" => "Token ]/BrZA\"PFF_pctRBKY;b7%,>=xWs;[0M`[I+DQ.A" // <--- tokenSHA256 FROM ROBOT
             ];
 
 
@@ -311,30 +313,73 @@ class Robosats
 
     public function acceptOffer($robosatsId) {
         $offer = Offer::where('robosatsId', $robosatsId)->first();
+
+        // this is to make sure we can afford the offer
+        // ...
+        // $allFiats = $this->getCurrentPrices();
+        //
+        // $btcPrice = $allFiats->where('currency', $offer->currency)->first();
+        // $offer->btcPrice = $btcPrice->price;
+        // if (!$offer->has_range) {
+        //
+        //     $offer->costInSatsAmount = intval(str_replace(',', '', $offer->amount))/ $btcPrice->price * 100000000;
+        //     // round the cost in sats to 0 decimal places
+        //     $offer->costInSatsAmount = number_format($offer->costInSatsAmount, 0);
+        // } else {
+        //     // dd(intval($offer->min_amount) / $btcPrice->price);
+        //     $offer->costInSatsMinAmount = intval(str_replace(',', '', $offer->min_amount)) / $btcPrice->price * 100000000;
+        //     $offer->costInSatsMaxAmount = intval(str_replace(',', '', $offer->max_amount)) / $btcPrice->price * 100000000;
+        //     // round the cost in sats to 0 decimal places
+        //     $offer->costInSatsMinAmount = number_format($offer->costInSatsMinAmount, 0);
+        //     $offer->costInSatsMaxAmount = number_format($offer->costInSatsMaxAmount, 0);
+        // }
+        //
+        // $adminDashboard = new AdminDashboard();
+
+
         $offer->accepted = true;
         $offer->save();
-        // $url = $this->host . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $robosatsId;
-        // // post request
-        // if (!$offer->has_range) {
-        //     $response = Http::withHeaders($this->headers)->timeout(30)->post($url);
-        //     dd($response);
-        // } else {
-        //     $response = Http::withHeaders($this->headers)->timeout(30)->post($url, ['action' => 'take', 'amount' => $offer->max_amount]);
-        // }
-        // // convert response to json
-        // $response = json_decode($response->body(), true);
-
         $transaction = new Transaction();
         $transaction->offer_id = $offer->id;
-        // $transaction->bond_invoice = $response['bond_invoice'];
-        // $transaction->status = $response['status'];
+        $transaction->save();
+
+        $url = $this->host . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $robosatsId;
+        // post request
+        if (!$offer->has_range) {
+            $response = Http::withHeaders($this->headers)->timeout(30)->post($url);
+            // dd($response);
+        } else {
+            $response = Http::withHeaders($this->headers)->timeout(30)->post($url, ['action' => 'take', 'amount' => $offer->max_amount]);
+        }
+        if ($response == null || $response->failed()) {
+            $transaction->delete();
+        }
+
+        // convert response to json
+        $response = json_decode($response->body(), true);
+
+        if ($response['status_message']) {
+            $transaction->status = $response['status_message'];
+        }
+        if ($response['bond_invoice']) {
+            $transaction->bond_invoice = $response['bond_invoice'];
+        }
+        $transaction->save();
 
         return $transaction;
     }
 
 
-    public function sendPublicKey() {
+    public function sendPublicKey($robotToken, $publicKey, $privateKey) {
+        // first use sha256 to hash the token
+        $tokenSHA256 = hash('sha256', $robotToken);
         // ws://umbrel.local:12596/mainnet/temple/ws/chat/7088/?token_sha256_hex=77d249d8ad141757278b875d57a729a0221aec500da11bfaefa985abc89893fc
+
+        $url = $this->wsHost . '/mainnet/temple/ws/chat/7088/?token_sha256_hex=' . $tokenSHA256;
+
+
+
+
 
         // first message we send is our pgp public key for that provider
         // i,e

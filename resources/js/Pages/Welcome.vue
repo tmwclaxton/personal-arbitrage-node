@@ -38,7 +38,7 @@ setInterval(() => {
             </div>
         </div>
 
-        <div v-if="adminDashboard" class="flex flex-row mx-5 gap-x-5 my-5">
+        <div v-if="adminDashboard" class="flex flex-row mx-auto gap-x-5 my-5 mt-10 item s-center justify-center">
             <div class="text-left border-r border-black dark:border-white/70 pr-5">
                 <p class=""><span class="font-bold text-xl mb-2">Wallet:</span></p>
 
@@ -61,11 +61,16 @@ setInterval(() => {
             </div>
             <div class="text-left pl-5 flex flex-col gap-y-1 border-r border-black dark:border-white/70 pr-5">
                 <div class="flex flex-row justify-between items-center"><span class="font-bold text-xl mb-2">More Config:</span></div>
+                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Umbrel Token: </span><TextInput model-value="asdfasdfl" /></div>
                 <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Revolut Tag: </span><TextInput model-value="@tobyclaxton" /></div>
+                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Paypal Tag: </span><TextInput model-value="@tobyclaxton" /></div>
 
             </div>
             <div class="text-left pl-5 flex flex-col gap-y-1 border-r border-black dark:border-white/70 pr-5">
                 <div class="flex flex-row justify-between items-center"><span class="font-bold text-xl mb-2">Statistics:</span></div>
+            </div>
+            <div class="text-left pl-5 flex flex-col gap-y-1 ">
+                <div class="flex flex-row justify-between items-center"><span class="font-bold text-xl mb-2">Upload Robot</span></div>
             </div>
 
         </div>

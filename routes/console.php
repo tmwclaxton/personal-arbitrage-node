@@ -45,7 +45,7 @@ Schedule::call(function () {
 
 Schedule::call(function () {
     // update all current transactions
-    $transactions = Transaction::all();
+    $transactions = Transaction::whereNot('status', 'Sucessful trade')->get();
     foreach ($transactions as $transaction) {
         $offer = $transaction->offer;
         $robosatsId = $offer->robosatsId;
