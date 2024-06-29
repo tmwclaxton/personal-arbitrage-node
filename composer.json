@@ -8,10 +8,13 @@
         "php": "^8.2",
         "ext-curl": "*",
         "chrome-php/chrome": "^1.11",
+        "hackzilla/password-generator": "^1.6",
         "inertiajs/inertia-laravel": "^1.0",
+        "katoga/allyourbase": "^5.0",
         "laravel/framework": "^11.9",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
+        "lcherone/base91": "^1.0",
         "pear/crypt_gpg": "^1.6",
         "tightenco/ziggy": "^2.0"
     },

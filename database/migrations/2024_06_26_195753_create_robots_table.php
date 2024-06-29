@@ -19,8 +19,10 @@ return new class extends Migration
             $table->string('provider');
             $table->string('nickname');
             $table->string('token');
+            $table->string('sha256');
             $table->string('hash_id');
             $table->text('public_key');
+            $table->text('private_key');
             $table->text('encrypted_private_key');
             $table->bigInteger('earned_rewards')->default(0);
             $table->boolean('wants_stealth')->default(false);

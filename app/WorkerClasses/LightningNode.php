@@ -51,6 +51,10 @@ class LightningNode
         $response = $this->requestUrl('/v1/lnd/channel');
         $localBalance = 0;
         $remoteBalance = 0;
+        if (!$response) {
+            return ['localBalance' => 0, 'remoteBalance' => 0];
+        }
+
         foreach ($response as $channel) {
 
             $localBalance += $channel['localBalance'];
