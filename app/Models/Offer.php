@@ -16,8 +16,8 @@ class Offer extends Model
         return $this->hasOne(Transaction::class);
     }
 
-    public function robot()
+    public function robots()
     {
-        return $this->hasOne(Robot::class);
+        return Robot::all()->where('offer_id', $this->id);
     }
 }

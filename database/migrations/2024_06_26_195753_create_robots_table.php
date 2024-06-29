@@ -14,10 +14,12 @@ return new class extends Migration
     {
         Schema::create('robots', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Offer::class)->nullable();
+            // this can be the same for many robots so it is not unique
+            $table->foreignIdFor(Offer::class);
             $table->string('provider');
             $table->string('nickname');
-            $table->string('hash_id')->unique();
+            $table->string('token');
+            $table->string('hash_id');
             $table->text('public_key');
             $table->text('encrypted_private_key');
             $table->bigInteger('earned_rewards')->default(0);

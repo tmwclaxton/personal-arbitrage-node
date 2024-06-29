@@ -52,6 +52,9 @@ Route::get('/', function () {
             });
         }
 
+        if ($allFiats->where('currency', $offer->currency)->count() == 0) {
+            continue;
+        }
         // grab currency from offer and find the price in btc using allFiats
         $btcPrice = $allFiats->where('currency', $offer->currency)->first();
         $offer->btcPrice = $btcPrice->price;
@@ -95,7 +98,7 @@ Route::post('/create-robot', function () {
     $offer = Offer::find($offerId);
 
     $robosats = new Robosats();
-    $response = $robosats->createRobot(lcfirst($offer->provider), $offer);
+    $response = $robosats->createRobot($offer);
     return $response;
 })->name('create-robot');
 
