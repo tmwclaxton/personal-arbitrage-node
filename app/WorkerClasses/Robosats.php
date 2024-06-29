@@ -6,12 +6,20 @@ use App\Models\AdminDashboard;
 use App\Models\Offer;
 use App\Models\Robot;
 use App\Models\Transaction;
+use App\Services\PgpService;
 use Base91\Base91;
 use Crypt_GPG;
 use Crypt_GPG_Key;
+use Crypt_GPG_KeyGenerator;
 use Exception;
+use gnupg;
 use Hackzilla\PasswordGenerator\Generator\ComputerPasswordGenerator;
 use Illuminate\Support\Facades\Http;
+use Spatie\Crypto\Rsa\KeyPair;
+
+// use Spatie\Crypto\Rsa\KeyPair;
+// use Spatie\Crypto\Rsa\PrivateKey;
+// use Spatie\Crypto\Rsa\PublicKey;
 
 class Robosats
 {
@@ -125,6 +133,8 @@ class Robosats
                 "Authorization" => "Token ]/BrZA\"PFF_pctRBKY;b7%,>=xWs;[0M`[I+DQ.A" // <--- tokenSHA256 FROM ROBOT
             ];
 
+
+
     public function createRobot($offer) {
         // check if the offer already has a robot
         $robots = Robot::where('offer_id', $offer->id)->get();
@@ -143,23 +153,65 @@ class Robosats
 
         $generatedToken = $generator->generatePassword();
         $sha256 = hash('sha256', $generatedToken);
-        // $hexToBase91 = base_convert($sha256, 16, 91);
-        // dd($hexToBase91);
-        //hexToBase91(sha256(this.token))
-        // dd(strlen($generatedToken));
-
-
-        $publicKey = '-----BEGIN PGP PUBLIC KEY BLOCK-----\\xjMEZn4F/BYJKwYBBAHaRw8BAQdA5MnEJA3uz4TJcc1XrVipRmlYKk+pHGDV\xZhuMbQzXnvNTFJvYm9TYXRzIElEIGJlMTBiMjdiMWNhYTg0NTQxNGFjN2Zl\NTU1YjdjYWRlYzM2OTVmY2NlOTA3NGE3ZmFiNDZiNjBmYjE2ZjM3MGTCjAQQ\FgoAPgWCZn4F/AQLCQcICZCqyF2sPXvF5wMVCAoEFgACAQIZAQKbAwIeARYh\BBmAYeB3s8iyfPxKiarIXaw9e8XnAAB8ogEA/3I2zYCyYny4PAAA33rxfXaC\WS3oT0Rgopj05Hai1SkBALriBnJz4PVbAkb6TuGdu1ChMQCi9x4IhTIHMbzx\7xIEzjgEZn4F/BIKKwYBBAGXVQEFAQEHQIYMWqOpbUUA4PQS6yeC3mIGQIRi\8+u0GhsWbYLQkxYDAwEIB8J4BBgWCgAqBYJmfgX8CZCqyF2sPXvF5wKbDBYh\BBmAYeB3s8iyfPxKiarIXaw9e8XnAAAXyQEA2bwGBpyPBGhZsLMB+zJ1bQ16\bm7f01IDAqQFnhzpjboBAM3aBfoVlpag2fehT5NygHBHnxhOQB2yDVTZx/hi\Y5kO\=9Bkd\-----END PGP PUBLIC KEY BLOCK-----\\';
-        $privateKey = '-----BEGIN PGP PRIVATE KEY BLOCK-----\\xYYEZn4F/BYJKwYBBAHaRw8BAQdA5MnEJA3uz4TJcc1XrVipRmlYKk+pHGDV\xZhuMbQzXnv+CQMIYrz/ZBiqE+3gPOjwrQvLJKoxsrpPTTIufZfqmFuLmV/k\G9rEiSAMEngSvU2804dOngSyX3nYJxGlChmDCU479QL6unDhNwReG2NAy/DB\Ks1MUm9ib1NhdHMgSUQgYmUxMGIyN2IxY2FhODQ1NDE0YWM3ZmU1NTViN2Nh\ZGVjMzY5NWZjY2U5MDc0YTdmYWI0NmI2MGZiMTZmMzcwZMKMBBAWCgA+BYJm\fgX8BAsJBwgJkKrIXaw9e8XnAxUICgQWAAIBAhkBApsDAh4BFiEEGYBh4Hez\yLJ8/EqJqshdrD17xecAAHyiAQD/cjbNgLJifLg8AADfevF9doJZLehPRGCi\mPTkdqLVKQEAuuIGcnPg9VsCRvpO4Z27UKExAKL3HgiFMgcxvPHvEgTHiwRm\fgX8EgorBgEEAZdVAQUBAQdAhgxao6ltRQDg9BLrJ4LeYgZAhGLz67QaGxZt\gtCTFgMDAQgH/gkDCDZ3IJahvyFp4KwOSj2J9LfZpbJt0jPeswhls6+RV486\PzgQhoLuoG4p8tE4owH6cWJNzKNWexoOFaO9ij6LJqFNHjc5a+ip5YNK2ksi\nbHCeAQYFgoAKgWCZn4F/AmQqshdrD17xecCmwwWIQQZgGHgd7PIsnz8Somq\yF2sPXvF5wAAF8kBANm8BgacjwRoWbCzAfsydW0Nem5u39NSAwKkBZ4c6Y26\AQDN2gX6FZaWoNn3oU+TcoBwR58YTkAdsg1U2cf4YmOZDg==\=6FSP\-----END PGP PRIVATE KEY BLOCK-----\\';
+        $doubleSha256 = hash('sha256', $sha256);
 
         // dd($authentication);
         $b91 = new \Katoga\Allyourbase\Base91();
         $b91Token = $b91->encode(pack('H*', $sha256));
-        $authentication = 'Token ' . $b91Token . ' | Public ' . $publicKey . ' | Private ' . $privateKey . ' |';
+        $doubleShaB91Token = $b91->encode(pack('H*', $doubleSha256));
 
 
-        // $Authentication = 'Token M(<X|Sw|o69xTsX9BM4.BF#x]*8KOHo;&H1$"=lC | Public -----BEGIN PGP PUBLIC KEY BLOCK-----\\xjMEZn4F/BYJKwYBBAHaRw8BAQdA5MnEJA3uz4TJcc1XrVipRmlYKk+pHGDV\xZhuMbQzXnvNTFJvYm9TYXRzIElEIGJlMTBiMjdiMWNhYTg0NTQxNGFjN2Zl\NTU1YjdjYWRlYzM2OTVmY2NlOTA3NGE3ZmFiNDZiNjBmYjE2ZjM3MGTCjAQQ\FgoAPgWCZn4F/AQLCQcICZCqyF2sPXvF5wMVCAoEFgACAQIZAQKbAwIeARYh\BBmAYeB3s8iyfPxKiarIXaw9e8XnAAB8ogEA/3I2zYCyYny4PAAA33rxfXaC\WS3oT0Rgopj05Hai1SkBALriBnJz4PVbAkb6TuGdu1ChMQCi9x4IhTIHMbzx\7xIEzjgEZn4F/BIKKwYBBAGXVQEFAQEHQIYMWqOpbUUA4PQS6yeC3mIGQIRi\8+u0GhsWbYLQkxYDAwEIB8J4BBgWCgAqBYJmfgX8CZCqyF2sPXvF5wKbDBYh\BBmAYeB3s8iyfPxKiarIXaw9e8XnAAAXyQEA2bwGBpyPBGhZsLMB+zJ1bQ16\bm7f01IDAqQFnhzpjboBAM3aBfoVlpag2fehT5NygHBHnxhOQB2yDVTZx/hi\Y5kO\=9Bkd\-----END PGP PUBLIC KEY BLOCK-----\ |
-        // Private -----BEGIN PGP PRIVATE KEY BLOCK-----\\xYYEZn4F/BYJKwYBBAHaRw8BAQdA5MnEJA3uz4TJcc1XrVipRmlYKk+pHGDV\xZhuMbQzXnv+CQMIYrz/ZBiqE+3gPOjwrQvLJKoxsrpPTTIufZfqmFuLmV/k\G9rEiSAMEngSvU2804dOngSyX3nYJxGlChmDCU479QL6unDhNwReG2NAy/DB\Ks1MUm9ib1NhdHMgSUQgYmUxMGIyN2IxY2FhODQ1NDE0YWM3ZmU1NTViN2Nh\ZGVjMzY5NWZjY2U5MDc0YTdmYWI0NmI2MGZiMTZmMzcwZMKMBBAWCgA+BYJm\fgX8BAsJBwgJkKrIXaw9e8XnAxUICgQWAAIBAhkBApsDAh4BFiEEGYBh4Hez\yLJ8/EqJqshdrD17xecAAHyiAQD/cjbNgLJifLg8AADfevF9doJZLehPRGCi\mPTkdqLVKQEAuuIGcnPg9VsCRvpO4Z27UKExAKL3HgiFMgcxvPHvEgTHiwRm\fgX8EgorBgEEAZdVAQUBAQdAhgxao6ltRQDg9BLrJ4LeYgZAhGLz67QaGxZt\gtCTFgMDAQgH/gkDCDZ3IJahvyFp4KwOSj2J9LfZpbJt0jPeswhls6+RV486\PzgQhoLuoG4p8tE4owH6cWJNzKNWexoOFaO9ij6LJqFNHjc5a+ip5YNK2ksi\nbHCeAQYFgoAKgWCZn4F/AmQqshdrD17xecCmwwWIQQZgGHgd7PIsnz8Somq\yF2sPXvF5wAAF8kBANm8BgacjwRoWbCzAfsydW0Nem5u39NSAwKkBZ4c6Y26\AQDN2gX6FZaWoNn3oU+TcoBwR58YTkAdsg1U2cf4YmOZDg==\=6FSP\-----END PGP PRIVATE KEY BLOCK-----\\';
+        // $publicKey = '-----BEGIN PGP PUBLIC KEY BLOCK-----\\xjMEZn4F/BYJKwYBBAHaRw8BAQdA5MnEJA3uz4TJcc1XrVipRmlYKk+pHGDV\xZhuMbQzXnvNTFJvYm9TYXRzIElEIGJlMTBiMjdiMWNhYTg0NTQxNGFjN2Zl\NTU1YjdjYWRlYzM2OTVmY2NlOTA3NGE3ZmFiNDZiNjBmYjE2ZjM3MGTCjAQQ\FgoAPgWCZn4F/AQLCQcICZCqyF2sPXvF5wMVCAoEFgACAQIZAQKbAwIeARYh\BBmAYeB3s8iyfPxKiarIXaw9e8XnAAB8ogEA/3I2zYCyYny4PAAA33rxfXaC\WS3oT0Rgopj05Hai1SkBALriBnJz4PVbAkb6TuGdu1ChMQCi9x4IhTIHMbzx\7xIEzjgEZn4F/BIKKwYBBAGXVQEFAQEHQIYMWqOpbUUA4PQS6yeC3mIGQIRi\8+u0GhsWbYLQkxYDAwEIB8J4BBgWCgAqBYJmfgX8CZCqyF2sPXvF5wKbDBYh\BBmAYeB3s8iyfPxKiarIXaw9e8XnAAAXyQEA2bwGBpyPBGhZsLMB+zJ1bQ16\bm7f01IDAqQFnhzpjboBAM3aBfoVlpag2fehT5NygHBHnxhOQB2yDVTZx/hi\Y5kO\=9Bkd\-----END PGP PUBLIC KEY BLOCK-----\\';
+        // $privateKey = '-----BEGIN PGP PRIVATE KEY BLOCK-----\\xYYEZn4F/BYJKwYBBAHaRw8BAQdA5MnEJA3uz4TJcc1XrVipRmlYKk+pHGDV\xZhuMbQzXnv+CQMIYrz/ZBiqE+3gPOjwrQvLJKoxsrpPTTIufZfqmFuLmV/k\G9rEiSAMEngSvU2804dOngSyX3nYJxGlChmDCU479QL6unDhNwReG2NAy/DB\Ks1MUm9ib1NhdHMgSUQgYmUxMGIyN2IxY2FhODQ1NDE0YWM3ZmU1NTViN2Nh\ZGVjMzY5NWZjY2U5MDc0YTdmYWI0NmI2MGZiMTZmMzcwZMKMBBAWCgA+BYJm\fgX8BAsJBwgJkKrIXaw9e8XnAxUICgQWAAIBAhkBApsDAh4BFiEEGYBh4Hez\yLJ8/EqJqshdrD17xecAAHyiAQD/cjbNgLJifLg8AADfevF9doJZLehPRGCi\mPTkdqLVKQEAuuIGcnPg9VsCRvpO4Z27UKExAKL3HgiFMgcxvPHvEgTHiwRm\fgX8EgorBgEEAZdVAQUBAQdAhgxao6ltRQDg9BLrJ4LeYgZAhGLz67QaGxZt\gtCTFgMDAQgH/gkDCDZ3IJahvyFp4KwOSj2J9LfZpbJt0jPeswhls6+RV486\PzgQhoLuoG4p8tE4owH6cWJNzKNWexoOFaO9ij6LJqFNHjc5a+ip5YNK2ksi\nbHCeAQYFgoAKgWCZn4F/AmQqshdrD17xecCmwwWIQQZgGHgd7PIsnz8Somq\yF2sPXvF5wAAF8kBANm8BgacjwRoWbCzAfsydW0Nem5u39NSAwKkBZ4c6Y26\AQDN2gX6FZaWoNn3oU+TcoBwR58YTkAdsg1U2cf4YmOZDg==\=6FSP\-----END PGP PRIVATE KEY BLOCK-----\\';
+        //
+        //
+        // [$privateKey, $publicKey] = (new KeyPair())->password($generatedToken)->generate();
+        // $privateKeyEscaped = addslashes($privateKey);
+        // $publicKeyEscaped = addslashes($publicKey);
+
+        $pgpService = new PgpService();
+        $keyPair = $pgpService->generate_keypair($generatedToken);
+        // dd($keyPair);
+        $privateKey = $keyPair['private_key'];
+        $publicKey = $keyPair['public_key'];
+
+        // ideal format for authentication
+        // $Authentication = 'Token M(<X|Sw|o69xTsX9BM4.BF#x]*8KOHo;&H1$"=lC | Public -----BEGIN PGP PUBLIC KEY BLOCK-----\\xjMEZn4F/BYJKwYBBAHaRw8BAQdA5MnEJA3uz4TJcc1XrVipRmlYKk+pHGDV\xZhuMbQzXnvNTFJvYm9TYXRzIElEIGJlMTBiMjdiMWNhYTg0NTQxNGFjN2Zl\NTU1YjdjYWRlYzM2OTVmY2NlOTA3NGE3ZmFiNDZiNjBmYjE2ZjM3MGTCjAQQ\FgoAPgWCZn4F/AQLCQcICZCqyF2sPXvF5wMVCAoEFgACAQIZAQKbAwIeARYh\BBmAYeB3s8iyfPxKiarIXaw9e8XnAAB8ogEA/3I2zYCyYny4PAAA33rxfXaC\WS3oT0Rgopj05Hai1SkBALriBnJz4PVbAkb6TuGdu1ChMQCi9x4IhTIHMbzx\7xIEzjgEZn4F/BIKKwYBBAGXVQEFAQEHQIYMWqOpbUUA4PQS6yeC3mIGQIRi\8+u0GhsWbYLQkxYDAwEIB8J4BBgWCgAqBYJmfgX8CZCqyF2sPXvF5wKbDBYh\BBmAYeB3s8iyfPxKiarIXaw9e8XnAAAXyQEA2bwGBpyPBGhZsLMB+zJ1bQ16\bm7f01IDAqQFnhzpjboBAM3aBfoVlpag2fehT5NygHBHnxhOQB2yDVTZx/hi\Y5kO\=9Bkd
+        //\-----END PGP PUBLIC KEY BLOCK-----\ | Private -----BEGIN PGP PRIVATE KEY BLOCK-----\\xYYEZn4F/BYJKwYBBAHaRw8BAQdA5MnEJA3uz4TJcc1XrVipRmlYKk+pHGDV\xZhuMbQzXnv+CQMIYrz/ZBiqE+3gPOjwrQvLJKoxsrpPTTIufZfqmFuLmV/k\G9rEiSAMEngSvU2804dOngSyX3nYJxGlChmDCU479QL6unDhNwReG2NAy/DB\Ks1MUm9ib1NhdHMgSUQgYmUxMGIyN2IxY2FhODQ1NDE0YWM3ZmU1NTViN2Nh\ZGVjMzY5NWZjY2U5MDc0YTdmYWI0NmI2MGZiMTZmMzcwZMKMBBAWCgA+BYJm\fgX8BAsJBwgJkKrIXaw9e8XnAxUICgQWAAIBAhkBApsDAh4BFiEEGYBh4Hez\yLJ8/EqJqshdrD17xecAAHyiAQD/cjbNgLJifLg8AADfevF9doJZLehPRGCi\mPTkdqLVKQEAuuIGcnPg9VsCRvpO4Z27UKExAKL3HgiFMgcxvPHvEgTHiwRm\fgX8EgorBgEEAZdVAQUBAQdAhgxao6ltRQDg9BLrJ4LeYgZAhGLz67QaGxZt\gtCTFgMDAQgH/gkDCDZ3IJahvyFp4KwOSj2J9LfZpbJt0jPeswhls6+RV486\PzgQhoLuoG4p8tE4owH6cWJNzKNWexoOFaO9ij6LJqFNHjc5a+ip5YNK2ksi\nbHCeAQYFgoAKgWCZn4F/AmQqshdrD17xecCmwwWIQQZgGHgd7PIsnz8Somq\yF2sPXvF5wAAF8kBANm8BgacjwRoWbCzAfsydW0Nem5u39NSAwKkBZ4c6Y26\AQDN2gX6FZaWoNn3oU+TcoBwR58YTkAdsg1U2cf4YmOZDg==\=6FSP\-----END PGP PRIVATE KEY BLOCK-----\\';
+        $authentication = 'Token ' . $b91Token . ' | Public ' . $publicKey . ' | Private ' . $privateKey;
+        // remove new lines and \r
+        $authentication = str_replace("\n", '', $authentication);
+        $authentication = str_replace("\r", '', $authentication);
+        // at the end of ----- add \\
+        $authentication = str_replace('-----BEGIN PGP PUBLIC KEY BLOCK-----', '-----BEGIN PGP PUBLIC KEY BLOCK-----\\\\', $authentication);
+        $authentication = str_replace('-----END PGP PUBLIC KEY BLOCK-----', '\\-----END PGP PUBLIC KEY BLOCK-----\\', $authentication);
+        $authentication = str_replace('-----BEGIN PGP PRIVATE KEY BLOCK-----', '-----BEGIN PGP PRIVATE KEY BLOCK-----\\\\', $authentication);
+        $authentication = str_replace('-----END PGP PRIVATE KEY BLOCK-----', '\\-----END PGP PRIVATE KEY BLOCK-----\\\\', $authentication);
+        // dd($authentication);
+
+        // $pattern = '/^[\x20\x09\x21-\x7E\x80-\xFF]*$/D';
+
+
+        // Define the character pattern for invalid characters
+        // $invalidPattern = '/[^\x20\x09\x21-\x7E\x80-\xFF]/u';
+
+        // Find all invalid characters
+        // preg_match_all($invalidPattern, $authentication, $matches);
+
+        // Return the array of invalid characters
+        // dd($matches);
+        // current format
+        // "Token *xzi{wm:K<3~k[[/nqA@Q3cRtp70VJiK9[[FIZiA | Public -----BEGIN PUBLIC KEY-----
+        // MCowBQYDK2VwAyEAxwzwvIBSt/duwItkVsMJlNvNhJJ+ZxvssG1EAFzHRQM=
+        // -----END PUBLIC KEY----- | Private -----BEGIN ENCRYPTED PRIVATE KEY-----
+        // MIGbMFcGCSqGSIb3DQEFDTBKMCkGCSqGSIb3DQEFDDAcBAivaaPWPspr+QICCAAw
+        // DAYIKoZIhvcNAgkFADAdBglghkgBZQMEAQIEEOE7fB6DnrFu1PE19m1bquoEQGao
+        // nNsChbgWKrF8hEIhPsiD808+hqAtMMBC4OAQUrniKmqKI7Y4Rydl+oae8IENhClh
+        // g6/rd2QCGCVkCna2J/4=
+        // -----END ENCRYPTED PRIVATE KEY-----"
+
+        // remove new lines
+        // $authentication = str_replace("\n", '', $authentication);
         // we give them the token sha of the password for the private key
         // this is the real pw -> W1jc89CWSTXAFm6u7ytnsMM3EIbFdcSF3Qzu
 
@@ -177,11 +229,12 @@ class Robosats
                     ->withOptions(['version' => '1.1'])
                     ->timeout(30)
                     ->get($url);
-                // dd(json_decode($response->body()));
+                dd(json_decode($response->body()));
 
             } catch (\Exception $e) {
                 // Return or log the exception
                 return $e->getMessage();
+                // continue;
             }
 
             $json = json_decode($response->body(), true);
@@ -193,7 +246,7 @@ class Robosats
             $robot->provider = $provider;
             $robot->offer_id = $offer->id;
             $robot->token = $generatedToken;
-            $robot->sha256 = $sha256;
+            $robot->sha256 = $doubleShaB91Token;
             $robot->nickname = $json['nickname'];
             $robot->hash_id = $json['hash_id'];
             $robot->public_key = $json['public_key'];
