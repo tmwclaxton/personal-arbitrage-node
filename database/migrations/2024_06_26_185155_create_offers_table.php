@@ -15,16 +15,21 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             $table->unsignedBigInteger('robosatsId')->unique();
-            // $table->enum('provider', ['satstralia', 'temple', 'lake', 'veneto', 'exp']);
             $table->string('provider');
             $table->boolean('accepted')->default(false);
             $table->timestamp('expires_at');
             $table->string('type');
             $table->string('currency');
             $table->decimal('amount', 20, 8)->nullable();
+            // $table->unsignedBigInteger('satoshi_amount')->nullable(); <-- this is just satoshi now
+            $table->unsignedBigInteger('satoshi_amount_profit')->nullable();
             $table->boolean('has_range');
             $table->decimal('min_amount', 20, 8)->nullable();
+            $table->unsignedBigInteger('min_satoshi_amount')->nullable();
+            $table->unsignedBigInteger('min_satoshi_amount_profit')->nullable();
             $table->decimal('max_amount', 20, 8)->nullable();
+            $table->unsignedBigInteger('max_satoshi_amount')->nullable();
+            $table->unsignedBigInteger('max_satoshi_amount_profit')->nullable();
             // $table->arr('payment_methods');
             $table->json('payment_methods');
             $table->boolean('is_explicit');

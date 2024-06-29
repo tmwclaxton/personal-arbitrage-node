@@ -46,33 +46,11 @@ Route::get('/', function () {
             $offer->transaction = $transaction;
         }
 
-        if ($offer->transaction && $offer->transaction->status == 'Sucessful trade') {
+        if ($offer->transaction && $offer->transaction->status == 'Sucessful trade') { // they spelt successful wrong
             $offers = $offers->filter(function ($value, $key) use ($offer) {
                 return $value->id != $offer->id;
             });
         }
-
-        if ($allFiats->where('currency', $offer->currency)->count() == 0) {
-            continue;
-        }
-        // grab currency from offer and find the price in btc using allFiats
-        $btcPrice = $allFiats->where('currency', $offer->currency)->first();
-        $offer->btcPrice = $btcPrice->price;
-        if (!$offer->has_range) {
-
-            $offer->costInSatsAmount = intval(str_replace(',', '', $offer->amount))/ $btcPrice->price * 100000000;
-            // round the cost in sats to 0 decimal places
-            $offer->costInSatsAmount = number_format($offer->costInSatsAmount, 0);
-        } else {
-            // dd(intval($offer->min_amount) / $btcPrice->price);
-            $offer->costInSatsMinAmount = intval(str_replace(',', '', $offer->min_amount)) / $btcPrice->price * 100000000;
-            $offer->costInSatsMaxAmount = intval(str_replace(',', '', $offer->max_amount)) / $btcPrice->price * 100000000;
-            // round the cost in sats to 0 decimal places
-            $offer->costInSatsMinAmount = number_format($offer->costInSatsMinAmount, 0);
-            $offer->costInSatsMaxAmount = number_format($offer->costInSatsMaxAmount, 0);
-        }
-
-
     }
 
     // convert the offers to an array

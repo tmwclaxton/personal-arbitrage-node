@@ -13,11 +13,14 @@
                     <p class="mt-2 text-gray-500 font-bold">Price: {{ offer.price }} {{ offer.currency }}</p>
                     <p class="mt-2 text-gray-500 font-bold">Type: {{ offer.type }} BTC</p>
                     <p v-if="!offer.has_range"  class="mt-2 text-gray-500">Amount: {{ offer.amount ?? 'N/A' }}</p>
-                    <p v-if="!offer.has_range"  class="mt-0.5 text-gray-500 text-xs">Sats: {{ offer.costInSatsAmount ?? 'N/A' }}</p>
+                    <p v-if="!offer.has_range"  class="mt-0.5 text-gray-500 text-xs">Sats: {{ offer.satoshis_now ?? 'N/A' }}</p>
+                    <p v-if="!offer.has_range"  class="mt-0.5 text-gray-500 text-xs">Sats Profit: {{ offer.satoshi_amount_profit ?? 'N/A' }}</p>
                     <p v-if="offer.has_range" class="mt-2 text-gray-500">Min Amount: {{ offer.min_amount ?? 'N/A' }}</p>
-                    <p v-if="offer.has_range" class="mt-0.5 text-gray-500 text-xs">Sats: {{ offer.costInSatsMinAmount ?? 'N/A' }}</p>
+                    <p v-if="offer.has_range" class="mt-0.5 text-gray-500 text-xs">Sats: {{ offer.min_satoshi_amount ?? 'N/A' }}</p>
+                    <p v-if="offer.has_range" class="mt-0.5 text-gray-500 text-xs">Profit: {{ offer.min_satoshi_amount_profit ?? 'N/A' }}</p>
                     <p v-if="offer.has_range" class="mt-2 text-gray-500">Max Amount: {{ offer.max_amount ?? 'N/A' }}</p>
-                    <p v-if="offer.has_range" class="mt-0.5 text-gray-500 text-xs">Sats: {{ offer.costInSatsMaxAmount ?? 'N/A' }}</p>
+                    <p v-if="offer.has_range" class="mt-0.5 text-gray-500 text-xs">Sats: {{ offer.max_satoshi_amount ?? 'N/A' }}</p>
+                    <p v-if="offer.has_range" class="mt-0.5 text-gray-500 text-xs">Profit: {{ offer.max_satoshi_amount_profit ?? 'N/A' }}</p>
                     <p class="mt-2 text-gray-500">Premium: {{ offer.premium }}</p>
                     <p class="mt-2 text-gray-500 ">Payment Methods: <br><span class="break-words font-bold">{{ offer.payment_methods }}</span></p>
                     <p class="mt-2 text-gray-500 font-bold">Accepted: {{ offer.accepted ? 'Yes' : 'No' }}</p>
@@ -28,7 +31,6 @@
                     <p class="mt-2 text-gray-500">Maker: {{ offer.maker }}</p>
                     <p class="mt-2 text-gray-500">Escrow Duration: {{ offer.escrow_duration }}</p>
                     <p class="mt-2 text-gray-500">Bond Size: {{ offer.bond_size }}</p>
-                    <p class="mt-2 text-gray-500">Satoshis Now: {{ offer.satoshis_now }}</p>
                 </div>
             </div>
 

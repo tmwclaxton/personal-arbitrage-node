@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\BtcFiat;
 use App\Models\Offer;
 use App\WorkerClasses\Robosats;
 use Illuminate\Console\Command;
@@ -64,6 +65,8 @@ class UpdateOffers extends Command
             }
         }
 
+        $allFiats = BtcFiat::all();
+
         // create buy offers in the database
         foreach ($allOffers as $provider => $offers) {
             $provider = ucfirst($provider);
@@ -98,6 +101,34 @@ class UpdateOffers extends Command
 
                 // convert the payment_methods to a json array
                 $offer['payment_methods'] = json_encode($offer['payment_methods']);
+
+                if ($allFiats && $allFiats->count() > 0) {
+                    // grab currency from offer and find the price in btc using allFiats
+                    $btcPrice = $allFiats->where('currency', $offer['currency'])->first();
+                    if (!$offer['has_range']) {
+                        $offer['satoshis_now'] = intval(str_replace(',', '', $offer['amount'])) / $offer['price'] * 100000000;
+                        $offer['satoshis_now'] = intval(str_replace(',', '', number_format($offer['satoshis_now'], 0)));
+                        $offer['satoshi_amount_profit'] = intval(str_replace(',', '', $offer['amount'])) / $btcPrice->price * 100000000;
+                        $offer['satoshi_amount_profit'] = intval(str_replace(',', '', number_format($offer['satoshi_amount_profit'], 0))) - $offer['satoshis_now'];
+                        // dd($offer['satoshi_amount_profit']);
+                    } else {
+                        $offer['min_satoshi_amount'] = intval(str_replace(',', '', $offer['min_amount'])) / $offer['price']  * 100000000;
+                        $offer['min_satoshi_amount'] = intval(str_replace(',', '', number_format($offer['min_satoshi_amount'], 0)));
+                        $offer['max_satoshi_amount'] = intval(str_replace(',', '', $offer['max_amount'])) / $offer['price']  * 100000000;
+                        $offer['max_satoshi_amount'] = intval(str_replace(',', '', number_format($offer['max_satoshi_amount'], 0)));
+
+                        // calculate the profit by using the bitcoin price and subtracting the value calculated from the price they are offering
+                        $actualMinSatoshiAmount = intval(str_replace(',', '', $offer['min_amount'])) / $btcPrice->price * 100000000;
+                        $actualMinSatoshiAmount = intval(str_replace(',', '', number_format($actualMinSatoshiAmount, 0)));
+                        $offer['min_satoshi_amount_profit'] = $actualMinSatoshiAmount - $offer['min_satoshi_amount'];
+
+                        $actualMaxSatoshiAmount = intval(str_replace(',', '', $offer['max_amount'])) / $btcPrice->price * 100000000;
+                        $actualMaxSatoshiAmount = intval(str_replace(',', '', number_format($actualMaxSatoshiAmount, 0)));
+                        $offer['max_satoshi_amount_profit'] = $actualMaxSatoshiAmount - $offer['max_satoshi_amount'];
+
+                    }
+
+                }
 
                 // iterate through each key in the offer and set corresponding attributes
                 $newOffer = new Offer();
