@@ -2,6 +2,7 @@
 
 namespace App\WorkerClasses;
 
+use App\Models\AdminDashboard;
 use Illuminate\Support\Facades\Http;
 
 class LightningNode
@@ -17,11 +18,18 @@ class LightningNode
         "Referer" => "http://192.168.0.18:2101/",
         "Content-Type" => "application/json",
         "Connection" => "keep-alive",
-        "Cookie" => "UMBREL_PROXY_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm94eVRva2VuIjp0cnVlLCJpYXQiOjE3MTk0MzI5MzQsImV4cCI6MTcyMDAzNzczNH0.31qKPyd1zRoySVRPVzisbTxO_FljIisBOHJFyJs6JYc",
         "Priority" => "u=4",
         "Pragma" => "no-cache",
         "Cache-Control" => "no-cache"
     ];
+
+    public function getHeaders(): array
+    {
+        $currentHeaders = $this->headers;
+        $adminDash = AdminDashboard::all()->first();
+        $currentHeaders['Cookie'] = 'UMBREL_PROXY_TOKEN=' . $adminDash->umbrel_token;
+        return $currentHeaders;
+    }
 
     public function __construct($endpoint = null, $headers = null)
     {
@@ -33,7 +41,7 @@ class LightningNode
         $url = $this->endpoint . $url;
 
         try {
-            $response = Http::withHeaders($this->headers)->timeout(30)->get($url);
+            $response = Http::withHeaders($this->getHeaders())->timeout(30)->get($url);
         } catch (\Exception $e) {
             return null;
         }
@@ -72,15 +80,19 @@ class LightningNode
 
     public function payInvoice($invoice)
     {
+        if (!$invoice) {
+            return "No invoice provided";
+        }
         // {"paymentError":"","paymentPreimage":{"0":161,"1":223,"2":234,"3":220,"4":241,"5":28,"6":177,"7":230,"8":80,"9":89,"10":224,"11":227,"12":118,"13":93,"14":92,"15":58,"16":242,"17":152,"18":193,"19":43,"20":108,"21":91,"22":87,"23":180,"24":57,"25":0,"26":248,"27":8,"28":73,"29":129,"30":140,"31":64},"paymentRoute":{"totalTimeLock":849966,"totalFees":"4","totalAmt":"2004","hops":[{"chanId":"934272622400634881","chanCapacity":"2000000","amtToForward":"2003","fee":"1","expiry":849822,"amtToForwardMsat":"2003100","feeMsat":"1001","pubKey":"02f1a8c87607f415c8f22c00593002775941dea48869ce23096af27b0cfdcc0b69","tlvPayload":true},{"chanId":"908076757863956480","chanCapacity":"11977735","amtToForward":"2000","fee":"3","expiry":849813,"amtToForwardMsat":"2000000","feeMsat":"3100","pubKey":"03a6ce61fcaacd38d31d4e3ce2d506602818e3856b4b44faff1dde9642ba705976","tlvPayload":true},{"chanId":"16574444564780796506","chanCapacity":"2000","amtToForward":"2000","fee":"0","expiry":849813,"amtToForwardMsat":"2000000","feeMsat":"0","pubKey":"0259ad32e1e452ce189faa0131f6c76d3b54567c4fa665dc61fdc79355b60c98ba","tlvPayload":true}],"totalFeesMsat":"4101","totalAmtMsat":"2004101"},"paymentHash":{"0":69,"1":220,"2":142,"3":226,"4":193,"5":42,"6":23,"7":188,"8":95,"9":225,"10":90,"11":81,"12":6,"13":115,"14":169,"15":28,"16":214,"17":29,"18":228,"19":37,"20":120,"21":153,"22":181,"23":26,"24":241,"25":82,"26":41,"27":47,"28":174,"29":146,"30":182,"31":134}}
 
         // post request
         $url = $this->endpoint . '/v1/lnd/lightning/payInvoice';
 
-        $response = Http::withHeaders($this->headers)->post($url, [
+        $response = Http::withHeaders($this->getHeaders())->post($url, [
             'paymentRequest' => $invoice,
             'amt' => 0,
         ]);
+        dd($response->body());
 
         // dd($response->body());
 
@@ -101,7 +113,7 @@ class LightningNode
     public function createInvoice($satoshis, $memo) {
         // post http://umbrel.local:2101/v1/lnd/lightning/addInvoice
         $url = $this->endpoint . '/v1/lnd/lightning/addInvoice';
-        $response = Http::withHeaders($this->headers)->timeout(30)->post($url, [
+        $response = Http::withHeaders($this->getHeaders())->timeout(30)->post($url, [
             'amt' => $satoshis,
             'memo' => $memo,
         ]);

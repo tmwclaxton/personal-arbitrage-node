@@ -18,6 +18,6 @@ class Offer extends Model
 
     public function robots()
     {
-        return Robot::all()->where('offer_id', $this->id);
+        return $this->hasMany(Robot::class);
     }
 }

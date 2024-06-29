@@ -102,7 +102,7 @@ class UpdateOffers extends Command
                 // convert the payment_methods to a json array
                 $offer['payment_methods'] = json_encode($offer['payment_methods']);
 
-                if ($allFiats && $allFiats->count() > 0) {
+                if ($allFiats && $allFiats->count() > 0 && isset($offer['price']) && $offer['price'] > 0) {
                     // grab currency from offer and find the price in btc using allFiats
                     $btcPrice = $allFiats->where('currency', $offer['currency'])->first();
                     if (!$offer['has_range']) {

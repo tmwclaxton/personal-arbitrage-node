@@ -27,6 +27,7 @@ return new class extends Migration
             $table->integer('satoshi_fees')->default(0);
             $table->json('allowed_payment_methods')->nullable();
             $table->json('allowed_providers')->nullable();
+            $table->string('umbrel_token')->nullable()->default('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm94eVRva2VuIjp0cnVlLCJpYXQiOjE3MTk0MzI5MzQsImV4cCI6MTcyMDAzNzczNH0.31qKPyd1zRoySVRPVzisbTxO_FljIisBOHJFyJs6JYc');
             $table->timestamps();
         });
     }

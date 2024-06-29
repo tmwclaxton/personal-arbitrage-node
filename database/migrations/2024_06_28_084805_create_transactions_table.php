@@ -17,7 +17,7 @@ return new class extends Migration
             $table->text('bond_invoice')->nullable();
             $table->text('escrow_invoice')->nullable();
 
-            $table->string('status')->default('Waiting for taker bond');
+            $table->string('status')->default('');
 
             $table->timestamps();
         });

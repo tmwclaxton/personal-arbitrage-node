@@ -3,6 +3,10 @@
 namespace  App\Services;
 
 use App\Http\Controllers\Controller;
+use Crypt_GPG;
+use Crypt_GPG_KeyGenerator;
+use Crypt_GPG_SubKey;
+use Illuminate\Support\Facades\Crypt;
 use OpenPGP;
 use OpenPGP_CompressedDataPacket;
 use OpenPGP_Crypt_RSA;
@@ -28,74 +32,41 @@ class PgpService extends Controller
     public function generate_keypair($highEntropyToken, $key_length = 2048)
     {
         // Generate the SHA-256 hash of the SHA-256 hash of the high-entropy token
-        $hashedToken = $this->sha256($this->sha256($highEntropyToken));
-        $userID = "RoboSats ID: " . bin2hex($hashedToken);
+        $hashedToken = bin2hex($this->sha256(bin2hex($this->sha256($highEntropyToken))));
+        $userID = "RoboSats ID: " . $hashedToken;
 
-        // Generate a key pair
-        $privateKey = RSA::createKey($key_length);
-        $privateKeyComponents = PKCS1::load($privateKey->toString('PKCS1'));
+        // Initialize the key generator
+        $cryptGen = new Crypt_GPG_KeyGenerator();
+        // $cryptGen->setAlgorithm(CRYPT_GPG_KEYGEN_ALGO_RSA); // Ensure we are using RSA
+        // $cryptGen->setKeyLength($key_length); // Set key length
 
-        $secretKeyPacket = new OpenPGP_SecretKeyPacket([
-            'n' => $privateKeyComponents['modulus']->toBytes(),
-            'e' => $privateKeyComponents['publicExponent']->toBytes(),
-            'd' => $privateKeyComponents['privateExponent']->toBytes(),
-            'p' => $privateKeyComponents['primes'][1]->toBytes(),
-            'q' => $privateKeyComponents['primes'][2]->toBytes(),
-            'u' => $privateKeyComponents['coefficients'][2]->toBytes(),
-        ]);
+        // Generate the key pair
+        $cryptKey = $cryptGen->setPassphrase($highEntropyToken)
+            ->setKeyParams(Crypt_GPG_SubKey::ALGORITHM_RSA, $key_length,1)
+            ->setSubKeyParams(Crypt_GPG_SubKey::ALGORITHM_RSA, $key_length,1)
+            ->generateKey($userID);
 
-        // Assemble packets for the private key
-        $packets = [$secretKeyPacket];
+        // Initialize the Crypt_GPG instance
+        $crypt_gpg = new Crypt_GPG();
+        $crypt_gpg->clearPassphrases();
 
-        $wkey = new OpenPGP_Crypt_RSA($secretKeyPacket);
-        $fingerprint = $wkey->key()->fingerprint;
-        $key = $wkey->private_key();
-        $key = $key->withHash('sha256');
-        $keyid = substr($fingerprint, -16);
+        // Add the keys
+        $privateKey = $crypt_gpg->addEncryptKey($cryptKey);
+        $publicKey = $crypt_gpg->addDecryptKey($cryptKey);
 
-        // Add a user ID packet
-        $uid = new OpenPGP_UserIDPacket($userID);
-        $packets[] = $uid;
+        // Grab key id of private key
+        $keyId = $crypt_gpg->getFingerprint($userID);
+        $crypt_gpg->addPassphrase($keyId, $highEntropyToken);
 
-        // Add a signature packet to certify the binding between the user ID and the key
-        $sig = new OpenPGP_SignaturePacket(new OpenPGP_Message([$secretKeyPacket, $uid]), 'RSA', 'SHA256');
-        $sig->signature_type = 0x13;
-        $sig->hashed_subpackets[] = new OpenPGP_SignaturePacket_KeyFlagsPacket([0x01 | 0x02 | 0x04]); // Certify + sign + encrypt bits
-        $sig->hashed_subpackets[] = new OpenPGP_SignaturePacket_IssuerPacket($keyid);
-        $m = $wkey->sign_key_userid([$secretKeyPacket, $uid, $sig]);
-
-        // Append the signature to the private key packets
-        $packets[] = $m->packets[2];
-
-        // Assemble packets for the public key
-        $publicPackets = [new OpenPGP_PublicKeyPacket($secretKeyPacket)];
-        $publicPackets[] = $uid;
-        $publicPackets[] = $sig;
-
-        // Encrypt the private key with a passphrase
-        try {
-            $encryptedSecretKeyPacket = OpenPGP_Crypt_Symmetric::encryptSecretKey($highEntropyToken, $secretKeyPacket);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Unfortunately we were unable to encrypt your private key at this time. Please try again.'], 403);
-        }
-
-        // Assemble the private key message
-        $privateMessage = new OpenPGP_Message($packets);
-        $privateMessage[0] = $encryptedSecretKeyPacket;
-
-        // Enarmor the private key message
-        $privateEnarmorKey = OpenPGP::enarmor($privateMessage->to_bytes(), 'PGP PRIVATE KEY BLOCK');
-
-        // Assemble the public key message
-        $publicMessage = new OpenPGP_Message($publicPackets);
-
-        // Enarmor the public key message
-        $publicEnarmorKey = OpenPGP::enarmor($publicMessage->to_bytes(), 'PGP PUBLIC KEY BLOCK');
+        // Export the public and private keys
+        $exportedPublicKey = $crypt_gpg->exportPublicKey($userID, true);
+        $exportedPrivateKey = $crypt_gpg->exportPrivateKey($userID, true);
 
         return [
-            'public_key' => $publicEnarmorKey,
-            'private_key' => $privateEnarmorKey,
+            'public_key' => $exportedPublicKey,
+            'private_key' => $exportedPrivateKey,
         ];
+
     }
 
 

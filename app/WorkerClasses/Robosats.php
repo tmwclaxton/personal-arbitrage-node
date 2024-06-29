@@ -15,6 +15,7 @@ use Exception;
 use gnupg;
 use Hackzilla\PasswordGenerator\Generator\ComputerPasswordGenerator;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Spatie\Crypto\Rsa\KeyPair;
 
 // use Spatie\Crypto\Rsa\KeyPair;
@@ -126,12 +127,29 @@ class Robosats
                 "Referer" => "http://192.168.0.18:12596/",
                 "Content-Type" => "application/json",
                 "Connection" => "keep-alive",
-                "Cookie" => "UMBREL_PROXY_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm94eVRva2VuIjp0cnVlLCJpYXQiOjE3MTk0MzI5MzQsImV4cCI6MTcyMDAzNzczNH0.31qKPyd1zRoySVRPVzisbTxO_FljIisBOHJFyJs6JYc",
                 "Priority" => "u=4",
                 "Pragma" => "no-cache",
                 "Cache-Control" => "no-cache",
-                "Authorization" => "Token ]/BrZA\"PFF_pctRBKY;b7%,>=xWs;[0M`[I+DQ.A" // <--- tokenSHA256 FROM ROBOT
-            ];
+                "Origin" => "http://192.168.0.18:12596",
+
+
+    ];
+
+    public function getHeaders($offer = null)
+    {
+        if ($offer) {
+            $tokenSha256 = $offer->robots()->first()->sha256;
+            $tokenSha256 = str_replace("\n", '', $tokenSha256);
+            $tokenSha256 = str_replace("\r", '', $tokenSha256);
+            $this->headers["Authorization"] = "Token " . $tokenSha256;
+            $this->headers["Priority"] = "u=1";
+            // remove new lines and \r
+        }
+        $adminDash = AdminDashboard::all()->first();
+        $this->headers["Cookie"] = "UMBREL_PROXY_TOKEN=" . $adminDash->umbrel_token;
+        // dd($this->headers);
+        return $this->headers;
+    }
 
 
 
@@ -153,18 +171,13 @@ class Robosats
 
         $generatedToken = $generator->generatePassword();
         $sha256 = hash('sha256', $generatedToken);
-        $doubleSha256 = hash('sha256', $sha256);
 
         $b91 = new \Katoga\Allyourbase\Base91();
         $b91Token = $b91->encode(pack('H*', $sha256));
 
-        $doubleShaB91Token = $b91->encode(pack('H*', $doubleSha256));
-
-
-
         $pgpService = new PgpService();
         $keyPair = $pgpService->generate_keypair($generatedToken);
-        // dd($keyPair);
+
         $privateKey = $keyPair['private_key'];
         $publicKey = $keyPair['public_key'];
 
@@ -182,7 +195,7 @@ class Robosats
 
         foreach ($this->providers as $provider) {
             $url = $this->host . '/mainnet/' . $provider . '/api/robot/';
-            $headers = $this->headers;
+            $headers = $this->getHeaders();
             $headers['Authorization'] = $authentication;
             $headers['Referer'] = $this->host . '/robot/';
             $headers['Priority'] = 'u=1';
@@ -210,7 +223,7 @@ class Robosats
             $robot->provider = $provider;
             $robot->offer_id = $offer->id;
             $robot->token = $generatedToken;
-            $robot->sha256 = $doubleShaB91Token;
+            $robot->sha256 = $b91Token;
             $robot->nickname = $json['nickname'];
             $robot->hash_id = $json['hash_id'];
             $robot->public_key = $json['public_key'];
@@ -230,7 +243,7 @@ class Robosats
     }
 
 
-    public function request($endpoint) {
+    public function request($endpoint, $offer = null) {
         $providers = $this->providers;
         $urlStart = 'http://192.168.0.18:12596/mainnet/';
         $responses = [];
@@ -238,7 +251,7 @@ class Robosats
             $url = $urlStart . $provider . '/' . $endpoint;
 
             try {
-                $response = Http::withHeaders($this->headers)->timeout(30)->get($url);
+                $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->get($url);
             } catch (\Exception $e) {
                 continue;
             }
@@ -264,7 +277,7 @@ class Robosats
         $provider = array_rand($this->providers);
         $url = $this->host . '/mainnet/' . $this->providers[$provider] . '/api/limits/';
 
-        $response = Http::withHeaders($this->headers)->timeout(30)->get($url);
+        $response = Http::withHeaders($this->getHeaders())->timeout(30)->get($url);
 
         $prices = json_decode($response->body(), true);
 
@@ -422,45 +435,36 @@ class Robosats
     public function acceptOffer($robosatsId) {
         $offer = Offer::where('robosatsId', $robosatsId)->first();
 
-        // this is to make sure we can afford the offer
-        // ...
-        // $allFiats = $this->getCurrentPrices();
-        //
-        // $btcPrice = $allFiats->where('currency', $offer->currency)->first();
-        // $offer->btcPrice = $btcPrice->price;
-        // if (!$offer->has_range) {
-        //
-        //     $offer->costInSatsAmount = intval(str_replace(',', '', $offer->amount))/ $btcPrice->price * 100000000;
-        //     // round the cost in sats to 0 decimal places
-        //     $offer->costInSatsAmount = number_format($offer->costInSatsAmount, 0);
-        // } else {
-        //     // dd(intval($offer->min_amount) / $btcPrice->price);
-        //     $offer->costInSatsMinAmount = intval(str_replace(',', '', $offer->min_amount)) / $btcPrice->price * 100000000;
-        //     $offer->costInSatsMaxAmount = intval(str_replace(',', '', $offer->max_amount)) / $btcPrice->price * 100000000;
-        //     // round the cost in sats to 0 decimal places
-        //     $offer->costInSatsMinAmount = number_format($offer->costInSatsMinAmount, 0);
-        //     $offer->costInSatsMaxAmount = number_format($offer->costInSatsMaxAmount, 0);
-        // }
-        //
-        // $adminDashboard = new AdminDashboard();
-
+        // grab admin dashboard
+        $adminDashboard = AdminDashboard::all()->first();
+        // grab local balance
+        $localBalance = $adminDashboard->localBalance;
+        // grab the offer price amount or max amount
+        if ($offer->has_range) {
+            $amount = $offer->max_amount;
+        } else {
+            $amount = $offer->amount;
+        }
+        if ($localBalance < $amount + 40000) {
+            return 'Insufficient balance (ps need 40000 extra for fees for bond and potentially fees)';
+        }
 
         $offer->accepted = true;
         $offer->save();
         $transaction = new Transaction();
         $transaction->offer_id = $offer->id;
-        $transaction->save();
+        // $transaction->save();
 
         $url = $this->host . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $robosatsId;
         // post request
         if (!$offer->has_range) {
-            $response = Http::withHeaders($this->headers)->timeout(30)->post($url);
-            // dd($response);
+            $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'take', 'amount' => $offer->amount]);
         } else {
-            $response = Http::withHeaders($this->headers)->timeout(30)->post($url, ['action' => 'take', 'amount' => $offer->max_amount]);
+            $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'take', 'amount' => $offer->max_amount]);
         }
         if ($response == null || $response->failed()) {
             $transaction->delete();
+            return 'Failed to accept offer';
         }
 
         // convert response to json
@@ -478,14 +482,18 @@ class Robosats
     }
 
 
-    public function sendPublicKey($robotToken, $publicKey, $privateKey) {
-        // first use sha256 to hash the token
-        $tokenSHA256 = hash('sha256', $robotToken);
-        // ws://umbrel.local:12596/mainnet/temple/ws/chat/7088/?token_sha256_hex=77d249d8ad141757278b875d57a729a0221aec500da11bfaefa985abc89893fc
+    public function sendPublicKey($offer, $publicKey, $privateKey) { ;
 
-        $url = $this->wsHost . '/mainnet/temple/ws/chat/7088/?token_sha256_hex=' . $tokenSHA256;
+        $robot = $offer->robots()->first();
 
+        $b91 = new \Katoga\Allyourbase\Base91();
+        $decoded = $b91->decode($robot->sha256);
+        $hex = bin2hex($decoded);
+        $url = $this->wsHost . '/mainnet/' . $offer->provider . '/ws/chat/7088/?token_sha256_hex=' . $hex;
 
+        // {"type":"message","message":"-----BEGIN PGP PUBLIC KEY BLOCK-----\n\nmQENBGaAcyUBCACgzbe9xq3RAyaOAp6gS1pEuqIvTK5MZjH9054lwqqxk0RtEP5n\ntdxLUIRZWwSv8K6bwP2rdh3arM4kXpb886JPSXvj5f75xq5zmy6G85OpVHhhhtxq\nT0nl8+vVI4qIPoPynAjAqbtKmLlw1bj57Oato7bj95i1thGS9FB1DWCI+6Yrneat\nU0W0PY0/gwcwYjjjIhosJmqPLhbDqNmoUmU+rq5sRbcxGpVXqB6InX9T4ic0BtQY\nDg7+/BRzaqW5Tr0TcU3NFeEVfL4A7WgdkAEF9lWhdyFGjEf2B2MURwtWxm85xc3J\n9MOLA7FLmE25rxE6VmeDuRDQ2tnFSrtNALDJABEBAAG0TVJvYm9TYXRzIElEOiAx\nMTYyZDdlY2I3NTBkZmFlMDExY2ZhMTI1ZmVjYmU3NmY2NGZiOTA0MTViM2UxODE1\nZDQ1YmM0YTkwN2RiNDZmiQErBBMBCAAf/wAAAAUCZoBzJf8AAAACGwf/AAAACRBe\nBW9sDssYgQAAW4cH/1uHaTY68+YDYH69ajzzyiDAak+SDLAisNXgx8/Cd1jBKYfG\n0Mwlv7C4KN+etmCP2S7jnR9IOsbbGWvhKk45fQyAvozvp7LEabT+Y8ieMUUA1aj0\nK1Ny2vciNr3Eo2qqYZp26bZx6dOO46v41B9HFQzOoc/NLCTooTS4fom4ihvfw8nE\n0CdhIo6eeiX07ATEMEd53wclQ/xZeh5jkWTdc9wBbaATYIToQqoLi/IEzwUnmnTJ\noZElItWKJD1QaDuXYIfNX0xs7FaNzi0rZbd9hg7FHRLIJYFgZUWyG9dzPA2dnxzx\niTjtPH65m1LlyHWTfu1wHt3DS6e351YRtHM5Q8Q=\n=mrc6\n-----END PGP PUBLIC KEY BLOCK-----\n","nick":"UnfilledGrenade349"}
+
+        // {"type":"message","message":"-----SERVE HISTORY-----","nick":"UnfilledGrenade349"}
 
 
 
@@ -504,10 +512,10 @@ class Robosats
         // {"type":"message","message":"-----BEGIN PGP MESSAGE-----\\\\wV4DR+PDKn7dATISAQdAixJBHOIE2lkuGXRAxhbySYNZpHY0EPU6cSnL7xTU\\1XcwSNJiN8IflBUJyqPOELxPQKfWJQE8P6Hl6lih85jUSFcJIh7OlnkUxwTv\\SixLTlNcwV4DK+P+Ln2+h9YSAQdAvFyc9mrvj5HvIh7dEgzLbpQbJ1AgBFj/\\uP9nzCRlW0QwRh3QSBq7YmFYcddq9h4ApvbjNni3me5hxpQ+ygtT/k/dgvi4\\vcape9B6eo5axdd+0sAcAV8w5AiCTCz0/guhCYebwSfU9KsmjTVDWyH9qsv8\\VoaihkfHsPqnfGp1Fypy0mpY0/SBo3ViBllriX4xjI2fdm6CYmnIjAZORjO2\\BjFeqsmFALPc7pe4trDEqHs4gB/+aInmQVO156mAqpuf+gM96mNw+Mydwfl8\\boa4Rz0TriiNHTya9IqeXTdB4FC6O7mnNi99+xTKAjRWEc0V5MHUNq4GfuAL\\/FOsYKt+itArWUwEq3qbqEZVncW5m3CztcF+Box+tQNVDUw4EUaqQmqdf6+r\\Iz+Uc+6NeDdWnw==\\=laPu\\-----END PGP MESSAGE-----\\","nick":"CurativeConic344"}
     }
 
-    public function confirmReceipt($robosatsId, Transaction $transaction) {
-        $url = $this->host . '/mainnet/' . $transaction->offer->provider . '/api/order/?order_id=' . $robosatsId;
+    public function confirmReceipt(Offer $offer, Transaction $transaction) {
+        $url = $this->host . '/mainnet/' . $transaction->offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
         // post request
-        $response = Http::withHeaders($this->headers)->timeout(30)->post($url, ['action' => 'confirm']);
+        $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'confirm']);
 
         $transaction->status = "Confirmed";
         $transaction->save();
@@ -519,19 +527,27 @@ class Robosats
     }
 
     // update status of transaction
-    public function updateTransactionStatus($robosatsId, $transactionId) {
-        $transaction = Transaction::find($transactionId);
-        $url = $this->host . '/mainnet/' . $transaction->offer->provider . '/api/order/?order_id=' . $robosatsId;
+    public function updateTransactionStatus($offer) {
+        $transaction = $offer->transaction()->first();
+        $url = $this->host . '/mainnet/' . $transaction->offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
 
-        $response = Http::withHeaders($this->headers)->timeout(30)->get($url);
+        $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->get($url);
         $response = json_decode($response->body(), true);
 
-        $transaction->status = $response['status_message'];
-        if ($response['status_message'] == 'Waiting for trade collateral and buyer invoice') {
+        if (isset($response['escrow_invoice'])) {
             $transaction->escrow_invoice = $response['escrow_invoice'];
         }
-        if ($response['status_message'] == 'Waiting for taker bond') {
+        if (isset($response['bond_invoice'])) {
             $transaction->bond_invoice = $response['bond_invoice'];
+        }
+        if (isset($response['status_message'])) {
+
+            $transaction->status = $response['status_message'];
+        } else {
+            // log response
+            Log::info('Unknown response from robosats: ' . json_encode($response));
+
+            $transaction->status = 'Unknown';
         }
         $transaction->save();
 

@@ -66,15 +66,25 @@
                 </primary-button>
             </div>
 
-            <div class="border border-gray-200 my-4"></div>
+            <div v-if="offer.transaction" class="border border-gray-200 my-4"></div>
 
-            <div class="" v-if="offer.transaction">
+            <div v-if="offer.transaction">
                 <!--<p class="mt-2 text-gray-500 font-bold">Transaction ID: {{-->
                 <!--    offer.transaction.id-->
                 <!--}}</p>-->
                 <p class="mt-2 text-gray-500 font-bold">Transaction Status: {{
-                    offer.transaction.status
-                }}</p>
+                        offer.transaction.status
+                    }}</p>
+            </div>
+
+            <div v-if="offer.robots" class="border border-gray-200 my-4"></div>
+
+            <div v-if="offer.robots && offer.robots.length > 0">
+                <p class="mt-2 text-gray-500 "><span class="font-bold">Nickname</span>: <br>{{ offer.robots[0].nickname }}</p>
+                <p class="mt-2 text-gray-500 "><span class="font-bold">Token</span>: <br>{{ offer.robots[0].token }}</p>
+                <div v-for="robot in offer.robots" :key="robot.id">
+                    <p class="mt-2 text-gray-500">Provider: {{ robot.provider }}</p>
+                </div>
             </div>
 
 

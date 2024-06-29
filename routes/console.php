@@ -48,9 +48,8 @@ Schedule::call(function () {
     $transactions = Transaction::whereNot('status', 'Sucessful trade')->get();
     foreach ($transactions as $transaction) {
         $offer = $transaction->offer;
-        $robosatsId = $offer->robosatsId;
         $robosats = new Robosats();
-        $response = $robosats->updateTransactionStatus($robosatsId, $transaction->id);
+        $response = $robosats->updateTransactionStatus($offer);
     }
 })->everyMinute();
 
