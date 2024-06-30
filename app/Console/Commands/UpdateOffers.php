@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\AdminDashboard;
 use App\Models\BtcFiat;
 use App\Models\Offer;
 use App\WorkerClasses\Robosats;
@@ -39,12 +40,17 @@ class UpdateOffers extends Command
         $robosats = new Robosats();
         $response = $robosats->getBookOffers();
 
-        $negativeBuyOffers = $robosats->getNegativePremiumBuyOffers($response['buyOffers'], '0');
-        $positiveSellOffers = $robosats->getPositivePremiumSellOffers($response['sellOffers'], '2');
+        $adminDashboard = AdminDashboard::all()->first();
+        if (!$adminDashboard) {
+            $adminDashboard = new AdminDashboard();
+        }
+
+        $negativeBuyOffers = $robosats->getNegativePremiumBuyOffers($response['buyOffers'],  $adminDashboard->buy_premium);
+        $positiveSellOffers = $robosats->getPositivePremiumSellOffers($response['sellOffers'],  $adminDashboard->sell_premium);
 
         // combine the offers
-        $allOffers = array_merge($negativeBuyOffers, $positiveSellOffers);
-
+        // $allOffers = array_merge($negativeBuyOffers, $positiveSellOffers);
+        $allOffers = $positiveSellOffers;
         // grab all the offers from the database and check if they aren't in allOffers and delete them
         $dbOffers = Offer::all();
         foreach ($dbOffers as $dbOffer) {
@@ -60,7 +66,8 @@ class UpdateOffers extends Command
                     break;
                 }
             }
-            if (!$found && !$dbOffer->accepted) {
+            // not found, not accept, last updated is more than 1 hour ago || past the expiration date and not accepted
+            if (!$found && !$dbOffer->accepted && $dbOffer->updated_at->diffInHours(now()) > 1 || $dbOffer->expires_at < now() && !$dbOffer->accepted) {
                 $dbOffer->delete();
             }
         }

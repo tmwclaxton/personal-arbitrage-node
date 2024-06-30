@@ -131,13 +131,13 @@ Route::post('/confirm-payment', function () {
 Route::get('/testing', function () {
 
         // update all current transactions
-    // $transactions = Transaction::all();
-    // foreach ($transactions as $transaction) {
-    //     $offer = $transaction->offer;
-    //     $robosats = new Robosats();
-    //     $response = $robosats->updateTransactionStatus($offer);
-    // }
-    // return 'done';
+    $transactions = Transaction::all();
+    foreach ($transactions as $transaction) {
+        $offer = $transaction->offer;
+        $robosats = new Robosats();
+        $response = $robosats->updateTransactionStatus($offer);
+    }
+    return 'done';
 
     $pgpService = new PgpService();
     $keypair = $pgpService->generate_keypair('w7*nQ+3W[52K-]Sv{t=SsY4x({-,KneA}+Rv');

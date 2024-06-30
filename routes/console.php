@@ -20,6 +20,9 @@ Schedule::command('refresh:robosat-offers')
 Schedule::call(function () {
     $robosats = new Robosats();
     $prices = $robosats->getCurrentPrices();
+    if (!$prices) {
+        return;
+    }
     foreach ($prices as $price) {
         $btcFiat = new \App\Models\BtcFiat();
         // if the currency is already in the database, update it
