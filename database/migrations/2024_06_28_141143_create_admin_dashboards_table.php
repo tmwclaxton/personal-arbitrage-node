@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->integer('localBalance')->default(0);
             $table->integer('remoteBalance')->default(0);
+            $table->boolean('panicButton')->default(false);
+            $table->boolean('autoTopup')->default(false);
             $table->boolean('autoAccept')->default(false);
             $table->boolean('autoBond')->default(false);
             $table->boolean('autoEscrow')->default(false);
@@ -28,6 +30,12 @@ return new class extends Migration
             $table->json('allowed_payment_methods')->nullable();
             $table->json('allowed_providers')->nullable();
             $table->string('umbrel_token')->nullable()->default('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm94eVRva2VuIjp0cnVlLCJpYXQiOjE3MTk0MzI5MzQsImV4cCI6MTcyMDAzNzczNH0.31qKPyd1zRoySVRPVzisbTxO_FljIisBOHJFyJs6JYc');
+            $table->string('revolut_handle')->nullable();
+            $table->string('paypal_handle')->nullable();
+            $table->string('cashapp_handle')->nullable();
+            $table->string('strike_handle')->nullable();
+            $table->string('wise_handle')->nullable();
+            $table->string('instant_sepa_handle')->nullable();
             $table->timestamps();
         });
     }

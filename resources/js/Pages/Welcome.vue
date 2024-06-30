@@ -2,10 +2,10 @@
 import {Head, Link, router} from '@inertiajs/vue3';
 import Offer from "@/Components/Offer.vue";
 import ToggleButton from "@/Components/ToggleButton.vue";
-import {ref} from "vue";
+import {onMounted, ref, watch} from "vue";
 import TextInput from "@/Components/TextInput.vue";
 
-defineProps({
+const props = defineProps({
     offers: Array,
     btcPrices: Object,
     adminDashboard: Object,
@@ -17,6 +17,24 @@ const autoTopup = ref(false);
 setInterval(() => {
     router.reload();
 }, 10000);
+
+let tempAdminDashboard = JSON.parse(JSON.stringify(props.adminDashboard));
+onMounted(() => {
+    tempAdminDashboard = JSON.parse(JSON.stringify(props.adminDashboard));
+
+    // detect when any attributes of tempAdminDashboard change and post route('updateAdminDashboard') to save changes just send the whole object
+    watch(() => tempAdminDashboard, (newValue, oldValue) => {
+        if (newValue !== oldValue) {
+            axios.post(route('updateAdminDashboard'), {
+                adminDashboard: tempAdminDashboard
+            }).then(response => {
+                console.log(response.data);
+            }).catch(error => {
+                console.log(error);
+            });
+        }
+    });
+});
 
 </script>
 
@@ -38,36 +56,38 @@ setInterval(() => {
             </div>
         </div>
 
-        <div v-if="adminDashboard" class="flex flex-row mx-auto gap-x-5 my-5 mt-10 item s-center justify-center">
+        <div v-if="tempAdminDashboard" class="flex flex-row mx-auto gap-x-5 my-5 mt-10 item s-center justify-center">
             <div class="text-left border-r border-black dark:border-white/70 pr-5">
                 <p class=""><span class="font-bold text-xl mb-2">Wallet:</span></p>
 
-                <p class=""><span class="font-bold">Lighting Wallet Balance:</span> {{ adminDashboard.localBalance }} </p>
-                <p class=""><span class="font-bold">Remote Balance:</span> {{ adminDashboard.remoteBalance }} </p>
+                <p class=""><span class="font-bold">Lighting Wallet Balance:</span> {{ tempAdminDashboard.localBalance }} </p>
+                <p class=""><span class="font-bold">Remote Balance:</span> {{ tempAdminDashboard.remoteBalance }} </p>
                 <p class=""><span class="font-bold">Auto Topup:</span>     <ToggleButton v-model="autoTopup" size="sm" activeColor="bg-green-500" inactiveColor="bg-red-500" /></p>
             </div>
             <div class="text-left border-r border-black dark:border-white/70 pr-5">
                 <p class=""><span class="font-bold text-xl mb-2">Automation:</span></p>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Auto Accept</span><ToggleButton v-model="autoTopup" size="sm" activeColor="bg-green-500" inactiveColor="bg-red-500" /></div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Auto Bond</span><ToggleButton v-model="autoTopup" size="sm" activeColor="bg-green-500" inactiveColor="bg-red-500" /></div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Auto Escrow</span><ToggleButton v-model="autoTopup" size="sm" activeColor="bg-green-500" inactiveColor="bg-red-500" /></div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Auto Chat</span><ToggleButton v-model="autoTopup" size="sm" activeColor="bg-green-500" inactiveColor="bg-red-500" /></div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Auto Confirm</span><ToggleButton v-model="autoTopup" size="sm" activeColor="bg-green-500" inactiveColor="bg-red-500" /></div>
+                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Auto Accept</span><ToggleButton v-model="tempAdminDashboard.autoAccept" size="sm" activeColor="bg-green-500" inactiveColor="bg-red-500" /></div>
+                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Auto Bond</span><ToggleButton v-model="tempAdminDashboard.autoBond" size="sm" activeColor="bg-green-500" inactiveColor="bg-red-500" /></div>
+                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Auto Escrow</span><ToggleButton v-model="tempAdminDashboard.autoEscrow" size="sm" activeColor="bg-green-500" inactiveColor="bg-red-500" /></div>
+                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Auto Chat</span><ToggleButton v-model="tempAdminDashboard.autoMessage" size="sm" activeColor="bg-green-500" inactiveColor="bg-red-500" /></div>
+                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Auto Confirm</span><ToggleButton v-model="tempAdminDashboard.autoConfirm" size="sm" activeColor="bg-green-500" inactiveColor="bg-red-500" /></div>
             </div>
             <div class="text-left pl-5 flex flex-col gap-y-1 border-r border-black dark:border-white/70 pr-5">
                 <div class="flex flex-row justify-between items-center"><span class="font-bold text-xl mb-2">Offer Selection:</span></div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Sell Premium: </span><TextInput :model-value="adminDashboard.sell_premium" /></div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Buy Premium: </span><TextInput :model-value="adminDashboard.buy_premium" /></div>
+                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Sell Premium: </span><TextInput v-model="tempAdminDashboard.sell_premium" /></div>
+                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Buy Premium: </span><TextInput v-model="tempAdminDashboard.buy_premium" /></div>
             </div>
             <div class="text-left pl-5 flex flex-col gap-y-1 border-r border-black dark:border-white/70 pr-5">
                 <div class="flex flex-row justify-between items-center"><span class="font-bold text-xl mb-2">More Config:</span></div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Umbrel Token: </span><TextInput model-value="asdfasdfl" /></div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Revolut Tag: </span><TextInput model-value="@tobyclaxton" /></div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Paypal Tag: </span><TextInput model-value="@tobyclaxton" /></div>
+                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Umbrel Token: </span><TextInput v-model="tempAdminDashboard.umbrel_token" /></div>
+                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Revolut Tag: </span><TextInput v-model="tempAdminDashboard.umbrel_token" /></div>
+                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Paypal Tag: </span><TextInput v-model="tempAdminDashboard.umbrel_token" /></div>
 
             </div>
             <div class="text-left pl-5 flex flex-col gap-y-1 border-r border-black dark:border-white/70 pr-5">
                 <div class="flex flex-row justify-between items-center"><span class="font-bold text-xl mb-2">Statistics:</span></div>
+                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Profit Satoshis: </span><span v-text="tempAdminDashboard.satoshi_profit"/> </div>
+                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Fees Satoshis: </span><span v-text="tempAdminDashboard.satoshi_fees"/> </div>
             </div>
 
 

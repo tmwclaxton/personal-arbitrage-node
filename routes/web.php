@@ -13,6 +13,22 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+
+Route::post('/updateAdminDashboard', function () {
+    $adminDashboard = AdminDashboard::all()->first();
+
+    // iterate through the request and update the admin dashboard
+    foreach (request()->all() as $key => $value) {
+        // check if the key is in the admin dashboard
+        if (isset($adminDashboard->$key)) {
+            $adminDashboard->$key = $value;
+        }
+    }
+
+    $adminDashboard->save();
+    return redirect()->route('welcome');
+})->name('updateAdminDashboard');
+
 Route::get('/', function () {
 
     $btcFiats = BtcFiat::where('currency', 'USD')->orWhere('currency', 'GBP')->orWhere('currency', 'EUR')->get();
@@ -27,7 +43,16 @@ Route::get('/', function () {
         $adminDashboard->save();
     }
 
-    $offers = Offer::all();
+    $sellPremium = $adminDashboard->sell_premium;
+    $buyPremium = $adminDashboard->buy_premium;
+
+    $offers = Offer::where([['premium', '>=', $sellPremium], ['type', 'sell']])->orWhere([['premium', '>=', $buyPremium], ['type', 'buy']])
+        ->orderBy('accepted', 'desc')
+        ->orderBy('max_satoshi_amount_profit', 'desc')
+        ->orderBy('satoshi_amount_profit', 'desc')
+        ->orderBy('premium', 'desc')
+
+        ->get();
     // change the expires_at to a human readable format
     foreach ($offers as $offer) {
         $offer->expires_at = Carbon::parse($offer->expires_at)->diffForHumans();
