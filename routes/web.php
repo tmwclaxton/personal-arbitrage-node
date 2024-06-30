@@ -163,14 +163,30 @@ Route::post('/claim-rewards', function () {
 
 
 Route::get('/testing', function () {
+    // return current time
+    return now();
+    // $offer = Offer::find(22);
+    // $robosats = new Robosats();
+    // $robosats->webSocketCommunicate($offer);
+    //
+    // return '';
+
     $pgpService = new PgpService();
-    $keypair = $pgpService->generate_keypair('w7*nQ+3W[52K-]Sv{t=SsY4x({-,KneA}+Rv');
+    $keypair = $pgpService->generate_keypair('-xfdC?6QdY7NA+zwqw<q^e4S!MFKexQR*HXN');
     // remove new lines
     $private = str_replace("\n", '', $keypair['private_key']);
     $public = str_replace("\n", '', $keypair['public_key']);
+
+    $sha256 = hash('sha256', '-xfdC?6QdY7NA+zwqw<q^e4S!MFKexQR*HXN');
+
+    $b91 = new \Katoga\Allyourbase\Base91();
+    $b91Token = $b91->encode(pack('H*', $sha256));
+    $decoded = $b91->decode($b91Token);
     return([
         'private' => $private,
-        'public' => $public
+        'public' => $public,
+        'b91Token' => $b91Token,
+        'hex' => bin2hex($decoded)
     ]);
     $pgpService = new PgpService();
     $robot = Robot::find(1);

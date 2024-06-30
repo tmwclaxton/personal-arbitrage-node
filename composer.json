@@ -17,6 +17,7 @@
         "lcherone/base91": "^1.0",
         "pear/crypt_gpg": "^1.6",
         "phpseclib/phpseclib": "^3.0",
+        "phrity/websocket": "^3.0",
         "singpolyma/openpgp-php": "^0.6.0",
         "spatie/crypto": "^2.1",
         "tightenco/ziggy": "^2.0"

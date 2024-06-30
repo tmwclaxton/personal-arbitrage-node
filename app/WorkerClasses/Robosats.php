@@ -7,20 +7,12 @@ use App\Models\Offer;
 use App\Models\Robot;
 use App\Models\Transaction;
 use App\Services\PgpService;
-use Base91\Base91;
-use Crypt_GPG;
-use Crypt_GPG_Key;
-use Crypt_GPG_KeyGenerator;
-use Exception;
-use gnupg;
 use Hackzilla\PasswordGenerator\Generator\ComputerPasswordGenerator;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Spatie\Crypto\Rsa\KeyPair;
-
-// use Spatie\Crypto\Rsa\KeyPair;
-// use Spatie\Crypto\Rsa\PrivateKey;
-// use Spatie\Crypto\Rsa\PublicKey;
+use WebSocket\Client;
+use WebSocket\Middleware\CloseHandler;
+use WebSocket\Middleware\PingResponder;
 
 class Robosats
 {
@@ -478,14 +470,35 @@ class Robosats
     }
 
 
-    public function sendPublicKey($offer) { ;
+    public function webSocketCommunicate($offer) { ;
 
         $robot = $offer->robots()->first();
 
         $b91 = new \Katoga\Allyourbase\Base91();
         $decoded = $b91->decode($robot->sha256);
         $hex = bin2hex($decoded);
-        $url = $this->wsHost . '/mainnet/' . $offer->provider . '/ws/chat/7088/?token_sha256_hex=' . $hex;
+        $url = $this->wsHost . '/mainnet/' . $offer->provider . '/ws/chat/' . $offer->robosatsId . '/?token_sha256_hex=' . $hex;
+
+        // create a new client
+        $client = new Client($url);
+        $client
+            // Add standard middlewares
+            ->addMiddleware(new CloseHandler())
+            ->addMiddleware(new PingResponder());
+
+
+        // send the first message being the pgp public key
+        // Send a message
+        $client->text(json_encode(['type' => 'message', 'message' => $robot->public_key, 'nick' => $robot->nickname]));
+        // Send an encrypted message "Hey there, my revolut is @vidgazeltd, please leave the note empty!  Cheers! "
+        $pgpService = new PgpService();
+        $encryptedMessage = $pgpService->encrypt($robot->private_key, 'Hey there, my revolut is @tobyclaxton, please leave the note empty!  Cheers! ');
+        $client->text(json_encode(['type' => 'message', 'message' => $robot->public_key, 'nick' => $robot->nickname]));
+
+        $client->close();
+
+        return 'done';
+
 
         // {"type":"message","message":"-----BEGIN PGP PUBLIC KEY BLOCK-----\n\nmQENBGaAcyUBCACgzbe9xq3RAyaOAp6gS1pEuqIvTK5MZjH9054lwqqxk0RtEP5n\ntdxLUIRZWwSv8K6bwP2rdh3arM4kXpb886JPSXvj5f75xq5zmy6G85OpVHhhhtxq\nT0nl8+vVI4qIPoPynAjAqbtKmLlw1bj57Oato7bj95i1thGS9FB1DWCI+6Yrneat\nU0W0PY0/gwcwYjjjIhosJmqPLhbDqNmoUmU+rq5sRbcxGpVXqB6InX9T4ic0BtQY\nDg7+/BRzaqW5Tr0TcU3NFeEVfL4A7WgdkAEF9lWhdyFGjEf2B2MURwtWxm85xc3J\n9MOLA7FLmE25rxE6VmeDuRDQ2tnFSrtNALDJABEBAAG0TVJvYm9TYXRzIElEOiAx\nMTYyZDdlY2I3NTBkZmFlMDExY2ZhMTI1ZmVjYmU3NmY2NGZiOTA0MTViM2UxODE1\nZDQ1YmM0YTkwN2RiNDZmiQErBBMBCAAf/wAAAAUCZoBzJf8AAAACGwf/AAAACRBe\nBW9sDssYgQAAW4cH/1uHaTY68+YDYH69ajzzyiDAak+SDLAisNXgx8/Cd1jBKYfG\n0Mwlv7C4KN+etmCP2S7jnR9IOsbbGWvhKk45fQyAvozvp7LEabT+Y8ieMUUA1aj0\nK1Ny2vciNr3Eo2qqYZp26bZx6dOO46v41B9HFQzOoc/NLCTooTS4fom4ihvfw8nE\n0CdhIo6eeiX07ATEMEd53wclQ/xZeh5jkWTdc9wBbaATYIToQqoLi/IEzwUnmnTJ\noZElItWKJD1QaDuXYIfNX0xs7FaNzi0rZbd9hg7FHRLIJYFgZUWyG9dzPA2dnxzx\niTjtPH65m1LlyHWTfu1wHt3DS6e351YRtHM5Q8Q=\n=mrc6\n-----END PGP PUBLIC KEY BLOCK-----\n","nick":"UnfilledGrenade349"}
 
@@ -505,7 +518,9 @@ class Robosats
         // Hey there, my revolut is @vidgazeltd, please leave the note empty!  Cheers!
 
 
-        // {"type":"message","message":"-----BEGIN PGP MESSAGE-----\\\\wV4DR+PDKn7dATISAQdAixJBHOIE2lkuGXRAxhbySYNZpHY0EPU6cSnL7xTU\\1XcwSNJiN8IflBUJyqPOELxPQKfWJQE8P6Hl6lih85jUSFcJIh7OlnkUxwTv\\SixLTlNcwV4DK+P+Ln2+h9YSAQdAvFyc9mrvj5HvIh7dEgzLbpQbJ1AgBFj/\\uP9nzCRlW0QwRh3QSBq7YmFYcddq9h4ApvbjNni3me5hxpQ+ygtT/k/dgvi4\\vcape9B6eo5axdd+0sAcAV8w5AiCTCz0/guhCYebwSfU9KsmjTVDWyH9qsv8\\VoaihkfHsPqnfGp1Fypy0mpY0/SBo3ViBllriX4xjI2fdm6CYmnIjAZORjO2\\BjFeqsmFALPc7pe4trDEqHs4gB/+aInmQVO156mAqpuf+gM96mNw+Mydwfl8\\boa4Rz0TriiNHTya9IqeXTdB4FC6O7mnNi99+xTKAjRWEc0V5MHUNq4GfuAL\\/FOsYKt+itArWUwEq3qbqEZVncW5m3CztcF+Box+tQNVDUw4EUaqQmqdf6+r\\Iz+Uc+6NeDdWnw==\\=laPu\\-----END PGP MESSAGE-----\\","nick":"CurativeConic344"}
+        // {"type":"message",
+        //"message":"-----BEGIN PGP MESSAGE-----\\\\wV4DR+PDKn7dATISAQdAixJBHOIE2lkuGXRAxhbySYNZpHY0EPU6cSnL7xTU\\1XcwSNJiN8IflBUJyqPOELxPQKfWJQE8P6Hl6lih85jUSFcJIh7OlnkUxwTv\\SixLTlNcwV4DK+P+Ln2+h9YSAQdAvFyc9mrvj5HvIh7dEgzLbpQbJ1AgBFj/\\uP9nzCRlW0QwRh3QSBq7YmFYcddq9h4ApvbjNni3me5hxpQ+ygtT/k/dgvi4\\vcape9B6eo5axdd+0sAcAV8w5AiCTCz0/guhCYebwSfU9KsmjTVDWyH9qsv8\\VoaihkfHsPqnfGp1Fypy0mpY0/SBo3ViBllriX4xjI2fdm6CYmnIjAZORjO2\\BjFeqsmFALPc7pe4trDEqHs4gB/+aInmQVO156mAqpuf+gM96mNw+Mydwfl8\\boa4Rz0TriiNHTya9IqeXTdB4FC6O7mnNi99+xTKAjRWEc0V5MHUNq4GfuAL\\/FOsYKt+itArWUwEq3qbqEZVncW5m3CztcF+Box+tQNVDUw4EUaqQmqdf6+r\\Iz+Uc+6NeDdWnw==\\=laPu\\-----END PGP MESSAGE-----\\",
+        //"nick":"CurativeConic344"}
     }
 
     public function confirmReceipt(Offer $offer, Transaction $transaction) {
@@ -608,25 +623,19 @@ class Robosats
         $lightningNode = new LightningNode();
         $invoice = $lightningNode->createInvoice($earnedRewards, 'Claiming compensation for robot ' . $robot->id);
         // sign invoice
-        $signedInvoice = $this->signInvoice($invoice, $robot->private_key);
+        $pgpService = new PgpService();
+        $signedInvoice = $pgpService->sign($invoice, $robot->private_key);
 
         // post request
-        $response = Http::withHeaders($this->getHeaders($robot->offer))->timeout(30)->post($url, ['invoice' => $invoice]);
+        $response = Http::withHeaders($this->getHeaders($robot->offer))->timeout(30)->post($url, ['invoice' => $signedInvoice]);
         $response = json_decode($response->body(), true);
 
         //     // http://192.168.0.18:12596/mainnet/$provider/api/reward/
         //     // invoice: PGP SIGNED MESSAGE
+        // $signed = $crypt_gpg->sign('hello world', Crypt_GPG::SIGN_MODE_CLEAR);
         //
-        //     // remove all /n from private key
-        //     $privateKey = str_replace("\\n", '', $privateKey);
-        //
-        //     // at the end of "-----BEGIN PGP PRIVATE KEY BLOCK-----" add the \n back
-        //     $privateKey = str_replace("-----BEGIN PGP PRIVATE KEY BLOCK-----", "-----BEGIN PGP PRIVATE KEY BLOCK-----\n", $privateKey);
-        //
-        //     $key->addSubKey($privateKey);
-        //     // $gpg->addSignKey($privateKey);
-        //     $signedInvoice = $gpg->sign($invoice);
-        //     return $signedInvoice;
+
+
 
 
         return $response;

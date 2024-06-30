@@ -60,7 +60,7 @@ class PgpService extends Controller
 
         // // sign some data
         // $signKeyId = $crypt_gpg->getFingerprint($userID);
-        // $signed = $crypt_gpg->encryptAndSign('hello world', Crypt_GPG::SIGN_MODE_CLEAR);
+        // $signed = $crypt_gpg->sign('hello world', Crypt_GPG::SIGN_MODE_CLEAR);
         // dd($signed);
 
         // Export the public and private keys
