@@ -409,11 +409,7 @@ class Robosats
     //     return $signedInvoice;
     //
     //     $url = 'http://192.168.0.18:12596/mainnet/' . $provider . '/api/reward/';
-    //
-    //
-    //
-    //
-    // }
+
 
 
 
@@ -580,6 +576,58 @@ class Robosats
             $transaction->status = 'Unknown';
         }
         $transaction->save();
+
+        return $response;
+    }
+
+    public function updateRobot(Robot $robot) {
+        $offer = $robot->offer;
+        $url = $this->host . '/mainnet/' . $robot->provider . '/api/robot/';
+        // post request
+        $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->get($url);
+        $response = json_decode($response->body(), true);
+
+        if (!$response['found']) {
+            $robot->save();
+            return $response;
+        }
+        $robot->earned_rewards = $response['earned_rewards'];
+        $robot->last_login = $response['last_login'];
+        // convert to date
+        $robot->last_login = date('Y-m-d H:i:s', strtotime($robot->last_login));
+        // $robot->last_order_id = $response['last_order_id'];
+        $robot->save();
+        return $response;
+
+    }
+
+    public function claimCompensation($robot) {
+        $url = $this->host . '/mainnet/' . $robot->provider . '/api/reward/';
+
+        $earnedRewards = $robot->earned_rewards;
+        $lightningNode = new LightningNode();
+        $invoice = $lightningNode->createInvoice($earnedRewards, 'Claiming compensation for robot ' . $robot->id);
+        // sign invoice
+        $signedInvoice = $this->signInvoice($invoice, $robot->private_key);
+
+        // post request
+        $response = Http::withHeaders($this->getHeaders($robot->offer))->timeout(30)->post($url, ['invoice' => $invoice]);
+        $response = json_decode($response->body(), true);
+
+        //     // http://192.168.0.18:12596/mainnet/$provider/api/reward/
+        //     // invoice: PGP SIGNED MESSAGE
+        //
+        //     // remove all /n from private key
+        //     $privateKey = str_replace("\\n", '', $privateKey);
+        //
+        //     // at the end of "-----BEGIN PGP PRIVATE KEY BLOCK-----" add the \n back
+        //     $privateKey = str_replace("-----BEGIN PGP PRIVATE KEY BLOCK-----", "-----BEGIN PGP PRIVATE KEY BLOCK-----\n", $privateKey);
+        //
+        //     $key->addSubKey($privateKey);
+        //     // $gpg->addSignKey($privateKey);
+        //     $signedInvoice = $gpg->sign($invoice);
+        //     return $signedInvoice;
+
 
         return $response;
     }

@@ -8,4 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class Robot extends Model
 {
     use HasFactory;
+
+    protected $guarded = ['id'];
+
+    public function offer()
+    {
+        return $this->belongsTo(Offer::class);
+    }
 }

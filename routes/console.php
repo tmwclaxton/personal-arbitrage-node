@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\AdminDashboard;
+use App\Models\Offer;
+use App\Models\Robot;
 use App\Models\Transaction;
 use App\WorkerClasses\LightningNode;
 use App\WorkerClasses\Robosats;
@@ -53,6 +55,17 @@ Schedule::call(function () {
         $offer = $transaction->offer;
         $robosats = new Robosats();
         $response = $robosats->updateTransactionStatus($offer);
+    }
+})->everyMinute();
+
+
+Schedule::call(function () {
+    // update all current transactions
+    $offers = Offer::where('accepted', true)->where('expires_at', '<', now())->get();
+    $robots = Robot::whereIn('offer_id', $offers->pluck('id'))->get();
+    foreach ($robots as $robot) {
+        $robosats = new Robosats();
+        $response = $robosats->updateRobot($robot);
     }
 })->everyMinute();
 

@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Models\AdminDashboard;
 use App\Models\BtcFiat;
 use App\Models\Offer;
+use App\Models\Robot;
 use App\Models\Transaction;
 use App\Services\PgpService;
 use App\WorkerClasses\LightningNode;
@@ -148,12 +149,34 @@ Route::post('/confirm-payment', function () {
     return $response;
 })->name('confirm-payment');
 
-// Route::post('/upload-robot'), function () {
-//
-// })->name('upload-robot');
+Route::post('/claim-rewards', function () {
+    $robosats = new Robosats();
+    $robosats->claimCompensation();
+    return response()->json(['message' => 'Rewards claimed']);
+})->name('claim-rewards');
 
 
 Route::get('/testing', function () {
+
+    $pgpService = new PgpService();
+    $robot = Robot::find(1);
+    $encrypt = $pgpService->encrypt($robot->private_key, 'hello');
+    $decrypt = $pgpService->decrypt($robot->public_key, $encrypt, $robot->token);
+
+
+    return [
+        'encrypt' => $encrypt,
+        'decrypt' => $decrypt
+    ];
+
+    // update all current transactions
+    $offers = Offer::where('accepted', true)->where('expires_at', '<', now())->get();
+    $robots = Robot::whereIn('offer_id', $offers->pluck('id'))->get();
+    foreach ($robots as $robot) {
+        $robosats = new Robosats();
+        $response = $robosats->updateRobot($robot);
+    }
+    return 'done';
 
         // update all current transactions
     $transactions = Transaction::all();
@@ -164,15 +187,15 @@ Route::get('/testing', function () {
     }
     return 'done';
 
-    $pgpService = new PgpService();
-    $keypair = $pgpService->generate_keypair('w7*nQ+3W[52K-]Sv{t=SsY4x({-,KneA}+Rv');
-    // remove new lines
-    $private = str_replace("\n", '', $keypair['private_key']);
-    $public = str_replace("\n", '', $keypair['public_key']);
-    return([
-        'private' => $private,
-        'public' => $public
-    ]);
+    // $pgpService = new PgpService();
+    // $keypair = $pgpService->generate_keypair('w7*nQ+3W[52K-]Sv{t=SsY4x({-,KneA}+Rv');
+    // // remove new lines
+    // $private = str_replace("\n", '', $keypair['private_key']);
+    // $public = str_replace("\n", '', $keypair['public_key']);
+    // return([
+    //     'private' => $private,
+    //     'public' => $public
+    // ]);
 
     // $sha256 = hash('sha256', $generatedToken);
     //

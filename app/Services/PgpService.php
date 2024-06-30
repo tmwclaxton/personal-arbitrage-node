@@ -37,8 +37,6 @@ class PgpService extends Controller
 
         // Initialize the key generator
         $cryptGen = new Crypt_GPG_KeyGenerator();
-        // $cryptGen->setAlgorithm(CRYPT_GPG_KEYGEN_ALGO_RSA); // Ensure we are using RSA
-        // $cryptGen->setKeyLength($key_length); // Set key length
 
         // Generate the key pair
         $cryptKey = $cryptGen->setPassphrase($highEntropyToken)
@@ -70,35 +68,44 @@ class PgpService extends Controller
     }
 
 
-    public function encrypt($public_key, $message)
+    public function encrypt($privateKey, $message)
     {
-        $recipientPublicKey = OpenPGP_Message::parse(OpenPGP::unarmor($public_key, 'PGP PUBLIC KEY BLOCK'));
-        $data = new OpenPGP_LiteralDataPacket($message, ['format' => 'u']);
-        $compressed = new OpenPGP_CompressedDataPacket($data);
-        $encrypted = OpenPGP_Crypt_Symmetric::encrypt($recipientPublicKey, new OpenPGP_Message([$compressed]));
+        // Initialize the Crypt_GPG instance
+        $crypt_gpg = new Crypt_GPG();
+        $crypt_gpg->clearPassphrases();
 
-        return OpenPGP::enarmor($encrypted->to_bytes(), 'PGP MESSAGE');
+        // import the private key
+        $privateKeyImport = $crypt_gpg->importKey($privateKey);
+        $fingerPrint = $privateKeyImport['fingerprint'];
+
+        // Add the keys
+        $private_key = $crypt_gpg->addEncryptKey($fingerPrint);
+
+        // Encrypt the message
+        $encrypted = $crypt_gpg->encrypt($message, true);
+
+        return $encrypted;
+
     }
 
-    public function decrypt($private_key, $encrypted_message, $passphrase)
+    public function decrypt($public_key, $encrypted_message, $passphrase)
     {
-        try {
-            $encryptedPrivateKey = OpenPGP_Message::parse(OpenPGP::unarmor($private_key, 'PGP PRIVATE KEY BLOCK'));
-            // Try each secret key packet
-            foreach ($encryptedPrivateKey as $p) {
-                if (! ($p instanceof OpenPGP_SecretKeyPacket)) {
-                    continue;
-                }
-                $keyd = OpenPGP_Crypt_Symmetric::decryptSecretKey($passphrase, $p);
-                $msg = OpenPGP_Message::parse(OpenPGP::unarmor($encrypted_message, 'PGP MESSAGE'));
-                $decryptor = new OpenPGP_Crypt_RSA($keyd);
-                $decrypted = $decryptor->decrypt($msg);
-                $data_packet = $decrypted->packets[0]->data->packets[0];
+        // Initialize the Crypt_GPG instance
+        $crypt_gpg = new Crypt_GPG();
+        $crypt_gpg->clearPassphrases();
 
-                return $data_packet->data;
-            }
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Unfortunately we were unable to decrypt your message at this time. Please verify you are using the correct password and try again.'], 403);
-        }
+        // import the public key
+        $publicKeyImport = $crypt_gpg->importKey($public_key);
+        $fingerPrint = $publicKeyImport['fingerprint'];
+
+        // Add the keys
+        $public_key = $crypt_gpg->addDecryptKey($fingerPrint, $passphrase);
+        // $crypt_gpg->addPassphrase($fingerPrint, $passphrase);
+
+        // Decrypt the message
+        $decrypted = $crypt_gpg->decrypt($encrypted_message);
+
+        return $decrypted;
+
     }
 }
