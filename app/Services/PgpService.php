@@ -38,10 +38,11 @@ class PgpService extends Controller
         // Initialize the key generator
         $cryptGen = new Crypt_GPG_KeyGenerator();
 
+
         // Generate the key pair
         $cryptKey = $cryptGen->setPassphrase($highEntropyToken)
             ->setKeyParams(Crypt_GPG_SubKey::ALGORITHM_RSA, $key_length,1)
-            ->setSubKeyParams(Crypt_GPG_SubKey::ALGORITHM_RSA, $key_length,1)
+            ->setSubKeyParams(Crypt_GPG_SubKey::ALGORITHM_RSA, $key_length,2)
             ->generateKey($userID);
 
         // Initialize the Crypt_GPG instance
@@ -51,18 +52,26 @@ class PgpService extends Controller
         // Add the keys
         $privateKey = $crypt_gpg->addEncryptKey($cryptKey);
         $publicKey = $crypt_gpg->addDecryptKey($cryptKey);
+        $signKey = $crypt_gpg->addSignKey($cryptKey, $highEntropyToken);
 
         // Grab key id of private key
         $keyId = $crypt_gpg->getFingerprint($userID);
         $crypt_gpg->addPassphrase($keyId, $highEntropyToken);
 
+        // // sign some data
+        // $signKeyId = $crypt_gpg->getFingerprint($userID);
+        // $signed = $crypt_gpg->encryptAndSign('hello world', Crypt_GPG::SIGN_MODE_CLEAR);
+        // dd($signed);
+
         // Export the public and private keys
         $exportedPublicKey = $crypt_gpg->exportPublicKey($userID, true);
         $exportedPrivateKey = $crypt_gpg->exportPrivateKey($userID, true);
+        // $exportedSignKey = $crypt_gpg->exportSignKey($userID, true);
 
         return [
             'public_key' => $exportedPublicKey,
             'private_key' => $exportedPrivateKey,
+
         ];
 
     }
@@ -106,6 +115,46 @@ class PgpService extends Controller
         $decrypted = $crypt_gpg->decrypt($encrypted_message);
 
         return $decrypted;
+
+    }
+
+    public function sign($privateKey, $message)
+    {
+        // Initialize the Crypt_GPG instance
+        $crypt_gpg = new Crypt_GPG();
+        $crypt_gpg->clearPassphrases();
+
+        // import the private key
+        $privateKeyImport = $crypt_gpg->importKey($privateKey);
+        $fingerPrint = $privateKeyImport['fingerprint'];
+
+        // Add the keys
+        $private_key = $crypt_gpg->addSignKey($fingerPrint);
+
+        // Sign the message
+        $signed = $crypt_gpg->sign($message, true);
+
+        return $signed;
+
+    }
+
+    public function verify($public_key, $signed_message)
+    {
+        // Initialize the Crypt_GPG instance
+        $crypt_gpg = new Crypt_GPG();
+        $crypt_gpg->clearPassphrases();
+
+        // import the public key
+        $publicKeyImport = $crypt_gpg->importKey($public_key);
+        $fingerPrint = $publicKeyImport['fingerprint'];
+
+        // Add the keys
+        $public_key = $crypt_gpg->addDecryptKey($fingerPrint);
+
+        // Verify the message
+        $verified = $crypt_gpg->verify($signed_message);
+
+        return $verified;
 
     }
 }

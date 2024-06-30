@@ -151,22 +151,40 @@ Route::post('/confirm-payment', function () {
 
 Route::post('/claim-rewards', function () {
     $robosats = new Robosats();
-    $robosats->claimCompensation();
-    return response()->json(['message' => 'Rewards claimed']);
+    $robots = Robot::where('earned_rewards', '>', 0)->get();
+    foreach ($robots as $robot) {
+        $response = $robosats->claimCompensation($robot);
+    }
+    return response()->json(
+        ['message' => 'Rewards claimed for' . count($robots) . ' robots',
+        'robots' => $robots]
+    );
 })->name('claim-rewards');
 
 
 Route::get('/testing', function () {
-
+    $pgpService = new PgpService();
+    $keypair = $pgpService->generate_keypair('w7*nQ+3W[52K-]Sv{t=SsY4x({-,KneA}+Rv');
+    // remove new lines
+    $private = str_replace("\n", '', $keypair['private_key']);
+    $public = str_replace("\n", '', $keypair['public_key']);
+    return([
+        'private' => $private,
+        'public' => $public
+    ]);
     $pgpService = new PgpService();
     $robot = Robot::find(1);
     $encrypt = $pgpService->encrypt($robot->private_key, 'hello');
     $decrypt = $pgpService->decrypt($robot->public_key, $encrypt, $robot->token);
+    $sign = $pgpService->sign($robot->private_key, 'hello');
+    $verify = $pgpService->verify($robot->public_key, $sign, 'hello');
 
 
     return [
         'encrypt' => $encrypt,
-        'decrypt' => $decrypt
+        'decrypt' => $decrypt,
+        'sign' => $sign,
+        'verify' => $verify
     ];
 
     // update all current transactions
@@ -187,27 +205,8 @@ Route::get('/testing', function () {
     }
     return 'done';
 
-    // $pgpService = new PgpService();
-    // $keypair = $pgpService->generate_keypair('w7*nQ+3W[52K-]Sv{t=SsY4x({-,KneA}+Rv');
-    // // remove new lines
-    // $private = str_replace("\n", '', $keypair['private_key']);
-    // $public = str_replace("\n", '', $keypair['public_key']);
-    // return([
-    //     'private' => $private,
-    //     'public' => $public
-    // ]);
 
-    // $sha256 = hash('sha256', $generatedToken);
-    //
-    // $b91 = new \Katoga\Allyourbase\Base91();
-    // $b91Token = $b91->encode(pack('H*', $sha256));
-    $sha256 = "gGC&,>6C91za2`H~91=?ymaR}2n/mo=eOqb4]mqF";
-    // decode the base91
-    $b91 = new \Katoga\Allyourbase\Base91();
-    $decoded = $b91->decode($sha256);
-    // convert to hex
-    $hex = bin2hex($decoded);
-    dd($hex);
+
 
     //
     // $robosats = new Robosats();
