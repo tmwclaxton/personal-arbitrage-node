@@ -6,21 +6,6 @@ use App\Http\Controllers\Controller;
 use Crypt_GPG;
 use Crypt_GPG_KeyGenerator;
 use Crypt_GPG_SubKey;
-use Illuminate\Support\Facades\Crypt;
-use OpenPGP;
-use OpenPGP_CompressedDataPacket;
-use OpenPGP_Crypt_RSA;
-use OpenPGP_Crypt_Symmetric;
-use OpenPGP_LiteralDataPacket;
-use OpenPGP_Message;
-use OpenPGP_PublicKeyPacket;
-use OpenPGP_SecretKeyPacket;
-use OpenPGP_SignaturePacket;
-use OpenPGP_SignaturePacket_IssuerPacket;
-use OpenPGP_SignaturePacket_KeyFlagsPacket;
-use OpenPGP_UserIDPacket;
-use phpseclib3\Crypt\RSA;
-use phpseclib3\Crypt\RSA\Formats\Keys\PKCS1;
 
 class PgpService extends Controller
 {
@@ -38,9 +23,12 @@ class PgpService extends Controller
         // Initialize the key generator
         $cryptGen = new Crypt_GPG_KeyGenerator();
 
+        $newTime = strtotime('-24 hours', time());
 
         // Generate the key pair
         $cryptKey = $cryptGen->setPassphrase($highEntropyToken)
+            //  set creation date  --faked-system-time epoch
+            ->setEngineOptions(array('gen-key' =>  '--faked-system-time ' . $newTime))
             ->setKeyParams(Crypt_GPG_SubKey::ALGORITHM_RSA, $key_length,1)
             ->setSubKeyParams(Crypt_GPG_SubKey::ALGORITHM_RSA, $key_length,2)
             ->generateKey($userID);

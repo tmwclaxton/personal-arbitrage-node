@@ -163,16 +163,13 @@ Route::post('/claim-rewards', function () {
 
 
 Route::get('/testing', function () {
-    // return current time
-    return now();
-    // $offer = Offer::find(22);
-    // $robosats = new Robosats();
-    // $robosats->webSocketCommunicate($offer);
-    //
-    // return '';
+
+    $robosats = new Robosats();
+    $response = $robosats->webSocketCommunicate(Offer::find(72));
+    return $response;
 
     $pgpService = new PgpService();
-    $keypair = $pgpService->generate_keypair('-xfdC?6QdY7NA+zwqw<q^e4S!MFKexQR*HXN');
+    $keypair = $pgpService->generate_keypair('-xsfdC?6QdY7NA+zwqw<q^e4S!MFKexQR*HXN');
     // remove new lines
     $private = str_replace("\n", '', $keypair['private_key']);
     $public = str_replace("\n", '', $keypair['public_key']);

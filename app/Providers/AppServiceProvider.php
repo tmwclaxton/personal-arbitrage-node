@@ -19,6 +19,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // whenever the current time is called ensure Pacific/Apia timezone is used
+          date_default_timezone_set('Pacific/Apia');
     }
 }
