@@ -161,11 +161,19 @@ Route::post('/claim-rewards', function () {
     );
 })->name('claim-rewards');
 
+// send-payment-handle
+Route::post('/send-payment-handle', function () {
+    $offerId = request('offer_id');
+    $offer = Offer::find($offerId);
+    $robosats = new Robosats();
+    $response = $robosats->webSocketCommunicate($offer);
+})->name('send-payment-handle');
+
 
 Route::get('/testing', function () {
 
     $robosats = new Robosats();
-    $response = $robosats->webSocketCommunicate(Offer::find(72));
+    $response = $robosats->webSocketCommunicate(Offer::find(80));
     return $response;
 
     $pgpService = new PgpService();

@@ -85,6 +85,30 @@ class PgpService extends Controller
 
     }
 
+    // encrypt and sign
+    public function encryptAndSign($privateKey, $message, $passphrase)
+    {
+        // Initialize the Crypt_GPG instance
+        $crypt_gpg = new Crypt_GPG();
+        $crypt_gpg->clearPassphrases();
+
+        // import the private key
+        $privateKeyImport = $crypt_gpg->importKey($privateKey);
+        $fingerPrint = $privateKeyImport['fingerprint'];
+
+        // Add the keys
+        $private_key = $crypt_gpg->addEncryptKey($fingerPrint);
+        $private_key = $crypt_gpg->addSignKey($fingerPrint, $passphrase);
+        $crypt_gpg->addPassphrase($fingerPrint, $passphrase);
+
+
+        // Encrypt the message
+        $encrypted = $crypt_gpg->encryptAndSign($message, true);
+
+        return $encrypted;
+
+    }
+
     public function decrypt($public_key, $encrypted_message, $passphrase)
     {
         // Initialize the Crypt_GPG instance

@@ -486,18 +486,30 @@ class Robosats
             ->addMiddleware(new CloseHandler())
             ->addMiddleware(new PingResponder());
 
+        $receivedMessages = [];
+
 
         // send the first message being the pgp public key
         // Send a message
         $client->text(json_encode(['type' => 'message', 'message' => $robot->public_key, 'nick' => $robot->nickname]));
+        // Read response (this is blocking)
+        $message = $client->receive();
+        $receivedMessages[] = $message->getContent();
+        echo "Got message: {$message->getContent()} \n";
+
         // Send an encrypted message "Hey there, my revolut is @vidgazeltd, please leave the note empty!  Cheers! "
         $pgpService = new PgpService();
-        $encryptedMessage = $pgpService->encrypt($robot->private_key, 'Hey there, my revolut is @tobyclaxton, please leave the note empty!  Cheers! ');
-        $client->text(json_encode(['type' => 'message', 'message' => $robot->public_key, 'nick' => $robot->nickname]));
+        $encryptedMessage = $pgpService->encryptAndSign($robot->private_key, 'Hey there, my revolut is @tobyclaxton, please leave the note empty!  Cheers! ', $robot->token);
+        $client->text(json_encode(['type' => 'message', 'message' => $encryptedMessage, 'nick' => $robot->nickname]));
+
+        // Read response (this is blocking)
+        $message = $client->receive();
+        $receivedMessages[] = $message->getContent();
+        echo "Got message: {$message->getContent()} \n";
 
         $client->close();
 
-        return 'done';
+        return $receivedMessages;
 
 
         // {"type":"message","message":"-----BEGIN PGP PUBLIC KEY BLOCK-----\n\nmQENBGaAcyUBCACgzbe9xq3RAyaOAp6gS1pEuqIvTK5MZjH9054lwqqxk0RtEP5n\ntdxLUIRZWwSv8K6bwP2rdh3arM4kXpb886JPSXvj5f75xq5zmy6G85OpVHhhhtxq\nT0nl8+vVI4qIPoPynAjAqbtKmLlw1bj57Oato7bj95i1thGS9FB1DWCI+6Yrneat\nU0W0PY0/gwcwYjjjIhosJmqPLhbDqNmoUmU+rq5sRbcxGpVXqB6InX9T4ic0BtQY\nDg7+/BRzaqW5Tr0TcU3NFeEVfL4A7WgdkAEF9lWhdyFGjEf2B2MURwtWxm85xc3J\n9MOLA7FLmE25rxE6VmeDuRDQ2tnFSrtNALDJABEBAAG0TVJvYm9TYXRzIElEOiAx\nMTYyZDdlY2I3NTBkZmFlMDExY2ZhMTI1ZmVjYmU3NmY2NGZiOTA0MTViM2UxODE1\nZDQ1YmM0YTkwN2RiNDZmiQErBBMBCAAf/wAAAAUCZoBzJf8AAAACGwf/AAAACRBe\nBW9sDssYgQAAW4cH/1uHaTY68+YDYH69ajzzyiDAak+SDLAisNXgx8/Cd1jBKYfG\n0Mwlv7C4KN+etmCP2S7jnR9IOsbbGWvhKk45fQyAvozvp7LEabT+Y8ieMUUA1aj0\nK1Ny2vciNr3Eo2qqYZp26bZx6dOO46v41B9HFQzOoc/NLCTooTS4fom4ihvfw8nE\n0CdhIo6eeiX07ATEMEd53wclQ/xZeh5jkWTdc9wBbaATYIToQqoLi/IEzwUnmnTJ\noZElItWKJD1QaDuXYIfNX0xs7FaNzi0rZbd9hg7FHRLIJYFgZUWyG9dzPA2dnxzx\niTjtPH65m1LlyHWTfu1wHt3DS6e351YRtHM5Q8Q=\n=mrc6\n-----END PGP PUBLIC KEY BLOCK-----\n","nick":"UnfilledGrenade349"}

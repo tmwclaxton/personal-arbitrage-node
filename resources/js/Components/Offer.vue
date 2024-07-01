@@ -57,7 +57,7 @@
                 </primary-button>
 
 
-                <primary-button class="w-full text-center">
+                <primary-button class="w-full text-center" v-on:click="sendPaymentHandle">
                     Send Payment Handle
                 </primary-button>
 
@@ -152,6 +152,18 @@ const confirmPayment = () => {
     console.log('confirming payment');
 
     axios.post(route('confirm-payment'), {
+        offer_id: props.offer.id
+    }).then(response => {
+        console.log(response);
+    }).catch(error => {
+        console.log(error);
+    });
+}
+
+const sendPaymentHandle = () => {
+    console.log('sending payment handle');
+
+    axios.post(route('send-payment-handle'), {
         offer_id: props.offer.id
     }).then(response => {
         console.log(response);
