@@ -66,8 +66,8 @@ class UpdateOffers extends Command
                     break;
                 }
             }
-            // not found, not accept, last updated is more than 1 hour ago || past the expiration date and not accepted
-            if (!$found && !$dbOffer->accepted && $dbOffer->updated_at->diffInHours(now()) > 1 || $dbOffer->expires_at < now() && !$dbOffer->accepted) {
+            // not found, not accept, last updated is more than 10 minutes ago || past the expiration date and not accepted
+            if (!$found && !$dbOffer->accepted && $dbOffer->updated_at->diffInMinutes(now()) > 10 || $dbOffer->expires_at < now() && !$dbOffer->accepted) {
                 $dbOffer->delete();
             }
         }
