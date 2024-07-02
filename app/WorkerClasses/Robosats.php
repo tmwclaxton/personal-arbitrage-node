@@ -499,7 +499,7 @@ class Robosats
 
         // Send an encrypted message "Hey there, my revolut is @vidgazeltd, please leave the note empty!  Cheers! "
         $pgpService = new PgpService();
-        $encryptedMessage = $pgpService->encryptAndSign($robot->private_key, 'Hey there, my revolut is @tobyclaxton, please leave the note empty!  Cheers! ', $robot->token);
+        $encryptedMessage = $pgpService->encryptAndSign($robot->private_key, 'Hey there, my revolut is @drl5050', $robot->token);
         $client->text(json_encode(['type' => 'message', 'message' => $encryptedMessage, 'nick' => $robot->nickname]));
 
         // Read response (this is blocking)
@@ -582,8 +582,12 @@ class Robosats
         $offer->taker_locked = $response['taker_locked'];
         $offer->escrow_locked = $response['escrow_locked'];
         $offer->trade_satoshis = $response['trade_satoshis'];
-        $offer->asked_for_cancel = $response['asked_for_cancel'];
-        $offer->chat_last_index = $response['chat_last_index'];
+        if (isset($response['asked_for_cancel'])) {
+            $offer->asked_for_cancel = $response['asked_for_cancel'];
+        }
+        if (isset($response['chat_last_index'])) {
+            $offer->chat_last_index = $response['chat_last_index'];
+        }
         $offer->save();
 
 

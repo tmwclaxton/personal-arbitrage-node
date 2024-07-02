@@ -19,94 +19,20 @@ Route::post('/updateAdminDashboard', function () {
     $adminDashboard = AdminDashboard::all()->first();
 
     // iterate through the request and update the admin dashboard
-    foreach (request()->all() as $key => $value) {
+    foreach (request()->adminDashboard as $key => $value) {
         // check if the key is in the admin dashboard
-        if (isset($adminDashboard->$key)) {
+        // if (isset($adminDashboard->$key)) {
             $adminDashboard->$key = $value;
-        }
+        // }
     }
 
     $adminDashboard->save();
-    return redirect()->route('welcome');
+    return $adminDashboard;
 })->name('updateAdminDashboard');
 
-Route::get('/', function () {
+Route::get('/', [\App\Http\Controllers\OfferController::class, 'index'])->name('welcome');
+Route::get('/offers', [\App\Http\Controllers\OfferController::class, 'getOffers'])->name('offers.index');
 
-    $btcFiats = BtcFiat::where('currency', 'USD')->orWhere('currency', 'GBP')->orWhere('currency', 'EUR')->get();
-    $allFiats = BtcFiat::all();
-    $adminDashboard = AdminDashboard::all()->first();
-    if (!$adminDashboard) {
-        $adminDashboard = new AdminDashboard();
-        $lightningNode = new LightningNode();
-        $balanceArray = $lightningNode->getLightningWalletBalance();
-        $adminDashboard->localBalance = $balanceArray['localBalance'];
-        $adminDashboard->remoteBalance = $balanceArray['remoteBalance'];
-        $adminDashboard->save();
-    }
-
-    $sellPremium = $adminDashboard->sell_premium;
-    $buyPremium = $adminDashboard->buy_premium;
-
-    $offers = Offer::where([['premium', '>=', $sellPremium], ['type', 'sell']])->orWhere([['premium', '>=', $buyPremium], ['type', 'buy']])
-        ->orderBy('accepted', 'desc')
-        ->orderBy('max_satoshi_amount_profit', 'desc')
-        ->orderBy('satoshi_amount_profit', 'desc')
-        ->orderBy('premium', 'desc')
-
-        ->get();
-    // change the expires_at to a human readable format
-    foreach ($offers as $offer) {
-        $offer->expires_at = Carbon::parse($offer->expires_at)->diffForHumans();
-        // round amount to 2 decimal places
-        $offer->amount = number_format($offer->amount, 2);
-        // round min_amount to 2 decimal places and max amount to 2 decimal places
-        $offer->min_amount = number_format($offer->min_amount, 2);
-        $offer->max_amount = number_format($offer->max_amount, 2);
-        // add a percentage to the premium
-        $offer->premium = $offer->premium . '%';
-        $offer->payment_methods = json_decode($offer->payment_methods);
-        // if array contains revolut else remove it
-        if (!in_array('Revolut', $offer->payment_methods)) {
-            $offers = $offers->filter(function ($value, $key) use ($offer) {
-                return $value->id != $offer->id;
-            });
-        }
-        // json decode the payment methods so it is a space separated string
-        $offer->payment_methods = implode(', ', $offer->payment_methods);
-
-        // if offer is accepted find the transaction
-        if ($offer->accepted) {
-            $transaction = Transaction::where('offer_id', $offer->id)->first();
-            $offer->transaction = $transaction;
-        }
-
-        if ($offer->transaction && $offer->transaction->status == 'Sucessful trade') { // they spelt successful wrong
-            $offers = $offers->filter(function ($value, $key) use ($offer) {
-                return $value->id != $offer->id;
-            });
-        }
-
-        // grab robots
-        $offer->robots = $offer->robots()->get();
-    }
-
-    // convert the offers to an array
-    $offersTemp = [];
-    foreach ($offers as $offer) {
-        $offersTemp[] = $offer;
-    }
-    $offers = $offersTemp;
-
-
-
-
-
-    return Inertia::render('Welcome', [
-        'btcPrices' => $btcFiats,
-        'offers' => $offers,
-        'adminDashboard' => $adminDashboard
-    ]);
-})->name('welcome');
 
 Route::post('/create-robot', function () {
     $offerId = request('offer_id');

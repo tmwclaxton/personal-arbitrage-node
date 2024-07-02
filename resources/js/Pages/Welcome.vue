@@ -4,6 +4,7 @@ import Offer from "@/Components/Offer.vue";
 import ToggleButton from "@/Components/ToggleButton.vue";
 import {onMounted, ref, watch} from "vue";
 import TextInput from "@/Components/TextInput.vue";
+import PrimaryButton from "@/Components/PrimaryButton.vue";
 
 const props = defineProps({
     offers: Array,
@@ -11,30 +12,53 @@ const props = defineProps({
     adminDashboard: Object,
 });
 
-const autoTopup = ref(false);
+const accessOffers = ref(props.offers);
+
 
 //auto refresh page every 10 seconds soft
 setInterval(() => {
-    router.reload();
-}, 10000);
+    const response = axios.get(route('offers.index')).then(response => {
+
+        // if length of offers has increased, play newOffer.mp3
+        if (response.data.offers.length > accessOffers.value.length) {
+            console.log('new offer');
+            // play mp3
+            const audio = new Audio('/sounds/newOffer.mp3');
+            audio.play();
+        }
+
+        // iterate over offers and check if any status has changed
+        // if status has changed, play mp3
+        for (let i = 0; i < response.data.offers.length; i++) {
+            if (response.data.offers[i].transaction && response.data.offers[i].transaction.status !== accessOffers.value[i].transaction.status) {
+                console.log('status has changed');
+                // play mp3
+                const audio = new Audio('/sounds/status.mp3');
+                audio.play();
+                audio.play();
+            }
+        }
+        accessOffers.value = response.data.offers;
+
+    }).catch(error => {
+        console.log(error);
+    });
+}, 1000);
 
 let tempAdminDashboard = JSON.parse(JSON.stringify(props.adminDashboard));
-onMounted(() => {
-    tempAdminDashboard = JSON.parse(JSON.stringify(props.adminDashboard));
 
-    // detect when any attributes of tempAdminDashboard change and post route('updateAdminDashboard') to save changes just send the whole object
-    watch(() => tempAdminDashboard, (newValue, oldValue) => {
-        if (newValue !== oldValue) {
-            axios.post(route('updateAdminDashboard'), {
-                adminDashboard: tempAdminDashboard
-            }).then(response => {
-                console.log(response.data);
-            }).catch(error => {
-                console.log(error);
-            });
-        }
+
+const clicked = () => {
+    console.log('clicked');
+    console.log(tempAdminDashboard);
+    axios.post(route('updateAdminDashboard'), {
+        adminDashboard: tempAdminDashboard
+    }).then(response => {
+        console.log(response.data);
+    }).catch(error => {
+        console.log(error);
     });
-});
+}
 
 </script>
 
@@ -62,7 +86,7 @@ onMounted(() => {
 
                 <p class=""><span class="font-bold">Lighting Wallet Balance:</span> {{ tempAdminDashboard.localBalance }} </p>
                 <p class=""><span class="font-bold">Remote Balance:</span> {{ tempAdminDashboard.remoteBalance }} </p>
-                <p class=""><span class="font-bold">Auto Topup:</span>     <ToggleButton v-model="autoTopup" size="sm" activeColor="bg-green-500" inactiveColor="bg-red-500" /></p>
+                <p class=""><span class="font-bold">Auto Topup:</span>     <ToggleButton v-model="tempAdminDashboard.autoTopup" size="sm" activeColor="bg-green-500" inactiveColor="bg-red-500" /></p>
             </div>
             <div class="text-left border-r border-black dark:border-white/70 pr-5">
                 <p class=""><span class="font-bold text-xl mb-2">Automation:</span></p>
@@ -79,28 +103,46 @@ onMounted(() => {
             </div>
             <div class="text-left pl-5 flex flex-col gap-y-1 border-r border-black dark:border-white/70 pr-5">
                 <div class="flex flex-row justify-between items-center"><span class="font-bold text-xl mb-2">More Config:</span></div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Umbrel Token: </span><TextInput v-model="tempAdminDashboard.umbrel_token" /></div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Revolut Tag: </span><TextInput v-model="tempAdminDashboard.umbrel_token" /></div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Paypal Tag: </span><TextInput v-model="tempAdminDashboard.umbrel_token" /></div>
+                <div class="grid-cols-2 grid gap-2">
+                    <div class="flex flex-row justify-between items-center"><span
+                        class="font-bold mr-1">Umbrel Token: </span>
+                        <TextInput v-model="tempAdminDashboard.umbrel_token"/>
+                    </div>
+                    <div class="flex flex-row justify-between items-center"><span
+                        class="font-bold mr-1">Revolut Tag: </span>
+                        <TextInput v-model="tempAdminDashboard.revolut_handle"/>
+                    </div>
+                    <div class="flex flex-row justify-between items-center"><span
+                        class="font-bold mr-1">Paypal Tag: </span>
+                        <TextInput v-model="tempAdminDashboard.paypal_handle"/>
+                    </div>
+                    <div class="flex flex-row justify-between items-center"><span
+                        class="font-bold mr-1">Strike Tag: </span>
+                        <TextInput v-model="tempAdminDashboard.strike_handle"/>
+                    </div>
+                </div>
 
             </div>
             <div class="text-left pl-5 flex flex-col gap-y-1 border-r border-black dark:border-white/70 pr-5">
-                <div class="flex flex-row justify-between items-center"><span class="font-bold text-xl mb-2">Statistics:</span></div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Profit Satoshis: </span><span v-text="tempAdminDashboard.satoshi_profit"/> </div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Fees Satoshis: </span><span v-text="tempAdminDashboard.satoshi_fees"/> </div>
+                <div class="flex flex-row justify-between items-center"><span class="font-bold text-xl mb-2">Statistics (satoshies):</span></div>
+                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Profit: </span><span v-text="tempAdminDashboard.satoshi_profit"/> </div>
+                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Fees: </span><span v-text="tempAdminDashboard.satoshi_fees"/> </div>
+                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Trade Volume: </span><span v-text="tempAdminDashboard.trade_volume_satoshis"/> </div>
             </div>
 
 
+        <primary-button class="h-12 my-auto" @click="clicked" >Save Changes</primary-button>
         </div>
+
 
         <div
             class="relative min-h-screen flex flex-col items-center justify-center selection:bg-[#FF2D20] selection:text-white"
         >
-            <div class="relative w-full max-w-2xl px-6 lg:max-w-7xl">
+            <div class="relative w-full  mx-16 px-6 l">
 
                 <main class=" ">
-                    <div class="grid grid-cols-3 gap-4 mx-auto" v-if="offers.length > 0">
-                        <Offer v-for="offer in offers" :key="offer.robosatsId" :offer="offer" />
+                    <div class="grid grid-cols-6 gap-6  mx-auto" v-if="offers.length > 0">
+                        <Offer v-for="offer in accessOffers" :key="offer.robosatsId" :offer="offer" />
                     </div>
                     <div class="text-center" v-else>
                         <p class="text-lg">No offers available</p>
