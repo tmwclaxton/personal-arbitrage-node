@@ -11,8 +11,11 @@ use Hackzilla\PasswordGenerator\Generator\ComputerPasswordGenerator;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use WebSocket\Client;
+use WebSocket\Connection;
+use WebSocket\Message\Message;
 use WebSocket\Middleware\CloseHandler;
 use WebSocket\Middleware\PingResponder;
+use WebSocket\Server;
 
 class Robosats
 {
@@ -170,22 +173,22 @@ class Robosats
         $pgpService = new PgpService();
         $keyPair = $pgpService->generate_keypair($generatedToken);
 
-        $privateKeyUnescaped = $keyPair['private_key'];
-        $publicKeyUnescaped = $keyPair['public_key'];
+        $private_key = $keyPair['private_key'];
+        $public_key = $keyPair['public_key'];
         // replace \n with \
-        $privateKey = str_replace("\n", '\\', $privateKeyUnescaped);
-        $publicKey = str_replace("\n", '\\', $publicKeyUnescaped);
+        // $privateKey = str_replace("\n", '\\', $privateKeyUnescaped);
+        // $publicKey = str_replace("\n", '\\', $publicKeyUnescaped);
 
         // ideal format for authentication
-        $authentication = 'Token ' . $b91Token . ' | Public ' . $publicKey . ' | Private ' . $privateKey;
+        $authentication = 'Token ' . $b91Token . ' | Public ' . $public_key . ' | Private ' . $private_key;
         // remove new lines and \r
         $authentication = str_replace("\n", '', $authentication);
         $authentication = str_replace("\r", '', $authentication);
         // at the end of ----- add \\
-        // $authentication = str_replace('-----BEGIN PGP PUBLIC KEY BLOCK-----', '-----BEGIN PGP PUBLIC KEY BLOCK-----\\\\', $authentication);
-        // $authentication = str_replace('-----END PGP PUBLIC KEY BLOCK-----', '\\-----END PGP PUBLIC KEY BLOCK-----\\', $authentication);
-        // $authentication = str_replace('-----BEGIN PGP PRIVATE KEY BLOCK-----', '-----BEGIN PGP PRIVATE KEY BLOCK-----\\\\', $authentication);
-        // $authentication = str_replace('-----END PGP PRIVATE KEY BLOCK-----', '\\-----END PGP PRIVATE KEY BLOCK-----\\\\', $authentication);
+        $authentication = str_replace('-----BEGIN PGP PUBLIC KEY BLOCK-----', '-----BEGIN PGP PUBLIC KEY BLOCK-----\\\\', $authentication);
+        $authentication = str_replace('-----END PGP PUBLIC KEY BLOCK-----', '\\-----END PGP PUBLIC KEY BLOCK-----\\', $authentication);
+        $authentication = str_replace('-----BEGIN PGP PRIVATE KEY BLOCK-----', '-----BEGIN PGP PRIVATE KEY BLOCK-----\\\\', $authentication);
+        $authentication = str_replace('-----END PGP PRIVATE KEY BLOCK-----', '\\-----END PGP PRIVATE KEY BLOCK-----\\\\', $authentication);
 
 
         foreach ($this->providers as $provider) {
@@ -221,9 +224,9 @@ class Robosats
             $robot->sha256 = $b91Token;
             $robot->nickname = $json['nickname'];
             $robot->hash_id = $json['hash_id'];
-            $robot->public_key = $publicKey;
-            $robot->private_key = $privateKey;
-            $robot->encrypted_private_key = $json['encrypted_private_key'];
+            $robot->public_key = $public_key;
+            $robot->private_key = $private_key;
+            // $robot->encrypted_private_key = $json['encrypted_private_key'];
             $robot->earned_rewards = $json['earned_rewards'];
             $robot->wants_stealth = $json['wants_stealth'];
             // convert last_login to datetime from 2024-06-28T23:39:02.732620Z to 2024-06-28 23:39:02
@@ -484,98 +487,73 @@ class Robosats
         $hex = bin2hex($decoded);
         $url = $this->wsHost . '/mainnet/' . $offer->provider . '/ws/chat/' . $offer->robosatsId . '/?token_sha256_hex=' . $hex;
 
-        // create a new client
-        // $client = new Client($url);
-        // $client
-        //     // Add standard middlewares
-        //     ->addMiddleware(new CloseHandler())
-        //     ->addMiddleware(new PingResponder());
-        //
-        // $receivedMessages = [];
-        //
-        // $publicKey = $robot->publicKey;
-        // // replace \\ with \n
-        // $publicKey = str_replace("\\", "\n", $publicKey);
-        // // send the first message being the pgp public key
-        // // Send a message
-        // $client->text(json_encode(['type' => 'message', 'message' => $publicKey, 'nick' => $robot->nickname]));
-        // // Read response (this is blocking)
-        // $message = $client->receive();
-        // $receivedMessages[] = $message->getContent();
-        // dd( "Got message: {$message->getContent()}" );
-
-        // Send an encrypted message "Hey there, my revolut is @vidgazeltd, please leave the note empty!  Cheers! "
 
         $adminDashboard = AdminDashboard::all()->first();
+        $requestedDetails = false;
+        // create a new client
+        $client = new Client($url);
+        $client
+            // Add standard middlewares
+            ->addMiddleware(new CloseHandler())
+            ->addMiddleware(new PingResponder())
+            ->onText(function (Client $client, Connection $connection, Message $message) use ($adminDashboard, $robot, $requestedDetails) {
+                // Handle text messages
+                // echo "Got message: {$message->getContent()}\n";
+                // Log::info("Got message: {$message->getContent()}\n");
 
-        $publicKey = $robot->public_key;
-        $publicKey = str_replace("\n", "\n", $publicKey);
-        $privateKey = $robot->private_key;
-        $publicKey = str_replace("\n", "\n", $publicKey);
+                // dd( json_decode($message->getContent(), true));
+                // $peerNick = json_decode($message->getContent(), true)['user_nick'];
+                // if ($peerNick != $robot->nickname) {
+                //     if (!$requestedDetails) {
+                //         // dd($message->getContent());
+                //
+                //         // send our public key
+                //         $pgpService = new PgpService();
+                //         $publicKey = $robot->public_key;
+                //         // $publicKey = str_replace("\n", "\n", $publicKey);
+                //         $json = json_encode([
+                //             'type' => 'public_key',
+                //             'public_key' => $publicKey,
+                //             'nick' => $robot->nickname
+                //         ]);
+                //         $client->text($json);
+                //
+                //         // ask for history message = -----SERVE HISTORY-----
+                //         $json = json_encode([
+                //             'type' => 'message',
+                //             'message' => '-----SERVE HISTORY-----',
+                //             'nick' => $robot->nickname
+                //         ]);
+                //         $client->text($json);
+                //     }
+                //     return;
+                // }
+                $peerPublicKey = json_decode($message->getContent(), true)['message'];
 
-        $peerPublicKey = "-----BEGIN PGP PUBLIC KEY BLOCK-----
+                $pgpService = new PgpService();
+                $revtag = $adminDashboard->revolut_handle;
 
-xjMEZoQAuBYJKwYBBAHaRw8BAQdAWZeyKEvaZG09QfNSzhJXgQxLFo1fVn9+
-HFVsalnxsJLNAMKMBBAWCgA+BYJmhAC4BAsJBwgJkKKHKWoWFuegAxUICgQW
-AAIBAhkBApsDAh4BFiEExmyRMbFWwgtIWHN0oocpahYW56AAACDpAQDNd7nY
-zlYQqREYGBy75wcHx+WaSMMVm3R4rU1UOLdhugEA6m5ZpIGD3Kzam7eFl4iM
-2KyiTykXJNoID7za5f5sgQ/OOARmhAC4EgorBgEEAZdVAQUBAQdAuRUrmR58
-BmVQ5qcumt5KKVc9nXwqYp65itLwW60/cDgDAQgHwngEGBYKACoFgmaEALgJ
-kKKHKWoWFuegApsMFiEExmyRMbFWwgtIWHN0oocpahYW56AAADj5AQDFZ95U
-qWHkwlLFr+FFXiAJVAutDH+gbTzDqdTlUq3HHwD/dLKcfO3TL8JpfHdLnRqx
-SukZSWDUr5/inSfosk21Pgc=
-=/U1V
------END PGP PUBLIC KEY BLOCK-----
-
-";
-        // $peerPublicKey = str_replace("\\", "\n", $peerPublicKey);
-
-
-        $pgpService = new PgpService();
-        $revtag = $adminDashboard->revolut_handle;
-        $encryptedMessage = $pgpService->encryptAndSign($publicKey, $privateKey, 'Hey my revtag is ' . $revtag , $robot->token, $peerPublicKey);
-        $encryptedMessage = str_replace("\n", '\\', $encryptedMessage);
-
-
-        return $encryptedMessage;
-        $json = json_encode([
-            'type' => 'message',
-            'message' => $encryptedMessage,
-            'nick' => $robot->nickname
-        ]);
-        $client->text($json);
-
-        // Read response (this is blocking)
-        $message = $client->receive();
-        $receivedMessages[] = $message->getContent();
-        echo "Got message: {$message->getContent()} \n";
-
-        $client->close();
-
-        return $receivedMessages;
-
-
-        // {"type":"message","message":"-----BEGIN PGP PUBLIC KEY BLOCK-----\n\nmQENBGaAcyUBCACgzbe9xq3RAyaOAp6gS1pEuqIvTK5MZjH9054lwqqxk0RtEP5n\ntdxLUIRZWwSv8K6bwP2rdh3arM4kXpb886JPSXvj5f75xq5zmy6G85OpVHhhhtxq\nT0nl8+vVI4qIPoPynAjAqbtKmLlw1bj57Oato7bj95i1thGS9FB1DWCI+6Yrneat\nU0W0PY0/gwcwYjjjIhosJmqPLhbDqNmoUmU+rq5sRbcxGpVXqB6InX9T4ic0BtQY\nDg7+/BRzaqW5Tr0TcU3NFeEVfL4A7WgdkAEF9lWhdyFGjEf2B2MURwtWxm85xc3J\n9MOLA7FLmE25rxE6VmeDuRDQ2tnFSrtNALDJABEBAAG0TVJvYm9TYXRzIElEOiAx\nMTYyZDdlY2I3NTBkZmFlMDExY2ZhMTI1ZmVjYmU3NmY2NGZiOTA0MTViM2UxODE1\nZDQ1YmM0YTkwN2RiNDZmiQErBBMBCAAf/wAAAAUCZoBzJf8AAAACGwf/AAAACRBe\nBW9sDssYgQAAW4cH/1uHaTY68+YDYH69ajzzyiDAak+SDLAisNXgx8/Cd1jBKYfG\n0Mwlv7C4KN+etmCP2S7jnR9IOsbbGWvhKk45fQyAvozvp7LEabT+Y8ieMUUA1aj0\nK1Ny2vciNr3Eo2qqYZp26bZx6dOO46v41B9HFQzOoc/NLCTooTS4fom4ihvfw8nE\n0CdhIo6eeiX07ATEMEd53wclQ/xZeh5jkWTdc9wBbaATYIToQqoLi/IEzwUnmnTJ\noZElItWKJD1QaDuXYIfNX0xs7FaNzi0rZbd9hg7FHRLIJYFgZUWyG9dzPA2dnxzx\niTjtPH65m1LlyHWTfu1wHt3DS6e351YRtHM5Q8Q=\n=mrc6\n-----END PGP PUBLIC KEY BLOCK-----\n","nick":"UnfilledGrenade349"}
-
-        // {"type":"message","message":"-----SERVE HISTORY-----","nick":"UnfilledGrenade349"}
-
+                $publicKey = $robot->public_key;
+                // $publicKey = str_replace("\n", "\n", $publicKey);
+                $privateKey = $robot->private_key;
+                // $privateKey = str_replace("\n", "\n", $privateKey);
+                $encryptedMessage = $pgpService->encryptAndSign($publicKey, $privateKey, 'Hey! My revolut is ' . $revtag , $robot->token, $peerPublicKey);
+                $encryptedMessage = str_replace("\n", '\\', $encryptedMessage);
 
 
-        // first message we send is our pgp public key for that provider
-        // i,e
-        //    {
-        // 	"type": "message",
-        // 	"message": "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\nmDMEZnsichYJKwYBBAHaRw8BAQdANovtfPCgwEeg3iauWeqDvcvhMzcV8RdFwclW\nPaZO6v20TFJvYm9TYXRzIElEIDBkNTYyNTgwZTM2NGM0ZDY5MTM2ZDMxOWYzZTFj\nYTRkZGRjYzExODZhNGQxMTc3MTA3N2RhYjdlYmI1YzFlMmSIjAQQFgoAPgWCZnsi\ncgQLCQcICZAxiNYePu5GBgMVCAoEFgACAQIZAQKbAwIeARYhBHcp6lmY/wgi/8k6\n9TGI1h4+7kYGAAAGGQEArRmXz1cDuJq0D5TgNXk7wvkKeYfYw69+BnpK/eH9/jQB\nANx3Uu0ZWDlhnejwkzFl0374IpcHk8pVc8/2jEO5WIkHuDgEZnsichIKKwYBBAGX\nVQEFAQEHQIiek/u9KJf7MjKvHdWUuBm+F2OG8cwJNIVt7BMCSw4pAwEIB4h4BBgW\nCgAqBYJmeyJyCZAxiNYePu5GBgKbDBYhBHcp6lmY/wgi/8k69TGI1h4+7kYGAABC\nfAEA1v+L22xPnl6hMP66QE0FzXRQFmFHs5O83yQkI3dtc24BAKJZdxMYKhoAc8pE\nvYNFPHYUz+Oefs+88ca5c3gzQW4J\n=sM0E\n-----END PGP PUBLIC KEY BLOCK-----\n",
-        // 	"nick": "TatteredSurgery892"
-        // }
+                $json = json_encode([
+                    'type' => 'message',
+                    'message' => $encryptedMessage,
+                    'nick' => $robot->nickname
+                ]);
+                $client->text($json);
+                // shutdown the client
+                $client->close();
+            })
+            ->start();
 
-        // second message we send is our pgp encrypted message after 2 minutes
-        // Hey there, my revolut is @vidgazeltd, please leave the note empty!  Cheers!
 
-
-        // {"type":"message",
-        //"message":"-----BEGIN PGP MESSAGE-----\\\\wV4DR+PDKn7dATISAQdAixJBHOIE2lkuGXRAxhbySYNZpHY0EPU6cSnL7xTU\\1XcwSNJiN8IflBUJyqPOELxPQKfWJQE8P6Hl6lih85jUSFcJIh7OlnkUxwTv\\SixLTlNcwV4DK+P+Ln2+h9YSAQdAvFyc9mrvj5HvIh7dEgzLbpQbJ1AgBFj/\\uP9nzCRlW0QwRh3QSBq7YmFYcddq9h4ApvbjNni3me5hxpQ+ygtT/k/dgvi4\\vcape9B6eo5axdd+0sAcAV8w5AiCTCz0/guhCYebwSfU9KsmjTVDWyH9qsv8\\VoaihkfHsPqnfGp1Fypy0mpY0/SBo3ViBllriX4xjI2fdm6CYmnIjAZORjO2\\BjFeqsmFALPc7pe4trDEqHs4gB/+aInmQVO156mAqpuf+gM96mNw+Mydwfl8\\boa4Rz0TriiNHTya9IqeXTdB4FC6O7mnNi99+xTKAjRWEc0V5MHUNq4GfuAL\\/FOsYKt+itArWUwEq3qbqEZVncW5m3CztcF+Box+tQNVDUw4EUaqQmqdf6+r\\Iz+Uc+6NeDdWnw==\\=laPu\\-----END PGP MESSAGE-----\\",
-        //"nick":"CurativeConic344"}
+        return "done";
     }
 
     public function confirmReceipt(Offer $offer, Transaction $transaction) {

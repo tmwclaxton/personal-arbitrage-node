@@ -21,7 +21,8 @@ setInterval(() => {
     const response = axios.get(route('offers.index')).then(response => {
 
         // if length of offers has increased, play newOffer.mp3
-        if (response.data.offers.length > accessOffers.value.length) {
+        if (accessOffers.value !== null &&
+            response.data.offers.length > accessOffers.value.length) {
             console.log('new offer');
             // play mp3
             const audio = new Audio('/sounds/newOffer.mp3');
@@ -31,7 +32,9 @@ setInterval(() => {
         // iterate over offers and check if any status has changed
         // if status has changed, play mp3
         for (let i = 0; i < response.data.offers.length; i++) {
-            if (response.data.offers[i].transaction !== null && response.data.offers[i].transaction.status !== accessOffers.value[i].transaction.status) {
+            if (accessOffers.value[i] !== undefined && accessOffers.value[i] !== null &&
+                response.data.offers[i].transaction !== null && accessOffers.value[i].transaction !== undefined
+                && response.data.offers[i].transaction.status !== accessOffers.value[i].transaction.status) {
                 console.log('status has changed');
                 // play mp3
                 const audio = new Audio('/sounds/status.mp3');
@@ -40,6 +43,7 @@ setInterval(() => {
             }
         }
         accessOffers.value = response.data.offers;
+        // for each
 
     }).catch(error => {
         console.log(error);
@@ -149,7 +153,7 @@ const clicked = () => {
             <div class="relative w-full  mx-16 px-6 l">
 
                 <main class=" ">
-                    <div class="grid grid-cols-5 gap-6  mx-auto" v-if="offers.length > 0">
+                    <div class="grid grid-cols-5 gap-6  mx-auto" v-if="accessOffers.length > 0">
                         <Offer v-for="offer in accessOffers" :key="offer.robosatsId" :offer="offer" />
                     </div>
                     <div class="text-center" v-else>

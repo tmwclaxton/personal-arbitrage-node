@@ -109,9 +109,6 @@ class PgpService extends Controller
             $peerFingerPrint = $peerPublicKeyImport['fingerprint'];
             $crypt_gpg->addEncryptKey($peerFingerPrint);
         }
-        $peerPublicKeyImport = $crypt_gpg->importKey($peerPublicKey);
-        $peerFingerPrint = $peerPublicKeyImport['fingerprint'];
-        $crypt_gpg->addEncryptKey($peerFingerPrint);
 
 
         $newTime = strtotime('-24 hours', time());
@@ -120,7 +117,7 @@ class PgpService extends Controller
         $encrypted = $crypt_gpg->setEngineOptions(array(
             'sign' =>  '--faked-system-time ' . $newTime
         ))->encryptAndSign($message, true);
-        dd($encrypted);
+        // dd($encrypted);
 
 
         return $encrypted;

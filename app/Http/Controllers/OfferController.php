@@ -59,6 +59,9 @@ class OfferController extends Controller
 
             // check if any of the payment methods are in the admin dashboard payment methods, if not remove the offer
             $found = false;
+            if ($paymentMethods == null) {
+                $paymentMethods = [];
+            }
             foreach ($offer->payment_methods as $paymentMethod) {
                 if (in_array($paymentMethod, $paymentMethods)) {
                     $found = true;
