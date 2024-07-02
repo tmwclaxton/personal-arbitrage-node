@@ -65,15 +65,15 @@ class PgpService extends Controller
     }
 
 
-    public function encrypt($privateKey, $message)
+    public function encrypt($publicKey, $message)
     {
         // Initialize the Crypt_GPG instance
         $crypt_gpg = new Crypt_GPG();
         $crypt_gpg->clearPassphrases();
 
         // import the private key
-        $privateKeyImport = $crypt_gpg->importKey($privateKey);
-        $fingerPrint = $privateKeyImport['fingerprint'];
+        $publicKeyImport = $crypt_gpg->importKey($publicKey);
+        $fingerPrint = $publicKeyImport['fingerprint'];
 
         // Add the keys
         $private_key = $crypt_gpg->addEncryptKey($fingerPrint);
@@ -86,41 +86,77 @@ class PgpService extends Controller
     }
 
     // encrypt and sign
-    public function encryptAndSign($privateKey, $message, $passphrase)
+    public function encryptAndSign($publicKey, $message, $passphrase, $peerPublicKey = null)
     {
         // Initialize the Crypt_GPG instance
         $crypt_gpg = new Crypt_GPG();
         $crypt_gpg->clearPassphrases();
 
         // import the private key
-        $privateKeyImport = $crypt_gpg->importKey($privateKey);
-        $fingerPrint = $privateKeyImport['fingerprint'];
+        $publicKeyImport = $crypt_gpg->importKey($publicKey);
+        $fingerPrint = $publicKeyImport['fingerprint'];
 
         // Add the keys
-        $private_key = $crypt_gpg->addEncryptKey($fingerPrint);
-        $private_key = $crypt_gpg->addSignKey($fingerPrint, $passphrase);
+        $publicKey = $crypt_gpg->addEncryptKey($fingerPrint);
+        $publicKey = $crypt_gpg->addSignKey($fingerPrint, $passphrase);
         $crypt_gpg->addPassphrase($fingerPrint, $passphrase);
 
+        if ($peerPublicKey) {
+            $peerPublicKeyImport = $crypt_gpg->importKey($peerPublicKey);
+            $peerFingerPrint = $peerPublicKeyImport['fingerprint'];
+            $peer_public_key = $crypt_gpg->addEncryptKey($peerFingerPrint);
+        }
 
         $newTime = strtotime('-24 hours', time());
 
+        $recipients = $peerPublicKey ? '--recipient ' . $fingerPrint . ' --recipient ' . $peerFingerPrint : '--recipient ' . $fingerPrint;
+
         // Encrypt the message
-        $encrypted = $crypt_gpg->setEngineOptions(array('sign' =>  '--faked-system-time ' . $newTime))
+        $encrypted = $crypt_gpg->setEngineOptions(array(
+            'sign' =>  '--faked-system-time ' . $newTime,
+            'encrypt' => $recipients
+        ))
         ->encryptAndSign($message, true);
 
 
         return $encrypted;
 
+
+        // // add the peer public key
+        // if ($publicKey) {
+        //     $publicKeyImport = $crypt_gpg->importKey($publicKey);
+        //     $publicFingerPrint = $publicKeyImport['fingerprint'];
+        //     $public_key = $crypt_gpg->addEncryptKey($publicFingerPrint);
+        // }
+        //
+        //
+        // if (!$peerPublicKey) {
+        //     // Encrypt the message
+        //     $encrypted = $crypt_gpg->setEngineOptions(array('sign' =>  '--faked-system-time ' . $newTime))
+        //     ->encryptAndSign($message, true);
+        //     return $encrypted;
+        // } else {
+        //     // Encrypt the message
+        //     $encrypted = $crypt_gpg
+        //         ->setEngineOptions(array(
+        //             'encrypt' => '--recipient ' . $peerFingerPrint . ' --recipient ' . $publicFingerPrint,
+        //             'sign' =>  '--faked-system-time ' . $newTime,
+        //
+        //         ))
+        //     ->encryptAndSign($message, true);
+        //     return $encrypted;
+        // }
+
     }
 
-    public function decrypt($public_key, $encrypted_message, $passphrase)
+    public function decrypt($private_key, $encrypted_message, $passphrase)
     {
         // Initialize the Crypt_GPG instance
         $crypt_gpg = new Crypt_GPG();
         $crypt_gpg->clearPassphrases();
 
         // import the public key
-        $publicKeyImport = $crypt_gpg->importKey($public_key);
+        $publicKeyImport = $crypt_gpg->importKey($private_key);
         $fingerPrint = $publicKeyImport['fingerprint'];
 
         // Add the keys

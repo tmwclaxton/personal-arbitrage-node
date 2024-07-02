@@ -502,19 +502,37 @@ class Robosats
         // Read response (this is blocking)
         $message = $client->receive();
         $receivedMessages[] = $message->getContent();
-        dd( "Got message: {$message->getContent()}" );
+        // dd( "Got message: {$message->getContent()}" );
 
         // Send an encrypted message "Hey there, my revolut is @vidgazeltd, please leave the note empty!  Cheers! "
 
         $adminDashboard = AdminDashboard::all()->first();
-        $revtag = $adminDashboard->revolut_handle;
 
-        $privateKey = $robot->private_key;
-        // replace \\ with \n
-        $privateKey = str_replace("\\", "\n", $privateKey);
+        $publicKey = $robot->publicKey;
+        $publicKey = str_replace("\n", "\n", $publicKey);
+
+        $peerPublicKey = "-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+xjMEZoKZxhYJKwYBBAHaRw8BAQdAfbvvjq7CzjJCPiTupEM6vTInOzaNSUaq
+kwM+vutOVijNTFJvYm9TYXRzIElEIDJiYzYzMTQ5MDY0YzNiOGNkZjczZjlk
+NWNjZDgxYzk1NDRkOWM2ZDE1YWNmZjYyZDUxZDhhNDUwZGJjYmFhYzfCjAQQ
+FgoAPgWCZoKZxgQLCQcICZBWfkzf7qKTQwMVCAoEFgACAQIZAQKbAwIeARYh
+BB4ON4hstNuKSMQR+1Z+TN/uopNDAAAZ3QD/Y09d5DPxWbVuBBMlkkzZMGM/
+moNC/dcfTL65LnJhIsoA/1gbgK3l90G72vQV+7rBo820YVyUcrST8Oju1ws1
+f60EzjgEZoKZxhIKKwYBBAGXVQEFAQEHQBQJXDKClLMES7OWKnOMbVT/u/fp
+XZ+2xlfi1pzQdFYvAwEIB8J4BBgWCgAqBYJmgpnGCZBWfkzf7qKTQwKbDBYh
+BB4ON4hstNuKSMQR+1Z+TN/uopNDAAAipwEA9QKmIlpbwjfynJGHCx/jj/Hi
+aghz4oqdUD0XgWcrRg0A/jWtDgblLAx4YBatPwNOcPeDeb3+JYn6mFjmOBvU
+NVMD
+=3m8l
+-----END PGP PUBLIC KEY BLOCK-----
+";
+        // $peerPublicKey = str_replace("\\", "\n", $peerPublicKey);
+
 
         $pgpService = new PgpService();
-        $encryptedMessage = $pgpService->encryptAndSign($privateKey, 'I have received payment' , $robot->token);
+        $revtag = $adminDashboard->revolut_handle;
+        $encryptedMessage = $pgpService->encryptAndSign($publicKey, 'Hey my revtag is ' . $revtag , $robot->token, $peerPublicKey);
         $encryptedMessage = str_replace("\n", '\\', $encryptedMessage);
 
 
