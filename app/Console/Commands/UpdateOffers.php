@@ -122,19 +122,36 @@ class UpdateOffers extends Command
                     $offer['payment_methods'][] = 'Paypal Friends & Family';
                 }
 
+                // if ["Amazon", "IT", "GiftCard"]
+                if (in_array('Amazon', $offer['payment_methods']) && in_array('IT', $offer['payment_methods']) && in_array('GiftCard', $offer['payment_methods'])) {
+                    // remove the Amazon IT GiftCard from the payment_methods
+                    $offer['payment_methods'] = array_diff($offer['payment_methods'], ['Amazon', 'IT', 'GiftCard']);
+                    // add 'Amazon IT GiftCard' to the payment_methods
+                    $offer['payment_methods'][] = 'Amazon IT GiftCard';
+                }
+
+                // ["Amazon", "DE", "GiftCard"]
+                if (in_array('Amazon', $offer['payment_methods']) && in_array('DE', $offer['payment_methods']) && in_array('GiftCard', $offer['payment_methods'])) {
+                    // remove the Amazon DE GiftCard from the payment_methods
+                    $offer['payment_methods'] = array_diff($offer['payment_methods'], ['Amazon', 'DE', 'GiftCard']);
+                    // add 'Amazon DE GiftCard' to the payment_methods
+                    $offer['payment_methods'][] = 'Amazon DE GiftCard';
+                }
+
                 // convert the payment_methods to a json array without a key
                 $offer['payment_methods'] = json_encode(array_values($offer['payment_methods']));
 
                 if ($allFiats && $allFiats->count() > 0 && isset($offer['price']) && $offer['price'] > 0) {
                     // grab currency from offer and find the price in btc using allFiats
                     $btcPrice = $allFiats->where('currency', $offer['currency'])->first();
-                    if (!$offer['has_range']) {
+                    // once a ranged offer is accepted, the amount is set to whatever we are selling
+                    if ($offer['amount']) {
                         $offer['satoshis_now'] = intval(str_replace(',', '', $offer['amount'])) / $offer['price'] * 100000000;
                         $offer['satoshis_now'] = intval(str_replace(',', '', number_format($offer['satoshis_now'], 0)));
                         $offer['satoshi_amount_profit'] = intval(str_replace(',', '', $offer['amount'])) / $btcPrice->price * 100000000;
                         $offer['satoshi_amount_profit'] = intval(str_replace(',', '', number_format($offer['satoshi_amount_profit'], 0))) - $offer['satoshis_now'];
-                        // dd($offer['satoshi_amount_profit']);
-                    } else {
+                    }
+                    if ($offer['min_amount'] && $offer['max_amount']) {
                         $offer['min_satoshi_amount'] = intval(str_replace(',', '', $offer['min_amount'])) / $offer['price']  * 100000000;
                         $offer['min_satoshi_amount'] = intval(str_replace(',', '', number_format($offer['min_satoshi_amount'], 0)));
                         $offer['max_satoshi_amount'] = intval(str_replace(',', '', $offer['max_amount'])) / $offer['price']  * 100000000;

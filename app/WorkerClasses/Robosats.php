@@ -449,6 +449,8 @@ class Robosats
             $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'take', 'amount' => $offer->amount]);
         } else {
             $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'take', 'amount' => $offer->max_amount]);
+            $offer->amount = $offer->max_amount;
+            $offer->save();
         }
         if ($response == null || $response->failed()) {
             $transaction->delete();
@@ -491,16 +493,26 @@ class Robosats
 
         // send the first message being the pgp public key
         // Send a message
-        $client->text(json_encode(['type' => 'message', 'message' => $robot->public_key, 'nick' => $robot->nickname]));
-        // Read response (this is blocking)
-        $message = $client->receive();
-        $receivedMessages[] = $message->getContent();
-        echo "Got message: {$message->getContent()} \n";
+        // $client->text(json_encode(['type' => 'message', 'message' => $robot->public_key, 'nick' => $robot->nickname]));
+        // // Read response (this is blocking)
+        // $message = $client->receive();
+        // $receivedMessages[] = $message->getContent();
+        // echo "Got message: {$message->getContent()} \n";
 
         // Send an encrypted message "Hey there, my revolut is @vidgazeltd, please leave the note empty!  Cheers! "
+
+        $adminDashboard = AdminDashboard::all()->first();
+        $revtag = $adminDashboard->revolut_handle;
+
         $pgpService = new PgpService();
-        $encryptedMessage = $pgpService->encryptAndSign($robot->private_key, 'Hey there, my revolut is @drl5050', $robot->token);
-        $client->text(json_encode(['type' => 'message', 'message' => $encryptedMessage, 'nick' => $robot->nickname]));
+        $encryptedMessage = $pgpService->encryptAndSign($robot->private_key, 'I have received payment' , $robot->token);
+        // remove new lines and \r
+        $encryptedMessage = str_replace("\n", '\\\\', $encryptedMessage);
+        $encryptedMessage = str_replace("\r", '\\\\', $encryptedMessage);
+        // at the end of ----- add \\
+        // $encryptedMessage = str_replace('-----BEGIN PGP MESSAGE-----', '-----BEGIN PGP MESSAGE-----\\\\', $encryptedMessage);
+        // $encryptedMessage = str_replace('-----END PGP MESSAGE-----', '\\-----END PGP MESSAGE-----\\', $encryptedMessage);
+        $client->text(json_encode(['index' => $offer->chat_last_index++, 'message' => $encryptedMessage, 'peer_connected' => false, 'time' => time()]));
 
         // Read response (this is blocking)
         $message = $client->receive();
@@ -546,6 +558,12 @@ class Robosats
         // convert response to json
         $response = json_decode($response->body(), true);
 
+        $adminDashboard = AdminDashboard::all()->first();
+        $adminDashboard->trade_volume_satoshis += $transaction->offer->satoshis_now;
+        $adminDashboard->satoshi_profit += $transaction->offer->satoshi_amount_profit;
+        $adminDashboard->save();
+
+
         return $response;
     }
 
@@ -581,7 +599,9 @@ class Robosats
         $offer->maker_locked = $response['maker_locked'];
         $offer->taker_locked = $response['taker_locked'];
         $offer->escrow_locked = $response['escrow_locked'];
-        $offer->trade_satoshis = $response['trade_satoshis'];
+        if (isset($response['trade_satoshis'])) {
+            $offer->trade_satoshis = $response['trade_satoshis'];
+        }
         if (isset($response['asked_for_cancel'])) {
             $offer->asked_for_cancel = $response['asked_for_cancel'];
         }

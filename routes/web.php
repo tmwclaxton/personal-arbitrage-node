@@ -1,5 +1,6 @@
 <?php
 
+use App\Console\Commands\UpdateOffers;
 use App\Http\Controllers\ProfileController;
 use App\Models\AdminDashboard;
 use App\Models\BtcFiat;
@@ -21,12 +22,21 @@ Route::post('/updateAdminDashboard', function () {
     // iterate through the request and update the admin dashboard
     foreach (request()->adminDashboard as $key => $value) {
         // check if the key is in the admin dashboard
-        // if (isset($adminDashboard->$key)) {
-            $adminDashboard->$key = $value;
-        // }
+        // if not payment methods then update
+        if (isset($adminDashboard->$key)) {
+            if ($key != 'payment_methods') {
+                $adminDashboard->$key = $value;
+            } else {
+                $adminDashboard->$key = json_encode($value);
+            }
+        }
     }
 
+
     $adminDashboard->save();
+    // call command to update the offers refresh:robosat-offers
+    // $updateOffers = new UpdateOffers();
+    // $updateOffers->handle();
     return $adminDashboard;
 })->name('updateAdminDashboard');
 

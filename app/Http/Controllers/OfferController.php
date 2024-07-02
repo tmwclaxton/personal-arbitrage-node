@@ -31,13 +31,13 @@ class OfferController extends Controller
 
         $sellPremium = $adminDashboard->sell_premium;
         $buyPremium = $adminDashboard->buy_premium;
+        $paymentMethods = json_decode($adminDashboard->payment_methods);
 
-        $offers = Offer::where([['premium', '>=', $sellPremium], ['type', 'sell']])->orWhere([['premium', '>=', $buyPremium], ['type', 'buy']])
+        $offers = Offer::where('accepted', '=', true)->orWhere([['accepted', '=', false],['premium', '>=', $sellPremium], ['type', 'sell']])->orWhere([['accepted', '=', false],['premium', '>=', $buyPremium], ['type', 'buy']])
             ->orderBy('accepted', 'desc')
             ->orderBy('max_satoshi_amount_profit', 'desc')
             ->orderBy('satoshi_amount_profit', 'desc')
             ->orderBy('premium', 'desc')
-
             ->get();
         // change the expires_at to a human readable format
         foreach ($offers as $offer) {
@@ -51,12 +51,27 @@ class OfferController extends Controller
             $offer->premium = $offer->premium . '%';
             $offer->payment_methods = json_decode($offer->payment_methods);
             // if array contains revolut else remove it
-            if (!in_array('Revolut', $offer->payment_methods)) {
+            // if (!in_array('Revolut', $offer->payment_methods)) {
+            //     $offers = $offers->filter(function ($value, $key) use ($offer) {
+            //         return $value->id != $offer->id;
+            //     });
+            // }
+
+            // check if any of the payment methods are in the admin dashboard payment methods, if not remove the offer
+            $found = false;
+            foreach ($offer->payment_methods as $paymentMethod) {
+                if (in_array($paymentMethod, $paymentMethods)) {
+                    $found = true;
+                }
+            }
+            if (!$found) {
                 $offers = $offers->filter(function ($value, $key) use ($offer) {
                     return $value->id != $offer->id;
                 });
             }
-            // json decode the payment methods so it is a space separated string
+
+
+            // make human readable
             $offer->payment_methods = implode(', ', $offer->payment_methods);
 
             // if offer is accepted find the transaction
@@ -65,7 +80,7 @@ class OfferController extends Controller
                 $offer->transaction = $transaction;
             }
 
-            if ($offer->transaction && $offer->transaction->status == 'Sucessful trade') { // they spelt successful wrong
+            if ($offer->status == 14 || $offer->transaction && $offer->transaction->status == 'Sucessful trade') { // they spelt successful wrong
                 $offers = $offers->filter(function ($value, $key) use ($offer) {
                     return $value->id != $offer->id;
                 });

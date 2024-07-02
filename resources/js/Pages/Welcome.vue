@@ -5,6 +5,7 @@ import ToggleButton from "@/Components/ToggleButton.vue";
 import {onMounted, ref, watch} from "vue";
 import TextInput from "@/Components/TextInput.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
+import PaymentsInput from "@/Components/PaymentsInput.vue";
 
 const props = defineProps({
     offers: Array,
@@ -46,6 +47,8 @@ setInterval(() => {
 }, 1000);
 
 let tempAdminDashboard = JSON.parse(JSON.stringify(props.adminDashboard));
+// convert tempAdminDashboard.payment_methods to array from json string
+tempAdminDashboard.payment_methods = JSON.parse(tempAdminDashboard.payment_methods);
 
 
 const clicked = () => {
@@ -99,7 +102,12 @@ const clicked = () => {
             <div class="text-left pl-5 flex flex-col gap-y-1 border-r border-black dark:border-white/70 pr-5">
                 <div class="flex flex-row justify-between items-center"><span class="font-bold text-xl mb-2">Offer Selection:</span></div>
                 <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Sell Premium: </span><TextInput v-model="tempAdminDashboard.sell_premium" /></div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Buy Premium: </span><TextInput v-model="tempAdminDashboard.buy_premium" /></div>
+                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Buy Premium: </span><TextInput v-model="tempAdminDashboard.buy_premium"/>
+                </div>
+                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Min Sat Profit: </span><TextInput v-model="tempAdminDashboard.min_satoshi_profit" /></div>
+
+                <PaymentsInput :payment_methods="tempAdminDashboard.payment_methods"
+                               @update:model-value="tempAdminDashboard.payment_methods = $event" />
             </div>
             <div class="text-left pl-5 flex flex-col gap-y-1 border-r border-black dark:border-white/70 pr-5">
                 <div class="flex flex-row justify-between items-center"><span class="font-bold text-xl mb-2">More Config:</span></div>
@@ -141,7 +149,7 @@ const clicked = () => {
             <div class="relative w-full  mx-16 px-6 l">
 
                 <main class=" ">
-                    <div class="grid grid-cols-6 gap-6  mx-auto" v-if="offers.length > 0">
+                    <div class="grid grid-cols-5 gap-6  mx-auto" v-if="offers.length > 0">
                         <Offer v-for="offer in accessOffers" :key="offer.robosatsId" :offer="offer" />
                     </div>
                     <div class="text-center" v-else>
