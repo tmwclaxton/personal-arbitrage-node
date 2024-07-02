@@ -64,8 +64,15 @@ Route::get('/', function () {
         $offer->max_amount = number_format($offer->max_amount, 2);
         // add a percentage to the premium
         $offer->premium = $offer->premium . '%';
+        $offer->payment_methods = json_decode($offer->payment_methods);
+        // if array contains revolut else remove it
+        if (!in_array('Revolut', $offer->payment_methods)) {
+            $offers = $offers->filter(function ($value, $key) use ($offer) {
+                return $value->id != $offer->id;
+            });
+        }
         // json decode the payment methods so it is a space separated string
-        $offer->payment_methods = implode(', ', json_decode($offer->payment_methods));
+        $offer->payment_methods = implode(', ', $offer->payment_methods);
 
         // if offer is accepted find the transaction
         if ($offer->accepted) {

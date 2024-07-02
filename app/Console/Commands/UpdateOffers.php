@@ -106,8 +106,24 @@ class UpdateOffers extends Command
                 // convert the created_at i.e. "2024-06-28T06:24:07.984166Z" to correct format
                 $offer['created_at'] = date('Y-m-d H:i:s', strtotime($offer['created_at']));
 
-                // convert the payment_methods to a json array
-                $offer['payment_methods'] = json_encode($offer['payment_methods']);
+                // if the items Instant and Sepa are in the payment_methods, remove them and replace them with 'Instant SEPA'
+                if (in_array('Instant', $offer['payment_methods']) && in_array('SEPA', $offer['payment_methods'])) {
+                    // remove the Instant and Sepa from the payment_methods
+                    $offer['payment_methods'] = array_diff($offer['payment_methods'], ['Instant', 'SEPA']);
+                    // add 'Instant SEPA' to the payment_methods
+                    $offer['payment_methods'][] = 'Instant SEPA';
+                }
+
+                // if the items Paypal Friends & Family (all separate) are in the payment_methods, remove them and replace them with 'Paypal Friends & Family'
+                if (in_array('Paypal', $offer['payment_methods']) && in_array('Friends', $offer['payment_methods']) && in_array('Family', $offer['payment_methods'])) {
+                    // remove the Paypal Friends & Family from the payment_methods
+                    $offer['payment_methods'] = array_diff($offer['payment_methods'], ['Paypal', 'Friends', 'Family', '&']);
+                    // add 'Paypal Friends & Family' to the payment_methods
+                    $offer['payment_methods'][] = 'Paypal Friends & Family';
+                }
+
+                // convert the payment_methods to a json array without a key
+                $offer['payment_methods'] = json_encode(array_values($offer['payment_methods']));
 
                 if ($allFiats && $allFiats->count() > 0 && isset($offer['price']) && $offer['price'] > 0) {
                     // grab currency from offer and find the price in btc using allFiats

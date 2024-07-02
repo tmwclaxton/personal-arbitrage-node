@@ -24,6 +24,7 @@ return new class extends Migration
             $table->boolean('autoConfirm')->default(false);
             $table->decimal('sell_premium', 5, 2)->default(2);
             $table->decimal('buy_premium', 5, 2)->default(-1);
+            $table->json('payment_methods')->nullable();
             $table->integer('trade_volume_satoshis')->default(0);
             $table->integer('satoshi_profit')->default(0);
             $table->integer('satoshi_fees')->default(0);
