@@ -24,11 +24,13 @@ return new class extends Migration
             $table->boolean('autoConfirm')->default(false);
             $table->decimal('sell_premium', 5, 2)->default(2);
             $table->decimal('buy_premium', 5, 2)->default(-1);
+            $table->integer('min_satoshi_profit')->default(5000);
+
             $table->json('payment_methods')->nullable();
             $table->integer('trade_volume_satoshis')->default(0);
             $table->integer('satoshi_profit')->default(0);
             $table->integer('satoshi_fees')->default(0);
-            $table->json('allowed_payment_methods')->nullable();
+            $table->json('allowed_payment_methods')->nullable()->default(json_encode(['Revolut', 'Paypal Friends & Family', 'Wise']));
             $table->json('allowed_providers')->nullable();
             $table->string('umbrel_token')->nullable()->default('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm94eVRva2VuIjp0cnVlLCJpYXQiOjE3MTk0MzI5MzQsImV4cCI6MTcyMDAzNzczNH0.31qKPyd1zRoySVRPVzisbTxO_FljIisBOHJFyJs6JYc');
             $table->string('revolut_handle')->nullable()->default('@tobyclaxton');

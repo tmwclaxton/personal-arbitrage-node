@@ -32,3 +32,12 @@ Schedule::command('refresh:robots')
     ->everyMinute();
 
 
+Schedule::command('claim:compensation')
+    ->description('claim compensation')
+    ->everySixHours();
+
+Schedule::command('retire:offer')
+    ->description('retire offer')
+    ->everyFifteenMinutes();
+
+

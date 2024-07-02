@@ -32,14 +32,13 @@ Route::post('/updateAdminDashboard', function () {
             }
         }
     }
-
     // set the payment methods separately
     $adminDashboard->payment_methods = json_encode(request()->adminDashboard["payment_methods"]);
-
-
     $adminDashboard->save();
     return $adminDashboard;
 })->name('updateAdminDashboard');
+
+
 
 Route::get('/', [\App\Http\Controllers\OfferController::class, 'index'])->name('welcome');
 Route::get('/offers', [\App\Http\Controllers\OfferController::class, 'getOffers'])->name('offers.index');
@@ -93,7 +92,7 @@ Route::post('/confirm-payment', function () {
     return $response;
 })->name('confirm-payment');
 
-Route::post('/claim-rewards', function () {
+Route::get('/claim-rewards', function () {
     $robosats = new Robosats();
     $robots = Robot::where('earned_rewards', '>', 0)->get();
     foreach ($robots as $robot) {
@@ -105,6 +104,8 @@ Route::post('/claim-rewards', function () {
     );
 })->name('claim-rewards');
 
+
+
 // send-payment-handle
 Route::post('/send-payment-handle', function () {
     $offerId = request('offer_id');
@@ -115,36 +116,6 @@ Route::post('/send-payment-handle', function () {
 
 
 Route::get('/testing', function () {
-
-    // update all current transactions
-    $transactions = Transaction::whereNot('status', 'Sucessful trade')->get();
-    foreach ($transactions as $transaction) {
-        $offer = $transaction->offer;
-        $robosats = new Robosats();
-        $response = $robosats->updateTransactionStatus($offer);
-    }
-    return 'done';
-
-
-
-    // update all current transactions
-    $offers = Offer::where('accepted', true)->where('expires_at', '<', now())->get();
-    $robots = Robot::whereIn('offer_id', $offers->pluck('id'))->get();
-    foreach ($robots as $robot) {
-        $robosats = new Robosats();
-        $response = $robosats->updateRobot($robot);
-    }
-    return 'done';
-
-        // update all current transactions
-    $transactions = Transaction::all();
-    foreach ($transactions as $transaction) {
-        $offer = $transaction->offer;
-        $robosats = new Robosats();
-        $response = $robosats->updateTransactionStatus($offer);
-    }
-    return 'done';
-
 
 
 

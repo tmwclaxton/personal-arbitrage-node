@@ -33,7 +33,9 @@ class OfferController extends Controller
         $buyPremium = $adminDashboard->buy_premium;
         $paymentMethods = json_decode($adminDashboard->payment_methods);
 
-        $offers = Offer::where('accepted', '=', true)->orWhere([['accepted', '=', false],['premium', '>=', $sellPremium], ['type', 'sell']])->orWhere([['accepted', '=', false],['premium', '>=', $buyPremium], ['type', 'buy']])
+        $offers = Offer::where([['accepted', '=', true], ['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14]])
+            ->orWhere([['accepted', '=', false],['premium', '>=', $sellPremium], ['type', 'sell']])
+            ->orWhere([['accepted', '=', false],['premium', '>=', $buyPremium], ['type', 'buy']])
             ->orderBy('accepted', 'desc')
             ->orderBy('max_satoshi_amount_profit', 'desc')
             ->orderBy('satoshi_amount_profit', 'desc')
@@ -50,12 +52,6 @@ class OfferController extends Controller
             // add a percentage to the premium
             $offer->premium = $offer->premium . '%';
             $offer->payment_methods = json_decode($offer->payment_methods);
-            // if array contains revolut else remove it
-            // if (!in_array('Revolut', $offer->payment_methods)) {
-            //     $offers = $offers->filter(function ($value, $key) use ($offer) {
-            //         return $value->id != $offer->id;
-            //     });
-            // }
 
             // check if any of the payment methods are in the admin dashboard payment methods, if not remove the offer
             $found = false;

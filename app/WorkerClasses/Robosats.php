@@ -720,43 +720,14 @@ class Robosats
         $invoice = $lightningNode->createInvoice($earnedRewards, 'Claiming compensation for robot ' . $robot->id);
         // sign invoice
         $pgpService = new PgpService();
-        $signedInvoice = $pgpService->sign($invoice, $robot->private_key);
+        $signedInvoice = $pgpService->sign($robot->private_key, $invoice, $robot->token);
 
         // post request
         $response = Http::withHeaders($this->getHeaders($robot->offer))->timeout(30)->post($url, ['invoice' => $signedInvoice]);
         $response = json_decode($response->body(), true);
 
-        //     // http://192.168.0.18:12596/mainnet/$provider/api/reward/
-        //     // invoice: PGP SIGNED MESSAGE
-        // $signed = $crypt_gpg->sign('hello world', Crypt_GPG::SIGN_MODE_CLEAR);
-        //
-
-
-
-
         return $response;
     }
-
-
-
-    //
-    // {"id":6984,"status":3,"created_at":"2024-06-27T06:25:07.984166Z","expires_at":"2024-06-28T00:34:13.731564Z","type":0,"currency":2,"amount":"100.00000000","has_range":false,"min_amount":null,"max_amount":null,"payment_method":"Revolut","is_explicit":false,"premium":"2.00","satoshis":null,"maker":71794,"taker":71680,"escrow_duration":10800,"bond_size":"3.00","latitude":null,"longitude":null,"total_secs_exp":200,"is_maker":false,"is_taker":true,"is_participant":true,"maker_nick":"StatusPlace548","maker_hash_id":"37855626811cf2097c7aa2547bf69bd03726a25d6ddd98fb6bbfa58b0f389b0c","maker_status":"Inactive","taker_status":"Active","price_now":58566.0,"premium_now":2.0,"satoshis_now":172915,"is_buyer":false,"is_seller":true,"taker_nick":"IdealisticBlur631","taker_hash_id":"8f5e582dcc4b69d236681f834c10cc2db5e4640fdb75a4335901d54b300514c3","status_message":"Waiting for taker bond","is_fiat_sent":false,"is_disputed":false,"ur_nick":"IdealisticBlur631","maker_locked":true,"taker_locked":false,"escrow_locked":false,"bond_invoice":"lnbc51220n1pn8uppapp5nwlmr9sua5h6x8f75dgunmwpckx2fx2uredkk2du3k4cejan0dcqd2j2pshjmt9de6zqun9vejhyetwvdjn5gr9893nye3kx9jz6vnyx3sj6dpcvdnz6c34vycz6ephvycnzwpnxdnrjvp59cs9g6rfwvs8qcted4jkuapq2ay5cnpqgefy2326g5syjn3qt984253q2aq5cnz92skzqcmgv43kkgr0dcs9ymmzdafkzarnyp5kvgr5dpjjqmr0vd4jqampwvs8xatrvdjhxumxw4kzugzfwss8w6tvdssxyefqw4hxcmmrddjkggpgveskjmpfyp6kumr9wdejq7t0w5sxx6r9v96zqmmjyp3kzmnrv4kzqatwd9kxzar9wfskcmre9ccqz2cxqzfvsp5u5tda8gk0lxu9eeefvzkq6je6m43n4cr8tkkmg26wjc8mf6zukcq9qxpqysgquplmw2dcdk8a93pgms80kzt4d8cvuqvnyr40jhk7cprkn7kz8j9j6m9x4zg8wjlgpxnj6wqa96ymckmjtwcz8qq24g2zc8agzt423qsp39ngx6","bond_satoshis":5122}
-    //
-    // 2. until GET request http://192.168.0.18:12596/mainnet/temple/api/order/?order_id=6984
-    //
-    // status message != Waiting for taker bond
-    //
-    //                               3. once status message = 'Waiting for trade collateral and buyer invoice' grab the escrow_invoice
-    //
-    // {"id":6984,"status":6,"created_at":"2024-06-27T06:25:07.984166Z","expires_at":"2024-06-28T03:32:32.974165Z","type":0,"currency":2,"amount":"100.00000000","has_range":false,"min_amount":null,"max_amount":null,"payment_method":"Revolut","is_explicit":false,"premium":"2.00","satoshis":null,"maker":71794,"taker":71680,"escrow_duration":10800,"bond_size":"3.00","latitude":null,"longitude":null,"total_secs_exp":10800,"is_maker":false,"is_taker":true,"is_participant":true,"maker_nick":"StatusPlace548","maker_hash_id":"37855626811cf2097c7aa2547bf69bd03726a25d6ddd98fb6bbfa58b0f389b0c","maker_status":"Inactive","taker_status":"Active","is_buyer":false,"is_seller":true,"taker_nick":"IdealisticBlur631","taker_hash_id":"8f5e582dcc4b69d236681f834c10cc2db5e4640fdb75a4335901d54b300514c3","status_message":"Waiting for trade collateral and buyer invoice","is_fiat_sent":false,"is_disputed":false,"ur_nick":"IdealisticBlur631","satoshis_now":170767,"maker_locked":true,"taker_locked":true,"escrow_locked":false,"trade_satoshis":171066,"escrow_invoice":"lnbc1710660n1pn8up9ppp5x9d8sdrupt2y2escs2y7l0aty8e6qndxsl50fngkpm27t00398uqd2j2pshjmt9de6zqun9vejhyetwvdjn5gr9893nye3kx9jz6vnyx3sj6dpcvdnz6c34vycz6ephvycnzwpnxdnrjvp59cs9g6rfwvs8qcted4jkuapq2ay5cnpqgefy2326g5syjn3qt984253q2aq5cnz92skzqcmgv43kkgr0dcs9ymmzdafkzarnyp5kvgr5dpjjqmr0vd4jqampwvs8xatrvdjhxumxw4kzugzfwss8w6tvdssxyefqw4hxcmmrddjkggpgveskjmpfyp6kumr9wdejq7t0w5sxx6r9v96zqmmjyp3kzmnrv4kzqatwd9kxzar9wfskcmre9ccqz2cxqr06gsp5fux2slru6cezavzzd5s35q9v4drpe4dmv2ma4qt7aaejezgx353q9qxpqysgqaeuar0efhhzgglskl8wcq7j3vhzdrwde20dyvu8pggc54kuxqnf9dmp3sym3r2wcstdnsav99sz50dyd9hjh78pga58a3cdvy7wfskcqzf6ucj","escrow_satoshis":171066}
-    //
-    // 4. once that's paid status message = 'Waiting only for buyer invoice'
-    //
-    //
-
-    // 5. IF THEY DON'T PAY IN TIME
-    // {"id":6984,"status":5,"created_at":"2024-06-27T06:25:07.984166Z","expires_at":"2024-06-28T03:32:32.974165Z","type":0,"currency":2,"amount":"100.00000000","has_range":false,"min_amount":null,"max_amount":null,"payment_method":"Revolut","is_explicit":false,"premium":"2.00","satoshis":null,"maker":71794,"taker":71680,"escrow_duration":10800,"bond_size":"3.00","latitude":null,"longitude":null,"total_secs_exp":0,"is_maker":false,"is_taker":true,"is_participant":true,"maker_nick":"StatusPlace548","maker_hash_id":"37855626811cf2097c7aa2547bf69bd03726a25d6ddd98fb6bbfa58b0f389b0c","maker_status":"Inactive","taker_status":"Active","price_now":58645.0,"premium_now":2.0,"satoshis_now":170767,"is_buyer":false,"is_seller":true,"taker_nick":"IdealisticBlur631","taker_hash_id":"8f5e582dcc4b69d236681f834c10cc2db5e4640fdb75a4335901d54b300514c3","status_message":"Expired","is_fiat_sent":false,"is_disputed":false,"ur_nick":"IdealisticBlur631","maker_locked":false,"taker_locked":false,"escrow_locked":false,"public_duration":86340,"expiry_reason":3,"expiry_message":"Invoice not submitted"}
-
 
 
 }

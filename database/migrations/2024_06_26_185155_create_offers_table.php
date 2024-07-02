@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('offers', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->unsignedBigInteger('robosatsId')->unique();
+            $table->unsignedBigInteger('robosatsId')->nullable();
             $table->string('provider');
             $table->boolean('accepted')->default(false);
             $table->timestamp('expires_at');

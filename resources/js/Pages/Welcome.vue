@@ -108,10 +108,9 @@ const clicked = () => {
                 <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Sell Premium: </span><TextInput v-model="tempAdminDashboard.sell_premium" /></div>
                 <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Buy Premium: </span><TextInput v-model="tempAdminDashboard.buy_premium"/>
                 </div>
+                <div class="border-b border-zinc-300 dark:border-zinc-700"></div>
                 <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Min Sat Profit: </span><TextInput v-model="tempAdminDashboard.min_satoshi_profit" /></div>
-
-                <PaymentsInput :payment_methods="tempAdminDashboard.payment_methods"
-                               @update:model-value="tempAdminDashboard.payment_methods = $event" />
+                <p class="text-xs w-96">This is for the auto accept feature. If the profit is less than this value, the offer will not be accepted.</p>
             </div>
             <div class="text-left pl-5 flex flex-col gap-y-1 border-r border-black dark:border-white/70 pr-5">
                 <div class="flex flex-row justify-between items-center"><span class="font-bold text-xl mb-2">More Config:</span></div>
@@ -129,10 +128,20 @@ const clicked = () => {
                         <TextInput v-model="tempAdminDashboard.paypal_handle"/>
                     </div>
                     <div class="flex flex-row justify-between items-center"><span
-                        class="font-bold mr-1">Strike Tag: </span>
-                        <TextInput v-model="tempAdminDashboard.strike_handle"/>
+                        class="font-bold mr-1">Wise Tag: </span>
+                        <TextInput v-model="tempAdminDashboard.wise_handle"/>
                     </div>
                 </div>
+                    <!--<div class="flex flex-row justify-between items-center"><span-->
+                    <!--    class="font-bold mr-1">Strike Tag: </span>-->
+                    <!--    <TextInput v-model="tempAdminDashboard.strike_handle"/>-->
+                    <!--</div>-->
+
+                    <div class="flex flex-row gap-x-4 justify-between">
+                        <PaymentsInput :payment_methods="tempAdminDashboard.payment_methods"
+                                       @update:model-value="tempAdminDashboard.payment_methods = $event"/>
+                        <primary-button class="h-12 mt-5" @click="clicked">Save Changes</primary-button>
+                    </div>
 
             </div>
             <div class="text-left pl-5 flex flex-col gap-y-1 border-r border-black dark:border-white/70 pr-5">
@@ -143,7 +152,6 @@ const clicked = () => {
             </div>
 
 
-        <primary-button class="h-12 my-auto" @click="clicked" >Save Changes</primary-button>
         </div>
 
 
