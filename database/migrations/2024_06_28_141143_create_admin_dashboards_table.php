@@ -32,10 +32,10 @@ return new class extends Migration
             $table->json('allowed_providers')->nullable();
             $table->string('umbrel_token')->nullable()->default('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm94eVRva2VuIjp0cnVlLCJpYXQiOjE3MTk0MzI5MzQsImV4cCI6MTcyMDAzNzczNH0.31qKPyd1zRoySVRPVzisbTxO_FljIisBOHJFyJs6JYc');
             $table->string('revolut_handle')->nullable()->default('@tobyclaxton');
-            $table->string('paypal_handle')->nullable();
-            $table->string('cashapp_handle')->nullable();
+            $table->string('paypal_handle')->nullable()->default('@tobyclaxton');
+            $table->string('wise_handle')->nullable()->default('@tobymatthewwilliamc');
             $table->string('strike_handle')->nullable();
-            $table->string('wise_handle')->nullable();
+            $table->string('cashapp_handle')->nullable();
             $table->string('instant_sepa_handle')->nullable();
             $table->timestamps();
         });

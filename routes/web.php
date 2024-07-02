@@ -125,41 +125,7 @@ Route::get('/testing', function () {
     }
     return 'done';
 
-    $robosats = new Robosats();
-    $response = $robosats->webSocketCommunicate(Offer::find(80));
-    return $response;
 
-    $pgpService = new PgpService();
-    $keypair = $pgpService->generate_keypair('-xsfdC?6QdY7NA+zwqw<q^e4S!MFKexQR*HXN');
-    // remove new lines
-    $private = str_replace("\n", '', $keypair['private_key']);
-    $public = str_replace("\n", '', $keypair['public_key']);
-
-    $sha256 = hash('sha256', '-xfdC?6QdY7NA+zwqw<q^e4S!MFKexQR*HXN');
-
-    $b91 = new \Katoga\Allyourbase\Base91();
-    $b91Token = $b91->encode(pack('H*', $sha256));
-    $decoded = $b91->decode($b91Token);
-    return([
-        'private' => $private,
-        'public' => $public,
-        'b91Token' => $b91Token,
-        'hex' => bin2hex($decoded)
-    ]);
-    $pgpService = new PgpService();
-    $robot = Robot::find(1);
-    $encrypt = $pgpService->encrypt($robot->private_key, 'hello');
-    $decrypt = $pgpService->decrypt($robot->public_key, $encrypt, $robot->token);
-    $sign = $pgpService->sign($robot->private_key, 'hello');
-    $verify = $pgpService->verify($robot->public_key, $sign, 'hello');
-
-
-    return [
-        'encrypt' => $encrypt,
-        'decrypt' => $decrypt,
-        'sign' => $sign,
-        'verify' => $verify
-    ];
 
     // update all current transactions
     $offers = Offer::where('accepted', true)->where('expires_at', '<', now())->get();
@@ -185,38 +151,8 @@ Route::get('/testing', function () {
     //
     // $robosats = new Robosats();
     // $robosats->claimCompensation('', 'temple', '-----BEGIN PGP PRIVATE KEY BLOCK-----\n\nxYYEZnsonBYJKwYBBAHaRw8BAQdA50kwmUx1AunyYiukCXHcX8WKTcGbWhkC\nzmBV+anqoR7+CQMIDsjXel9rJMPg4OHL6eEQjTpKODKUb27/G5oEvcmsDxOn\nIaWg3kwZwpyLpDmXUVgWZEFqb6DLigqyCBc5K5I7NRroKr0ILZ8HQ3wHxZME\nXs1MUm9ib1NhdHMgSUQgOGY1ZTU4MmRjYzRiNjlkMjM2NjgxZjgzNGMxMGNj\nMmRiNWU0NjQwZmRiNzVhNDMzNTkwMWQ1NGIzMDA1MTRjM8KMBBAWCgA+BYJm\neyicBAsJBwgJkKypJt+M1B3PAxUICgQWAAIBAhkBApsDAh4BFiEE5ZaRtImc\nZ6D5bL2MrKkm34zUHc8AANkjAP99+0lYJYtLZJ5KsQVlOEE7MdDLdSuSOlpD\nE8y/HfgtkQEAqGWtPcTQBeVCadha47B5Qn7js2kbhpdAG62nqmadYA7HiwRm\neyicEgorBgEEAZdVAQUBAQdAX1L4Ldozcg1y6Pue5vvgFQR4lqGyZhpiGiEs\nA75M0F0DAQgH/gkDCOkwbVtNSDpW4FLyGxhtbMuhMOLyTTcf0bqVSGqLu5UU\njyDl0SUQYgRDACc2Gj49Pt7PO74f9MVBsbWcdewvd3P6KziHkAjCOvLK4o67\n4rvCeAQYFgoAKgWCZnsonAmQrKkm34zUHc8CmwwWIQTllpG0iZxnoPlsvYys\nqSbfjNQdzwAAb7oA/Rd4D3sXb6PKCPyplpb7gUmJ3SFOM6ui5PauEAQ36C7N\nAP9YYOBt9TdIsOZ5/VLc7kaXgLQZmqEKfRvaqMIiRT3UCw==\n=GLzY\n-----END PGP PRIVATE KEY BLOCK-----\n');
-
-
-
-    // // $response = $robosats->request('api/book/');
-    // $response = $robosats->getBookOffers();
-    //
-    // $negativeBuyOffers = $robosats->getNegativePremiumBuyOffers($response['buyOffers'], '0');
-    // $positiveSellOffers = $robosats->getPositivePremiumSellOffers($response['sellOffers'], '2');
-    // return [
-    //     'negativeBuyOffers' => $negativeBuyOffers,
-    //     'positiveSellOffers' => $positiveSellOffers
-    // ];
-
-    // $lightningNode = new \App\WorkerClasses\LightningNode();
-    // return $lightningNode->getPayments();
-    // return $lightningNode->getInvoiceDetails('lnbc20u1pn8mezjpp5ghwgackp9gtmchlptfgsvuafrntpmep90zvm2xh32g5jlt5jk6rqdqqcqzzgxqyz5vqrzjqwnvuc0u4txn35cafc7w94gxvq5p3cu9dd95f7hlrh0fvs46wpvhdesygxzrj2w2tgqqqqryqqqqthqqpysp53wh2jg6k83kdntaelutzdxtxwxnkevszdec6p0gg0ggk52ds2w0q9qrsgq8ctexfelzrn5tdhh53nertza4zufms482stn0cwmzqz7dqx0phpkrxp0psk75v2cfjdey3sx9cl5eyqcvfjrcyxwqmp877s2pjpq5hqpx009p0');
 });
 
-Route::get('/home2', function () {
-
-    $robosats = new Robosats();
-    // $response = $robosats->request('api/book/');
-    $response = $robosats->getBookOffers();
-
-    $negativeBuyOffers = $robosats->getNegativePremiumBuyOffers($response['buyOffers'], '0');
-    $positiveSellOffers = $robosats->getPositivePremiumSellOffers($response['sellOffers'], '2');
-
-    return view('welcome', [
-        'negativeBuyOffers' => $negativeBuyOffers,
-        'positiveSellOffers' => $positiveSellOffers
-    ]);
-});
 
 
 require __DIR__.'/auth.php';

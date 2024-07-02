@@ -45,6 +45,7 @@ return new class extends Migration
             $table->string('maker_status');
 
             $table->integer('status')->default(0);
+            $table->text('status_message')->nullable();
             $table->unsignedBigInteger('taker')->nullable();
             $table->integer('total_secs_exp')->default(0);
             $table->boolean('is_maker')->default(false);
@@ -55,7 +56,6 @@ return new class extends Migration
             $table->string('taker_status')->nullable();
             $table->boolean('is_buyer')->default(false);
             $table->boolean('is_seller')->default(false);
-            $table->text('status_message')->nullable();
             $table->boolean('is_fiat_sent')->default(false);
             $table->boolean('is_disputed')->default(false);
             $table->string('ur_nick')->nullable();

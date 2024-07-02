@@ -15,7 +15,7 @@ class UpdateOffers extends Command
      *
      * @var string
      */
-    protected $signature = 'refresh:robosat-offers';
+    protected $signature = 'refresh:offers';
 
     /**
      * The console command description.

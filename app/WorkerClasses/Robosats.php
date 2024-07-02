@@ -531,13 +531,48 @@ class Robosats
                 $peerPublicKey = json_decode($message->getContent(), true)['message'];
 
                 $pgpService = new PgpService();
-                $revtag = $adminDashboard->revolut_handle;
-
                 $publicKey = $robot->public_key;
-                // $publicKey = str_replace("\n", "\n", $publicKey);
                 $privateKey = $robot->private_key;
-                // $privateKey = str_replace("\n", "\n", $privateKey);
-                $encryptedMessage = $pgpService->encryptAndSign($publicKey, $privateKey, 'Hey! My revolut is ' . $revtag , $robot->token, $peerPublicKey);
+
+                // depending on what payment methods are available change the message, preference order is revolut, wise, paypal friends & family, strike
+                $message = 'Hey! My revolut is ';
+                $preferredPaymentMethods = ['Revolut', 'Wise', 'Paypal Friends & Family', 'Strike'];
+                foreach ($preferredPaymentMethods as $paymentMethod) {
+                    if (in_array($paymentMethod, json_decode($robot->offer->payment_methods))) {
+                        if ($paymentMethod == null) {
+                            continue;
+                        }
+                        switch ($paymentMethod) {
+                            case 'Revolut':
+                                $tag = $adminDashboard->revolut_handle;
+                                $pseudonym = "Revtag";
+                                break;
+                            case 'Wise':
+                                $tag = $adminDashboard->wise_handle;
+                                $pseudonym = "Wise handle";
+                                break;
+                            case 'Paypal Friends & Family':
+                                $tag = $adminDashboard->paypal_handle;
+                                $pseudonym = "Paypal";
+                                break;
+                            // case 'Strike':
+                            //     $tag = $adminDashboard->strike_handle;
+                            //     $pseudonym = "Strike handle";
+                            //     break;
+                        }
+
+                        if (empty($tag) || empty($pseudonym)) {
+                            return 'No tag / pseudonym found for ' . $paymentMethod;
+                        }
+
+                        $message = 'Hey! My ' . $pseudonym . ' is ' . $tag;
+                        break;
+                    }
+                }
+
+
+
+                $encryptedMessage = $pgpService->encryptAndSign($publicKey, $privateKey, $message , $robot->token, $peerPublicKey);
                 $encryptedMessage = str_replace("\n", '\\', $encryptedMessage);
 
 
@@ -586,6 +621,7 @@ class Robosats
 
         if (isset($response['bad_request'])) {
             $offer->status_message = $response['bad_request'];
+            $offer->status = 99;
             $offer->save();
             $transaction->status = $response['bad_request'];
             $transaction->save();
