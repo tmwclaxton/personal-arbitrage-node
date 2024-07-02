@@ -115,6 +115,15 @@ Route::post('/send-payment-handle', function () {
 
 Route::get('/testing', function () {
 
+    // update all current transactions
+    $transactions = Transaction::whereNot('status', 'Sucessful trade')->get();
+    foreach ($transactions as $transaction) {
+        $offer = $transaction->offer;
+        $robosats = new Robosats();
+        $response = $robosats->updateTransactionStatus($offer);
+    }
+    return 'done';
+
     $robosats = new Robosats();
     $response = $robosats->webSocketCommunicate(Offer::find(80));
     return $response;

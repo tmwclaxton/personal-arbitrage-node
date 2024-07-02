@@ -170,8 +170,11 @@ class Robosats
         $pgpService = new PgpService();
         $keyPair = $pgpService->generate_keypair($generatedToken);
 
-        $privateKey = $keyPair['private_key'];
-        $publicKey = $keyPair['public_key'];
+        $privateKeyUnescaped = $keyPair['private_key'];
+        $publicKeyUnescaped = $keyPair['public_key'];
+        // replace \n with \
+        $privateKey = str_replace("\n", '\\', $privateKeyUnescaped);
+        $publicKey = str_replace("\n", '\\', $publicKeyUnescaped);
 
         // ideal format for authentication
         $authentication = 'Token ' . $b91Token . ' | Public ' . $publicKey . ' | Private ' . $privateKey;
@@ -179,10 +182,10 @@ class Robosats
         $authentication = str_replace("\n", '', $authentication);
         $authentication = str_replace("\r", '', $authentication);
         // at the end of ----- add \\
-        $authentication = str_replace('-----BEGIN PGP PUBLIC KEY BLOCK-----', '-----BEGIN PGP PUBLIC KEY BLOCK-----\\\\', $authentication);
-        $authentication = str_replace('-----END PGP PUBLIC KEY BLOCK-----', '\\-----END PGP PUBLIC KEY BLOCK-----\\', $authentication);
-        $authentication = str_replace('-----BEGIN PGP PRIVATE KEY BLOCK-----', '-----BEGIN PGP PRIVATE KEY BLOCK-----\\\\', $authentication);
-        $authentication = str_replace('-----END PGP PRIVATE KEY BLOCK-----', '\\-----END PGP PRIVATE KEY BLOCK-----\\\\', $authentication);
+        // $authentication = str_replace('-----BEGIN PGP PUBLIC KEY BLOCK-----', '-----BEGIN PGP PUBLIC KEY BLOCK-----\\\\', $authentication);
+        // $authentication = str_replace('-----END PGP PUBLIC KEY BLOCK-----', '\\-----END PGP PUBLIC KEY BLOCK-----\\', $authentication);
+        // $authentication = str_replace('-----BEGIN PGP PRIVATE KEY BLOCK-----', '-----BEGIN PGP PRIVATE KEY BLOCK-----\\\\', $authentication);
+        // $authentication = str_replace('-----END PGP PRIVATE KEY BLOCK-----', '\\-----END PGP PRIVATE KEY BLOCK-----\\\\', $authentication);
 
 
         foreach ($this->providers as $provider) {
@@ -218,7 +221,7 @@ class Robosats
             $robot->sha256 = $b91Token;
             $robot->nickname = $json['nickname'];
             $robot->hash_id = $json['hash_id'];
-            $robot->public_key = $json['public_key'];
+            $robot->public_key = $publicKey;
             $robot->private_key = $privateKey;
             $robot->encrypted_private_key = $json['encrypted_private_key'];
             $robot->earned_rewards = $json['earned_rewards'];
@@ -490,29 +493,37 @@ class Robosats
 
         $receivedMessages = [];
 
-
+        $publicKey = $robot->publicKey;
+        // replace \\ with \n
+        $publicKey = str_replace("\\", "\n", $publicKey);
         // send the first message being the pgp public key
         // Send a message
-        // $client->text(json_encode(['type' => 'message', 'message' => $robot->public_key, 'nick' => $robot->nickname]));
-        // // Read response (this is blocking)
-        // $message = $client->receive();
-        // $receivedMessages[] = $message->getContent();
-        // echo "Got message: {$message->getContent()} \n";
+        $client->text(json_encode(['type' => 'message', 'message' => $publicKey, 'nick' => $robot->nickname]));
+        // Read response (this is blocking)
+        $message = $client->receive();
+        $receivedMessages[] = $message->getContent();
+        dd( "Got message: {$message->getContent()}" );
 
         // Send an encrypted message "Hey there, my revolut is @vidgazeltd, please leave the note empty!  Cheers! "
 
         $adminDashboard = AdminDashboard::all()->first();
         $revtag = $adminDashboard->revolut_handle;
 
+        $privateKey = $robot->private_key;
+        // replace \\ with \n
+        $privateKey = str_replace("\\", "\n", $privateKey);
+
         $pgpService = new PgpService();
-        $encryptedMessage = $pgpService->encryptAndSign($robot->private_key, 'I have received payment' , $robot->token);
-        // remove new lines and \r
-        $encryptedMessage = str_replace("\n", '\\\\', $encryptedMessage);
-        $encryptedMessage = str_replace("\r", '\\\\', $encryptedMessage);
-        // at the end of ----- add \\
-        // $encryptedMessage = str_replace('-----BEGIN PGP MESSAGE-----', '-----BEGIN PGP MESSAGE-----\\\\', $encryptedMessage);
-        // $encryptedMessage = str_replace('-----END PGP MESSAGE-----', '\\-----END PGP MESSAGE-----\\', $encryptedMessage);
-        $client->text(json_encode(['index' => $offer->chat_last_index++, 'message' => $encryptedMessage, 'peer_connected' => false, 'time' => time()]));
+        $encryptedMessage = $pgpService->encryptAndSign($privateKey, 'I have received payment' , $robot->token);
+        $encryptedMessage = str_replace("\n", '\\', $encryptedMessage);
+
+
+        $json = json_encode([
+            'type' => 'message',
+            'message' => $encryptedMessage,
+            'nick' => $robot->nickname
+        ]);
+        $client->text($json);
 
         // Read response (this is blocking)
         $message = $client->receive();
@@ -575,7 +586,23 @@ class Robosats
         $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->get($url);
         $response = json_decode($response->body(), true);
 
-        $offer->status = $response['status'];
+        if (isset($response['bad_request'])) {
+            $offer->status_message = $response['bad_request'];
+            $offer->save();
+            $transaction->status = $response['bad_request'];
+            $transaction->save();
+            return $response;
+        }
+
+        if (!$response || $response == null) {
+            return $response;
+        }
+        if (isset($response['status'])) {
+            $offer->status = $response['status'];
+        }
+        if (isset($response['status_message'])) {
+            $offer->status_message = $response['status_message'];
+        }
         $offer->expires_at = date('Y-m-d H:i:s', strtotime($response['expires_at']));
         $offer->created_at = date('Y-m-d H:i:s', strtotime($response['created_at']));
         $offer->maker = $response['maker'];
@@ -591,7 +618,6 @@ class Robosats
         $offer->taker_status = $response['taker_status'];
         $offer->is_buyer = $response['is_buyer'];
         $offer->is_seller = $response['is_seller'];
-        $offer->status_message = $response['status_message'];
         $offer->is_fiat_sent = $response['is_fiat_sent'];
         $offer->is_disputed = $response['is_disputed'];
         $offer->ur_nick = $response['ur_nick'];

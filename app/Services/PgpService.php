@@ -102,8 +102,12 @@ class PgpService extends Controller
         $crypt_gpg->addPassphrase($fingerPrint, $passphrase);
 
 
+        $newTime = strtotime('-24 hours', time());
+
         // Encrypt the message
-        $encrypted = $crypt_gpg->encryptAndSign($message, true);
+        $encrypted = $crypt_gpg->setEngineOptions(array('sign' =>  '--faked-system-time ' . $newTime))
+        ->encryptAndSign($message, true);
+
 
         return $encrypted;
 

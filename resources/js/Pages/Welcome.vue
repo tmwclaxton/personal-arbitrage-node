@@ -31,7 +31,7 @@ setInterval(() => {
         // iterate over offers and check if any status has changed
         // if status has changed, play mp3
         for (let i = 0; i < response.data.offers.length; i++) {
-            if (response.data.offers[i].transaction && response.data.offers[i].transaction.status !== accessOffers.value[i].transaction.status) {
+            if (response.data.offers[i].transaction !== null && response.data.offers[i].transaction.status !== accessOffers.value[i].transaction.status) {
                 console.log('status has changed');
                 // play mp3
                 const audio = new Audio('/sounds/status.mp3');
