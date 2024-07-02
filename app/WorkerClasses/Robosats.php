@@ -485,57 +485,59 @@ class Robosats
         $url = $this->wsHost . '/mainnet/' . $offer->provider . '/ws/chat/' . $offer->robosatsId . '/?token_sha256_hex=' . $hex;
 
         // create a new client
-        $client = new Client($url);
-        $client
-            // Add standard middlewares
-            ->addMiddleware(new CloseHandler())
-            ->addMiddleware(new PingResponder());
-
-        $receivedMessages = [];
-
-        $publicKey = $robot->publicKey;
-        // replace \\ with \n
-        $publicKey = str_replace("\\", "\n", $publicKey);
-        // send the first message being the pgp public key
-        // Send a message
-        $client->text(json_encode(['type' => 'message', 'message' => $publicKey, 'nick' => $robot->nickname]));
-        // Read response (this is blocking)
-        $message = $client->receive();
-        $receivedMessages[] = $message->getContent();
+        // $client = new Client($url);
+        // $client
+        //     // Add standard middlewares
+        //     ->addMiddleware(new CloseHandler())
+        //     ->addMiddleware(new PingResponder());
+        //
+        // $receivedMessages = [];
+        //
+        // $publicKey = $robot->publicKey;
+        // // replace \\ with \n
+        // $publicKey = str_replace("\\", "\n", $publicKey);
+        // // send the first message being the pgp public key
+        // // Send a message
+        // $client->text(json_encode(['type' => 'message', 'message' => $publicKey, 'nick' => $robot->nickname]));
+        // // Read response (this is blocking)
+        // $message = $client->receive();
+        // $receivedMessages[] = $message->getContent();
         // dd( "Got message: {$message->getContent()}" );
 
         // Send an encrypted message "Hey there, my revolut is @vidgazeltd, please leave the note empty!  Cheers! "
 
         $adminDashboard = AdminDashboard::all()->first();
 
-        $publicKey = $robot->publicKey;
+        $publicKey = $robot->public_key;
+        $publicKey = str_replace("\n", "\n", $publicKey);
+        $privateKey = $robot->private_key;
         $publicKey = str_replace("\n", "\n", $publicKey);
 
         $peerPublicKey = "-----BEGIN PGP PUBLIC KEY BLOCK-----
 
-xjMEZoKZxhYJKwYBBAHaRw8BAQdAfbvvjq7CzjJCPiTupEM6vTInOzaNSUaq
-kwM+vutOVijNTFJvYm9TYXRzIElEIDJiYzYzMTQ5MDY0YzNiOGNkZjczZjlk
-NWNjZDgxYzk1NDRkOWM2ZDE1YWNmZjYyZDUxZDhhNDUwZGJjYmFhYzfCjAQQ
-FgoAPgWCZoKZxgQLCQcICZBWfkzf7qKTQwMVCAoEFgACAQIZAQKbAwIeARYh
-BB4ON4hstNuKSMQR+1Z+TN/uopNDAAAZ3QD/Y09d5DPxWbVuBBMlkkzZMGM/
-moNC/dcfTL65LnJhIsoA/1gbgK3l90G72vQV+7rBo820YVyUcrST8Oju1ws1
-f60EzjgEZoKZxhIKKwYBBAGXVQEFAQEHQBQJXDKClLMES7OWKnOMbVT/u/fp
-XZ+2xlfi1pzQdFYvAwEIB8J4BBgWCgAqBYJmgpnGCZBWfkzf7qKTQwKbDBYh
-BB4ON4hstNuKSMQR+1Z+TN/uopNDAAAipwEA9QKmIlpbwjfynJGHCx/jj/Hi
-aghz4oqdUD0XgWcrRg0A/jWtDgblLAx4YBatPwNOcPeDeb3+JYn6mFjmOBvU
-NVMD
-=3m8l
+xjMEZoQAuBYJKwYBBAHaRw8BAQdAWZeyKEvaZG09QfNSzhJXgQxLFo1fVn9+
+HFVsalnxsJLNAMKMBBAWCgA+BYJmhAC4BAsJBwgJkKKHKWoWFuegAxUICgQW
+AAIBAhkBApsDAh4BFiEExmyRMbFWwgtIWHN0oocpahYW56AAACDpAQDNd7nY
+zlYQqREYGBy75wcHx+WaSMMVm3R4rU1UOLdhugEA6m5ZpIGD3Kzam7eFl4iM
+2KyiTykXJNoID7za5f5sgQ/OOARmhAC4EgorBgEEAZdVAQUBAQdAuRUrmR58
+BmVQ5qcumt5KKVc9nXwqYp65itLwW60/cDgDAQgHwngEGBYKACoFgmaEALgJ
+kKKHKWoWFuegApsMFiEExmyRMbFWwgtIWHN0oocpahYW56AAADj5AQDFZ95U
+qWHkwlLFr+FFXiAJVAutDH+gbTzDqdTlUq3HHwD/dLKcfO3TL8JpfHdLnRqx
+SukZSWDUr5/inSfosk21Pgc=
+=/U1V
 -----END PGP PUBLIC KEY BLOCK-----
+
 ";
         // $peerPublicKey = str_replace("\\", "\n", $peerPublicKey);
 
 
         $pgpService = new PgpService();
         $revtag = $adminDashboard->revolut_handle;
-        $encryptedMessage = $pgpService->encryptAndSign($publicKey, 'Hey my revtag is ' . $revtag , $robot->token, $peerPublicKey);
+        $encryptedMessage = $pgpService->encryptAndSign($publicKey, $privateKey, 'Hey my revtag is ' . $revtag , $robot->token, $peerPublicKey);
         $encryptedMessage = str_replace("\n", '\\', $encryptedMessage);
 
 
+        return $encryptedMessage;
         $json = json_encode([
             'type' => 'message',
             'message' => $encryptedMessage,

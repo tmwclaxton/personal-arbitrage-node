@@ -80,11 +80,11 @@ class OfferController extends Controller
                 $offer->transaction = $transaction;
             }
 
-            if ($offer->status == 14 || $offer->transaction && $offer->transaction->status == 'Sucessful trade') { // they spelt successful wrong
-                $offers = $offers->filter(function ($value, $key) use ($offer) {
-                    return $value->id != $offer->id;
-                });
-            }
+            // if ($offer->status == 14 || $offer->transaction && $offer->transaction->status == 'Sucessful trade') { // they spelt successful wrong
+            //     $offers = $offers->filter(function ($value, $key) use ($offer) {
+            //         return $value->id != $offer->id;
+            //     });
+            // }
 
             // grab robots
             $offer->robots = $offer->robots()->get();

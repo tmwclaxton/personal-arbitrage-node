@@ -86,37 +86,41 @@ class PgpService extends Controller
     }
 
     // encrypt and sign
-    public function encryptAndSign($publicKey, $message, $passphrase, $peerPublicKey = null)
+    public function encryptAndSign($publicKey, $privateKey, $message, $passphrase, $peerPublicKey = null)
     {
         // Initialize the Crypt_GPG instance
         $crypt_gpg = new Crypt_GPG();
         $crypt_gpg->clearPassphrases();
 
-        // import the private key
+        // import the public key
         $publicKeyImport = $crypt_gpg->importKey($publicKey);
-        $fingerPrint = $publicKeyImport['fingerprint'];
+        $fingerPrintPublic = $publicKeyImport['fingerprint'];
+        $privateKeyImport = $crypt_gpg->importKey($privateKey);
+        $fingerPrintPrivate = $privateKeyImport['fingerprint'];
 
         // Add the keys
-        $publicKey = $crypt_gpg->addEncryptKey($fingerPrint);
-        $publicKey = $crypt_gpg->addSignKey($fingerPrint, $passphrase);
-        $crypt_gpg->addPassphrase($fingerPrint, $passphrase);
+        $crypt_gpg->addSignKey($fingerPrintPrivate, $passphrase);
+        $crypt_gpg->addPassphrase($fingerPrintPrivate, $passphrase);
+
+        $crypt_gpg->addEncryptKey($fingerPrintPublic);
 
         if ($peerPublicKey) {
             $peerPublicKeyImport = $crypt_gpg->importKey($peerPublicKey);
             $peerFingerPrint = $peerPublicKeyImport['fingerprint'];
-            $peer_public_key = $crypt_gpg->addEncryptKey($peerFingerPrint);
+            $crypt_gpg->addEncryptKey($peerFingerPrint);
         }
+        $peerPublicKeyImport = $crypt_gpg->importKey($peerPublicKey);
+        $peerFingerPrint = $peerPublicKeyImport['fingerprint'];
+        $crypt_gpg->addEncryptKey($peerFingerPrint);
+
 
         $newTime = strtotime('-24 hours', time());
 
-        $recipients = $peerPublicKey ? '--recipient ' . $fingerPrint . ' --recipient ' . $peerFingerPrint : '--recipient ' . $fingerPrint;
-
         // Encrypt the message
         $encrypted = $crypt_gpg->setEngineOptions(array(
-            'sign' =>  '--faked-system-time ' . $newTime,
-            'encrypt' => $recipients
-        ))
-        ->encryptAndSign($message, true);
+            'sign' =>  '--faked-system-time ' . $newTime
+        ))->encryptAndSign($message, true);
+        dd($encrypted);
 
 
         return $encrypted;
