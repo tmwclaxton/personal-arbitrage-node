@@ -52,7 +52,7 @@ class UpdateOffers extends Command
         // $allOffers = array_merge($negativeBuyOffers, $positiveSellOffers);
         $allOffers = $positiveSellOffers;
         // grab all the offers from the database and check if they aren't in allOffers and delete them
-        $dbOffers = Offer::all();
+        $dbOffers = Offer::where('robosatsIdStorage', '=', null)->get();
         foreach ($dbOffers as $dbOffer) {
             $found = false;
             foreach ($allOffers as $provider => $offers) {

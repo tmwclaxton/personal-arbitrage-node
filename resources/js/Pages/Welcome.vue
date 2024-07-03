@@ -6,6 +6,7 @@ import {onMounted, ref, watch} from "vue";
 import TextInput from "@/Components/TextInput.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import PaymentsInput from "@/Components/PaymentsInput.vue";
+import CurrenciesInput from "@/Components/CurrenciesInput.vue";
 
 const props = defineProps({
     offers: Array,
@@ -55,6 +56,7 @@ setInterval(() => {
 let tempAdminDashboard = JSON.parse(JSON.stringify(props.adminDashboard));
 // convert tempAdminDashboard.payment_methods to array from json string
 tempAdminDashboard.payment_methods = JSON.parse(tempAdminDashboard.payment_methods);
+tempAdminDashboard.payment_currencies = JSON.parse(tempAdminDashboard.payment_currencies);
 
 
 const clicked = () => {
@@ -131,8 +133,8 @@ const panicButtonToggle = () => {
             <div class="text-left pl-5 flex flex-col gap-y-1 border-r border-black dark:border-white/70 pr-5">
                 <div class="flex flex-row justify-between items-center"><span class="font-bold text-xl mb-2">Offer Selection:</span></div>
                 <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Sell Premium: </span><TextInput v-model="tempAdminDashboard.sell_premium" /></div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Buy Premium: </span><TextInput v-model="tempAdminDashboard.buy_premium"/>
-                </div>
+                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Buy Premium: </span><TextInput v-model="tempAdminDashboard.buy_premium"/></div>
+                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Concurrent Transactions: </span><TextInput v-model="tempAdminDashboard.max_concurrent_transactions" /></div>
                 <div class="border-b border-zinc-300 dark:border-zinc-700"></div>
                 <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Min Sat Profit: </span><TextInput v-model="tempAdminDashboard.min_satoshi_profit" /></div>
                 <p class="text-xs w-96">This is for the auto accept feature. If the profit is less than this value, the offer will not be accepted.</p>
@@ -162,6 +164,8 @@ const panicButtonToggle = () => {
                                    @update:model-value="tempAdminDashboard.payment_methods = $event"/>
                     <primary-button class="h-12 mt-5" @click="clicked">Save Changes</primary-button>
                 </div>
+                <CurrenciesInput :payment_methods="tempAdminDashboard.payment_currencies"
+                               @update:model-value="tempAdminDashboard.payment_currencies = $event"/>
 
             </div>
             <div class="text-left pl-5 flex flex-col gap-y-1 border-r border-zinc-300 dark:border-white/70 pr-5">

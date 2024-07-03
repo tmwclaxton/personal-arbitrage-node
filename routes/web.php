@@ -35,6 +35,9 @@ Route::post('/updateAdminDashboard', function () {
     // set the payment methods separately
     $adminDashboard->payment_methods = json_encode(request()->adminDashboard["payment_methods"]);
     $adminDashboard->save();
+    // set payment currencies separately
+    $adminDashboard->payment_currencies = json_encode(request()->adminDashboard["payment_currencies"]);
+    $adminDashboard->save();
     return $adminDashboard;
 })->name('updateAdminDashboard');
 

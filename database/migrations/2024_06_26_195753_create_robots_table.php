@@ -16,6 +16,7 @@ return new class extends Migration
             $table->id();
             // this can be the same for many robots so it is not unique
             $table->foreignIdFor(Offer::class);
+            $table->unsignedBigInteger('offerIdStorage')->nullable();
             $table->string('provider');
             $table->string('nickname');
             $table->string('token');

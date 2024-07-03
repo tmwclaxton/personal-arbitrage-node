@@ -7,17 +7,13 @@ use App\Models\BtcFiat;
 class HelperFunctions
 {
     // helper function to convert satoshi to fiat
-    public function satoshiToFiat($satoshi, $currency) {
-        $btcFiats = BtcFiat::all();
-        $btcFiat = $btcFiats->where('currency', $currency)->first();
-        $fiat = $satoshi / 100000000 * $btcFiat->price;
+    public function satoshiToFiat($satoshi, $btcPriceInCurrency) {
+        $fiat = $satoshi / 100000000 * $btcPriceInCurrency;
         return $fiat;
     }
 
-    public function fiatToSatoshi($fiat, $currency) {
-        $btcFiats = BtcFiat::all();
-        $btcFiat = $btcFiats->where('currency', $currency)->first();
-        $satoshi = $fiat / $btcFiat->price * 100000000;
+    public function fiatToSatoshi($fiat, $btcPriceInCurrency) {
+        $satoshi = $fiat / $btcPriceInCurrency * 100000000;
         return $satoshi;
     }
 }

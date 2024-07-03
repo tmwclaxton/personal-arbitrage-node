@@ -13,12 +13,16 @@ return new class extends Migration
     {
         Schema::create('offers', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('robosatsId')->nullable();
+            $table->unsignedBigInteger('robosatsId')->unique();
+            $table->unsignedBigInteger('robosatsIdStorage')->nullable();
             $table->string('provider');
             $table->boolean('accepted')->default(false);
+            $table->boolean('robots_created')->default(false);
             $table->decimal('accepted_offer_amount')->nullable();
             $table->timestamp('expires_at');
             $table->string('type');
+            $table->integer('status')->default(0);
+            $table->text('status_message')->nullable();
             $table->string('currency');
             $table->decimal('amount', 20, 8)->nullable();
             $table->bigInteger('satoshi_amount_profit')->nullable();
@@ -44,8 +48,6 @@ return new class extends Migration
             $table->unsignedBigInteger('price');
             $table->string('maker_status');
 
-            $table->integer('status')->default(0);
-            $table->text('status_message')->nullable();
             $table->unsignedBigInteger('taker')->nullable();
             $table->integer('total_secs_exp')->default(0);
             $table->boolean('is_maker')->default(false);

@@ -26,7 +26,10 @@ return new class extends Migration
             $table->decimal('sell_premium', 5, 2)->default(2);
             $table->decimal('buy_premium', 5, 2)->default(-1);
             $table->integer('min_satoshi_profit')->default(5000);
+            $table->integer('max_concurrent_transactions')->default(1);
+            $table->integer('max_wait_time')->default(10000);
 
+            $table->json('payment_currencies')->nullable();
             $table->json('payment_methods')->nullable();
             $table->integer('trade_volume_satoshis')->default(0);
             $table->integer('satoshi_profit')->default(0);

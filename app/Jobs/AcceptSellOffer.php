@@ -42,4 +42,5 @@ class AcceptSellOffer implements ShouldQueue
             throw new \Exception('Panic button is enabled - AcceptSellOffer.php');
         }
     }
+
 }

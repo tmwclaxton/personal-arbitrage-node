@@ -237,6 +237,7 @@ class Robosats
             $robot->tg_bot_name = $json['tg_bot_name'];
             $robot->save();
         }
+        $offer->robots_created = true;
 
         return $robots;
     }
@@ -433,8 +434,13 @@ class Robosats
         // grab admin dashboard
         $adminDashboard = AdminDashboard::all()->first();
         $channelBalances = json_decode($adminDashboard->channelBalances, true);
+
+
         // grab the offer price amount or max amount
         if ($offer->has_range) {
+            if (!isset($offer->min_satoshi_amount) || !isset($offer->max_satoshi_amount)) {
+                return 'Offer has range but no min or max amount';
+            }
             $variationAmounts = [
                 $offer->min_satoshi_amount,
                 ($offer->min_satoshi_amount + $offer->max_satoshi_amount) / 8,
@@ -447,6 +453,9 @@ class Robosats
                 $offer->max_satoshi_amount
             ];
         } else {
+            if (!isset($offer->amount)) {
+                return 'Offer has no amount';
+            }
             $variationAmounts = [$offer->amount];
         }
 
@@ -478,14 +487,39 @@ class Robosats
 
         // convert largest amount back to fiat
         $helpFunction = new HelperFunctions();
-        $offer->accepted_offer_amount = round($helpFunction->satoshiToFiat($largestAmount, $offer->currency), 2);
+        $offer->accepted_offer_amount = round($helpFunction->satoshiToFiat($largestAmount, $offer->price), 2);
         $offer->accepted = true;
 
 
         $transaction = new Transaction();
         $transaction->offer_id = $offer->id;
 
-        $url = $this->host . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $robosatsId;
+
+        // check estimated profit
+        if ($offer->has_range) {
+            $btcFiats = BtcFiat::all();
+            $btcFiat = $btcFiats->where('currency', $offer->currency)->first();
+            $currentRealPrice = $btcFiat->price;
+            // $offer->price
+            $estimated_profit_sats = $largestAmount * (($currentRealPrice - $offer->price) / $currentRealPrice);
+        } else {
+            $estimated_profit_sats = $offer->satoshi_amount_profit;
+        }
+        // round to 0 decimal places
+        if ($estimated_profit_sats < 500) {
+            return 'Offer has less than 500 sats profit';
+        }
+        // round to 0 decimal places
+        if ($estimated_profit_sats < $adminDashboard->min_satoshi_profit) {
+            return 'Offer has less than ' . $adminDashboard->min_satoshi_profit . ' sats profit';
+        }
+
+        // // check if offer has the allowed payment methods
+        // // check if offer has the allowed currency
+
+        // // check when the offer and btcFiat was last updated if too old, could suggest out of date prices
+
+
 
         // last chance to back out
         if ($adminDashboard->panicButton) {
@@ -493,6 +527,7 @@ class Robosats
         }
 
         // post request
+        $url = $this->host . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $robosatsId;
         if (!$offer->has_range) {
             $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'take', 'amount' => $largestAmount]);
         } else {
@@ -572,6 +607,7 @@ class Robosats
                         }
 
                         if (empty($tag) || empty($pseudonym)) {
+                            Log::error('No tag / pseudonym found for ' . $paymentMethod);
                             return 'No tag / pseudonym found for ' . $paymentMethod;
                         }
 
@@ -641,8 +677,11 @@ class Robosats
         if (isset($response['bad_request'])) {
             $offer->status_message = $response['bad_request'];
             $offer->status = 99;
+            // set expires at to now
+            $offer->expires_at = date('Y-m-d H:i:s');
             $offer->save();
-            $transaction->status = $response['bad_request'];
+            $transaction->status_message = $response['bad_request'];
+            $transaction->status = 99;
             $transaction->save();
             return $response;
         }
@@ -652,6 +691,14 @@ class Robosats
         }
         if (isset($response['status'])) {
             $offer->status = $response['status'];
+        }
+        if ($response['status'] == 1) {
+            if ($offer->transaction()) {
+                // delete transaction
+                $transaction->delete();
+                // set accepted to false
+                $offer->accepted = false;
+            }
         }
         if (isset($response['status_message'])) {
             $offer->status_message = $response['status_message'];
@@ -667,17 +714,21 @@ class Robosats
         $offer->is_participant = $response['is_participant'];
         $offer->maker_nick = $response['maker_nick'];
         $offer->maker_hash_id = $response['maker_hash_id'];
-        $offer->maker_status = $response['maker_status'];
-        $offer->taker_status = $response['taker_status'];
-        $offer->is_buyer = $response['is_buyer'];
-        $offer->is_seller = $response['is_seller'];
-        $offer->is_fiat_sent = $response['is_fiat_sent'];
-        $offer->is_disputed = $response['is_disputed'];
-        $offer->ur_nick = $response['ur_nick'];
         $offer->satoshis_now = $response['satoshis_now'];
-        $offer->maker_locked = $response['maker_locked'];
-        $offer->taker_locked = $response['taker_locked'];
-        $offer->escrow_locked = $response['escrow_locked'];
+        if (isset($response['maker_status'])) {
+            $offer->maker_status = $response['maker_status'];
+        }
+        if (isset($response['taker_status'])) {
+            $offer->taker_status = $response['taker_status'];
+            $offer->is_buyer = $response['is_buyer'];
+            $offer->is_seller = $response['is_seller'];
+            $offer->is_fiat_sent = $response['is_fiat_sent'];
+            $offer->is_disputed = $response['is_disputed'];
+            $offer->taker_locked = $response['taker_locked'];
+            $offer->escrow_locked = $response['escrow_locked'];
+            $offer->ur_nick = $response['ur_nick'];
+            $offer->maker_locked = $response['maker_locked'];
+        }
         if (isset($response['trade_satoshis'])) {
             $offer->trade_satoshis = $response['trade_satoshis'];
         }
@@ -697,15 +748,16 @@ class Robosats
             $transaction->bond_invoice = $response['bond_invoice'];
         }
         if (isset($response['status_message'])) {
-
-            $transaction->status = $response['status_message'];
+            $transaction->status = $response['status'];
+            $transaction->status_message = $response['status_message'];
         } else {
             // log response
             Log::info('Unknown response from robosats: ' . json_encode($response));
-
             $transaction->status = 'Unknown';
         }
-        $transaction->save();
+        if ($offer->status != 1) {
+            $transaction->save();
+        }
 
         return $response;
     }
@@ -717,8 +769,10 @@ class Robosats
         $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->get($url);
         $response = json_decode($response->body(), true);
 
-        if (!$response['found']) {
-            $robot->save();
+        if (!isset($response['found'])) {
+            Log::error($response);
+
+            // $robot->save();
             return $response;
         }
         $robot->earned_rewards = $response['earned_rewards'];

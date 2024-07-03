@@ -28,7 +28,7 @@ class UpdateTransactions extends Command
     public function handle()
     {
         // update all current transactions
-        $transactions = Transaction::whereNot('status', 'Sucessful trade')->get();
+        $transactions = Transaction::where('status', '<', 14)->get();
         foreach ($transactions as $transaction) {
             $offer = $transaction->offer;
             $robosats = new Robosats();

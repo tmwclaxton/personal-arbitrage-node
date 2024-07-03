@@ -17,7 +17,8 @@ return new class extends Migration
             $table->text('bond_invoice')->nullable();
             $table->text('escrow_invoice')->nullable();
 
-            $table->string('status')->default('');
+            $table->integer('status')->default(0);
+            $table->string('status_message')->default('');
 
             $table->timestamps();
         });
