@@ -453,65 +453,15 @@ class Robosats
         $adminDashboard = AdminDashboard::all()->first();
         $channelBalances = json_decode($adminDashboard->channelBalances, true);
 
-
-        // grab the offer price amount or max amount
-        if ($offer->has_range) {
-            if (!isset($offer->min_satoshi_amount) || !isset($offer->max_satoshi_amount)) {
-                (new DiscordService)->sendMessage('Error: Offer has range but no min or max amount');
-                return 'Offer has range but no min or max amount';
-            }
-            $variationAmounts = [
-                $offer->min_satoshi_amount,
-                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) / 8,
-                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) / 4,
-                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) * 3 / 8,
-                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) / 2,
-                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) * 5 / 8,
-                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) * 3 / 4,
-                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) * 7 / 8,
-                $offer->max_satoshi_amount
-            ];
+        // grab the largest amount we can accept whether it is range or not
+        $calculations = (new OfferController())->calculateLargestAmount($offer, $channelBalances);
+        if (is_array($calculations)) {
+            $offer->accepted_offer_amount_sat = $calculations['accepted_offer_amount_sat'];
+            $offer->accepted_offer_amount = $calculations['accepted_offer_amount'];
+            $estimated_profit_sats = $calculations['estimated_profit_sats'];
         } else {
-            if (!isset($offer->satoshis_now)) {
-                (new DiscordService)->sendMessage('Error: Offer has no amount');
-                return 'Offer has no amount';
-            }
-            $variationAmounts = [$offer->satoshis_now];
+            return $calculations;
         }
-
-        // foreach $variationAmounts try to find the largest offer that can be accepted
-        $largestAmountSat = 0;
-        // order the variation amounts from largest to smallest
-        $variationAmounts = array_reverse($variationAmounts);
-        foreach ($variationAmounts as $variationAmount) {
-            $openChannels = 0;
-            foreach ($channelBalances as $channelBalance) {
-                // set variation amount to an integer i.e. no decimal places
-                $variationAmount = (int) $variationAmount;
-                // localBalance is our send capacity
-                if ((int) $channelBalance['localBalance'] > $variationAmount + 100000 ) {
-                    // dd($channelBalance);
-                    $openChannels++;
-                }
-            }
-            if ($openChannels > 0) {
-                $largestAmountSat = $variationAmount;
-                // break out of both loops
-                break;
-            }
-        }
-
-        if ($largestAmountSat == 0) {
-            (new DiscordService)->sendMessage('Error: Insufficient balance (ps need 100000 extra for fees for bond and potentially fees)');
-            return 'Insufficient balance (ps need 100000 extra for fees for bond and potentially fees)';
-        }
-
-        $offer->accepted_offer_amount_sat = $offer->range ? $largestAmountSat : $offer->satoshis_now;
-        // convert largest amount back to fiat
-        $helpFunction = new HelperFunctions();
-        $offer->accepted_offer_amount = $offer->range ?
-            round($helpFunction->satoshiToFiat($largestAmountSat, $offer->price), 2) :
-            round($helpFunction->satoshiToFiat($offer->satoshis_now, $offer->price), 2);
         $offer->accepted = true;
 
 
@@ -519,15 +469,6 @@ class Robosats
         $transaction->offer_id = $offer->id;
 
 
-        $btcFiats = BtcFiat::all();
-        $btcFiat = $btcFiats->where('currency', $offer->currency)->first();
-        // check estimated profit
-        if ($offer->has_range) {
-            $currentRealPrice = $btcFiat->price;
-            $estimated_profit_sats = $largestAmountSat * (($currentRealPrice - $offer->price) / $currentRealPrice);
-        } else {
-            $estimated_profit_sats = $offer->satoshi_amount_profit;
-        }
         // round to 0 decimal places
         if ($estimated_profit_sats < 500) {
             (new DiscordService)->sendMessage('Error: trying to accept offer with less than 500 sats profit');
@@ -568,6 +509,7 @@ class Robosats
         }
 
         // if the btcFiat was last updated more than 10 minutes ago
+        $btcFiat = BtcFiat::all()->first();
         $btcFiatUpdated = Carbon::parse($btcFiat->updated_at);
         if ($now->diffInMinutes($btcFiatUpdated) > 10) {
             (new DiscordService)->sendMessage('Error: BtcFiat item is suspiciously old');
@@ -762,7 +704,7 @@ class Robosats
         $url = $this->host . '/mainnet/' . $transaction->offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
 
         $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->get($url);
-        return $response;
+
         $response = json_decode($response->body(), true);
 
         if (isset($response['bad_request'])) {

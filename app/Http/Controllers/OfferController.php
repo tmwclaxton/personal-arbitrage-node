@@ -6,6 +6,8 @@ use App\Models\AdminDashboard;
 use App\Models\BtcFiat;
 use App\Models\Offer;
 use App\Models\Transaction;
+use App\Services\DiscordService;
+use App\WorkerClasses\HelperFunctions;
 use App\WorkerClasses\LightningNode;
 use App\WorkerClasses\Robosats;
 use Illuminate\Http\Request;
@@ -56,6 +58,7 @@ class OfferController extends Controller
         // change the expires_at to a human readable format
         foreach ($offers as $offer) {
             $offer->expires_at = Carbon::parse($offer->expires_at)->diffForHumans();
+            $offer->updated_at_readable = Carbon::parse($offer->updated_at)->diffForHumans();
             // round amount to 2 decimal places
             $offer->amount = number_format($offer->amount, 2);
             // round min_amount to 2 decimal places and max amount to 2 decimal places
@@ -64,6 +67,8 @@ class OfferController extends Controller
             // add a percentage to the premium
             $offer->premium = $offer->premium . '%';
             $offer->payment_methods = json_decode($offer->payment_methods);
+
+
 
             // check if any of the payment methods are in the admin dashboard payment methods, if not remove the offer
             $found = false;
@@ -89,6 +94,7 @@ class OfferController extends Controller
                 $transaction = Transaction::where('offer_id', $offer->id)->first();
                 $offer->transaction = $transaction;
             }
+
 
             // grab robots
             $offer->robots = $offer->robots()->get();
@@ -248,5 +254,84 @@ class OfferController extends Controller
         } else {
             $newOffer->save();
         }
+    }
+
+    public function calculateLargestAmount($offer, $channelBalances) {
+        // grab the offer price amount or max amount
+        if ($offer->has_range) {
+            if (!isset($offer->min_satoshi_amount) || !isset($offer->max_satoshi_amount)) {
+                (new DiscordService)->sendMessage('Error: Offer has range but no min or max amount');
+                return 'Offer has range but no min or max amount';
+            }
+            $variationAmounts = [
+                $offer->min_satoshi_amount,
+                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) / 8,
+                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) / 4,
+                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) * 3 / 8,
+                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) / 2,
+                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) * 5 / 8,
+                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) * 3 / 4,
+                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) * 7 / 8,
+                $offer->max_satoshi_amount
+            ];
+        } else {
+            if (!isset($offer->satoshis_now)) {
+                (new DiscordService)->sendMessage('Error: Offer has no amount');
+                return 'Offer has no amount';
+            }
+            $variationAmounts = [$offer->satoshis_now];
+        }
+        // foreach $variationAmounts try to find the largest offer that can be accepted
+        $largestAmountSat = 0;
+        // order the variation amounts from largest to smallest
+        $variationAmounts = array_reverse($variationAmounts);
+        foreach ($variationAmounts as $variationAmount) {
+            $openChannels = 0;
+            foreach ($channelBalances as $channelBalance) {
+                // set variation amount to an integer i.e. no decimal places
+                $variationAmount = (int) $variationAmount;
+                // localBalance is our send capacity
+                if ((int) $channelBalance['localBalance'] > $variationAmount + 100000 ) {
+                    // dd($channelBalance);
+                    $openChannels++;
+                }
+            }
+            if ($openChannels > 0) {
+                $largestAmountSat = $variationAmount;
+                // break out of both loops
+                break;
+            }
+        }
+
+        if ($largestAmountSat == 0) {
+            (new DiscordService)->sendMessage('Error: Insufficient balance (ps need 100000 extra for fees for bond and potentially fees)');
+            return 'Insufficient balance (ps need 100000 extra for fees for bond and potentially fees)';
+        }
+
+        $offer->accepted_offer_amount_sat = $offer->range ? $largestAmountSat : $offer->satoshis_now;
+        // convert largest amount back to fiat
+        $helpFunction = new HelperFunctions();
+        $offer->accepted_offer_amount = $offer->range ?
+            round($helpFunction->satoshiToFiat($largestAmountSat, $offer->price), 2) :
+            round($helpFunction->satoshiToFiat($offer->satoshis_now, $offer->price), 2);
+
+
+        $btcFiats = BtcFiat::all();
+        $btcFiat = $btcFiats->where('currency', $offer->currency)->first();
+        // check estimated profit
+        if ($offer->has_range) {
+            $currentRealPrice = $btcFiat->price;
+            $estimated_profit_sats = $offer->accepted_offer_amount_sat * (($currentRealPrice - $offer->price) / $currentRealPrice);
+        } else {
+            $estimated_profit_sats = $offer->satoshi_amount_profit;
+        }
+
+        return [
+            'accepted_offer_amount_sat' =>  $offer->range ? $largestAmountSat : $offer->satoshis_now,
+            'accepted_offer_amount' => $offer->range ?
+                round($helpFunction->satoshiToFiat($largestAmountSat, $offer->price), 2) :
+                round($helpFunction->satoshiToFiat($offer->satoshis_now, $offer->price), 2),
+            'estimated_profit_sats' => $estimated_profit_sats
+        ];
     }
 }
