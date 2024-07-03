@@ -36,11 +36,20 @@ class DiscordService
      */
     public function getLastMessages()
     {
-        $response = $this->client->get("channels/{$this->channelId}/messages", [
-            'query' => ['limit' => 50]
+        $stream = $this->client->get("channels/{$this->channelId}/messages", [
+            'limit' => 50
         ]);
 
-        return json_decode($response->getBody(), true);
+        // we receive a GuzzleHttp\Psr7\Stream object, so we need to convert it to an array
+        $messages = json_decode($stream->getBody()->getContents(), true);
+
+        // any messages with an author.id of 1258092511046668400 or 1257972131241791559 are from bots so remove them
+        $messages = array_filter($messages, function ($message) {
+            return $message['author']['id'] !== '1258092511046668400' && $message['author']['id'] !== '1257972131241791559';
+        });
+
+
+        return $messages;
     }
 
     /**

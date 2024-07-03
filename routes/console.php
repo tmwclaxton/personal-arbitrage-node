@@ -43,4 +43,4 @@ Schedule::command('retire:offers')
 
 Schedule::command('auto:jobs')
     ->description('auto jobs')
-    ->everyTenSeconds();
+    ->everyTwentySeconds();

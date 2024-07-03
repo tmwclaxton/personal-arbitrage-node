@@ -7,7 +7,7 @@ use App\Models\BtcFiat;
 use App\Models\Offer;
 use App\Models\Robot;
 use App\Models\Transaction;
-use App\Services\DiscordWebhook;
+use App\Services\DiscordService;
 use App\Services\PgpService;
 use Hackzilla\PasswordGenerator\Generator\ComputerPasswordGenerator;
 use Illuminate\Support\Carbon;
@@ -442,7 +442,7 @@ class Robosats
         // grab the offer price amount or max amount
         if ($offer->has_range) {
             if (!isset($offer->min_satoshi_amount) || !isset($offer->max_satoshi_amount)) {
-                (new DiscordWebhook)->sendMessage('Error: Offer has range but no min or max amount');
+                (new DiscordService)->sendMessage('Error: Offer has range but no min or max amount');
                 return 'Offer has range but no min or max amount';
             }
             $variationAmounts = [
@@ -458,7 +458,7 @@ class Robosats
             ];
         } else {
             if (!isset($offer->satoshis_now)) {
-                (new DiscordWebhook)->sendMessage('Error: Offer has no amount');
+                (new DiscordService)->sendMessage('Error: Offer has no amount');
                 return 'Offer has no amount';
             }
             $variationAmounts = [$offer->satoshis_now];
@@ -487,7 +487,7 @@ class Robosats
         }
 
         if ($largestAmountSat == 0) {
-            (new DiscordWebhook)->sendMessage('Error: Insufficient balance (ps need 100000 extra for fees for bond and potentially fees)');
+            (new DiscordService)->sendMessage('Error: Insufficient balance (ps need 100000 extra for fees for bond and potentially fees)');
             return 'Insufficient balance (ps need 100000 extra for fees for bond and potentially fees)';
         }
 
@@ -515,7 +515,7 @@ class Robosats
         }
         // round to 0 decimal places
         if ($estimated_profit_sats < 500) {
-            (new DiscordWebhook)->sendMessage('Error: trying to accept offer with less than 500 sats profit');
+            (new DiscordService)->sendMessage('Error: trying to accept offer with less than 500 sats profit');
             return 'Offer has less than 500 sats profit';
         }
         // round to 0 decimal places
@@ -548,14 +548,14 @@ class Robosats
         // if the offer was last updated more than 10 minutes ago
         $offerUpdated = Carbon::parse($offer->updated_at);
         if ($now->diffInMinutes($offerUpdated) > 10) {
-            (new DiscordWebhook)->sendMessage('Error: Offer is suspiciously old');
+            (new DiscordService)->sendMessage('Error: Offer is suspiciously old');
             return 'Offer is suspiciously old';
         }
 
         // if the btcFiat was last updated more than 10 minutes ago
         $btcFiatUpdated = Carbon::parse($btcFiat->updated_at);
         if ($now->diffInMinutes($btcFiatUpdated) > 10) {
-            (new DiscordWebhook)->sendMessage('Error: BtcFiat item is suspiciously old');
+            (new DiscordService)->sendMessage('Error: BtcFiat item is suspiciously old');
             return 'BtcFiat is suspiciously old';
         }
 
@@ -580,7 +580,7 @@ class Robosats
 
         $offer->save();
 
-        (new DiscordWebhook)->sendMessage('Accepted offer: ' . $offer->accepted_offer_amount . ' ' . $offer->currency . ' for ' . $offer->accepted_offer_profit_sat . ' sats profit.');
+        (new DiscordService)->sendMessage('Accepted offer: ' . $offer->accepted_offer_amount . ' ' . $offer->currency . ' for ' . $offer->accepted_offer_profit_sat . ' sats profit.');
 
         // convert response to json
         $response = json_decode($response->body(), true);
@@ -646,7 +646,7 @@ class Robosats
                         }
 
                         if (empty($tag) || empty($pseudonym)) {
-                            (new DiscordWebhook)->sendMessage('Error: No tag / pseudonym found for ' . $paymentMethod);
+                            (new DiscordService)->sendMessage('Error: No tag / pseudonym found for ' . $paymentMethod);
                             return 'No tag / pseudonym found for ' . $paymentMethod;
                         }
 
@@ -671,7 +671,7 @@ class Robosats
                 ]);
                 $client->text($json);
 
-                (new DiscordWebhook)->sendMessage('Expect a payment on ' . $paymentMethod . ' for ' . $robot->offer->accepted_offer_amount . ' ' . $robot->offer->currency . ' soon! \nOnce received, confirm the payment by typing /confirm ' . $offer->robosatsId . ' in the chat.');
+                (new DiscordService)->sendMessage('Expect a payment on ' . $paymentMethod . ' for ' . $robot->offer->accepted_offer_amount . ' ' . $robot->offer->currency . ' soon! \nOnce received, confirm the payment by typing /confirm ' . $offer->robosatsId . ' in the chat.');
 
                 // shutdown the client
                 $client->close();
@@ -706,7 +706,7 @@ class Robosats
         $adminDashboard->satoshi_profit += $transaction->offer->accepted_offer_profit_sat;
         $adminDashboard->satoshi_fees += $transaction->fees;
         $adminDashboard->save();
-        (new DiscordWebhook)->sendMessage('Trade completed: ' .
+        (new DiscordService)->sendMessage('Trade completed: ' .
             $transaction->offer->accepted_offer_amount . ' ' .
             $transaction->offer->currency . ' for ' .
             $transaction->offer->accepted_offer_profit_sat - $transaction->fees . ' sats profit.');

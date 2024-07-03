@@ -7,6 +7,7 @@ use App\Models\BtcFiat;
 use App\Models\Offer;
 use App\Models\Robot;
 use App\Models\Transaction;
+use App\Services\DiscordService;
 use App\Services\PgpService;
 use App\WorkerClasses\LightningNode;
 use App\WorkerClasses\Robosats;
@@ -120,8 +121,10 @@ Route::post('/send-payment-handle', function () {
 
 
 Route::get('/testing', function () {
-    (new App\Services\DiscordWebhook)->sendMessage("test");
-    return 'test';
+    $lastMessages = (new DiscordService())->getLastMessages();
+    return $lastMessages;
+    $response =  (new DiscordService())->detectCommand("/send");
+    return $response;
 
 
     //
