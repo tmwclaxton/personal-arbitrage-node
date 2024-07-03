@@ -2,7 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Http\Controllers\OfferController;
 use App\Models\AdminDashboard;
+use App\Models\Transaction;
 use Illuminate\Console\Command;
 
 class AutoAccept extends Command
@@ -28,5 +30,15 @@ class AutoAccept extends Command
     {
         $adminDashboard = AdminDashboard::all()->first();
         $maxConcurrentTransactions = $adminDashboard->max_concurrent_transactions;
+        $transactions = Transaction::where('status', '<=', 11)->get();
+        $transactionsCount = $transactions->count();
+        if ($transactionsCount > $maxConcurrentTransactions) {
+            return;
+        }
+        // calculate difference
+        $difference = $maxConcurrentTransactions - $transactionsCount;
+
+        $offers = (new \App\Http\Controllers\OfferController)->getOffersInternal($adminDashboard);
+
     }
 }

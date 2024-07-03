@@ -7,12 +7,30 @@ use App\Models\BtcFiat;
 use App\Models\Offer;
 use App\Models\Transaction;
 use App\WorkerClasses\LightningNode;
+use App\WorkerClasses\Robosats;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 
 class OfferController extends Controller
 {
+    public function getOffersInternal($adminDashboard)
+    {
+        $sellPremium = $adminDashboard->sell_premium;
+        $buyPremium = $adminDashboard->buy_premium;
+
+        // where status != 14, 12, 17, 18, 99, 4, 5, 2
+        $offers = Offer::where([['accepted', '=', true], ['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14]])
+            ->orWhere([['accepted', '=', false],['premium', '>=', $sellPremium], ['type', 'sell']])
+            ->orWhere([['accepted', '=', false],['premium', '<=', $buyPremium], ['type', 'buy']])
+            ->orderBy('accepted', 'desc')
+            ->orderBy('max_satoshi_amount_profit', 'desc')
+            ->orderBy('satoshi_amount_profit', 'desc')
+            ->orderBy('premium', 'desc')
+            ->get();
+
+        return $offers;
+    }
 
     private function getInfo()
     {
@@ -30,19 +48,10 @@ class OfferController extends Controller
             $adminDashboard->save();
         }
 
-        $sellPremium = $adminDashboard->sell_premium;
-        $buyPremium = $adminDashboard->buy_premium;
+
+        $offers = $this->getOffersInternal($adminDashboard);
         $paymentMethods = json_decode($adminDashboard->payment_methods);
 
-        // where status != 14, 12, 17, 18, 99, 4, 5, 2
-        $offers = Offer::where([['accepted', '=', true], ['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14]])
-            ->orWhere([['accepted', '=', false],['premium', '>=', $sellPremium], ['type', 'sell']])
-            ->orWhere([['accepted', '=', false],['premium', '<=', $buyPremium], ['type', 'buy']])
-            ->orderBy('accepted', 'desc')
-            ->orderBy('max_satoshi_amount_profit', 'desc')
-            ->orderBy('satoshi_amount_profit', 'desc')
-            ->orderBy('premium', 'desc')
-            ->get();
 
         // change the expires_at to a human readable format
         foreach ($offers as $offer) {
@@ -127,5 +136,117 @@ class OfferController extends Controller
             'offers' => $offers,
             'adminDashboard' => $adminDashboard
         ]);
+    }
+
+    public function insertOffer($offer, $provider): void
+    {
+
+        $allFiats = BtcFiat::all();
+
+        // change id in the offer to robosatsId
+        $offer['robosatsId'] = $offer['id'];
+
+        // remove id from the offer
+        unset($offer['id']);
+
+        // change currency using Robosats::CURRENCIES
+        $offer['currency'] = Robosats::CURRENCIES[$offer['currency']];
+
+        // remove '/mainnet/' from the provider
+        $provider = str_replace('Mainnet/', '', $provider);
+
+        // lowercase the provider
+        $provider = strtolower($provider);
+
+        // // remove the '/' at the end of the provider
+        $provider = rtrim($provider, '/');
+        $offer['provider'] = $provider;
+
+        // buy is 1 and sell is 2
+        $offer['type'] = $offer['type'] == 1 ? 'buy' : 'sell';
+
+        // convert the expires_at i.e. "2024-06-28T06:24:07.984166Z" to correct format
+        $offer['expires_at'] = date('Y-m-d H:i:s', strtotime($offer['expires_at']));
+
+        // convert the created_at i.e. "2024-06-28T06:24:07.984166Z" to correct format
+        $offer['created_at'] = date('Y-m-d H:i:s', strtotime($offer['created_at']));
+
+        // if the items Instant and Sepa are in the payment_methods, remove them and replace them with 'Instant SEPA'
+        if (in_array('Instant', $offer['payment_methods']) && in_array('SEPA', $offer['payment_methods'])) {
+            // remove the Instant and Sepa from the payment_methods
+            $offer['payment_methods'] = array_diff($offer['payment_methods'], ['Instant', 'SEPA']);
+            // add 'Instant SEPA' to the payment_methods
+            $offer['payment_methods'][] = 'Instant SEPA';
+        }
+
+        // if the items Paypal Friends & Family (all separate) are in the payment_methods, remove them and replace them with 'Paypal Friends & Family'
+        if (in_array('Paypal', $offer['payment_methods']) && in_array('Friends', $offer['payment_methods']) && in_array('Family', $offer['payment_methods'])) {
+            // remove the Paypal Friends & Family from the payment_methods
+            $offer['payment_methods'] = array_diff($offer['payment_methods'], ['Paypal', 'Friends', 'Family', '&']);
+            // add 'Paypal Friends & Family' to the payment_methods
+            $offer['payment_methods'][] = 'Paypal Friends & Family';
+        }
+
+        // if ["Amazon", "IT", "GiftCard"]
+        if (in_array('Amazon', $offer['payment_methods']) && in_array('IT', $offer['payment_methods']) && in_array('GiftCard', $offer['payment_methods'])) {
+            // remove the Amazon IT GiftCard from the payment_methods
+            $offer['payment_methods'] = array_diff($offer['payment_methods'], ['Amazon', 'IT', 'GiftCard']);
+            // add 'Amazon IT GiftCard' to the payment_methods
+            $offer['payment_methods'][] = 'Amazon IT GiftCard';
+        }
+
+        // ["Amazon", "DE", "GiftCard"]
+        if (in_array('Amazon', $offer['payment_methods']) && in_array('DE', $offer['payment_methods']) && in_array('GiftCard', $offer['payment_methods'])) {
+            // remove the Amazon DE GiftCard from the payment_methods
+            $offer['payment_methods'] = array_diff($offer['payment_methods'], ['Amazon', 'DE', 'GiftCard']);
+            // add 'Amazon DE GiftCard' to the payment_methods
+            $offer['payment_methods'][] = 'Amazon DE GiftCard';
+        }
+
+        // convert the payment_methods to a json array without a key
+        $offer['payment_methods'] = json_encode(array_values($offer['payment_methods']));
+
+        if ($allFiats && $allFiats->count() > 0 && isset($offer['price']) && $offer['price'] > 0) {
+            // grab currency from offer and find the price in btc using allFiats
+            $btcPrice = $allFiats->where('currency', $offer['currency'])->first();
+            // once a ranged offer is accepted, the amount is set to whatever we are selling
+            if ($offer['amount']) {
+                $offer['satoshis_now'] = intval(str_replace(',', '', $offer['amount'])) / $offer['price'] * 100000000;
+                $offer['satoshis_now'] = intval(str_replace(',', '', number_format($offer['satoshis_now'], 0)));
+                $offer['satoshi_amount_profit'] = intval(str_replace(',', '', $offer['amount'])) / $btcPrice->price * 100000000;
+                $offer['satoshi_amount_profit'] = intval(str_replace(',', '', number_format($offer['satoshi_amount_profit'], 0))) - $offer['satoshis_now'];
+            }
+            if ($offer['min_amount'] && $offer['max_amount']) {
+                $offer['min_satoshi_amount'] = intval(str_replace(',', '', $offer['min_amount'])) / $offer['price']  * 100000000;
+                $offer['min_satoshi_amount'] = intval(str_replace(',', '', number_format($offer['min_satoshi_amount'], 0)));
+                $offer['max_satoshi_amount'] = intval(str_replace(',', '', $offer['max_amount'])) / $offer['price']  * 100000000;
+                $offer['max_satoshi_amount'] = intval(str_replace(',', '', number_format($offer['max_satoshi_amount'], 0)));
+
+                // calculate the profit by using the bitcoin price and subtracting the value calculated from the price they are offering
+                $actualMinSatoshiAmount = intval(str_replace(',', '', $offer['min_amount'])) / $btcPrice->price * 100000000;
+                $actualMinSatoshiAmount = intval(str_replace(',', '', number_format($actualMinSatoshiAmount, 0)));
+                $offer['min_satoshi_amount_profit'] = $actualMinSatoshiAmount - $offer['min_satoshi_amount'];
+
+                $actualMaxSatoshiAmount = intval(str_replace(',', '', $offer['max_amount'])) / $btcPrice->price * 100000000;
+                $actualMaxSatoshiAmount = intval(str_replace(',', '', number_format($actualMaxSatoshiAmount, 0)));
+                $offer['max_satoshi_amount_profit'] = $actualMaxSatoshiAmount - $offer['max_satoshi_amount'];
+
+            }
+
+        }
+
+        // iterate through each key in the offer and set corresponding attributes
+        $newOffer = new Offer();
+
+        foreach ($offer as $key => $value) {
+            $newOffer->$key = $value;
+        }
+
+        // save or update the offer
+        if (Offer::where('robosatsId', $offer['robosatsId'])->exists()) {
+            Offer::where('robosatsId', $offer['robosatsId'])->update($offer);
+        } else {
+            $newOffer->save();
+        }
     }
 }

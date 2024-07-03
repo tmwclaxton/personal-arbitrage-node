@@ -2,6 +2,8 @@
 
 namespace App\WorkerClasses;
 
+use App\Console\Commands\UpdateOffers;
+use App\Http\Controllers\OfferController;
 use App\Models\AdminDashboard;
 use App\Models\BtcFiat;
 use App\Models\Offer;
@@ -9,6 +11,7 @@ use App\Models\Robot;
 use App\Models\Transaction;
 use App\Services\DiscordService;
 use App\Services\PgpService;
+use Faker\Factory;
 use Hackzilla\PasswordGenerator\Generator\ComputerPasswordGenerator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
@@ -118,7 +121,6 @@ class Robosats
 
     protected array $headers = [
                 "Host" => "192.168.0.18:12596",
-                "User-Agent" => "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:127.0) Gecko/20100101 Firefox/127.0",
                 "Accept" => "*/*",
                 "Accept-Language" => "en-GB,en;q=0.5",
                 "Accept-Encoding" => "gzip, deflate",
@@ -128,9 +130,7 @@ class Robosats
                 "Priority" => "u=4",
                 "Pragma" => "no-cache",
                 "Cache-Control" => "no-cache",
-                "Origin" => "http://192.168.0.18:12596",
-
-
+                // "Origin" => "http://192.168.0.18:12596",
     ];
 
     public function getHeaders($offer = null)
@@ -145,7 +145,20 @@ class Robosats
         }
         $adminDash = AdminDashboard::all()->first();
         $this->headers["Cookie"] = "UMBREL_PROXY_TOKEN=" . $adminDash->umbrel_token;
-        // dd($this->headers);
+        $this->headers["User-Agent"] = Factory::create()->userAgent;
+        $this->headers["DNT"] = "1";
+        // $this->headers["Accept-Language"] = array_rand(['en-US', 'en']) . ';q=0.9,en;q=0.8';
+        $acceptLanguages = ['en-US', 'en'];
+        $this->headers["Accept-Language"] = $acceptLanguages[array_rand($acceptLanguages)] . ';q=0.9,en;q=0.8';
+        $referredLocations = [
+            $this->host . '/offers/',
+            $this->host . 'order/satstralia/' . rand(1000, 9999),
+            $this->host . 'order/temple/' . rand(1000, 9999),
+            $this->host . 'order/lake/' . rand(1000, 9999),
+            $this->host . 'order/veneto/' . rand(1000, 9999)
+        ];
+        $this->headers['Referer'] = $referredLocations[array_rand($referredLocations)];
+
         return $this->headers;
     }
 
@@ -249,12 +262,14 @@ class Robosats
     public function request($endpoint, $offer = null) {
         $providers = $this->providers;
         $urlStart = 'http://192.168.0.18:12596/mainnet/';
+        $headers = $this->getHeaders($offer);
+
         $responses = [];
         foreach ($providers as $provider) {
             $url = $urlStart . $provider . '/' . $endpoint;
 
             try {
-                $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->get($url);
+                $response = Http::withHeaders($headers)->timeout(30)->get($url);
             } catch (\Exception $e) {
                 continue;
             }
@@ -720,12 +735,34 @@ class Robosats
         return $response;
     }
 
+
+    public function updateOfferStatus($offer)
+    {
+        //http://192.168.0.18:12596/mainnet/satstralia/api/order/?order_id=10163
+        $url = $this->host . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
+        $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->get($url);
+        $response = json_decode($response->body(), true);
+
+        if (!$response || $response == null) {
+            return $response;
+        }
+
+
+        (new OfferController())->insertOffer($offer, $offer->provider);
+
+        return $response;
+    }
+
     // update status of transaction
     public function updateTransactionStatus($offer) {
+        // update the offer as well
+        $this->updateOfferStatus($offer);
+
         $transaction = $offer->transaction()->first();
         $url = $this->host . '/mainnet/' . $transaction->offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
 
         $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->get($url);
+        return $response;
         $response = json_decode($response->body(), true);
 
         if (isset($response['bad_request'])) {

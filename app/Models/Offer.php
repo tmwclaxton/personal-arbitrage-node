@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\WorkerClasses\Robosats;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -20,4 +21,7 @@ class Offer extends Model
     {
         return $this->hasMany(Robot::class);
     }
+
+
+
 }
