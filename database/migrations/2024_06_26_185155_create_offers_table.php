@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('offers', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
             $table->unsignedBigInteger('robosatsId')->nullable();
             $table->string('provider');
             $table->boolean('accepted')->default(false);
@@ -65,6 +64,8 @@ return new class extends Migration
             $table->unsignedBigInteger('trade_satoshis')->nullable();
             $table->boolean('asked_for_cancel')->default(false);
             $table->integer('chat_last_index')->default(0);
+            $table->integer('job_last_status')->default(0);
+            $table->timestamps();
         });
     }
 
