@@ -321,14 +321,14 @@ class OfferController extends Controller
         // check estimated profit
         if ($offer->has_range) {
             $currentRealPrice = $btcFiat->price;
-            $estimated_profit_sats = $offer->accepted_offer_amount_sat * (($currentRealPrice - $offer->price) / $currentRealPrice);
+            $estimated_profit_sats = -$offer->accepted_offer_amount_sat * (($currentRealPrice - $offer->price) / $currentRealPrice);
         } else {
             $estimated_profit_sats = $offer->satoshi_amount_profit;
         }
 
         return [
-            'accepted_offer_amount_sat' =>  $offer->range ? $largestAmountSat : $offer->satoshis_now,
-            'accepted_offer_amount' => $offer->range ?
+            'estimated_offer_amount_sat' =>  $offer->range ? $largestAmountSat : $offer->satoshis_now,
+            'estimated_offer_amount' => $offer->range ?
                 round($helpFunction->satoshiToFiat($largestAmountSat, $offer->price), 2) :
                 round($helpFunction->satoshiToFiat($offer->satoshis_now, $offer->price), 2),
             'estimated_profit_sats' => $estimated_profit_sats

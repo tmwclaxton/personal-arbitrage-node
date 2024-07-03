@@ -456,8 +456,8 @@ class Robosats
         // grab the largest amount we can accept whether it is range or not
         $calculations = (new OfferController())->calculateLargestAmount($offer, $channelBalances);
         if (is_array($calculations)) {
-            $offer->accepted_offer_amount_sat = $calculations['accepted_offer_amount_sat'];
-            $offer->accepted_offer_amount = $calculations['accepted_offer_amount'];
+            $offer->accepted_offer_amount_sat = $calculations['estimated_offer_amount_sat'];
+            $offer->accepted_offer_amount = $calculations['estimated_offer_amount'];
             $estimated_profit_sats = $calculations['estimated_profit_sats'];
         } else {
             return $calculations;
@@ -680,6 +680,7 @@ class Robosats
 
     public function updateOfferStatus($offer)
     {
+        /// this doesn't work very well
         //http://192.168.0.18:12596/mainnet/satstralia/api/order/?order_id=10163
         $url = $this->host . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
         $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->get($url);
@@ -690,7 +691,7 @@ class Robosats
         }
 
 
-        (new OfferController())->insertOffer($offer, $offer->provider);
+        (new OfferController())->insertOffer($response, $offer->provider);
 
         return $response;
     }
@@ -698,7 +699,7 @@ class Robosats
     // update status of transaction
     public function updateTransactionStatus($offer) {
         // update the offer as well
-        $this->updateOfferStatus($offer);
+        // $this->updateOfferStatus($offer);
 
         $transaction = $offer->transaction()->first();
         $url = $this->host . '/mainnet/' . $transaction->offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
@@ -784,7 +785,7 @@ class Robosats
             $transaction->status = $response['status'];
             $transaction->status_message = $response['status_message'];
         } else {
-            // log response
+            // log response {"id":10213,"status":1,"created_at":"2024-07-03T21:16:35.391831Z","expires_at":"2024-07-04T21:15:35.391831Z","type":0,"currency":2,"amount":"200.00000000","has_range":false,"min_amount":null,"max_amount":null,"payment_method":"Wise","is_explicit":false,"premium":"2.80","satoshis":null,"maker":59843,"taker":null,"escrow_duration":10800,"bond_size":"3.00","latitude":null,"longitude":null,"total_secs_exp":86340,"penalty":"2024-07-03T23:19:29.668012Z","is_maker":false,"is_taker":false,"is_participant":false,"maker_nick":"CourteousAmount532","maker_hash_id":"3c2fced4b96d01fba681da4cc6b64c6891efc93e871286810dae507fa7265450","maker_status":"Inactive","price_now":57449,"premium_now":2.8,"satoshis_now":348134}
             Log::info('Unknown response from robosats: ' . json_encode($response));
             $transaction->status_message= 'Unknown';
         }
