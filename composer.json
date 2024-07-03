@@ -15,6 +15,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "lcherone/base91": "^1.0",
+        "nwilging/laravel-discord-bot": "^1.1",
         "pear/crypt_gpg": "^1.6",
         "phpseclib/phpseclib": "^3.0",
         "phrity/websocket": "^3.0",
