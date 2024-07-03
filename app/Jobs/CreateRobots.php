@@ -4,8 +4,6 @@ namespace App\Jobs;
 
 use App\Models\AdminDashboard;
 use App\Models\Offer;
-use App\Models\Transaction;
-use App\WorkerClasses\LightningNode;
 use App\WorkerClasses\Robosats;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -13,7 +11,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class PayBond implements ShouldQueue
+class CreateRobots implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -37,13 +35,11 @@ class PayBond implements ShouldQueue
     public function handle(): void
     {
         if (!$this->adminDashboard->panicButton) {
-            $transaction = Transaction::where('offer_id', $this->offer->id)->first();
-            $invoice = $transaction->bond_invoice;
-            $lightningNode = new LightningNode();
-            $lightningNode->payInvoice($invoice);
+            $robosats = new Robosats();
+            $robosats->createRobot($this->offer);
         } else {
             // throw an exception
-            throw new \Exception('Panic button is enabled - PayBond.php');
+            throw new \Exception('Panic button is enabled - CreateRobots.php');
         }
     }
 }

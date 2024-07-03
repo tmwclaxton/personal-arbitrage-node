@@ -30,14 +30,16 @@ class AcceptSellOffer implements ShouldQueue
 
     /**
      * Execute the job.
+     * @throws \Exception
      */
     public function handle(): void
     {
         if (!$this->adminDashboard->panicButton) {
             $robosats = new Robosats();
-            $response = $robosats->acceptOffer($this->offer->robosatsId);
+            $robosats->acceptOffer($this->offer->robosatsId);
         } else {
-            // throw
+            // throw an exception
+            throw new \Exception('Panic button is enabled - AcceptSellOffer.php');
         }
     }
 }
