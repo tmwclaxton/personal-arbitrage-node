@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('robosatsId')->nullable();
             $table->string('provider');
             $table->boolean('accepted')->default(false);
+            $table->decimal('accepted_offer_amount')->nullable();
             $table->timestamp('expires_at');
             $table->string('type');
             $table->string('currency');

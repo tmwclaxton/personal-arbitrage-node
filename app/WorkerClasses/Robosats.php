@@ -3,6 +3,7 @@
 namespace App\WorkerClasses;
 
 use App\Models\AdminDashboard;
+use App\Models\BtcFiat;
 use App\Models\Offer;
 use App\Models\Robot;
 use App\Models\Transaction;
@@ -431,17 +432,55 @@ class Robosats
 
         // grab admin dashboard
         $adminDashboard = AdminDashboard::all()->first();
-        // grab local balance
-        $localBalance = $adminDashboard->localBalance;
+        $channelBalances = json_decode($adminDashboard->channelBalances, true);
         // grab the offer price amount or max amount
         if ($offer->has_range) {
-            $amount = $offer->max_amount;
+            $variationAmounts = [
+                $offer->min_satoshi_amount,
+                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) / 8,
+                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) / 4,
+                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) * 3 / 8,
+                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) / 2,
+                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) * 5 / 8,
+                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) * 3 / 4,
+                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) * 7 / 8,
+                $offer->max_satoshi_amount
+            ];
         } else {
-            $amount = $offer->amount;
+            $variationAmounts = [$offer->amount];
         }
-        if ($localBalance < $amount + 40000) {
+
+        // foreach $variationAmounts try to find the largest offer that can be accepted
+        $largestAmount = 0;
+        // order the variation amounts from largest to smallest
+        $variationAmounts = array_reverse($variationAmounts);
+        foreach ($variationAmounts as $variationAmount) {
+            $openChannels = 0;
+            foreach ($channelBalances as $channelBalance) {
+                // set variation amount to an integer i.e. no decimal places
+                $variationAmount = (int) $variationAmount;
+                // localBalance is our send capacity
+                if ((int) $channelBalance['localBalance'] > $variationAmount + 100000 ) {
+                    // dd($channelBalance);
+                    $openChannels++;
+                }
+            }
+            if ($openChannels > 0) {
+                $largestAmount = $variationAmount;
+                // break out of both loops
+                break;
+            }
+        }
+
+        if ($largestAmount == 0) {
             return 'Insufficient balance (ps need 40000 extra for fees for bond and potentially fees)';
         }
+
+        // convert largest amount back to fiat
+        $helpFunction = new HelperFunctions();
+        $offer->accepted_offer_amount = round($helpFunction->satoshiToFiat($largestAmount, $offer->currency), 2);
+
+        dd($offer->accepted_offer_amount);
 
         $offer->accepted = true;
         $offer->save();
