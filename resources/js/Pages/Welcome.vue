@@ -58,8 +58,6 @@ tempAdminDashboard.payment_methods = JSON.parse(tempAdminDashboard.payment_metho
 
 
 const clicked = () => {
-    console.log('clicked');
-    console.log(tempAdminDashboard);
     axios.post(route('updateAdminDashboard'), {
         adminDashboard: tempAdminDashboard
     }).then(response => {
@@ -68,6 +66,13 @@ const clicked = () => {
         console.log(error);
     });
 }
+
+const panicButtonToggle = () => {
+    tempAdminDashboard.panicButton = !tempAdminDashboard.panicButton;
+    console.log('panic button toggled');
+    clicked();
+}
+
 
 </script>
 
@@ -87,6 +92,15 @@ const clicked = () => {
             <div v-else>
                 <p>Loading BTC prices...</p>
             </div>
+            <button
+                v-on:click="panicButtonToggle"
+                class=" text-white font-bold py-2 px-4 border-b-4 rounded"
+                :class="tempAdminDashboard.panicButton ?
+                'bg-red-500 hover:bg-red-400 border-red-700 hover:border-red-500' :
+                'bg-zinc-500 hover:bg-zinc-400 border-zinc-700 hover:border-zinc-500'">
+
+                Panic Button {{ tempAdminDashboard.panicButton ? 'ON' : 'OFF' }}
+            </button>
         </div>
 
         <div v-if="tempAdminDashboard" class="flex flex-row mx-auto gap-x-5 my-5 mt-10 item s-center justify-center">

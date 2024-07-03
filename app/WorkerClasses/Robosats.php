@@ -450,6 +450,12 @@ class Robosats
         // $transaction->save();
 
         $url = $this->host . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $robosatsId;
+
+        // last chance to back out
+        if ($adminDashboard->panicButton) {
+            return 'Panic button is on';
+        }
+
         // post request
         if (!$offer->has_range) {
             $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'take', 'amount' => $offer->amount]);
@@ -489,45 +495,14 @@ class Robosats
 
 
         $adminDashboard = AdminDashboard::all()->first();
-        $requestedDetails = false;
+
         // create a new client
         $client = new Client($url);
         $client
             // Add standard middlewares
             ->addMiddleware(new CloseHandler())
             ->addMiddleware(new PingResponder())
-            ->onText(function (Client $client, Connection $connection, Message $message) use ($adminDashboard, $robot, $requestedDetails) {
-                // Handle text messages
-                // echo "Got message: {$message->getContent()}\n";
-                // Log::info("Got message: {$message->getContent()}\n");
-
-                // dd( json_decode($message->getContent(), true));
-                // $peerNick = json_decode($message->getContent(), true)['user_nick'];
-                // if ($peerNick != $robot->nickname) {
-                //     if (!$requestedDetails) {
-                //         // dd($message->getContent());
-                //
-                //         // send our public key
-                //         $pgpService = new PgpService();
-                //         $publicKey = $robot->public_key;
-                //         // $publicKey = str_replace("\n", "\n", $publicKey);
-                //         $json = json_encode([
-                //             'type' => 'public_key',
-                //             'public_key' => $publicKey,
-                //             'nick' => $robot->nickname
-                //         ]);
-                //         $client->text($json);
-                //
-                //         // ask for history message = -----SERVE HISTORY-----
-                //         $json = json_encode([
-                //             'type' => 'message',
-                //             'message' => '-----SERVE HISTORY-----',
-                //             'nick' => $robot->nickname
-                //         ]);
-                //         $client->text($json);
-                //     }
-                //     return;
-                // }
+            ->onText(function (Client $client, Connection $connection, Message $message) use ($adminDashboard, $robot) {
                 $peerPublicKey = json_decode($message->getContent(), true)['message'];
 
                 $pgpService = new PgpService();
@@ -570,7 +545,10 @@ class Robosats
                     }
                 }
 
-
+                // last chance to back out
+                if (AdminDashboard::all()->first()->panicButton) {
+                    return 'Panic button is on';
+                }
 
                 $encryptedMessage = $pgpService->encryptAndSign($publicKey, $privateKey, $message , $robot->token, $peerPublicKey);
                 $encryptedMessage = str_replace("\n", '\\', $encryptedMessage);
@@ -593,6 +571,12 @@ class Robosats
 
     public function confirmReceipt(Offer $offer, Transaction $transaction) {
         $url = $this->host . '/mainnet/' . $transaction->offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
+
+        // last chance to back out
+        if (AdminDashboard::all()->first()->panicButton) {
+            return 'Panic button is on';
+        }
+
         // post request
         $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'confirm']);
 
