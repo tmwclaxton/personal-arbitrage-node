@@ -13,13 +13,7 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 
-Schedule::command('refresh:offers')
-    ->description('refresh robosat offers')
-    ->everyThreeMinutes();
 
-Schedule::command('refresh:fiats')
-    ->description('refresh fiats')
-    ->everyThreeMinutes();
 
 Schedule::command('refresh:dashboard')
     ->description('refresh dashboard')
@@ -45,7 +39,14 @@ Schedule::command('auto:jobs')
     ->description('auto jobs')
     ->everyTwentySeconds();
 
-
 Schedule::command('refresh:discord-commands')
     ->description('refresh discord commands')
-    ->everyTenSeconds();
+    ->everyMinute();
+
+Schedule::command('refresh:offers')
+    ->description('refresh robosat offers')
+    ->everyThreeMinutes();
+
+Schedule::command('refresh:fiats')
+    ->description('refresh fiats')
+    ->everyThreeMinutes();

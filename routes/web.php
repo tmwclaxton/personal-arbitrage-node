@@ -212,14 +212,10 @@ Route::get('/testing', function () {
     // chain 2 jobs, one to create the robots and one to accept the offers
     foreach ($offers as $offer) {
         $adminDashboard = AdminDashboard::all()->first();
-        // Bus::chain([
-        //     \App\Jobs\CreateRobots::dispatch($offer, $adminDashboard),
-        //     \App\Jobs\AcceptSellOffer::dispatch($offer, $adminDashboard)
-        // ])->dispatch();
 
         Bus::chain([
-            \App\Jobs\CreateRobots::dispatch($offer, $adminDashboard),
-            \App\Jobs\AcceptSellOffer::dispatch($offer, $adminDashboard)
+            new \App\Jobs\CreateRobots($offer, $adminDashboard),
+            new \App\Jobs\AcceptSellOffer($offer, $adminDashboard)
         ])->dispatch();
 
     }
