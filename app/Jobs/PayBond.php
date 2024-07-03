@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\AdminDashboard;
 use App\Models\Offer;
 use App\Models\Transaction;
+use App\Services\DiscordWebhook;
 use App\WorkerClasses\LightningNode;
 use App\WorkerClasses\Robosats;
 use Illuminate\Bus\Queueable;
@@ -44,6 +45,8 @@ class PayBond implements ShouldQueue
             $fees = (int) $response['paymentRoute']['totalFees'];
             $transaction->fees += $fees;
             $transaction->save();
+            (new DiscordWebhook)->sendMessage('Paid bond for offer ' . $this->offer->robosatsId . ' with fees of ' . $fees);
+
         } else {
             // throw an exception
             throw new \Exception('Panic button is enabled - PayBond.php');

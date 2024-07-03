@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\AdminDashboard;
 use App\Models\Offer;
 use App\Models\Transaction;
+use App\Services\DiscordWebhook;
 use App\WorkerClasses\LightningNode;
 use App\WorkerClasses\Robosats;
 use Illuminate\Bus\Queueable;
@@ -40,7 +41,11 @@ class PayEscrow implements ShouldQueue
             $transaction = Transaction::where('offer_id', $this->offer->id)->first();
             $escrowInvoice = $transaction->escrow_invoice;
             $lightningNode = new LightningNode();
-            $lightningNode->payInvoice($escrowInvoice);
+            $response = $lightningNode->payInvoice($invoice);
+            $fees = (int) $response['paymentRoute']['totalFees'];
+            $transaction->fees += $fees;
+            $transaction->save();
+            (new DiscordWebhook)->sendMessage('Paid bond for offer ' . $this->offer->robosatsId . ' with fees of ' . $fees);
         } else {
             // throw an exception
             throw new \Exception('Panic button is enabled - PayEscrow.php');

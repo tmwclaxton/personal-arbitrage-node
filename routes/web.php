@@ -14,6 +14,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Spatie\DiscordAlerts\Facades\DiscordAlert;
 
 
 Route::post('/updateAdminDashboard', function () {
@@ -119,9 +120,8 @@ Route::post('/send-payment-handle', function () {
 
 
 Route::get('/testing', function () {
-    $lightningNode = new LightningNode();
-    $balanceArray = $lightningNode->getLightningWalletBalance();
-    return $balanceArray;
+    (new App\Services\DiscordWebhook)->sendMessage("test");
+    return 'test';
 
 
     //

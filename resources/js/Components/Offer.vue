@@ -73,7 +73,7 @@
                 <!--    offer.transaction.id-->
                 <!--}}</p>-->
                 <p class="mt-2 text-gray-500 font-bold">Transaction Status: {{
-                        offer.transaction.status
+                        offer.transaction.status_message
                     }}</p>
             </div>
 

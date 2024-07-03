@@ -21,6 +21,7 @@
         "phrity/websocket": "^3.0",
         "singpolyma/openpgp-php": "^0.6.0",
         "spatie/crypto": "^2.1",
+        "spatie/laravel-discord-alerts": "^1.5",
         "tightenco/ziggy": "^2.0"
     },
     "require-dev": {
