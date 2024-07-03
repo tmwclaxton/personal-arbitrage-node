@@ -120,8 +120,14 @@ Route::post('/send-payment-handle', function () {
     $response = $robosats->webSocketCommunicate($offer);
 })->name('send-payment-handle');
 
-
+//
 // Route::get('/testing', function () {
+//
+//     $lightningNode = new LightningNode();
+//     $response = $lightningNode->payInvoice('lnbc300n1pngt2s8pp5qxvyww5mvacdtenhxf7gtsgt0hqxzeasdvanar3xfcrdn4zd37vsdqqcqzzgxqyz5vqrzjqwnvuc0u4txn35cafc7w94gxvq5p3cu9dd95f7hlrh0fvs46wpvhd96wyzy8ggf7t5qqqqryqqqqthqqpysp5l8n62zz8kxhvg6w6dksdxulqdvq9w3wvwdh8amh3enk7gknz80tq9qrsgqe2fxxpf0469fsfgfncxzp9wpg0evsu3ky3tg86a4hqsfp0ff5pqz7xs0g2kvyh9lvycnx0y9xrjf9x0ar9wgyn2kzkcq0xltutxr2nqpu4dww4');
+//
+//     dd($response);
+//
 // });
 
 

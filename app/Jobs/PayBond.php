@@ -22,6 +22,8 @@ class PayBond implements ShouldQueue
 
     protected AdminDashboard $adminDashboard;
 
+    // time to wait for the job to complete
+    public int $timeout = 300;
     /**
      * Create a new job instance.
      */
@@ -38,14 +40,13 @@ class PayBond implements ShouldQueue
     public function handle(): void
     {
         if (!$this->adminDashboard->panicButton) {
+
+
             $transaction = Transaction::where('offer_id', $this->offer->id)->first();
             $invoice = $transaction->bond_invoice;
             $lightningNode = new LightningNode();
-            $response = $lightningNode->payInvoice($invoice);
-            $fees = (int) $response['paymentRoute']['totalFees'];
-            $transaction->fees += $fees;
-            $transaction->save();
-            (new DiscordService)->sendMessage('Paid bond for offer ' . $this->offer->robosatsId . ' with fees of ' . $fees);
+            (new DiscordService)->sendMessage('Paid bond for offer ' . $this->offer->robosatsId );
+            $lightningNode->payInvoice($invoice);
 
         } else {
             // throw an exception

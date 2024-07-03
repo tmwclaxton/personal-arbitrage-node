@@ -103,13 +103,12 @@ class LightningNode
             return 'Panic button is on';
         }
 
-        $response = Http::timeout(90)->withHeaders($this->getHeaders())->post($url, [
+        $response = Http::timeout(300)->withHeaders($this->getHeaders())->post($url, [
             'paymentRequest' => $invoice,
             'amt' => 0,
         ]);
-
-
-        return json_decode($response->body(), true);
+        $response = json_decode($response->body(), true);
+        return "done";
     }
 
     public function getChannelDetails()

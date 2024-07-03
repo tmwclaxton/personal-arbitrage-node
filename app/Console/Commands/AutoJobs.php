@@ -7,6 +7,7 @@ use App\Jobs\PayEscrow;
 use App\Jobs\SendPaymentHandle;
 use App\Models\AdminDashboard;
 use App\Models\Offer;
+use App\Services\DiscordService;
 use Illuminate\Console\Command;
 
 class AutoJobs extends Command
@@ -59,11 +60,14 @@ class AutoJobs extends Command
         $adminDashboard = AdminDashboard::all()->first();
         $offers = Offer::where([['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14]])->get();
         foreach ($offers as $offer) {
-            // if status is 3 then dispatch a bond job
             if ($offer->job_last_status >= $offer->status) {
                 continue;
             }
+            // don't run the job again from auto job
             $offer->job_last_status = $offer->status;
+            $offer->save();
+
+            // if status is 3 then dispatch a bond job
             if ($offer->status == 3 && $adminDashboard->autoBond) {
                 PayBond::dispatch($offer, $adminDashboard);
             }
@@ -73,9 +77,12 @@ class AutoJobs extends Command
             if ($offer->status == 9 && $adminDashboard->autoMessage) {
                 SendPaymentHandle::dispatch($offer, $adminDashboard);
             }
-            if ($offer->status == 10) {
+            if ($offer->status == 11 || $offer->status == 16) {
                 // send discord message or check programatically
+                (new \App\Services\DiscordService)->sendMessage('Offer ' . $offer->robosatsId . ' is in dispute');
 
+                $offer->job_last_status = $offer->status;
+                $offer->save();
             }
 
             $offer->save();

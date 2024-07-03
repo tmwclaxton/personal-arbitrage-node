@@ -22,6 +22,9 @@ class PayEscrow implements ShouldQueue
 
     protected AdminDashboard $adminDashboard;
 
+    // time to wait for the job to complete
+    public int $timeout = 300;
+
     /**
      * Create a new job instance.
      */
@@ -38,14 +41,16 @@ class PayEscrow implements ShouldQueue
     public function handle(): void
     {
         if (!$this->adminDashboard->panicButton) {
+            // don't run the job again from auto job
+            $this->offer->job_last_status = $this->offer->status;
+            $this->offer->save();
+
             $transaction = Transaction::where('offer_id', $this->offer->id)->first();
             $escrowInvoice = $transaction->escrow_invoice;
             $lightningNode = new LightningNode();
-            $response = $lightningNode->payInvoice($invoice);
-            $fees = (int) $response['paymentRoute']['totalFees'];
-            $transaction->fees += $fees;
-            $transaction->save();
-            (new DiscordService)->sendMessage('Paid bond for offer ' . $this->offer->robosatsId . ' with fees of ' . $fees);
+            (new DiscordService)->sendMessage('Paid escrow for offer ' . $this->offer->robosatsId );
+            $lightningNode->payInvoice($escrowInvoice);
+
         } else {
             // throw an exception
             throw new \Exception('Panic button is enabled - PayEscrow.php');

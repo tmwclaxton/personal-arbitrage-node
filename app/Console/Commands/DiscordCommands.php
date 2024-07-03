@@ -61,7 +61,7 @@ class DiscordCommands extends Command
                 if (in_array($firstWord, $commands)) {
                     // if it is, send a message to the discord channel
                     $adminDashboard = AdminDashboard::all()->first();
-                    switch ($message['content']) {
+                    switch ($firstWord) {
                         case '!panic':
                             $adminDashboard->panicButton = true;
                             $adminDashboard->save();
@@ -72,9 +72,11 @@ class DiscordCommands extends Command
                             break;
                         case '!confirm':
                             $secondWord = explode(' ', $message['content'])[1];
-                            // grab offer by robosats id
                             $offer = Offer::where('robosatsId', $secondWord)->first();
                             ConfirmPayment::dispatch($offer, $adminDashboard);
+                            break;
+                        default:
+                            $discordService->sendMessage('Command not recognized');
                             break;
 
                     }
