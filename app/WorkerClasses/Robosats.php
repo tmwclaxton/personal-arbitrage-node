@@ -473,20 +473,17 @@ class Robosats
         }
 
         if ($largestAmount == 0) {
-            return 'Insufficient balance (ps need 40000 extra for fees for bond and potentially fees)';
+            return 'Insufficient balance (ps need 100000 extra for fees for bond and potentially fees)';
         }
 
         // convert largest amount back to fiat
         $helpFunction = new HelperFunctions();
         $offer->accepted_offer_amount = round($helpFunction->satoshiToFiat($largestAmount, $offer->currency), 2);
-
-        dd($offer->accepted_offer_amount);
-
         $offer->accepted = true;
-        $offer->save();
+
+
         $transaction = new Transaction();
         $transaction->offer_id = $offer->id;
-        // $transaction->save();
 
         $url = $this->host . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $robosatsId;
 
@@ -497,17 +494,16 @@ class Robosats
 
         // post request
         if (!$offer->has_range) {
-            $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'take', 'amount' => $offer->amount]);
+            $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'take', 'amount' => $largestAmount]);
         } else {
-            $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'take', 'amount' => $offer->max_amount]);
-            $offer->amount = $offer->max_amount;
-            $offer->save();
+            $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'take', 'amount' => $largestAmount]);
         }
         if ($response == null || $response->failed()) {
             $transaction->delete();
             return 'Failed to accept offer';
         }
 
+        $offer->save();
         // convert response to json
         $response = json_decode($response->body(), true);
 
