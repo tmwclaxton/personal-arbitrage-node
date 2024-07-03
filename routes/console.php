@@ -15,11 +15,11 @@ use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('refresh:offers')
     ->description('refresh robosat offers')
-    ->everyTwoMinutes();
+    ->everyMinute();
 
 Schedule::command('refresh:fiats')
     ->description('refresh fiats')
-    ->everyThreeMinutes();
+    ->everyMinute();
 
 Schedule::command('refresh:dashboard')
     ->description('refresh dashboard')
@@ -29,11 +29,9 @@ Schedule::command('refresh:transactions')
     ->description('refresh transactions')
     ->everyMinute();
 
-
 Schedule::command('refresh:robots')
     ->description('refresh robots')
     ->everyMinute();
-
 
 Schedule::command('claim:compensation')
     ->description('claim compensation')

@@ -42,6 +42,7 @@ class OfferController extends Controller
             ->orderBy('satoshi_amount_profit', 'desc')
             ->orderBy('premium', 'desc')
             ->get();
+
         // change the expires_at to a human readable format
         foreach ($offers as $offer) {
             $offer->expires_at = Carbon::parse($offer->expires_at)->diffForHumans();
@@ -109,7 +110,7 @@ class OfferController extends Controller
         return Inertia::render('Welcome', [
             'btcPrices' => $btcFiats,
             'offers' => $offers,
-            'adminDashboard' => $adminDashboard
+            'adminDashboard' => $adminDashboard,
         ]);
     }
 

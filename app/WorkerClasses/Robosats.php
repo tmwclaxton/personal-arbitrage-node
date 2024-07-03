@@ -9,6 +9,7 @@ use App\Models\Robot;
 use App\Models\Transaction;
 use App\Services\PgpService;
 use Hackzilla\PasswordGenerator\Generator\ComputerPasswordGenerator;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use WebSocket\Client;
@@ -238,6 +239,7 @@ class Robosats
             $robot->save();
         }
         $offer->robots_created = true;
+        $offer->save();
 
         return $robots;
     }
@@ -453,14 +455,14 @@ class Robosats
                 $offer->max_satoshi_amount
             ];
         } else {
-            if (!isset($offer->amount)) {
+            if (!isset($offer->satoshi_now)) {
                 return 'Offer has no amount';
             }
-            $variationAmounts = [$offer->amount];
+            $variationAmounts = [$offer->satoshi_now];
         }
 
         // foreach $variationAmounts try to find the largest offer that can be accepted
-        $largestAmount = 0;
+        $largestAmountSat = 0;
         // order the variation amounts from largest to smallest
         $variationAmounts = array_reverse($variationAmounts);
         foreach ($variationAmounts as $variationAmount) {
@@ -475,19 +477,22 @@ class Robosats
                 }
             }
             if ($openChannels > 0) {
-                $largestAmount = $variationAmount;
+                $largestAmountSat = $variationAmount;
                 // break out of both loops
                 break;
             }
         }
 
-        if ($largestAmount == 0) {
+        if ($largestAmountSat == 0) {
             return 'Insufficient balance (ps need 100000 extra for fees for bond and potentially fees)';
         }
 
+        $offer->accepted_offer_amount_sat = $offer->range ? $largestAmountSat : $offer->satoshi_now;
         // convert largest amount back to fiat
         $helpFunction = new HelperFunctions();
-        $offer->accepted_offer_amount = round($helpFunction->satoshiToFiat($largestAmount, $offer->price), 2);
+        $offer->accepted_offer_amount = $offer->range ?
+            round($helpFunction->satoshiToFiat($largestAmountSat, $offer->price), 2) :
+            round($helpFunction->satoshiToFiat($offer->satoshi_now, $offer->price), 2);
         $offer->accepted = true;
 
 
@@ -495,13 +500,12 @@ class Robosats
         $transaction->offer_id = $offer->id;
 
 
+        $btcFiats = BtcFiat::all();
+        $btcFiat = $btcFiats->where('currency', $offer->currency)->first();
         // check estimated profit
         if ($offer->has_range) {
-            $btcFiats = BtcFiat::all();
-            $btcFiat = $btcFiats->where('currency', $offer->currency)->first();
             $currentRealPrice = $btcFiat->price;
-            // $offer->price
-            $estimated_profit_sats = $largestAmount * (($currentRealPrice - $offer->price) / $currentRealPrice);
+            $estimated_profit_sats = $largestAmountSat * (($currentRealPrice - $offer->price) / $currentRealPrice);
         } else {
             $estimated_profit_sats = $offer->satoshi_amount_profit;
         }
@@ -513,11 +517,40 @@ class Robosats
         if ($estimated_profit_sats < $adminDashboard->min_satoshi_profit) {
             return 'Offer has less than ' . $adminDashboard->min_satoshi_profit . ' sats profit';
         }
+        $offer->accepted_offer_profit_sat = $estimated_profit_sats;
 
         // // check if offer has the allowed payment methods
+        $allowedPaymentMethods = json_decode($adminDashboard->payment_methods, true);
+        $paymentMethods = json_decode($offer->payment_methods, true);
+        $allowed = false;
+        foreach ($paymentMethods as $paymentMethod) {
+            if (in_array($paymentMethod, $allowedPaymentMethods)) {
+                $allowed = true;
+                break;
+            }
+        }
+        if (!$allowed) {
+            return 'Offer has no allowed payment methods';
+        }
         // // check if offer has the allowed currency
+        $allowedCurrencies = json_decode($adminDashboard->payment_currencies, true);
+        if (!in_array($offer->currency, $allowedCurrencies)) {
+            return 'Offer has no allowed currency';
+        }
 
         // // check when the offer and btcFiat was last updated if too old, could suggest out of date prices
+        $now = Carbon::now();
+        // if the offer was last updated more than 10 minutes ago
+        $offerUpdated = Carbon::parse($offer->updated_at);
+        if ($now->diffInMinutes($offerUpdated) > 10) {
+            return 'Offer is suspiciously old';
+        }
+
+        // if the btcFiat was last updated more than 10 minutes ago
+        $btcFiatUpdated = Carbon::parse($btcFiat->updated_at);
+        if ($now->diffInMinutes($btcFiatUpdated) > 10) {
+            return 'BtcFiat is suspiciously old';
+        }
 
 
 
@@ -529,9 +562,9 @@ class Robosats
         // post request
         $url = $this->host . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $robosatsId;
         if (!$offer->has_range) {
-            $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'take', 'amount' => $largestAmount]);
+            $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'take', 'amount' => $offer->accepted_offer_amount]);
         } else {
-            $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'take', 'amount' => $largestAmount]);
+            $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'take', 'amount' => $offer->accepted_offer_amount]);
         }
         if ($response == null || $response->failed()) {
             $transaction->delete();
@@ -543,7 +576,7 @@ class Robosats
         $response = json_decode($response->body(), true);
 
         if ($response['status_message']) {
-            $transaction->status = $response['status_message'];
+            $transaction->status_message= $response['status_message'];
         }
         if ($response['bond_invoice']) {
             $transaction->bond_invoice = $response['bond_invoice'];
@@ -651,15 +684,16 @@ class Robosats
         // post request
         $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'confirm']);
 
-        $transaction->status = "Confirmed";
+        $transaction->status_message = "Confirmed";
         $transaction->save();
 
         // convert response to json
         $response = json_decode($response->body(), true);
 
         $adminDashboard = AdminDashboard::all()->first();
-        $adminDashboard->trade_volume_satoshis += $transaction->offer->satoshis_now;
-        $adminDashboard->satoshi_profit += $transaction->offer->satoshi_amount_profit;
+        $adminDashboard->trade_volume_satoshis += $transaction->offer->accepted_offer_amount_sat;
+        $adminDashboard->satoshi_profit += $transaction->offer->accepted_offer_profit_sat;
+        $adminDashboard->satoshi_fees += $transaction->fees;
         $adminDashboard->save();
 
 
@@ -753,7 +787,7 @@ class Robosats
         } else {
             // log response
             Log::info('Unknown response from robosats: ' . json_encode($response));
-            $transaction->status = 'Unknown';
+            $transaction->status_message= 'Unknown';
         }
         if ($offer->status != 1) {
             $transaction->save();

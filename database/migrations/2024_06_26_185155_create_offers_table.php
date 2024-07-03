@@ -19,6 +19,8 @@ return new class extends Migration
             $table->boolean('accepted')->default(false);
             $table->boolean('robots_created')->default(false);
             $table->decimal('accepted_offer_amount')->nullable();
+            $table->decimal('accepted_offer_amount_sat')->nullable();
+            $table->decimal('accepted_offer_profit_sat')->nullable();
             $table->timestamp('expires_at');
             $table->string('type');
             $table->integer('status')->default(0);

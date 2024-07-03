@@ -19,6 +19,7 @@ return new class extends Migration
 
             $table->integer('status')->default(0);
             $table->string('status_message')->default('');
+            $table->integer('fees')->default(0);
 
             $table->timestamps();
         });

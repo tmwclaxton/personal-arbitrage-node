@@ -40,7 +40,10 @@ class PayBond implements ShouldQueue
             $transaction = Transaction::where('offer_id', $this->offer->id)->first();
             $invoice = $transaction->bond_invoice;
             $lightningNode = new LightningNode();
-            $lightningNode->payInvoice($invoice);
+            $response = $lightningNode->payInvoice($invoice);
+            $fees = (int) $response['paymentRoute']['totalFees'];
+            $transaction->fees += $fees;
+            $transaction->save();
         } else {
             // throw an exception
             throw new \Exception('Panic button is enabled - PayBond.php');
