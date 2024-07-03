@@ -26,6 +26,7 @@ class OfferController extends Controller
             $balanceArray = $lightningNode->getLightningWalletBalance();
             $adminDashboard->localBalance = $balanceArray['localBalance'];
             $adminDashboard->remoteBalance = $balanceArray['remoteBalance'];
+            $adminDashboard->channelBalances = json_encode($balanceArray['channelBalances']);
             $adminDashboard->save();
         }
 
@@ -35,7 +36,7 @@ class OfferController extends Controller
 
         $offers = Offer::where([['accepted', '=', true], ['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14]])
             ->orWhere([['accepted', '=', false],['premium', '>=', $sellPremium], ['type', 'sell']])
-            ->orWhere([['accepted', '=', false],['premium', '>=', $buyPremium], ['type', 'buy']])
+            ->orWhere([['accepted', '=', false],['premium', '<=', $buyPremium], ['type', 'buy']])
             ->orderBy('accepted', 'desc')
             ->orderBy('max_satoshi_amount_profit', 'desc')
             ->orderBy('satoshi_amount_profit', 'desc')
@@ -69,7 +70,6 @@ class OfferController extends Controller
                 });
             }
 
-
             // make human readable
             $offer->payment_methods = implode(', ', $offer->payment_methods);
 
@@ -78,12 +78,6 @@ class OfferController extends Controller
                 $transaction = Transaction::where('offer_id', $offer->id)->first();
                 $offer->transaction = $transaction;
             }
-
-            // if ($offer->status == 14 || $offer->transaction && $offer->transaction->status == 'Sucessful trade') { // they spelt successful wrong
-            //     $offers = $offers->filter(function ($value, $key) use ($offer) {
-            //         return $value->id != $offer->id;
-            //     });
-            // }
 
             // grab robots
             $offer->robots = $offer->robots()->get();

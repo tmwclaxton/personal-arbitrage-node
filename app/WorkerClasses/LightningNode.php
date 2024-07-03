@@ -60,15 +60,27 @@ class LightningNode
         $localBalance = 0;
         $remoteBalance = 0;
         if (!$response) {
-            return ['localBalance' => 0, 'remoteBalance' => 0];
+            return ['localBalance' => 0, 'remoteBalance' => 0, 'channelBalances' => []];
         }
+
+        //  value [localBalance => value, remoteBalance => value]
+        $channelBalances = [];
 
         foreach ($response as $channel) {
-
             $localBalance += $channel['localBalance'];
             $remoteBalance += $channel['remoteBalance'];
+            $add = [
+                'channelName' => $channel['remoteAlias'],
+                'localBalance' => $channel['localBalance'],
+                'remoteBalance' => $channel['remoteBalance']
+            ];
+            $channelBalances[] = $add;
         }
-        return ['localBalance' => $localBalance, 'remoteBalance' => $remoteBalance];
+        return [
+            'localBalance' => $localBalance,
+            'remoteBalance' => $remoteBalance,
+            'channelBalances' => $channelBalances
+        ];
     }
 
 

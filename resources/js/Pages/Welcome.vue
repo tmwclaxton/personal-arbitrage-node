@@ -14,6 +14,7 @@ const props = defineProps({
 });
 
 const accessOffers = ref(props.offers);
+const channelBalances = ref(JSON.parse(props.adminDashboard.channelBalances));
 
 
 //auto refresh page every 10 seconds soft
@@ -43,6 +44,7 @@ setInterval(() => {
             }
         }
         accessOffers.value = response.data.offers;
+        channelBalances.value = JSON.parse(response.data.adminDashboard.channelBalances);
         // for each
 
     }).catch(error => {
@@ -94,6 +96,15 @@ const clicked = () => {
                 <p class=""><span class="font-bold">Lighting Wallet Balance:</span> {{ tempAdminDashboard.localBalance }} </p>
                 <p class=""><span class="font-bold">Remote Balance:</span> {{ tempAdminDashboard.remoteBalance }} </p>
                 <p class=""><span class="font-bold">Auto Topup:</span>     <ToggleButton v-model="tempAdminDashboard.autoTopup" size="sm" activeColor="bg-green-500" inactiveColor="bg-red-500" /></p>
+                <div class="border-b border-zinc-300 dark:border-zinc-700"></div>
+                <div class="flex flex-col gap-y-1 text-xs pt-2">
+                    <div v-for="channelBalance in channelBalances"
+                        class="flex flex-row gap-x-2">
+                        <span class="font-bold"> {{ channelBalance.channelName }}: </span>
+                        <span class="font-bold text-green-500"> {{ channelBalance.localBalance }} </span>
+                        <span class="font-bold text-red-500"> {{ channelBalance.remoteBalance }} </span>
+                    </div>
+                </div>
             </div>
             <div class="text-left border-r border-black dark:border-white/70 pr-5">
                 <p class=""><span class="font-bold text-xl mb-2">Automation:</span></p>
@@ -132,19 +143,14 @@ const clicked = () => {
                         <TextInput v-model="tempAdminDashboard.wise_handle"/>
                     </div>
                 </div>
-                    <!--<div class="flex flex-row justify-between items-center"><span-->
-                    <!--    class="font-bold mr-1">Strike Tag: </span>-->
-                    <!--    <TextInput v-model="tempAdminDashboard.strike_handle"/>-->
-                    <!--</div>-->
-
-                    <div class="flex flex-row gap-x-4 justify-between">
-                        <PaymentsInput :payment_methods="tempAdminDashboard.payment_methods"
-                                       @update:model-value="tempAdminDashboard.payment_methods = $event"/>
-                        <primary-button class="h-12 mt-5" @click="clicked">Save Changes</primary-button>
-                    </div>
+                <div class="flex flex-row gap-x-4 justify-between">
+                    <PaymentsInput :payment_methods="tempAdminDashboard.payment_methods"
+                                   @update:model-value="tempAdminDashboard.payment_methods = $event"/>
+                    <primary-button class="h-12 mt-5" @click="clicked">Save Changes</primary-button>
+                </div>
 
             </div>
-            <div class="text-left pl-5 flex flex-col gap-y-1 border-r border-black dark:border-white/70 pr-5">
+            <div class="text-left pl-5 flex flex-col gap-y-1 border-r border-zinc-300 dark:border-white/70 pr-5">
                 <div class="flex flex-row justify-between items-center"><span class="font-bold text-xl mb-2">Statistics (satoshies):</span></div>
                 <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Profit: </span><span v-text="tempAdminDashboard.satoshi_profit"/> </div>
                 <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Fees: </span><span v-text="tempAdminDashboard.satoshi_fees"/> </div>

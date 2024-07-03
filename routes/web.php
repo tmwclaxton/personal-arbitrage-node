@@ -116,7 +116,9 @@ Route::post('/send-payment-handle', function () {
 
 
 Route::get('/testing', function () {
-
+    $lightningNode = new LightningNode();
+    $balanceArray = $lightningNode->getLightningWalletBalance();
+    return $balanceArray;
 
 
     //
