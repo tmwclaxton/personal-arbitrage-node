@@ -705,6 +705,10 @@ class Robosats
         $adminDashboard->trade_volume_satoshis += $transaction->offer->accepted_offer_amount_sat;
         $adminDashboard->satoshi_profit += $transaction->offer->accepted_offer_profit_sat;
         $adminDashboard->satoshi_fees += $transaction->fees;
+
+        // TODO: we need to grab the bond and escrow invoice and find out fees from there
+        // TODO: then we need to calculate 0.025% of the trade volume and add that to the fees
+
         $adminDashboard->save();
         (new DiscordService)->sendMessage('Trade completed: ' .
             $transaction->offer->accepted_offer_amount . ' ' .
