@@ -34,7 +34,7 @@ class DiscordService
      * @return array
      * @throws GuzzleException
      */
-    public function getLastMessages()
+    public function getLatestMessages()
     {
         $stream = $this->client->get("channels/{$this->channelId}/messages", [
             'limit' => 50
@@ -73,25 +73,5 @@ class DiscordService
         if ($response->getStatusCode() !== 200) {
             throw new \Exception('Failed to send message to Discord channel.');
         }
-    }
-
-    /**
-     * Detect if a command is called in the messages.
-     *
-     * @param string $command
-     * @return bool
-     * @throws GuzzleException
-     */
-    public function detectCommand(string $command)
-    {
-        $messages = $this->getLastMessages();
-
-        foreach ($messages as $message) {
-            if (str_starts_with($message['content'], $command)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

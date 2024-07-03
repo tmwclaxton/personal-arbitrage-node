@@ -8,4 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class DiscordMessage extends Model
 {
     use HasFactory;
+
+    protected $guarded = ['id'];
 }
