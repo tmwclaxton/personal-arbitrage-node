@@ -111,6 +111,21 @@ class LightningNode
         return "done";
     }
 
+    // get recent payments
+    public function getPaymentFees($paymentRequest)
+    {
+        // http://umbrel.local:2101/v1/lnd/lightning/payments
+        $payments = $this->requestUrl('/v1/lnd/lightning/payments');
+        // iterate through the payments and find the one with the payment request
+        foreach ($payments as $payment) {
+            if ($payment['paymentRequest'] == $paymentRequest) {
+                return $payment['feeSat'];
+            }
+        }
+        return 0;
+    }
+
+
     public function getChannelDetails()
     {
         // [{"active":true,"remotePubkey":"02f1a8c87607f415c8f22c00593002775941dea48869ce23096af27b0cfdcc0b69","channelPoint":"28a79e93954780a820a2af4a726a9f4104de3c1e6b48591f53fd2ec475e0c1f3:1","chanId":"934272622400634881","capacity":"2000000","localBalance":"1829453","remoteBalance":"169887","commitFee":"2811","commitWeight":"1116","feePerKw":"2500","unsettledBalance":"0","totalSatoshisSent":"169887","totalSatoshisReceived":"0","numUpdates":"11","pendingHtlcs":[],"csvDelay":240,"private":false,"initiator":true,"chanStatusFlags":"ChanStatusDefault","localChanReserveSat":"20000","remoteChanReserveSat":"20000","staticRemoteKey":false,"type":"OPEN","remoteAlias":"Kraken 🐙⚡"}]

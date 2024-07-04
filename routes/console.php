@@ -37,7 +37,7 @@ Schedule::command('retire:offers')
 
 Schedule::command('auto:jobs')
     ->description('auto jobs')
-    ->everyTwentySeconds();
+    ->everyThirtySeconds();
 
 Schedule::command('refresh:discord-commands')
     ->description('refresh discord commands')

@@ -328,7 +328,7 @@ class OfferController extends Controller
         }
 
         return [
-            'estimated_offer_amount_sat' =>  $estimated_offer_amount_sat,
+            'estimated_offer_amount_sats' =>  $estimated_offer_amount_sat,
             'estimated_offer_amount' => $estimated_offer_amount,
             'estimated_profit_sats' => $estimated_profit_sats
         ];

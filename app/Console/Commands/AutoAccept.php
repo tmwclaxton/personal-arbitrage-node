@@ -31,8 +31,6 @@ class AutoAccept extends Command
     public function handle()
     {
 
-
-
         $adminDashboard = AdminDashboard::all()->first();
         $maxConcurrentTransactions = $adminDashboard->max_concurrent_transactions;
         $transactions = Transaction::where('status', '<=', 11)->get();
@@ -77,8 +75,8 @@ class AutoAccept extends Command
             // grab the largest amount we can accept whether it is range or not
             $calculations = (new OfferController())->calculateLargestAmount($offer, $channelBalances);
             if (is_array($calculations)) {
-                $offer->estimated_profit_sats = $calculations['estimated_profit_sats'];
-                $offer->estimated_offer_amount_sat = $calculations['estimated_offer_amount_sat'];
+                $offer->estimated_profit_sat = $calculations['estimated_profit_sats'];
+                $offer->estimated_offer_amount_sat = $calculations['estimated_offer_amount_sats'];
                 $offer->estimated_offer_amount = $calculations['estimated_offer_amount'];
             } else {
                 return $calculations;

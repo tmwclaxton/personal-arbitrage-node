@@ -81,8 +81,6 @@ class AutoJobs extends Command
                 // send discord message or check programatically
                 (new \App\Services\DiscordService)->sendMessage('Offer ' . $offer->robosatsId . ' is in dispute');
 
-                $offer->job_last_status = $offer->status;
-                $offer->save();
             }
 
             $offer->save();

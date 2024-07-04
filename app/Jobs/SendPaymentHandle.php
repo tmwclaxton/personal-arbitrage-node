@@ -36,12 +36,8 @@ class SendPaymentHandle implements ShouldQueue
     public function handle(): void
     {
         if (!$this->adminDashboard->panicButton) {
-            $transaction = Transaction::where('offer_id', $this->offer->id)->first();
             $robosats = new Robosats();
             $robosats->webSocketCommunicate($this->offer);
-            // prevent the job from being executed again
-            $this->offer->job_last_status = $this->offer->status;
-            $this->offer->save();
         } else {
             // throw an exception
             throw new \Exception('Panic button is enabled - SendPaymentHandle.php');

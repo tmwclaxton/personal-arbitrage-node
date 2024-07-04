@@ -127,16 +127,23 @@ Route::post('/send-payment-handle', function () {
 Route::post('auto-accept', function () {
     $adminDashboard = AdminDashboard::all()->first();
     $offerId = request('offer_id');
-    $offer = Offer::find($offerId);
+    $offer = Offer::where('id', $offerId)->first();
     Bus::chain([
         new \App\Jobs\CreateRobots($offer, $adminDashboard),
         new \App\Jobs\AcceptSellOffer($offer, $adminDashboard)
     ])->dispatch();
 })->name('auto-accept');
 //
-// Route::get('/testing', function () {
-//
-// });
+Route::get('/testing', function () {
+
+    $lightningNode = new LightningNode();
+    $invoice = "lnbc921530n1pngvchspp5jv97kwqavtkrvfn8amcq9wdjcalu9mlkwzycd4w7c8207mddry8sd2j2pshjmt9de6zqun9vejhyetwvdjn5gp5xyurwvpsvvuz6de4xsuj6dryxvez6wrpxp3z6cmrvg6rgdtpx9jkzwrp9cs9g6rfwvs8qcted4jkuapq2ay5cnpqgefy2326g5syjn3qt984253q2aq5cnz92skzqcmgv43kkgr0dcs9ymmzdafkzarnyp5kvgr5dpjjqmr0vd4jqampwvs8xatrvdjhxumxw4kzugzfwss8w6tvdssxyefqw4hxcmmrddjkggpgveskjmpfyp6kumr9wdejq7t0w5sxx6r9v96zqmmjyp3kzmnrv4kzqatwd9kxzar9wfskcmre9ccqz2cxqr06gsp5dteflyl4s9efepqe59a8zc2nv27mze4gmaudm97l7yymuxdtxg5q9qyyssqehes5hsrenrn963dfdawlwaqlnr0w2hed6rdnpluwk32tcmyfwl5h9v3lq8dvn7seyxfwqsq3eg7nc32ew6txsv87gm5gnv6sk2m6qcqw5d4hg";
+    $response = $lightningNode->getPaymentFees($invoice);
+    return $response;
+
+    // \Illuminate\Support\Facades\Artisan::call('auto:accept');
+
+});
 
 
 

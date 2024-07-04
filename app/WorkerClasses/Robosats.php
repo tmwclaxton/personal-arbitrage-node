@@ -456,9 +456,12 @@ class Robosats
         // grab the largest amount we can accept whether it is range or not
         $calculations = (new OfferController())->calculateLargestAmount($offer, $channelBalances);
         if (is_array($calculations)) {
-            $offer->accepted_offer_amount_sat = $calculations['estimated_offer_amount_sat'];
+            $offer->accepted_offer_amount_sat = $calculations['estimated_offer_amount_sats'];
             $offer->accepted_offer_amount = $calculations['estimated_offer_amount'];
-            $estimated_profit_sats = $calculations['estimated_profit_sats'];
+            $offer->accepted_offer_profit_sat = $calculations['estimated_profit_sats'];
+            // round satoshi to 0 decimal places
+            $offer->accepted_offer_profit_sat = round($offer->accepted_offer_profit_sat, 0);
+            $offer->accepted_offer_amount_sat = round($offer->accepted_offer_amount_sat, 0);
         } else {
             return $calculations;
         }
@@ -470,15 +473,15 @@ class Robosats
 
 
         // round to 0 decimal places
-        if ($estimated_profit_sats < 500) {
+        if ($offer->accepted_offer_profit_sat < 500) {
             (new DiscordService)->sendMessage('Error: trying to accept offer with less than 500 sats profit');
             return 'Offer has less than 500 sats profit';
         }
         // round to 0 decimal places
-        if ($estimated_profit_sats < $adminDashboard->min_satoshi_profit) {
+        if ($offer->accepted_offer_profit_sat < $adminDashboard->min_satoshi_profit) {
+            (new DiscordService)->sendMessage('Error: trying to accept offer with less than ' . $adminDashboard->min_satoshi_profit . ' sats profit');
             return 'Offer has less than ' . $adminDashboard->min_satoshi_profit . ' sats profit';
         }
-        $offer->accepted_offer_profit_sat = $estimated_profit_sats;
 
         // // check if offer has the allowed payment methods
         $allowedPaymentMethods = json_decode($adminDashboard->payment_methods, true);
@@ -491,11 +494,13 @@ class Robosats
             }
         }
         if (!$allowed) {
+            (new DiscordService)->sendMessage('Error: Offer has no allowed payment methods');
             return 'Offer has no allowed payment methods';
         }
         // // check if offer has the allowed currency
         $allowedCurrencies = json_decode($adminDashboard->payment_currencies, true);
         if (!in_array($offer->currency, $allowedCurrencies)) {
+            (new DiscordService)->sendMessage('Error: Offer has no allowed currency');
             return 'Offer has no allowed currency';
         }
 
@@ -532,6 +537,12 @@ class Robosats
         }
         if ($response == null || $response->failed()) {
             $transaction->delete();
+            (new DiscordService)->sendMessage('Failed to accept offer' . $response->body());
+            // {"bad_request":"You are not a participant in this order"}
+            if ($response->json('bad_request') == 'You are not a participant in this order') {
+                $offer->delete();
+            }
+
             return 'Failed to accept offer';
         }
 
@@ -607,7 +618,7 @@ class Robosats
                             return 'No tag / pseudonym found for ' . $paymentMethod;
                         }
 
-                        $message = 'Hey! My ' . $pseudonym . ' is ' . $tag;
+                        $message = 'Hey! My ' . $pseudonym . ' is ' . $tag . '. Just leave the description empty.  Cheers!';
                         break;
                     }
                 }
@@ -661,10 +672,17 @@ class Robosats
         $adminDashboard = AdminDashboard::all()->first();
         $adminDashboard->trade_volume_satoshis += $transaction->offer->accepted_offer_amount_sat;
         $adminDashboard->satoshi_profit += $transaction->offer->accepted_offer_profit_sat;
-        $adminDashboard->satoshi_fees += $transaction->fees;
+
 
         // TODO: we need to grab the bond and escrow invoice and find out fees from there
         // TODO: then we need to calculate 0.025% of the trade volume and add that to the fees
+        // grab the lightning node
+        $lightningNode = new LightningNode();
+        $fees = $lightningNode->getPaymentFees($transaction->bond_invoice) + $lightningNode->getPaymentFees($transaction->escrow_invoice)
+            + $transaction->offer->accepted_offer_amount_sat * 0.00025;
+        $transaction->fees = $fees;
+        $adminDashboard->satoshi_fees += $fees;
+
 
         $adminDashboard->save();
         (new DiscordService)->sendMessage('Trade completed: ' .
