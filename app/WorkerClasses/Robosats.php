@@ -141,6 +141,10 @@ class Robosats
             $tokenSha256 = str_replace("\r", '', $tokenSha256);
             $this->headers["Authorization"] = "Token " . $tokenSha256;
             $this->headers["Priority"] = "u=1";
+            if ($offer->status < 3) {
+                $offer->robotTokenBackup = $offer->robots()->first()->token;
+                $offer->save();
+            }
             // remove new lines and \r
         }
         $adminDash = AdminDashboard::all()->first();
@@ -167,7 +171,7 @@ class Robosats
     public function createRobot($offer) {
         // check if the offer already has a robot
         $robots = Robot::where('offer_id', $offer->id)->get();
-        if ($robots->count() > 0) {
+        if ($robots->count() > 0 || $offer->robots_created) {
             return $robots;
         }
 
@@ -530,6 +534,9 @@ class Robosats
 
         // post request
         $url = $this->host . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $robosatsId;
+        (new DiscordService)->sendMessage($offer->accepted_offer_amount . ' ' . $offer->currency . '.  RoboSats ID: ' . $robosatsId);
+        Log::info($offer->accepted_offer_amount . ' ' . $offer->currency . '.  RoboSats ID: ' . $robosatsId);
+
         if (!$offer->has_range) {
             $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'take', 'amount' => $offer->accepted_offer_amount]);
         } else {
@@ -545,7 +552,6 @@ class Robosats
 
             return 'Failed to accept offer';
         }
-
         $offer->save();
 
         (new DiscordService)->sendMessage('Accepted offer: ' . round($offer->accepted_offer_amount,2) . ' ' . $offer->currency . ' for ' . $offer->accepted_offer_profit_sat . ' sats profit.');

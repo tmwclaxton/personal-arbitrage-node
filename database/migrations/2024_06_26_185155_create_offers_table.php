@@ -15,9 +15,11 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('robosatsId')->unique();
             $table->unsignedBigInteger('robosatsIdStorage')->nullable();
+            $table->string('robotTokenBackup')->nullable();
+            $table->boolean('job_locked')->default(false);
+            $table->boolean('robots_created')->default(false);
             $table->string('provider');
             $table->boolean('accepted')->default(false);
-            $table->boolean('robots_created')->default(false);
             $table->decimal('accepted_offer_amount', 20, 8)->nullable();
             $table->bigInteger('accepted_offer_amount_sat')->nullable();
             $table->bigInteger('accepted_offer_profit_sat')->nullable();

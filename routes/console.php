@@ -55,4 +55,4 @@ Schedule::command('refresh:fiats')
 
 Schedule::command('auto:accept')
     ->description('auto accept')
-    ->everyMinute();
+    ->everyThreeMinutes();

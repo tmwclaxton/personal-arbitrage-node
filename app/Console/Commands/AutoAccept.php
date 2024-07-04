@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Http\Controllers\OfferController;
+use App\Jobs\releaseOffer;
 use App\Models\AdminDashboard;
 use App\Models\Transaction;
 use App\Services\DiscordService;
@@ -49,6 +50,13 @@ class AutoAccept extends Command
         $paymentMethods = json_decode($adminDashboard->payment_methods);
 
         foreach ($offers as $offer) {
+            // check if offer has already been accepted
+            if ($offer->accepted) {
+                $offers = $offers->filter(function ($value, $key) use ($offer) {
+                    return $value->id != $offer->id;
+                });
+            }
+
             // check if any of the payment methods are in the admin dashboard payment methods, if not remove the offer
             $found = false;
             if ($adminDashboard == null) {
@@ -129,9 +137,15 @@ class AutoAccept extends Command
         foreach ($offers as $offer) {
             $adminDashboard = AdminDashboard::all()->first();
 
+            if ($offer->job_locked) {
+                continue;
+            }
+            $offer->job_locked = true;
+            $offer->save();
             Bus::chain([
                 new \App\Jobs\CreateRobots($offer, $adminDashboard),
-                new \App\Jobs\AcceptSellOffer($offer, $adminDashboard)
+                new \App\Jobs\AcceptSellOffer($offer, $adminDashboard),
+                new releaseOffer($offer)
             ])->dispatch();
 
         }
