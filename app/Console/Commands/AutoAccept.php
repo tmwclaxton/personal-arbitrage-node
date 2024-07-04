@@ -7,6 +7,7 @@ use App\Models\AdminDashboard;
 use App\Models\Transaction;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Bus;
 
 class AutoAccept extends Command
 {
@@ -31,6 +32,103 @@ class AutoAccept extends Command
     {
 
 
+
+        $adminDashboard = AdminDashboard::all()->first();
+        $maxConcurrentTransactions = $adminDashboard->max_concurrent_transactions;
+        $transactions = Transaction::where('status', '<=', 11)->get();
+        $transactionsCount = $transactions->count();
+        if ($transactionsCount > $maxConcurrentTransactions) {
+            return response()->json(['message' => 'Max concurrent transactions reached']);
+        }
+        // calculate difference
+        $difference = $maxConcurrentTransactions - $transactionsCount;
+        $offers = (new \App\Http\Controllers\OfferController)->getOffersInternal($adminDashboard);
+        $paymentMethods = json_decode($adminDashboard->payment_methods);
+
+        foreach ($offers as $offer) {
+            // check if any of the payment methods are in the admin dashboard payment methods, if not remove the offer
+            $found = false;
+            if ($adminDashboard == null) {
+                $paymentMethods = [];
+            }
+            foreach (json_decode($offer->payment_methods) as $paymentMethod) {
+                if (in_array($paymentMethod, $paymentMethods)) {
+                    $found = true;
+                }
+            }
+            if (!$found) {
+                $offers = $offers->filter(function ($value, $key) use ($offer) {
+                    return $value->id != $offer->id;
+                });
+            }
+
+            // check if the currency is in the admin dashboard currency, if not remove the offer
+            if (!in_array($offer->currency, json_decode($adminDashboard->payment_currencies))) {
+                $offers = $offers->filter(function ($value, $key) use ($offer) {
+                    return $value->id != $offer->id;
+                });
+            }
+
+
+            // grab admin dashboard
+            $adminDashboard = AdminDashboard::all()->first();
+            $channelBalances = json_decode($adminDashboard->channelBalances, true);
+
+            // grab the largest amount we can accept whether it is range or not
+            $calculations = (new OfferController())->calculateLargestAmount($offer, $channelBalances);
+            if (is_array($calculations)) {
+                $offer->estimated_profit_sats = $calculations['estimated_profit_sats'];
+                $offer->estimated_offer_amount_sat = $calculations['estimated_offer_amount_sat'];
+                $offer->estimated_offer_amount = $calculations['estimated_offer_amount'];
+            } else {
+                return $calculations;
+            }
+        }
+
+
+
+
+        // First, collect the premiums and estimated profits to calculate min and max
+        $premiums = $offers->pluck('premium')->toArray();
+        $profits = $offers->pluck('estimated_profit_sats')->toArray();
+
+        $minPremium = min($premiums);
+        $maxPremium = max($premiums);
+        $minProfit = min($profits);
+        $maxProfit = max($profits);
+
+        // Score the offers using premium and estimated profit
+        foreach ($offers as $offer) {
+            $estimatedProfit = $offer->estimated_profit_sats;
+            $premium = $offer->premium;
+
+            // Normalize the premium and estimated profit
+            $normalizedPremium = ($maxPremium - $minPremium) == 0 ? 0 : ($premium - $minPremium) / ($maxPremium - $minPremium);
+            $normalizedProfit = ($maxProfit - $minProfit) == 0 ? 0 : ($estimatedProfit - $minProfit) / ($maxProfit - $minProfit);
+
+            // Calculate the score
+            $offer->score = 0.5 * $normalizedPremium + 0.5 * $normalizedProfit;
+        }
+
+        // Sort the offers by score
+        $offers = $offers->sortByDesc('score');
+
+        // Optional: If you want to reindex the array to ensure continuous numeric indexing
+        $offers = $offers->values();
+
+        // grab the first $difference offers
+        $offers = $offers->take($difference);
+
+        // chain 2 jobs, one to create the robots and one to accept the offers
+        foreach ($offers as $offer) {
+            $adminDashboard = AdminDashboard::all()->first();
+
+            Bus::chain([
+                new \App\Jobs\CreateRobots($offer, $adminDashboard),
+                new \App\Jobs\AcceptSellOffer($offer, $adminDashboard)
+            ])->dispatch();
+
+        }
 
 
 

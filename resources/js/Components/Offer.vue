@@ -39,6 +39,11 @@
             <div class="border border-gray-200 my-4"></div>
             <div class="grid grid-cols-2 gap-3">
 
+                <primary-button v-on:click="autoRun"
+                                class="w-full text-center col-span-2 text-center px-auto">
+                    <p class="text-center w-full">Auto Run</p>
+                </primary-button>
+
                 <primary-button v-on:click="uniqueRobot"
                                 class="w-full text-center">
                     Create Unique Robot
@@ -101,6 +106,18 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 
 const props = defineProps(['offer']);
 
+const autoRun = () => {
+    console.log('auto run');
+
+    axios.post(route('auto-accept'), {
+        offer_id: props.offer.id
+    }).then(response => {
+        console.log(response);
+    }).catch(error => {
+        console.log(error);
+    });
+}
+
 const uniqueRobot = () => {
     console.log('creating unique robot');
 
@@ -112,6 +129,7 @@ const uniqueRobot = () => {
         console.log(error);
     });
 }
+
 
 // when accept offer click send post request to /accept-offer with offer_id
 const acceptOffer = () => {

@@ -294,6 +294,7 @@ class OfferController extends Controller
                 if ((int) $channelBalance['localBalance'] > $variationAmount + 100000 ) {
                     // dd($channelBalance);
                     $openChannels++;
+
                 }
             }
             if ($openChannels > 0) {
@@ -308,12 +309,12 @@ class OfferController extends Controller
             return 'Insufficient balance (ps need 100000 extra for fees for bond and potentially fees)';
         }
 
-        $offer->accepted_offer_amount_sat = $offer->range ? $largestAmountSat : $offer->satoshis_now;
+        $estimated_offer_amount_sat = $offer->range ? $offer->satoshis_now : $largestAmountSat;
         // convert largest amount back to fiat
         $helpFunction = new HelperFunctions();
-        $offer->accepted_offer_amount = $offer->range ?
-            round($helpFunction->satoshiToFiat($largestAmountSat, $offer->price), 2) :
-            round($helpFunction->satoshiToFiat($offer->satoshis_now, $offer->price), 2);
+        $estimated_offer_amount = $offer->range ?
+            round($helpFunction->satoshiToFiat($offer->satoshis_now, $offer->price), 2) :
+            round($helpFunction->satoshiToFiat($largestAmountSat, $offer->price), 2) ;
 
 
         $btcFiats = BtcFiat::all();
@@ -321,16 +322,14 @@ class OfferController extends Controller
         // check estimated profit
         if ($offer->has_range) {
             $currentRealPrice = $btcFiat->price;
-            $estimated_profit_sats = -$offer->accepted_offer_amount_sat * (($currentRealPrice - $offer->price) / $currentRealPrice);
+            $estimated_profit_sats = -$estimated_offer_amount_sat * (($currentRealPrice - $offer->price) / $currentRealPrice);
         } else {
             $estimated_profit_sats = $offer->satoshi_amount_profit;
         }
 
         return [
-            'estimated_offer_amount_sat' =>  $offer->range ? $largestAmountSat : $offer->satoshis_now,
-            'estimated_offer_amount' => $offer->range ?
-                round($helpFunction->satoshiToFiat($largestAmountSat, $offer->price), 2) :
-                round($helpFunction->satoshiToFiat($offer->satoshis_now, $offer->price), 2),
+            'estimated_offer_amount_sat' =>  $estimated_offer_amount_sat,
+            'estimated_offer_amount' => $estimated_offer_amount,
             'estimated_profit_sats' => $estimated_profit_sats
         ];
     }

@@ -45,8 +45,13 @@ class PayEscrow implements ShouldQueue
             $transaction = Transaction::where('offer_id', $this->offer->id)->first();
             $escrowInvoice = $transaction->escrow_invoice;
             $lightningNode = new LightningNode();
-            (new DiscordService)->sendMessage('Paid escrow for offer ' . $this->offer->robosatsId );
-            $lightningNode->payInvoice($escrowInvoice);
+            if ($this->offer->status === 6 || $this->offer->status === 7) {
+                // if (new DiscordService)->checkIfMessageSentRecently('Paid escrow for offer ' . $this->offer->robosatsId)) {
+                //     return;
+                // }
+                (new DiscordService)->sendMessage('Paid escrow for offer ' . $this->offer->robosatsId );
+                $lightningNode->payInvoice($escrowInvoice);
+            }
 
         } else {
             // throw an exception

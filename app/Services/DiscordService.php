@@ -74,4 +74,23 @@ class DiscordService
             throw new \Exception('Failed to send message to Discord channel.');
         }
     }
+
+    // public function checkIfMessageSentRecently(string $message): bool
+    // {
+    //     // recently means within the last 5 minutes
+    //     $messages = $this->getLatestMessages();
+    //     $recentMessages = array_filter($messages, function ($message) {
+    //         return strtotime($message['timestamp']) > strtotime('-5 minutes');
+    //     });
+    //
+    //     $recentMessages = array_filter($recentMessages, function ($message) use ($message) {
+    //         return $message['content'] === $message;
+    //     });
+    //
+    //     return count($recentMessages) > 0;
+    //
+    //
+    // }
+
+
 }
