@@ -639,7 +639,8 @@ class Robosats
                 ]);
                 $client->text($json);
 
-                (new DiscordService)->sendMessage('Expect a payment on ' . $paymentMethod . ' for ' . $robot->offer->accepted_offer_amount . ' ' . $robot->offer->currency . ' soon! Once received, confirm the payment by typing !confirm ' . $offer->robosatsId . ' in the chat.');
+                (new DiscordService)->sendMessage('Expect a payment on ' . $paymentMethod . ' for ' . round($robot->offer->accepted_offer_amount, 2)
+                    . ' ' . $robot->offer->currency . ' soon! Once received, confirm the payment by typing !confirm ' . $offer->robosatsId . ' in the chat.');
 
                 // shutdown the client
                 $client->close();
