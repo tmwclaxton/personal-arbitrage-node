@@ -548,7 +548,7 @@ class Robosats
 
         $offer->save();
 
-        (new DiscordService)->sendMessage('Accepted offer: ' . $offer->accepted_offer_amount . ' ' . $offer->currency . ' for ' . $offer->accepted_offer_profit_sat . ' sats profit.');
+        (new DiscordService)->sendMessage('Accepted offer: ' . round($offer->accepted_offer_amount,2) . ' ' . $offer->currency . ' for ' . $offer->accepted_offer_profit_sat . ' sats profit.');
 
         // convert response to json
         $response = json_decode($response->body(), true);
@@ -682,14 +682,16 @@ class Robosats
         $fees = $lightningNode->getPaymentFees($transaction->bond_invoice) + $lightningNode->getPaymentFees($transaction->escrow_invoice)
             + $transaction->offer->accepted_offer_amount_sat * 0.00025;
         $transaction->fees = $fees;
+        $transaction->save();
+
         $adminDashboard->satoshi_fees += $fees;
 
 
         $adminDashboard->save();
         (new DiscordService)->sendMessage('Trade completed: ' .
-            $transaction->offer->accepted_offer_amount . ' ' .
+            round($transaction->offer->accepted_offer_amount,2) . ' ' .
             $transaction->offer->currency . ' for ' .
-            $transaction->offer->accepted_offer_profit_sat - $transaction->fees . ' sats profit.');
+            round($transaction->offer->accepted_offer_profit_sat,0) - $transaction->fees . ' sats profit.');
 
 
 

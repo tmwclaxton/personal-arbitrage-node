@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Http\Controllers\OfferController;
 use App\Models\AdminDashboard;
 use App\Models\Transaction;
+use App\Services\DiscordService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
@@ -35,8 +36,9 @@ class AutoAccept extends Command
         $maxConcurrentTransactions = $adminDashboard->max_concurrent_transactions;
         $transactions = Transaction::where('status', '<=', 11)->get();
         $transactionsCount = $transactions->count();
-        if ($transactionsCount > $maxConcurrentTransactions) {
-            return response()->json(['message' => 'Max concurrent transactions reached']);
+        if ($transactionsCount >= $maxConcurrentTransactions) {
+            (new DiscordService())->sendMessage('Max concurrent transactions reached');
+            return 0;
         }
         // calculate difference
         $difference = $maxConcurrentTransactions - $transactionsCount;
