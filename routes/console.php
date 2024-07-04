@@ -50,3 +50,9 @@ Schedule::command('refresh:offers')
 Schedule::command('refresh:fiats')
     ->description('refresh fiats')
     ->everyMinute();
+
+//     \Illuminate\Support\Facades\Artisan::call('auto:accept');
+
+Schedule::command('auto:accept')
+    ->description('auto accept')
+    ->everyMinute();

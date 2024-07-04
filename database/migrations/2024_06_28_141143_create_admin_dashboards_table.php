@@ -19,9 +19,9 @@ return new class extends Migration
             $table->boolean('panicButton')->default(false);
             $table->boolean('autoTopup')->default(false);
             $table->boolean('autoAccept')->default(false);
-            $table->boolean('autoBond')->default(false);
-            $table->boolean('autoEscrow')->default(false);
-            $table->boolean('autoMessage')->default(false);
+            $table->boolean('autoBond')->default(true);
+            $table->boolean('autoEscrow')->default(true);
+            $table->boolean('autoMessage')->default(true);
             $table->boolean('autoConfirm')->default(false);
             $table->decimal('sell_premium', 5, 2)->default(2);
             $table->decimal('buy_premium', 5, 2)->default(-1);
@@ -36,7 +36,7 @@ return new class extends Migration
             $table->integer('satoshi_fees')->default(0);
             $table->json('allowed_payment_methods')->nullable(); //->default(json_encode(['Revolut', 'Paypal Friends & Family', 'Wise']));
             $table->json('allowed_providers')->nullable();
-            $table->string('umbrel_token')->nullable()->default('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm94eVRva2VuIjp0cnVlLCJpYXQiOjE3MTk0MzI5MzQsImV4cCI6MTcyMDAzNzczNH0.31qKPyd1zRoySVRPVzisbTxO_FljIisBOHJFyJs6JYc');
+            $table->string('umbrel_token')->nullable()->default('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm94eVRva2VuIjp0cnVlLCJpYXQiOjE3MTk0ODU5MTUsImV4cCI6MTcyMDA5MDcxNX0.u6ZEoMfrRykoE1YOLWL08auNwp_4VRuuxU8qu3CT8OQ');
             $table->string('revolut_handle')->nullable()->default('@tobyclaxton');
             $table->string('paypal_handle')->nullable()->default('@tobyclaxton');
             $table->string('wise_handle')->nullable()->default('@tobymatthewwilliamc');

@@ -33,11 +33,14 @@ class AutoAccept extends Command
     {
 
         $adminDashboard = AdminDashboard::all()->first();
+        if (!$adminDashboard->autoAccept) {
+            return 0;
+        }
         $maxConcurrentTransactions = $adminDashboard->max_concurrent_transactions;
         $transactions = Transaction::where('status', '<=', 11)->get();
         $transactionsCount = $transactions->count();
         if ($transactionsCount >= $maxConcurrentTransactions) {
-            (new DiscordService())->sendMessage('Max concurrent transactions reached');
+            // (new DiscordService())->sendMessage('Max concurrent transactions reached');
             return 0;
         }
         // calculate difference
@@ -81,7 +84,10 @@ class AutoAccept extends Command
                 $offer->estimated_offer_amount_sat = $calculations['estimated_offer_amount_sats'];
                 $offer->estimated_offer_amount = $calculations['estimated_offer_amount'];
             } else {
-                return $calculations;
+                // remove the offer
+                $offers = $offers->filter(function ($value, $key) use ($offer) {
+                    return $value->id != $offer->id;
+                });
             }
         }
 

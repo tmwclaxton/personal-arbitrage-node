@@ -141,7 +141,6 @@ Route::get('/testing', function () {
     // $response = $lightningNode->getPaymentFees($invoice);
     // return $response;
 
-    \Illuminate\Support\Facades\Artisan::call('auto:accept');
 
 });
 
