@@ -21,15 +21,15 @@ Schedule::command('refresh:dashboard')
 
 Schedule::command('refresh:transactions')
     ->description('refresh transactions')
-    ->everyMinute();
+    ->everyTwentySeconds();
 
 Schedule::command('refresh:robots')
     ->description('refresh robots')
     ->hourly();
 
-Schedule::command('claim:compensation')
-    ->description('claim compensation')
-    ->hourly();
+// Schedule::command('claim:compensation')
+//     ->description('claim compensation')
+//     ->hourly();
 
 Schedule::command('retire:offers')
     ->description('retire offers')
@@ -37,7 +37,7 @@ Schedule::command('retire:offers')
 
 Schedule::command('auto:jobs')
     ->description('auto jobs')
-    ->everyThirtySeconds();
+    ->everyMinute();
 
 Schedule::command('refresh:discord-commands')
     ->description('refresh discord commands')

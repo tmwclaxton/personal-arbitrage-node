@@ -24,8 +24,8 @@ return new class extends Migration
             $table->string('hash_id');
             $table->text('public_key');
             $table->text('private_key');
-            $table->text('public_key_latter');
-            $table->text('private_key_latter');
+            $table->text('public_key_latter')->nullable();
+            $table->text('private_key_latter')->nullable();
             $table->bigInteger('earned_rewards')->default(0);
             $table->boolean('wants_stealth')->default(false);
             $table->timestamp('last_login');

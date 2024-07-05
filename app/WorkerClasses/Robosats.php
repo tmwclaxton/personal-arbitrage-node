@@ -477,9 +477,9 @@ class Robosats
 
 
         // round to 0 decimal places
-        if ($offer->accepted_offer_profit_sat < 500) {
-            (new DiscordService)->sendMessage('Error: trying to accept offer with less than 500 sats profit');
-            return 'Offer has less than 500 sats profit';
+        if ($offer->accepted_offer_profit_sat < 0) {
+            (new DiscordService)->sendMessage('Error: trying to accept offer with a negative profit');
+            return 'Offer has a negative profit';
         }
         // round to 0 decimal places
         if ($offer->accepted_offer_profit_sat < $adminDashboard->min_satoshi_profit) {
@@ -534,7 +534,7 @@ class Robosats
 
         // post request
         $url = $this->host . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $robosatsId;
-        (new DiscordService)->sendMessage($offer->accepted_offer_amount . ' ' . $offer->currency . '.  RoboSats ID: ' . $robosatsId);
+        // (new DiscordService)->sendMessage($offer->accepted_offer_amount . ' ' . $offer->currency . '.  RoboSats ID: ' . $robosatsId);
         Log::info($offer->accepted_offer_amount . ' ' . $offer->currency . '.  RoboSats ID: ' . $robosatsId);
 
         if (!$offer->has_range) {
