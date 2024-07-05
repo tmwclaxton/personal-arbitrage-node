@@ -41,7 +41,7 @@ Schedule::command('auto:jobs')
 
 Schedule::command('refresh:discord-commands')
     ->description('refresh discord commands')
-    ->everyThirtySeconds();
+    ->everyMinute();
 
 Schedule::command('refresh:offers')
     ->description('refresh robosat offers')

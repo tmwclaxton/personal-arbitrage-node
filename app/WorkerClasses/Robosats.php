@@ -839,7 +839,7 @@ class Robosats
         $robot->earned_rewards = $response['earned_rewards'];
         $robot->last_login = $response['last_login'];
         $robot->public_key_latter = $response['public_key'];
-        $robot->private_key_latter = $response['private_key'];
+        $robot->private_key_latter = $response['encrypted_private_key'];
         // convert to date
         $robot->last_login = date('Y-m-d H:i:s', strtotime($robot->last_login));
         // $robot->last_order_id = $response['last_order_id'];
