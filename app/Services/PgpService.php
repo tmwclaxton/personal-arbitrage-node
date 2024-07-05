@@ -171,7 +171,7 @@ class PgpService extends Controller
 
     }
 
-    public function sign($privateKey, $message, $passphrase)
+    public function sign($privateKey, $message, $passphrase, $publicKey = null)
     {
         // Initialize the Crypt_GPG instance
         $crypt_gpg = new Crypt_GPG();
@@ -183,11 +183,32 @@ class PgpService extends Controller
 
         // Add the keys
         $crypt_gpg->addSignKey($fingerPrintPrivate, $passphrase);
-        // $crypt_gpg->addPassphrase($fingerPrintPrivate, $passphrase);
 
 
         // Sign the message
-        $signed = $crypt_gpg->sign($message, Crypt_GPG::SIGN_MODE_CLEAR);
+        $newTime = strtotime('-24 hours', time());
+
+        // Encrypt the message
+        $signed = $crypt_gpg->setEngineOptions(array(
+            'sign' =>  '--faked-system-time ' . $newTime
+        ))->sign($message, Crypt_GPG::SIGN_MODE_CLEAR);
+
+        // if public key is provided verify the signature to check if it is valid
+        if ($publicKey) {
+            $publicKeyImport = $crypt_gpg->importKey($publicKey);
+            $fingerPrintPublic = $publicKeyImport['fingerprint'];
+            $crypt_gpg->addDecryptKey($fingerPrintPublic);
+            try {
+                $verified = $crypt_gpg->verify($signed);
+                if ($verified) {
+                    return $signed;
+                } else {
+                    return 'Signature verification failed';
+                }
+            } catch (\Exception $e) {
+                return 'Signature verification failed';
+            }
+        }
 
         return $signed;
 

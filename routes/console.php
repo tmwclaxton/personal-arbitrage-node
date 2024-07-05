@@ -25,11 +25,11 @@ Schedule::command('refresh:transactions')
 
 Schedule::command('refresh:robots')
     ->description('refresh robots')
-    ->everySixHours();
+    ->hourly();
 
 Schedule::command('claim:compensation')
     ->description('claim compensation')
-    ->everySixHours();
+    ->hourly();
 
 Schedule::command('retire:offers')
     ->description('retire offers')

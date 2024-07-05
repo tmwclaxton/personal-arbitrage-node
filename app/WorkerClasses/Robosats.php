@@ -838,6 +838,8 @@ class Robosats
         }
         $robot->earned_rewards = $response['earned_rewards'];
         $robot->last_login = $response['last_login'];
+        $robot->public_key_latter = $response['public_key'];
+        $robot->private_key_latter = $response['private_key'];
         // convert to date
         $robot->last_login = date('Y-m-d H:i:s', strtotime($robot->last_login));
         // $robot->last_order_id = $response['last_order_id'];
@@ -854,10 +856,12 @@ class Robosats
         $invoice = $lightningNode->createInvoice($earnedRewards, 'Claiming compensation for robot ' . $robot->id);
         // sign invoice
         $pgpService = new PgpService();
-        $signedInvoice = $pgpService->sign($robot->private_key, $invoice, $robot->token);
+        $signedInvoice = $pgpService->sign($robot->private_key, $invoice, $robot->token, $robot->public_key);
+            // escape new lines with \\
+        // $signedInvoice = str_replace("\n", '', $signedInvoice);
 
         // post request
-        $response = Http::withHeaders($this->getHeaders($robot->offer))->timeout(30)->post($url, ['invoice' => $signedInvoice]);
+        $response = Http::withHeaders($this->getHeaders($robot->offer))->timeout(90)->post($url, ['invoice' => $signedInvoice]);
         $response = json_decode($response->body(), true);
 
         return $response;
