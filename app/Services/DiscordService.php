@@ -48,7 +48,6 @@ class DiscordService
             return $message['author']['id'] !== '1258092511046668400' && $message['author']['id'] !== '1257972131241791559';
         });
 
-
         return $messages;
     }
 

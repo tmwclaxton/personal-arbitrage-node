@@ -133,20 +133,22 @@ Route::post('auto-accept', function () {
         new \App\Jobs\AcceptSellOffer($offer, $adminDashboard)
     ])->dispatch();
 })->name('auto-accept');
-//
+
+
 Route::get('/testing', function () {
+
     $robots = Robot::where('earned_rewards', '>', 0)->get();
     if ($robots->isEmpty()) {
         return;
     }
     $adminDashboard = AdminDashboard::all()->first();
 
-    $robosats = new Robosats();
-    foreach ($robots as $robot) {
-        $adminDashboard->satoshi_profit += $robot->earned_rewards;
-        $response = $robosats->claimCompensation($robot);
-        dd($response);
-    }
+    // $robosats = new Robosats();
+    // foreach ($robots as $robot) {
+    //     $adminDashboard->satoshi_profit += $robot->earned_rewards;
+    //     $response = $robosats->claimCompensation($robot);
+    //     dd($response);
+    // }
 
 
     // $lightningNode = new LightningNode();

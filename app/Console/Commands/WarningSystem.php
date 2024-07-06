@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Aloha\Twilio\Twilio;
 use App\Models\Offer;
 use App\Services\DiscordService;
 use App\WorkerClasses\RobosatsStatus;
@@ -44,13 +45,13 @@ class WarningSystem extends Command
                 $timestamp = $data['timestamp'];
 
                 if ($offer->status == $status) {
-                    if (Carbon::parse($timestamp)->diffInMinutes(now()) >= 20) {
+                    if (Carbon::parse($timestamp)->diffInMinutes(now()) >= 10) {
                         if (Redis::exists($warnKey)) {
                             $warnData = json_decode(Redis::get($warnKey), true);
                             $lastWarning = $warnData['last_warning'];
                             $warnCount = $warnData['warn_count'];
 
-                            if (Carbon::parse($lastWarning)->diffInHours(now()) >= 1 && $warnCount < 5) {
+                            if (Carbon::parse($lastWarning)->diffInMinutes(now()) >= 20 && $warnCount < 5) {
                                 $this->triggerWarning($offer, $data, $warnData);
                                 $warnData['last_warning'] = now();
                                 $warnData['warn_count'] += 1;
@@ -79,14 +80,21 @@ class WarningSystem extends Command
      */
     protected function triggerWarning(Offer $offer, array $data, array $warnData): void
     {
-        // Implement your warning logic here
-        // For example, send a notification or log the warning
+        $twilio = new Twilio(getenv('TWILIO_ACCOUNT_SID'), getenv('TWILIO_AUTH_TOKEN'), getenv('TWILIO_PHONE_NUMBER'));
+        $message = 'Offer ' . $offer->id . ' has been in no. ' . $offer->status .
+            ' status (' . RobosatsStatus::getStatusText($offer->status) . ') for ' . Carbon::parse($data['timestamp'])->diffInMinutes() .
+            '. Please check the offer' .
+            ' using the following token: ' . $offer->robots()->first()->token . ' and take necessary action.';
+
+        $twilio->message("07837370669", $message);
+        $twilio->message("07711800899", $message);
+
         $discord = new DiscordService();
         $discord->sendMessage('**Warning**: Offer ' . $offer->id . ' has been in no. ' . $offer->status .
             ' status (' . RobosatsStatus::getStatusText($offer->status) . ') for ' . Carbon::parse($data['timestamp'])->diffInMinutes() .
             '. Please check the offer' .
             ' using the following token: ' . $offer->robots()->first()->token . ' and take necessary action.');
-        //TODO: we should also add twilio notification here
+
 
 
     }
