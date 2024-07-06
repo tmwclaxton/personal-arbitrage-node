@@ -2,124 +2,98 @@
 
 namespace App\Services;
 
+use App\Models\AdminDashboard;
+use App\Models\RevolutAccessToken;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use RevolutPHP\Auth\Provider;
 
 class RevolutService
 {
-    protected $client;
-    protected $apiUrl;
-    protected $privateKey;
-    protected $redirectUri;
-    protected $clientId;
+    private Provider $authProvider;
+
+    private AdminDashboard $adminDashboard;
 
     public function __construct()
     {
-        $this->privateKey = env('REVOLUT_PRIVATE_KEY');
-        $this->redirectUri = env('REVOLUT_REDIRECT_URI');
-        $this->clientId = env('REVOLUT_CLIENT_ID');
-        $this->apiUrl = env('REVOLUT_SANDBOX', true) ? 'https://sandbox-b2b.revolut.com/api/1.0' : 'https://b2b.revolut.com/api/1.0';
+        // we need two types of access tokens READ and PAY
 
-        $this->client = new Client([
-            'base_uri' => $this->apiUrl,
-            'headers' => [
-                'Authorization' => 'Bearer ' . $this->getAccessToken(),
-                'Accept'        => 'application/json',
-                'Content-Type'  => 'application/json',
-            ],
+        $this->authProvider = new Provider([
+            'clientId' => env('REVOLUT_CLIENT_ID'),
+            'privateKey' => 'file://' . storage_path('app/private/RevolutCerts/privatecert.pem'),
+            'redirectUri' => env('REVOLUT_REDIRECT_URI'),
+            'isSandbox' => false,
         ]);
+
+        // grab admin dashboard
+        $this->adminDashboard = AdminDashboard::all()->first();
     }
 
-    private function getAccessToken()
-    {
-        // Retrieve access token logic here
-        // This function should handle OAuth authentication to get an access token
-        // Assuming you have a function or a way to get the access token
-    }
-
-    public function getRecentTransactions($count = 10)
-    {
-        try {
-            $response = $this->client->get('/transaction', [
-                'query' => ['count' => $count]
+    public function getToken($type) {
+        // if revolut code is null, then we need to create a new RevolutAccessToken
+        if ($this->adminDashboard->revolut_code == null && RevolutAccessToken::where('type', $type)->count() == 0) {
+            // scope PAY
+            $url = $this->authProvider->getAuthorizationUrl([
+                'scope' => $type,
             ]);
 
-            return json_decode($response->getBody(), true);
-        } catch (RequestException $e) {
-            // Handle error
-            return [
-                'error' => true,
-                'message' => $e->getMessage(),
-            ];
+            redirect($url);
+
+            dd('redirecting to revolut');
+
         }
-    }
 
-    public function getCurrentFunds($currency)
-    {
-        try {
-            $response = $this->client->get('/account');
+        // check if there are any RevolutAccessToken
+        if( RevolutAccessToken::where('type', $type)->count() == 0 ) {
 
-            $accounts = json_decode($response->getBody(), true);
-            foreach ($accounts as $account) {
-                if ($account['currency'] === strtoupper($currency)) {
-                    return $account['balance'];
-                }
+            $accessToken = $this->authProvider->getAccessToken('authorization_code', [
+                'code' => $this->adminDashboard->revolut_code
+            ]);
+
+            $revolutAccessToken = RevolutAccessToken::create([
+                'type' => $type,
+                'access_token' => $accessToken->getToken(),
+                'refresh_token' => $accessToken->getRefreshToken(),
+                'expires' => $accessToken->getExpires(),
+            ]);
+
+            // set the revolut code to null
+            $this->adminDashboard->revolut_code = null;
+            $this->adminDashboard->save();
+        } else {
+            $revolutAccessToken = RevolutAccessToken::where('type', $type)->first();
+
+            // if the token is expired
+            if ($revolutAccessToken->hasExpired()) {
+
+                $newAccessToken = $this->authProvider->getAccessToken('refresh_token', [
+                    'refresh_token' => $revolutAccessToken->getRefreshToken()
+                ]);
+
+                $revolutAccessToken = RevolutAccessToken::where('refresh_token', $revolutAccessToken->getRefreshToken())->first();
+                $revolutAccessToken->access_token = $newAccessToken->getToken();
+                $revolutAccessToken->expires = $newAccessToken->getExpires();
+                $revolutAccessToken->save();
+
             }
 
-            return [
-                'error' => true,
-                'message' => 'Currency not found',
-            ];
-        } catch (RequestException $e) {
-            // Handle error
-            return [
-                'error' => true,
-                'message' => $e->getMessage(),
-            ];
-        }
-
-    }
-    // convert one entire account to a different currency
-    function convertAccount($fromCurrency, $toCurrency, $amount) {
-        try {
-            $response = $this->client->post('/account/convert', [
-                'json' => [
-                    'from' => $fromCurrency,
-                    'to' => $toCurrency,
-                    'amount' => $amount,
-                ]
+            // convert RevolutAccessToken to AccessToken
+            $revolutAccessToken = new \League\OAuth2\Client\Token\AccessToken([
+                'access_token' => $revolutAccessToken->access_token,
+                'refresh_token' => $revolutAccessToken->refresh_token,
+                'expires' => $revolutAccessToken->expires,
             ]);
-
-            return json_decode($response->getBody(), true);
-        } catch (RequestException $e) {
-            // Handle error
-            return [
-                'error' => true,
-                'message' => $e->getMessage(),
-            ];
         }
+
+        return $revolutAccessToken->access_token;
     }
 
-    // send money to a recipient
-    function sendMoney($recipientId, $currency, $amount) {
-        try {
-            $response = $this->client->post('/transfer', [
-                'json' => [
-                    'request_id' => uniqid(),
-                    'source_account_id' => $this->getAccountId($currency),
-                    'target_account_id' => $recipientId,
-                    'amount' => $amount,
-                    'currency' => $currency,
-                ]
-            ]);
-
-            return json_decode($response->getBody(), true);
-        } catch (RequestException $e) {
-            // Handle error
-            return [
-                'error' => true,
-                'message' => $e->getMessage(),
-            ];
-        }
+    public function getReadToken() {
+        return $this->getToken('READ');
     }
+    public function getPayToken() {
+        return $this->getToken('PAY');
+    }
+
+
 }

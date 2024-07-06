@@ -26,6 +26,9 @@ class UpdateRobots implements ShouldQueue
     /**
      * Execute the job.
      */
+
+    // timeout 180 seconds
+    public int $timeout = 180;
     public function handle(): void
     {
         // where accepted and created at is less than 2 days

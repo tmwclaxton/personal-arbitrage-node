@@ -25,6 +25,9 @@ class UpdateDashboard implements ShouldQueue
     /**
      * Execute the job.
      */
+
+    // timeout 180 seconds
+    public int $timeout = 180;
     public function handle(): void
     {
         // grab the first admin dashboard or create it

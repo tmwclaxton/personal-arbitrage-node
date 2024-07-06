@@ -22,6 +22,9 @@ class UpdateFiats implements ShouldQueue
         //
     }
 
+    // timeout 180 seconds
+    public int $timeout = 180;
+
     /**
      * Execute the job.
      */

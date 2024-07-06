@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('revolut_access_tokens', function (Blueprint $table) {
             $table->id();
+            $table->string('type');
             $table->string('access_token');
             $table->string('refresh_token');
             $table->unsignedInteger('expires');

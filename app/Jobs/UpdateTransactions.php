@@ -25,6 +25,11 @@ class UpdateTransactions implements ShouldQueue
     /**
      * Execute the job.
      */
+
+
+    // timeout 180 seconds
+    public int $timeout = 180;
+
     public function handle(): void
     {
         // update all current transactions where status != 14, 12, 17, 18, 99
