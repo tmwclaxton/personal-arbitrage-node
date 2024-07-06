@@ -17,15 +17,15 @@ use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('refresh:dashboard')
     ->description('refresh dashboard')
-    ->everyMinute();
+    ->everyMinute()->withoutOverlapping(1);
 
-// Schedule::command('refresh:transactions')
-//     ->description('refresh transactions')
-//     ->everyTwentySeconds();
+Schedule::command('refresh:transactions')
+    ->description('refresh transactions')
+    ->everyTwentySeconds()->withoutOverlapping(1);
 
 Schedule::command('refresh:robots')
     ->description('refresh robots')
-    ->hourly();
+    ->hourly()->withoutOverlapping(1);
 
 // Schedule::command('claim:compensation')
 //     ->description('claim compensation')
@@ -33,31 +33,31 @@ Schedule::command('refresh:robots')
 
 Schedule::command('retire:offers')
     ->description('retire offers')
-    ->everyFifteenMinutes();
+    ->everyFifteenMinutes()->withoutOverlapping(1);
 
 Schedule::command('auto:jobs')
     ->description('auto jobs')
-    ->everyMinute();
+    ->everyMinute()->withoutOverlapping(1);
 
 Schedule::command('refresh:discord-commands')
     ->description('refresh discord commands')
-    ->everyMinute();
+    ->everyTenSeconds()->withoutOverlapping(1);
 
-// Schedule::command('refresh:offers')
-//     ->description('refresh robosat offers')
-//     ->everyMinute();
+Schedule::command('refresh:offers')
+    ->description('refresh robosat offers')
+    ->everyMinute()->withoutOverlapping(1);
 
 Schedule::command('refresh:fiats')
     ->description('refresh fiats')
-    ->everyMinute();
+    ->everyMinute()->withoutOverlapping(1);
 
 //     \Illuminate\Support\Facades\Artisan::call('auto:accept');
 
 Schedule::command('auto:accept')
     ->description('auto accept')
-    ->everyThreeMinutes();
+    ->everyThreeMinutes()->withoutOverlapping(1);
 
 // app:warning-system
 Schedule::command('app:warning-system')
     ->description('app warning system')
-    ->everyMinute();
+    ->everyMinute()->withoutOverlapping(1);

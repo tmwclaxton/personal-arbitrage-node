@@ -27,21 +27,8 @@ class UpdateDashboard extends Command
      */
     public function handle()
     {
-        // grab the first admin dashboard or create it
-        $adminDashboard = AdminDashboard::all()->first();
-        if (!$adminDashboard) {
-            $adminDashboard = new AdminDashboard();
-            // set payment methods to revolut and wise
-            $adminDashboard->payment_methods = json_encode(["Revolut", "Wise"]);
-            $adminDashboard->payment_currencies = json_encode(["EUR", "USD", "GBP"]);
-        }
-        $lightningNode = new LightningNode();
-        $balanceArray = $lightningNode->getLightningWalletBalance();
-        $adminDashboard->localBalance = $balanceArray['localBalance'];
-        $adminDashboard->remoteBalance = $balanceArray['remoteBalance'];
-
-
-        $adminDashboard->channelBalances = json_encode($balanceArray['channelBalances']);
-        $adminDashboard->save();
+        // kick off the job
+        $job = new \App\Jobs\UpdateDashboard();
+        $job->handle();
     }
 }

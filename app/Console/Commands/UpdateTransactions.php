@@ -27,12 +27,8 @@ class UpdateTransactions extends Command
      */
     public function handle()
     {
-        // update all current transactions where status != 14, 12, 17, 18, 99
-        $transactions = Transaction::whereNotIn('status', [14, 12, 17, 18, 99])->get();
-        foreach ($transactions as $transaction) {
-            $offer = $transaction->offer;
-            $robosats = new Robosats();
-            $response = $robosats->updateTransactionStatus($offer);
-        }
+        // kick off the job
+        $job = new \App\Jobs\UpdateTransactions();
+        $job->handle();
     }
 }

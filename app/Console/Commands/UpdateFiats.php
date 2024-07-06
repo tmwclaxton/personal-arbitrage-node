@@ -27,18 +27,9 @@ class UpdateFiats extends Command
      */
     public function handle()
     {
-        $robosats = new Robosats();
-        $prices = $robosats->getCurrentPrices();
-        if (!$prices) {
-            return;
-        }
-        foreach ($prices as $price) {
-            $btcFiat = new BtcFiat();
-            // if the currency is already in the database, update it
-            $btcFiat->updateOrCreate(
-                ['currency' => $price['code']],
-                ['price' => $price['price']]
-            );
-        }
+        // kick off the job
+        $job = new \App\Jobs\UpdateFiats();
+        $job->handle();
+
     }
 }

@@ -137,11 +137,6 @@ Route::post('auto-accept', function () {
 
 Route::get('/testing', function () {
 
-    $robots = Robot::where('earned_rewards', '>', 0)->get();
-    if ($robots->isEmpty()) {
-        return;
-    }
-    $adminDashboard = AdminDashboard::all()->first();
 
     // $robosats = new Robosats();
     // foreach ($robots as $robot) {
