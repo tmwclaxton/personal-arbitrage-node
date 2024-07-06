@@ -7,6 +7,7 @@ use App\Jobs\ConfirmPayment;
 use App\Models\AdminDashboard;
 use App\Models\BtcFiat;
 use App\Models\Offer;
+use App\Models\Payment;
 use App\Models\RevolutAccessToken;
 use App\Models\Robot;
 use App\Models\Transaction;
@@ -136,24 +137,7 @@ Route::post('auto-accept', function () {
 
 Route::get('/testing', function () {
 
-    $revolutService = new RevolutService();
-    $revArray = $revolutService->getToken('READ');
-    if (array_key_exists('url', $revArray)) {
-        $discordService = new DiscordService();
-        $discordService->sendMessage('Reset RevToken at: ' . $revArray['url']);
-        return;
-    } else {
-        $token = $revArray['access_token'];
-    }
 
-    // convert RevolutAccessToken to AccessToken
-    $accessToken = new \League\OAuth2\Client\Token\AccessToken([
-        'access_token' => $token,
-    ]);
-
-    $client = new \RevolutPHP\Client($accessToken);
-    $transactions = $client->transactions->all();
-    return $transactions;
 })->name('testing');
 
 

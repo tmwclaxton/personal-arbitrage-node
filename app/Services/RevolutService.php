@@ -175,4 +175,24 @@ class RevolutService
         }
     }
 
+    public function getTransactions()
+    {
+        $revArray = $this->getToken('READ');
+        if (array_key_exists('url', $revArray)) {
+            $discordService = new DiscordService();
+            $discordService->sendMessage('Reset RevToken at: ' . $revArray['url']);
+            return [];
+        } else {
+            $token = $revArray['access_token'];
+        }
+
+        // convert RevolutAccessToken to AccessToken
+        $accessToken = new \League\OAuth2\Client\Token\AccessToken([
+            'access_token' => $token,
+        ]);
+
+        $client = new \RevolutPHP\Client($accessToken);
+        return $client->transactions->all();
+    }
+
 }

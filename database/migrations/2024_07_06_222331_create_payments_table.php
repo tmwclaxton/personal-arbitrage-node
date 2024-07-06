@@ -18,10 +18,10 @@ return new class extends Migration
             $table->string('payment_method');
             $table->string('payment_currency');
             $table->decimal('payment_amount', 16, 2);
-            $table->string('platform_transaction_id');
-            $table->
-
-
+            $table->string('platform_transaction_id')->unique();
+            $table->string('platform_account_id');
+            $table->string('platform_description');
+            $table->json('platform_entity');
             $table->timestamps();
         });
     }
