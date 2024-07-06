@@ -19,9 +19,9 @@ Schedule::command('refresh:dashboard')
     ->description('refresh dashboard')
     ->everyMinute();
 
-Schedule::command('refresh:transactions')
-    ->description('refresh transactions')
-    ->everyTwentySeconds();
+// Schedule::command('refresh:transactions')
+//     ->description('refresh transactions')
+//     ->everyTwentySeconds();
 
 Schedule::command('refresh:robots')
     ->description('refresh robots')
@@ -43,9 +43,9 @@ Schedule::command('refresh:discord-commands')
     ->description('refresh discord commands')
     ->everyMinute();
 
-Schedule::command('refresh:offers')
-    ->description('refresh robosat offers')
-    ->everyMinute();
+// Schedule::command('refresh:offers')
+//     ->description('refresh robosat offers')
+//     ->everyMinute();
 
 Schedule::command('refresh:fiats')
     ->description('refresh fiats')
@@ -56,3 +56,8 @@ Schedule::command('refresh:fiats')
 Schedule::command('auto:accept')
     ->description('auto accept')
     ->everyThreeMinutes();
+
+// app:warning-system
+Schedule::command('app:warning-system')
+    ->description('app warning system')
+    ->everyMinute();

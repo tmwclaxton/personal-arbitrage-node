@@ -47,7 +47,7 @@ class RobosatsStatus
         16 => 'Wait for dispute resolution',
         17 => 'Maker lost dispute',
         18 => 'Taker lost dispute',
-        99 => 'Collaboratively cancelled',
+        99 => 'Bad Request Error',
     ];
 
     public static function getStatusText($status)
