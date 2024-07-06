@@ -86,6 +86,8 @@ class WarningSystem extends Command
             ' status (' . RobosatsStatus::getStatusText($offer->status) . ') for ' . Carbon::parse($data['timestamp'])->diffInMinutes() .
             '. Please check the offer' .
             ' using the following token: ' . $offer->robots()->first()->token . ' and take necessary action.');
+        //TODO: we should also add twilio notification here
+
 
     }
 }
