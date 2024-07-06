@@ -205,7 +205,36 @@ Route::get('/testing', function () {
 
     $client = new \RevolutPHP\Client($accessToken);
     $accounts = $client->accounts->all();
-    dd($accounts);
+    // dd($accounts);
+
+    // using the GBP account convert all to EUR
+    // iterate through the accounts and grab the GBP and EUR accounts
+    foreach ($accounts as $account) {
+        if ($account->currency == 'GBP') {
+            $gbpAccount = $account;
+        }
+        if ($account->currency == 'EUR') {
+            $eurAccount = $account;
+        }
+    }
+
+    $exchange = [
+        'from' => [
+            'account_id' => $gbpAccount->id,
+            'currency' => 'GBP',
+            'amount' => 1
+        ],
+        'to' => [
+            'account_id' => $eurAccount->id,
+            'currency' => 'EUR',
+        ],
+        'reference' => 'exchange',
+        'request_id' => 'A1pH4num3ric2',
+    ];
+
+    $response = $client->exchanges->exchange($exchange);
+    dd($response);
+
 
 })->name('testing');
 
