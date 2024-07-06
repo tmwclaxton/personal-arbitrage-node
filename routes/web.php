@@ -7,6 +7,7 @@ use App\Jobs\ConfirmPayment;
 use App\Models\AdminDashboard;
 use App\Models\BtcFiat;
 use App\Models\Offer;
+use App\Models\RevolutAccessToken;
 use App\Models\Robot;
 use App\Models\Transaction;
 use App\Services\DiscordService;
@@ -136,32 +137,77 @@ Route::post('auto-accept', function () {
 
 
 Route::get('/testing', function () {
-
-
-    // $robosats = new Robosats();
-    // foreach ($robots as $robot) {
-    //     $adminDashboard->satoshi_profit += $robot->earned_rewards;
-    //     $response = $robosats->claimCompensation($robot);
-    //     dd($response);
-    // }
-
-
-    // $lightningNode = new LightningNode();
-    // $invoice = "lnbc921530n1pngvchspp5jv97kwqavtkrvfn8amcq9wdjcalu9mlkwzycd4w7c8207mddry8sd2j2pshjmt9de6zqun9vejhyetwvdjn5gp5xyurwvpsvvuz6de4xsuj6dryxvez6wrpxp3z6cmrvg6rgdtpx9jkzwrp9cs9g6rfwvs8qcted4jkuapq2ay5cnpqgefy2326g5syjn3qt984253q2aq5cnz92skzqcmgv43kkgr0dcs9ymmzdafkzarnyp5kvgr5dpjjqmr0vd4jqampwvs8xatrvdjhxumxw4kzugzfwss8w6tvdssxyefqw4hxcmmrddjkggpgveskjmpfyp6kumr9wdejq7t0w5sxx6r9v96zqmmjyp3kzmnrv4kzqatwd9kxzar9wfskcmre9ccqz2cxqr06gsp5dteflyl4s9efepqe59a8zc2nv27mze4gmaudm97l7yymuxdtxg5q9qyyssqehes5hsrenrn963dfdawlwaqlnr0w2hed6rdnpluwk32tcmyfwl5h9v3lq8dvn7seyxfwqsq3eg7nc32ew6txsv87gm5gnv6sk2m6qcqw5d4hg";
-    // $response = $lightningNode->getPaymentFees($invoice);
-    // return $response;
-
-    // \Illuminate\Support\Facades\Artisan::call('auto:accept');
-
     $authProvider = new \RevolutPHP\Auth\Provider([
-        'clientId' => '{clientId}', // As shown when uploading your key
-        'privateKey' => 'file://{privateKeyPath}',
-        'redirectUri' => 'https://example.com', // The URL to redirect the user to after the authorisation step
-        'isSandbox' => true
+        'clientId' => env('REVOLUT_CLIENT_ID'),
+        'privateKey' => 'file://' . storage_path('app/private/RevolutCerts/privatecert.pem'),
+        'redirectUri' => env('REVOLUT_REDIRECT_URI'),
+        'isSandbox' => false,
     ]);
 
-});
+    // grab admin dashboard
+    $adminDashboard = AdminDashboard::all()->first();
+    // grab the revolut code
+    $revolutCode = $adminDashboard->revolut_code;
+    // if there are none, create a new one
 
+    // if revolut code is null, then we need to create a new RevolutAccessToken
+    if ($revolutCode == null && RevolutAccessToken::all()->count() == 0) {
+        $url = $authProvider->getAuthorizationUrl();
+        return redirect($url);
+    }
+
+    // check if there are any RevolutAccessToken
+    if( RevolutAccessToken::all()->count() == 0 ) {
+
+        $accessToken = $authProvider->getAccessToken('authorization_code', [
+            'code' => $revolutCode
+        ]);
+
+        RevolutAccessToken::create([
+            'access_token' => $accessToken->getToken(),
+            'refresh_token' => $accessToken->getRefreshToken(),
+            'expires' => $accessToken->getExpires(),
+        ]);
+
+        // set the revolut code to null
+        $adminDashboard->revolut_code = null;
+        $adminDashboard->save();
+    } else {
+        // Grab the most recent RevolutAccessToken
+        $revolutAccessToken = RevolutAccessToken::all()->last();
+        // convert RevolutAccessToken to AccessToken
+        $revolutAccessToken = new \League\OAuth2\Client\Token\AccessToken([
+            'access_token' => $revolutAccessToken->access_token,
+            'refresh_token' => $revolutAccessToken->refresh_token,
+            'expires' => $revolutAccessToken->expires,
+        ]);
+
+        // if the token is expired
+        if( $revolutAccessToken->hasExpired() ) {
+
+            $newAccessToken = $authProvider->getAccessToken('refresh_token', [
+                'refresh_token' => $revolutAccessToken->getRefreshToken()
+            ]);
+
+            RevolutAccessToken::create([
+                'access_token' => $newAccessToken->getToken(),
+                'refresh_token' => $newAccessToken->getRefreshToken(),
+                'expires' => $newAccessToken->getExpires(),
+            ]);
+        }
+    }
+
+    $accessToken = RevolutAccessToken::all()->last()->access_token;
+    // convert RevolutAccessToken to AccessToken
+    $accessToken = new \League\OAuth2\Client\Token\AccessToken([
+        'access_token' => $accessToken,
+    ]);
+
+    $client = new \RevolutPHP\Client($accessToken);
+    $accounts = $client->accounts->all();
+    dd($accounts);
+
+})->name('testing');
 
 
 require __DIR__.'/auth.php';

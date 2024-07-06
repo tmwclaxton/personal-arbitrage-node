@@ -1,0 +1,88 @@
+<?php
+
+namespace App\Jobs;
+
+use App\Models\AdminDashboard;
+use App\Models\RevolutAccessToken;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+
+class RefreshRevolutToken implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    /**
+     * Create a new job instance.
+     */
+    public function __construct()
+    {
+        //
+    }
+
+    /**
+     * Execute the job.
+     */
+    public function handle(): void
+    {
+        $authProvider = new \RevolutPHP\Auth\Provider([
+            'clientId' => env('REVOLUT_CLIENT_ID'),
+            'privateKey' => 'file://' . storage_path('app/private/RevolutCerts/privatecert.pem'),
+            'redirectUri' => env('REVOLUT_REDIRECT_URI'),
+            'isSandbox' => false,
+        ]);
+
+        // check if there are any RevolutAccessToken
+        if( RevolutAccessToken::all()->count() == 0 ) {
+            // grab admin dashboard
+            $adminDashboard = AdminDashboard::all()->first();
+            // grab the revolut code
+            $revolutCode = $adminDashboard->revolut_code;
+            // if there are none, create a new one
+
+            $accessToken = $authProvider->getAccessToken('authorization_code', [
+                'code' => $revolutCode
+            ]);
+
+            RevolutAccessToken::create([
+                'access_token' => $accessToken->getToken(),
+                'refresh_token' => $accessToken->getRefreshToken(),
+                'expires' => $accessToken->getExpires(),
+                'values' => $accessToken->getValues()
+            ]);
+
+            // set the revolut code to null
+            $adminDashboard->revolut_code = null;
+            $adminDashboard->save();
+        } else {
+            // Grab the most recent RevolutAccessToken
+            $revolutAccessToken = RevolutAccessToken::all()->last();
+            // convert RevolutAccessToken to AccessToken
+            $revolutAccessToken = new \League\OAuth2\Client\Token\AccessToken([
+                'access_token' => $revolutAccessToken->access_token,
+                'refresh_token' => $revolutAccessToken->refresh_token,
+                'expires' => $revolutAccessToken->expires,
+                'resource_owner_id' => $revolutAccessToken->resource_owner_id
+            ]);
+
+            // if the token is expired
+            if( $revolutAccessToken->hasExpired() ) {
+
+                $newAccessToken = $authProvider->getAccessToken('refresh_token', [
+                    'refresh_token' => $revolutAccessToken->getRefreshToken()
+                ]);
+
+                RevolutAccessToken::create([
+                    'access_token' => $newAccessToken->getToken(),
+                    'refresh_token' => $newAccessToken->getRefreshToken(),
+                    'expires' => $newAccessToken->getExpires(),
+                    'resource_owner_id' => $newAccessToken->getResourceOwnerId(),
+                    'values' => $newAccessToken->getValues()
+                ]);
+            }
+        }
+
+    }
+}

@@ -61,3 +61,8 @@ Schedule::command('auto:accept')
 Schedule::command('app:warning-system')
     ->description('app warning system')
     ->everyMinute()->withoutOverlapping(1);
+
+// refresh revolut token
+Schedule::command('refresh:revolut-token')
+    ->description('refresh revolut token')
+    ->everyTenMinutes()->withoutOverlapping(1);

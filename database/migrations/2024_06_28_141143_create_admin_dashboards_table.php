@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('admin_dashboards', function (Blueprint $table) {
             $table->id();
+
+            $table->string('revolut_code')->nullable();
             $table->integer('localBalance')->default(0);
             $table->integer('remoteBalance')->default(0);
             $table->json('channelBalances')->nullable();
