@@ -66,3 +66,8 @@ Schedule::command('app:warning-system')
 Schedule::command('refresh:revolut-token')
     ->description('refresh revolut token')
     ->everyTenMinutes()->withoutOverlapping(1);
+
+// every minute trigger a revolut payment listener job
+Schedule::command('revolut:payment-listener')
+    ->description('revolut payment listener')
+    ->everyMinute()->withoutOverlapping(1);

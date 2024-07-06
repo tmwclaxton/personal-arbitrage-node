@@ -11,20 +11,22 @@ class RevolutPaymentListener extends Command
      *
      * @var string
      */
-    protected $signature = 'app:revolut-payment-listener';
+    protected $signature = 'revolut:payment-listener';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Listen for incoming payments from Revolut and send a discord notification';
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        //
+        // trigger job
+        $job = new \App\Jobs\RevolutPaymentListener();
+        $job->handle();
     }
 }
