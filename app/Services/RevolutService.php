@@ -37,10 +37,7 @@ class RevolutService
                 'scope' => $type,
             ]);
 
-            redirect($url);
-
-            dd('redirecting to revolut');
-
+            return ['url' => $url, 'message' => 'Please visit the URL to get the code'];
         }
 
         // check if there are any RevolutAccessToken
@@ -54,7 +51,7 @@ class RevolutService
                 'type' => $type,
                 'access_token' => $accessToken->getToken(),
                 'refresh_token' => $accessToken->getRefreshToken(),
-                'expires' => $accessToken->getExpires(),
+                'expires_at' => $accessToken->getExpires(),
             ]);
 
             // set the revolut code to null
@@ -62,30 +59,37 @@ class RevolutService
             $this->adminDashboard->save();
         } else {
             $revolutAccessToken = RevolutAccessToken::where('type', $type)->first();
-
+            // convert RevolutAccessToken to AccessToken
+            $accessToken = new \League\OAuth2\Client\Token\AccessToken([
+                'access_token' => $revolutAccessToken->access_token,
+                'refresh_token' => $revolutAccessToken->refresh_token,
+                'expires' => $revolutAccessToken->expires_at,
+            ]);
             // if the token is expired
-            if ($revolutAccessToken->hasExpired()) {
+            if ($accessToken->hasExpired()) {
 
                 $newAccessToken = $this->authProvider->getAccessToken('refresh_token', [
-                    'refresh_token' => $revolutAccessToken->getRefreshToken()
+                    'refresh_token' =>  $revolutAccessToken->refresh_token
                 ]);
 
-                $revolutAccessToken = RevolutAccessToken::where('refresh_token', $revolutAccessToken->getRefreshToken())->first();
+                $revolutAccessToken = RevolutAccessToken::where('refresh_token',  $revolutAccessToken->refresh_token)->first();
                 $revolutAccessToken->access_token = $newAccessToken->getToken();
-                $revolutAccessToken->expires = $newAccessToken->getExpires();
+                $revolutAccessToken->expires_at = $newAccessToken->getExpires();
                 $revolutAccessToken->save();
+
+                // convert RevolutAccessToken to AccessToken
+                $accessToken = new \League\OAuth2\Client\Token\AccessToken([
+                    'access_token' => $revolutAccessToken->access_token,
+                    'refresh_token' => $revolutAccessToken->refresh_token,
+                    'expires' => $revolutAccessToken->expires_at,
+                ]);
 
             }
 
-            // convert RevolutAccessToken to AccessToken
-            $revolutAccessToken = new \League\OAuth2\Client\Token\AccessToken([
-                'access_token' => $revolutAccessToken->access_token,
-                'refresh_token' => $revolutAccessToken->refresh_token,
-                'expires' => $revolutAccessToken->expires,
-            ]);
         }
 
-        return $revolutAccessToken->access_token;
+        // return $revolutAccessToken->access_token;
+        return ['access_token' => $accessToken->getToken(), 'message' => 'Access token retrieved'];
     }
 
     public function getReadToken() {
@@ -95,5 +99,89 @@ class RevolutService
         return $this->getToken('PAY');
     }
 
+    public function currencyExchangeAll($fromCurrency, $toCurrency) {
+        // we need two types of access tokens READ and PAY
+
+        $authProvider = new \RevolutPHP\Auth\Provider([
+            'clientId' => env('REVOLUT_CLIENT_ID'),
+            'privateKey' => 'file://' . storage_path('app/private/RevolutCerts/privatecert.pem'),
+            'redirectUri' => env('REVOLUT_REDIRECT_URI'),
+            'isSandbox' => false,
+        ]);
+
+        $token = null;
+        $revArray = $this->getToken('READ');
+        if (array_key_exists('url', $revArray)) {
+            $discordService = new DiscordService();
+            $discordService->sendMessage('Reset RevToken at: ' . $revArray['url']);
+            return;
+        } else {
+            $token = $revArray['access_token'];
+        }
+
+        // convert RevolutAccessToken to AccessToken
+        $accessToken = new \League\OAuth2\Client\Token\AccessToken([
+            'access_token' => $token,
+        ]);
+
+        $client = new \RevolutPHP\Client($accessToken);
+        $accounts = $client->accounts->all();
+
+        // using the GBP account convert all to EUR
+        // iterate through the accounts and grab the GBP and EUR accounts
+        foreach ($accounts as $account) {
+            if ($account->currency == $fromCurrency && $account->balance > 1) {
+                $fromAccount = $account;
+            }
+            if ($account->currency == $toCurrency && $account->balance > 1) {
+                $toAccount = $account;
+            }
+        }
+        if (!isset($fromAccount) || !isset($toAccount)) {
+            $discordService = new DiscordService();
+            $discordService->sendMessage('Revolut Currency Exchange Failed - ' . $fromCurrency . ' or ' . $toCurrency . ' account not found');
+            return;
+        }
+
+        $exchange = [
+            'from' => [
+                'account_id' => $fromAccount->id,
+                'currency' => $fromCurrency,
+                'amount' => $fromAccount->balance,
+            ],
+            'to' => [
+                'account_id' => $toAccount->id,
+                'currency' => 'GBP',
+            ],
+            'reference' => 'exchange',
+            'request_id' => time() . 'exchange',
+        ];
+
+        $token = null;
+        $revArray = $this->getToken('PAY');
+        if (array_key_exists('url', $revArray)) {
+            $discordService = new DiscordService();
+            $discordService->sendMessage('Reset RevToken at: ' . $revArray['url']);
+            return;
+        } else {
+            $token = $revArray['access_token'];
+        }
+        // convert RevolutAccessToken to AccessToken
+        $accessToken = new \League\OAuth2\Client\Token\AccessToken([
+            'access_token' => $token,
+        ]);
+
+        $client = new \RevolutPHP\Client($accessToken);
+
+        $response = $client->exchanges->exchange($exchange);
+        // if state is completed then we are good
+        if ($response->state == 'completed') {
+            $discordService = new DiscordService();
+            $discordService->sendMessage('Revolut Currency Exchange Completed');
+        } else {
+            $discordService = new DiscordService();
+            $discordService->sendMessage('Revolut Currency Exchange Failed');
+        }
+    }
 
 }

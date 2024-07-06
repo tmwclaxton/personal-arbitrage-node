@@ -135,58 +135,8 @@ Route::post('auto-accept', function () {
 
 Route::get('/testing', function () {
 
-    // we need two types of access tokens READ and PAY
 
-    $authProvider = new \RevolutPHP\Auth\Provider([
-        'clientId' => env('REVOLUT_CLIENT_ID'),
-        'privateKey' => 'file://' . storage_path('app/private/RevolutCerts/privatecert.pem'),
-        'redirectUri' => env('REVOLUT_REDIRECT_URI'),
-        'isSandbox' => false,
-    ]);
-
-    $revolutService = new \App\Services\RevolutService();
-
-
-
-    // convert RevolutAccessToken to AccessToken
-    $accessToken = new \League\OAuth2\Client\Token\AccessToken([
-        'access_token' => $revolutService->getToken('READ'),
-    ]);
-
-    $client = new \RevolutPHP\Client($accessToken);
-    $accounts = $client->accounts->all();
-
-    // using the GBP account convert all to EUR
-    // iterate through the accounts and grab the GBP and EUR accounts
-    foreach ($accounts as $account) {
-        if ($account->currency == 'GBP') {
-            $gbpAccount = $account;
-        }
-        if ($account->currency == 'EUR') {
-            $eurAccount = $account;
-        }
-    }
-
-    $exchange = [
-        'from' => [
-            'account_id' => $gbpAccount->id,
-            'currency' => 'GBP',
-            'amount' => 1
-        ],
-        'to' => [
-            'account_id' => $eurAccount->id,
-            'currency' => 'EUR',
-        ],
-        'reference' => 'exchange',
-        'request_id' => 'A1pH4num3ric2',
-    ];
-
-    $accessToken = $revolutService->getToken('PAY');
-    $client = new \RevolutPHP\Client($accessToken);
-
-    $response = $client->exchanges->exchange($exchange);
-    dd($response);
-
+    return $response;
 
 })->name('testing');
 
