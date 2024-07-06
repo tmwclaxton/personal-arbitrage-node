@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Services\DiscordService;
+use App\Services\RevolutService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -26,6 +27,9 @@ class RevolutCurrencyConverter implements ShouldQueue
      */
     public function handle(): void
     {
+        $revolutService = new RevolutService();
+        $revolutService->currencyExchangeAll("EUR", "GBP");
+        $revolutService->currencyExchangeAll("USD", "GBP");
 
     }
 }

@@ -12,6 +12,7 @@ use App\Models\Robot;
 use App\Models\Transaction;
 use App\Services\DiscordService;
 use App\Services\PgpService;
+use App\Services\RevolutService;
 use App\WorkerClasses\LightningNode;
 use App\WorkerClasses\Robosats;
 use Illuminate\Foundation\Application;
@@ -135,9 +136,24 @@ Route::post('auto-accept', function () {
 
 Route::get('/testing', function () {
 
+    $revolutService = new RevolutService();
+    $revArray = $revolutService->getToken('READ');
+    if (array_key_exists('url', $revArray)) {
+        $discordService = new DiscordService();
+        $discordService->sendMessage('Reset RevToken at: ' . $revArray['url']);
+        return;
+    } else {
+        $token = $revArray['access_token'];
+    }
 
-    return $response;
+    // convert RevolutAccessToken to AccessToken
+    $accessToken = new \League\OAuth2\Client\Token\AccessToken([
+        'access_token' => $token,
+    ]);
 
+    $client = new \RevolutPHP\Client($accessToken);
+    $transactions = $client->transactions->all();
+    return $transactions;
 })->name('testing');
 
 

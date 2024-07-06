@@ -99,17 +99,10 @@ class RevolutService
         return $this->getToken('PAY');
     }
 
-    public function currencyExchangeAll($fromCurrency, $toCurrency) {
+    public function currencyExchangeAll($fromCurrency, $toCurrency, $reference = null, $requestId = null) {
         // we need two types of access tokens READ and PAY
 
-        $authProvider = new \RevolutPHP\Auth\Provider([
-            'clientId' => env('REVOLUT_CLIENT_ID'),
-            'privateKey' => 'file://' . storage_path('app/private/RevolutCerts/privatecert.pem'),
-            'redirectUri' => env('REVOLUT_REDIRECT_URI'),
-            'isSandbox' => false,
-        ]);
 
-        $token = null;
         $revArray = $this->getToken('READ');
         if (array_key_exists('url', $revArray)) {
             $discordService = new DiscordService();
@@ -138,8 +131,6 @@ class RevolutService
             }
         }
         if (!isset($fromAccount) || !isset($toAccount)) {
-            $discordService = new DiscordService();
-            $discordService->sendMessage('Revolut Currency Exchange Failed - ' . $fromCurrency . ' or ' . $toCurrency . ' account not found');
             return;
         }
 
@@ -153,8 +144,8 @@ class RevolutService
                 'account_id' => $toAccount->id,
                 'currency' => 'GBP',
             ],
-            'reference' => 'exchange',
-            'request_id' => time() . 'exchange',
+            'reference' => $reference ?? time() . 'exchange',
+            'request_id' => $requestId ?? hash('sha256', time() . 'exchange')
         ];
 
         $token = null;
@@ -177,10 +168,10 @@ class RevolutService
         // if state is completed then we are good
         if ($response->state == 'completed') {
             $discordService = new DiscordService();
-            $discordService->sendMessage('Revolut Currency Exchange Completed');
+            $discordService->sendMessage('Revolut Currency Exchange Completed From: ' . $fromCurrency . ' To: ' . $toCurrency);
         } else {
             $discordService = new DiscordService();
-            $discordService->sendMessage('Revolut Currency Exchange Failed');
+            $discordService->sendMessage('Revolut Currency Exchange Failed: ' . $response);
         }
     }
 
