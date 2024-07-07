@@ -137,6 +137,16 @@ Route::post('auto-accept', function () {
 
 Route::get('/testing', function () {
 
+    $client = new \Butschster\Kraken\Client(
+        new GuzzleHttp\Client(),
+        new \Butschster\Kraken\NonceGenerator(),
+        (new \Butschster\Kraken\Serializer\SerializerFactory())->build(),
+        env('KRAKEN_API_KEY'),
+        env('KRAKEN_PRIVATE_KEY')
+    );
+
+    // get info to make a deposit
+    $response = $client->getAccountBalance();
 
 
 })->name('testing');
