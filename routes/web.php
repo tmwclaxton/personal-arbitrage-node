@@ -137,6 +137,25 @@ Route::post('auto-accept', function () {
 
 Route::get('/testing', function () {
 
+    // set up wise client
+    $client = new \TransferWise\Client(
+        [
+            "token" => env('WISE_API_KEY'),
+            "profile_id" => "test",
+            // "env" => "sandbox" // optional
+        ]
+    );
+
+    $profiles = $client->profiles->all();
+    // dd($profiles);
+
+    $wiseService = new \App\Services\WiseService();
+    $response = $wiseService->listTransfers($profiles[0]['id']);
+    dd($response);
+    // now grab the id
+
+
+
     $client = new \Butschster\Kraken\Client(
         new GuzzleHttp\Client(),
         new \Butschster\Kraken\NonceGenerator(),

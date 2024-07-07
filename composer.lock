@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "64569af03c9aa77c236a6e918a76a9f8",
+    "content-hash": "e5f6ed91a04a3e1a9c7c5e9fd907dc65",
     "packages": [
         {
             "name": "aloha/twilio",
@@ -8443,6 +8443,50 @@
                 "source": "https://github.com/tijsverkoyen/CssToInlineStyles/tree/v2.2.7"
             },
             "time": "2023-12-08T13:03:43+00:00"
+        },
+        {
+            "name": "transferwise/wise-php",
+            "version": "v0.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/albertxhani/wise-php.git",
+                "reference": "3e7e5971b8f025fbeee0bf672827abb1cad1f024"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/albertxhani/wise-php/zipball/3e7e5971b8f025fbeee0bf672827abb1cad1f024",
+                "reference": "3e7e5971b8f025fbeee0bf672827abb1cad1f024",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": ">=6.3",
+                "php": ">=5.6.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "TransferWise\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Albert Xhani",
+                    "email": "albert.xhani@outlook.com"
+                }
+            ],
+            "description": "Wise PHP Library",
+            "support": {
+                "issues": "https://github.com/albertxhani/wise-php/issues",
+                "source": "https://github.com/albertxhani/wise-php/tree/v0.2.1"
+            },
+            "time": "2022-06-03T10:56:27+00:00"
         },
         {
             "name": "twilio/sdk",
