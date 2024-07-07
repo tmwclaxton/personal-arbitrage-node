@@ -63,6 +63,8 @@ class RevolutPaymentListener implements ShouldQueue
             $discordService->sendMessage('Payment received: ' . $payment->payment_amount . ' ' . $payment->payment_currency . ' on Revolut');
 
 
+
+
         }
 
     }

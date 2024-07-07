@@ -313,8 +313,8 @@ class OfferController extends Controller
         // convert largest amount back to fiat
         $helpFunction = new HelperFunctions();
         $estimated_offer_amount = $offer->range ?
-            round($helpFunction->satoshiToFiat($offer->satoshis_now, $offer->price), 2) :
-            round($helpFunction->satoshiToFiat($largestAmountSat, $offer->price), 2) ;
+            round($helpFunction->satoshiToFiat($offer->satoshis_now, $offer->price), 0) :
+            round($helpFunction->satoshiToFiat($largestAmountSat, $offer->price), 0) ;
 
 
         $btcFiats = BtcFiat::all();
