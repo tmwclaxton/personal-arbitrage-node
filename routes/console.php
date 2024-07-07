@@ -71,3 +71,8 @@ Schedule::command('refresh:revolut-token')
 Schedule::command('revolut:payment-listener')
     ->description('revolut payment listener')
     ->everyMinute()->withoutOverlapping(1);
+
+// payment matcher
+Schedule::command('payment:matcher')
+    ->description('payment matcher')
+    ->everyMinute()->withoutOverlapping(1);

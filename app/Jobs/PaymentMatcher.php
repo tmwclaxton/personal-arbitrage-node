@@ -45,15 +45,19 @@ class PaymentMatcher implements ShouldQueue
                 ->get();
 
             if ($offers->count() > 1) {
-                $discordService->sendMessage('**Error**: Multiple offers found for payment: ' . $payment->id);
+                $discordService->sendMessage('**Warning**: Multiple offers found for payment: ' . $payment->id);
             } elseif ($offers->count() === 0) {
-                $discordService->sendMessage('**Error**: No offers found for payment: ' . $payment->id);
+                $discordService->sendMessage('**Warning**: No offers found for payment: ' . $payment->id);
             } else {
                 $offer = $offers->first();
                 $payment->transaction_id = $offer->transaction()->first()->id;
                 $payment->save();
                 $discordService->sendMessage('Found a matching order for the payment of ' . $payment->payment_amount . ' ' . $payment->payment_currency .
                     ', see offer ID: ' . $offer->id . ' and transaction ID: ' . $offer->transaction()->first()->id);
+
+                // currency conversion job
+                $job = new \App\Jobs\CurrencyConverter();
+                $job->handle();
             }
         }
     }

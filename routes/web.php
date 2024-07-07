@@ -138,9 +138,6 @@ Route::post('auto-accept', function () {
 Route::get('/testing', function () {
 
 
-    return response()->json(['message' => 'Payments matched']);
-
-
 
 })->name('testing');
 
