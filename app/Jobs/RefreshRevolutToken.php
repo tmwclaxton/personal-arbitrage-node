@@ -42,9 +42,15 @@ class RefreshRevolutToken implements ShouldQueue
             $revolutCode = $adminDashboard->revolut_code;
             // if there are none, create a new one
 
-            $accessToken = $authProvider->getAccessToken('authorization_code', [
-                'code' => $revolutCode
-            ]);
+            $accessToken = null;
+            try {
+                $accessToken = $authProvider->getAccessToken('authorization_code', [
+                    'code' => $revolutCode
+                ]);
+            } catch (\Exception $e) {
+                $discordService = new \App\Services\DiscordService();
+                $discordService->sendMessage('RevolutService: ' . $e->getMessage() );
+            }
 
             RevolutAccessToken::create([
                 'access_token' => $accessToken->getToken(),
@@ -71,9 +77,15 @@ class RefreshRevolutToken implements ShouldQueue
                 // if the token is expired
                 if ($revolutAccessToken->hasExpired()) {
 
-                    $newAccessToken = $authProvider->getAccessToken('refresh_token', [
-                        'refresh_token' => $revolutAccessToken->getRefreshToken()
-                    ]);
+                    $newAccessToken = null;
+                    try {
+                        $newAccessToken = $authProvider->getAccessToken('refresh_token', [
+                            'refresh_token' => $revolutAccessToken->getRefreshToken()
+                        ]);
+                    } catch (\Exception $e) {
+                        $discordService = new \App\Services\DiscordService();
+                        $discordService->sendMessage('RevolutService: ' . $e->getMessage() );
+                    }
 
                     // find the RevolutAccessToken and update all the fields
                     $revolutAccessToken = RevolutAccessToken::where('refresh_token', $revolutAccessToken->getRefreshToken())->first();
