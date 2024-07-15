@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('type');
             $table->string('access_token');
             $table->string('refresh_token');
-            $table->unsignedInteger('expires_at');
+            $table->unsignedInteger('expires');
             $table->string('resource_owner_id')->nullable();
             // $table->json('values');
             $table->timestamps();

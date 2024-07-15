@@ -34,8 +34,8 @@ class RefreshRevolutToken implements ShouldQueue
             'isSandbox' => false,
         ]);
 
-        // check if there are any RevolutAccessToken
-        if( RevolutAccessToken::all()->count() == 0 ) {
+        // check if there are any RevolutAccessTokens
+        if( RevolutAccessToken::all()->count() < 2 && AdminDashboard::all()->first()->revolut_code != null ) {
             // grab admin dashboard
             $adminDashboard = AdminDashboard::all()->first();
             // grab the revolut code
@@ -57,30 +57,31 @@ class RefreshRevolutToken implements ShouldQueue
             $adminDashboard->revolut_code = null;
             $adminDashboard->save();
         } else {
-            // Grab the most recent RevolutAccessToken
-            $revolutAccessToken = RevolutAccessToken::all()->last();
-            // convert RevolutAccessToken to AccessToken
-            $revolutAccessToken = new \League\OAuth2\Client\Token\AccessToken([
-                'access_token' => $revolutAccessToken->access_token,
-                'refresh_token' => $revolutAccessToken->refresh_token,
-                'expires' => $revolutAccessToken->expires,
-                'resource_owner_id' => $revolutAccessToken->resource_owner_id
-            ]);
-
-            // if the token is expired
-            if( $revolutAccessToken->hasExpired() ) {
-
-                $newAccessToken = $authProvider->getAccessToken('refresh_token', [
-                    'refresh_token' => $revolutAccessToken->getRefreshToken()
+            // foreach RevolutAccessToken grab and iterate
+            $tokens = RevolutAccessToken::all();
+            foreach ($tokens as $revolutAccessToken) {
+                // convert RevolutAccessToken to AccessToken
+                $revolutAccessToken = new \League\OAuth2\Client\Token\AccessToken([
+                    'access_token' => $revolutAccessToken->access_token,
+                    'refresh_token' => $revolutAccessToken->refresh_token,
+                    'expires' => $revolutAccessToken->expires,
+                    'resource_owner_id' => $revolutAccessToken->resource_owner_id
                 ]);
 
-                RevolutAccessToken::create([
-                    'access_token' => $newAccessToken->getToken(),
-                    'refresh_token' => $newAccessToken->getRefreshToken(),
-                    'expires' => $newAccessToken->getExpires(),
-                    'resource_owner_id' => $newAccessToken->getResourceOwnerId(),
-                    'values' => $newAccessToken->getValues()
-                ]);
+                // if the token is expired
+                if ($revolutAccessToken->hasExpired()) {
+
+                    $newAccessToken = $authProvider->getAccessToken('refresh_token', [
+                        'refresh_token' => $revolutAccessToken->getRefreshToken()
+                    ]);
+
+                    // find the RevolutAccessToken and update all the fields
+                    $revolutAccessToken = RevolutAccessToken::where('refresh_token', $revolutAccessToken->getRefreshToken())->first();
+                    $revolutAccessToken->access_token = $newAccessToken->getToken();
+                    $revolutAccessToken->expires = $newAccessToken->getExpires();
+                    $revolutAccessToken->resource_owner_id = $newAccessToken->getResourceOwnerId();
+                    $revolutAccessToken->save();
+                }
             }
         }
 
