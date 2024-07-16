@@ -29,42 +29,72 @@ class WisePaymentListener implements ShouldQueue
      */
     public function handle(): void
     {
-        $revolutService = new RevolutService();
-        $transactions = $revolutService->getTransactions();
+        // set up wise client
+        $client = new \TransferWise\Client(
+            [
+                "token" => env('WISE_API_KEY'),
+                "profile_id" => "test",
+                // "env" => "sandbox" // optional
+            ]
+        );
+
+        $profiles = $client->profiles->all();
+        // dd($profiles);
+
+        $wiseService = new \App\Services\WiseService();
+        $response = $wiseService->getActivities($profiles[0]['id']);
+        $activities = $response['activities'];
+        // dd($activities);
+        foreach ($activities as $activity) {
+            if (
+                $activity['type'] === "TRANSFER" &&
+                $activity['description'] !== "<strong>Toby Matthew William Claxton</strong>" &&
+                $activity['status'] === "COMPLETED" &&
+                str_contains($activity['primaryAmount'], '+') &&
+                $activity['createdOn'] > Carbon::now()->subHour(1)
+            ) {
+                // $activity['primaryAmount'] = '<positive>+ 200 EUR</positive>' -> 200 EUR
+                $activity['formattedAmount'] = trim(str_replace('+', '', str_replace(['<positive>', '</positive>'], '', $activity['primaryAmount'])));
+
+                // if secondaryAmount is not null, then we need to overwrite the formattedAmount with the secondaryAmount
+                if ($activity['secondaryAmount'] !== "") {
+                    $activity['formattedAmount'] = $activity['secondaryAmount'];
+                }
+
+                // now that we have a formattedAmount in the form x.x CURRENCY, we need to split it into amount and currency
+                $activity['amount'] = explode(' ', $activity['formattedAmount'])[0];
+                // if amount is 0, then we skip this activity
+                if ($activity['amount'] == 0) {
+                    continue;
+                }
+
+                $activity['currency'] = explode(' ', $activity['formattedAmount'])[1];
+
+                // add a column for sender  "title" => "<strong>Igor Pinto Borges</strong>"
+                $activity['sender'] = trim(str_replace(['<strong>', '</strong>'], '', $activity['title']));
+
+                $payment = new \App\Models\Payment();
+                $payment->payment_method = 'Wise';
+                $payment->platform_transaction_id = $activity['id'];
+
+                if (Payment::where('platform_transaction_id', $payment->platform_transaction_id)->exists()) {
+                    continue;
+                }
+
+                $payment->payment_currency = $activity['currency'];
+                $payment->payment_amount = $activity['amount'];
+                $payment->platform_account_id = $activity['sender'];
+                $payment->platform_description = $activity['description'];
+                $payment->platform_entity = json_encode($activity);
+
+                $payment->save();
+
+                $discordService = new DiscordService();
+                $discordService->sendMessage('Payment received: ' . $payment->payment_amount . ' ' . $payment->payment_currency . ' on Wise');
 
 
-        // convert transactions to an array
-        $transactions = json_decode(json_encode($transactions), true);
 
-        // iterate through the transactions and create a payment object for each
-        foreach ($transactions as $transaction) {
-            if ($transaction['state'] !== 'completed' || $transaction['type'] !== 'transfer'
-                || $transaction['completed_at'] < Carbon::now()->subHour(1) || $transaction['legs'][0]['amount'] < 0) {
-                continue;
             }
-
-            $payment = new \App\Models\Payment();
-            $payment->payment_method = 'Revolut';
-            $payment->platform_transaction_id = $transaction['id'];
-
-            if (Payment::where('platform_transaction_id', $payment->platform_transaction_id)->exists()) {
-                continue;
-            }
-
-            $payment->payment_currency = $transaction['legs'][0]['currency'];
-            $payment->payment_amount = $transaction['legs'][0]['amount'];
-            $payment->platform_account_id = $transaction['legs'][0]['account_id'];
-            $payment->platform_description = $transaction['legs'][0]['description'];
-            $payment->platform_entity = json_encode($transaction);
-
-            $payment->save();
-
-            $discordService = new DiscordService();
-            $discordService->sendMessage('Payment received: ' . $payment->payment_amount . ' ' . $payment->payment_currency . ' on Revolut');
-
-
-
-
         }
 
     }

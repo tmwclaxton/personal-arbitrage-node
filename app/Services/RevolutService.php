@@ -63,7 +63,7 @@ class RevolutService
             $accessToken = new \League\OAuth2\Client\Token\AccessToken([
                 'access_token' => $revolutAccessToken->access_token,
                 'refresh_token' => $revolutAccessToken->refresh_token,
-                'expires' => $revolutAccessToken->expires_at,
+                'expires' => $revolutAccessToken->expires,
             ]);
             // if the token is expired
             if ($accessToken->hasExpired()) {
@@ -74,14 +74,14 @@ class RevolutService
 
                 $revolutAccessToken = RevolutAccessToken::where('refresh_token',  $revolutAccessToken->refresh_token)->first();
                 $revolutAccessToken->access_token = $newAccessToken->getToken();
-                $revolutAccessToken->expires_at = $newAccessToken->getExpires();
+                $revolutAccessToken->expires = $newAccessToken->getExpires();
                 $revolutAccessToken->save();
 
                 // convert RevolutAccessToken to AccessToken
                 $accessToken = new \League\OAuth2\Client\Token\AccessToken([
                     'access_token' => $revolutAccessToken->access_token,
                     'refresh_token' => $revolutAccessToken->refresh_token,
-                    'expires' => $revolutAccessToken->expires_at,
+                    'expires' => $revolutAccessToken->expires,
                 ]);
 
             }

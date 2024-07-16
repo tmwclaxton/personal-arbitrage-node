@@ -10,6 +10,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Redis;
 
 class PaymentMatcher implements ShouldQueue
 {
@@ -35,7 +36,7 @@ class PaymentMatcher implements ShouldQueue
 
         $discordService = new DiscordService();
         foreach ($payments as $payment) {
-            // search through offers for a offer with a status of 9 / 10 and a matching accepted offer amount
+            // search through offers for an offer with a status of 9 / 10 and a matching accepted offer amount
             $offers = \App\Models\Offer::where(function ($query) use ($payment) {
                 $query->where('status', 9)
                     ->orWhere('status', 10);
@@ -45,20 +46,37 @@ class PaymentMatcher implements ShouldQueue
                 ->get();
 
             if ($offers->count() > 1) {
-                $discordService->sendMessage('**Warning**: Multiple offers found for payment: ' . $payment->id);
+                $message = '**Warning**: Multiple offers found for payment: ' . $payment->id . ' of ' . $payment->payment_amount . ' ' . $payment->payment_currency;
+                $this->sendUniqueMessage($discordService, $payment->id, $message);
             } elseif ($offers->count() === 0) {
-                $discordService->sendMessage('**Warning**: No offers found for payment: ' . $payment->id);
+                $message = '**Warning**: No offers found for payment: ' . $payment->id . ' of ' . $payment->payment_amount . ' ' . $payment->payment_currency;
+                $this->sendUniqueMessage($discordService, $payment->id, $message);
             } else {
                 $offer = $offers->first();
                 $payment->transaction_id = $offer->transaction()->first()->id;
                 $payment->save();
-                $discordService->sendMessage('Found a matching order for the payment of ' . $payment->payment_amount . ' ' . $payment->payment_currency .
-                    ', see offer ID: ' . $offer->id . ' and transaction ID: ' . $offer->transaction()->first()->id);
+                $message = 'Found a matching order for the payment of ' . $payment->payment_amount . ' ' . $payment->payment_currency .
+                    ', see offer ID: ' . $offer->id . ' and transaction ID: ' . $offer->transaction()->first()->id;
+                $this->sendUniqueMessage($discordService, $payment->id, $message);
 
                 // currency conversion job
                 $job = new \App\Jobs\CurrencyConverter();
                 $job->handle();
             }
+        }
+    }
+
+    /**
+     * Send a unique message using Redis to avoid duplicates.
+     */
+    private function sendUniqueMessage($discordService, $paymentId, $message): void
+    {
+        $redisKey = 'payment_message_' . $paymentId;
+        $cachedMessage = Redis::get($redisKey);
+
+        if ($cachedMessage !== $message) {
+            $discordService->sendMessage($message);
+            Redis::set($redisKey, $message);
         }
     }
 }
