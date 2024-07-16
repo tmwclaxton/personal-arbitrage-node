@@ -150,8 +150,18 @@ Route::get('/testing', function () {
     // dd($profiles);
 
     $wiseService = new \App\Services\WiseService();
-    $response = $wiseService->listTransfers($profiles[0]['id']);
-    dd($response);
+    $response = $wiseService->getBalances($profiles[0]['id']);
+    // dd($response);
+    $balancesStatement = $wiseService->getBalanceStatement($profiles[0]['id'], $response[0]['id']);
+    dd($balancesStatement);
+    $activities = $response['activities'];
+    $transfers = [];
+    foreach ($activities as $activity) {
+        if ($activity['resource']['type'] === 'TRANSFER') {
+            $transfers[] = $wiseService->getTransfer($activity['resource']['id']);
+        }
+    }
+    dd($transfers);
     // now grab the id
 
 

@@ -77,4 +77,21 @@ class WiseService
         //curl -X GET https://api.sandbox.transferwise.tech/v1/transfers
         return $this->_makeRequest('GET', "/v1/transfers");
     }
+
+
+    public function getTransfer(string $transferId): array
+    {
+        return $this->_makeRequest('GET', "/v1/transfers/{$transferId}");
+    }
+
+    public function getBalances(string $profileId): array
+    {
+        return $this->_makeRequest('GET', "/v4/profiles/{$profileId}/balances?types=STANDARD");
+    }
+
+
+    public function getBalanceStatement(string $profileId, string $balanceId): array
+    {
+        return $this->_makeRequest('GET', "/v1/profiles/{$profileId}/balance-statements/{$balanceId}/statement.json");
+    }
 }
