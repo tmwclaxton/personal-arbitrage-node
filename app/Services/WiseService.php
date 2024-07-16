@@ -92,6 +92,6 @@ class WiseService
 
     public function getBalanceStatement(string $profileId, string $balanceId): array
     {
-        return $this->_makeRequest('GET', "/v1/profiles/{$profileId}/balance-statements/{$balanceId}/statement.json");
+        return $this->_makeRequest('GET', "/v1/profiles/{$profileId}/balance-statements/{$balanceId}/statement.json?currency=GBP&type=COMPACT");
     }
 }
