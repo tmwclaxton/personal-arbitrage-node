@@ -39,7 +39,6 @@ class WisePaymentListener implements ShouldQueue
         );
 
         $profiles = $client->profiles->all();
-        // dd($profiles);
 
         $wiseService = new \App\Services\WiseService();
         $response = $wiseService->getActivities($profiles[0]['id']);

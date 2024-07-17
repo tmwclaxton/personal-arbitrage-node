@@ -27,16 +27,16 @@ class WiseService
      * @return array
      * @throws \Exception
      */
-    private function _makeRequest(string $method, string $endpoint, array $params = []): array
+    private function _makeRequest(string $method, string $endpoint, array $params = [], array $extraHeaders = []): array
     {
         $url = $this->baseUrl . $endpoint;
 
         try {
             $response = $this->client->request($method, $url, [
-                'headers' => [
+                'headers' => array_merge([
                     'Authorization' => 'Bearer ' . $this->apiKey,
                     'Accept'        => 'application/json',
-                ],
+                ], $extraHeaders),
                 'json' => $params,
             ]);
 
@@ -93,5 +93,45 @@ class WiseService
     public function getBalanceStatement(string $profileId, string $balanceId): array
     {
         return $this->_makeRequest('GET', "/v1/profiles/{$profileId}/balance-statements/{$balanceId}/statement.json?currency=GBP&type=COMPACT");
+    }
+
+
+    public function createQuote($profileId, $sourceCurrency, $sourceAmount, $targetCurrency, $targetAccount): array
+    {
+
+        // {"type":"SPOT","preferredPayIn":"BALANCE","payInMethod":"BALANCE","payInId":"93380492","payOut":"BALANCE","guaranteedTargetAmount":false,"sourceAmount":5,"sourceCurrency":"EUR","targetCurrency":"CAD"}
+        $params = [
+            "sourceCurrency" => $sourceCurrency,
+            "targetCurrency" => $targetCurrency,
+            "sourceAmount" => $sourceAmount,
+            "targetAmount" => null,
+            "payOut" => "BALANCE",
+            "preferredPayIn" => null,
+            "targetAccount" => $targetAccount,
+            // "type" => "CONVERSION",
+            "paymentMetadata" => [
+                "transferNature" => "MOVING_MONEY_BETWEEN_OWN_ACCOUNTS"
+            ]
+        ];
+
+        return $this->_makeRequest("POST", "/v3/profiles/{$profileId}/quotes", $params);
+    }
+
+    public function getQuoteByID($profileId, $quoteId): array
+    {
+        return $this->_makeRequest('GET', "/v3/profiles/{$profileId}/quotes/{$quoteId}");
+    }
+
+    public function convertAcrossBalAccounts($profileId, $quoteId): array {
+        $params = [
+            'quoteId' => $quoteId
+        ];
+        // {"quoteId":"cb588723-4ce4-4fd2-af5a-dc5b7e026ebf","sourceBalanceId":93380492,"targetBalanceId":93380830}
+        $extraHeaders = [
+            'Content-Type' => 'application/json',
+            'X-idempotence-uuid' => uniqid()
+        ];
+
+        return $this->_makeRequest('POST', "/v2/profiles/{$profileId}/balance-movements", $params, $extraHeaders);
     }
 }

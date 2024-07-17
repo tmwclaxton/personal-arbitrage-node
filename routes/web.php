@@ -137,52 +137,46 @@ Route::post('auto-accept', function () {
 
 Route::get('/testing', function () {
 
-    $revolutService = new RevolutService();
-    $transactions = $revolutService->getTransactions();
+    $toCurrency = 'GBP';
+    $fromCurrency = 'EUR';
 
 
-    // convert transactions to an array
-    $transactions = json_decode(json_encode($transactions), true);
+    // set up wise client
+    $client = new \TransferWise\Client(
+        [
+            "token" => env('WISE_API_KEY'),
+            "profile_id" => "test",
+            // "env" => "sandbox" // optional
+        ]
+    );
 
-    // iterate through the transactions and create a payment object for each
-    foreach ($transactions as $transaction) {
-        if ($transaction['state'] !== 'completed'
-            || $transaction['completed_at'] < Carbon::now()->subHour(1) || $transaction['legs'][0]['amount'] < 0) {
-            continue;
+    $profiles = $client->profiles->all();
+    $profileID = $profiles[0]['id'];
+    $wiseService = new \App\Services\WiseService();
+    $response = $wiseService->getBalances($profileID);
+
+
+    // iterate through the accounts and grab the GBP and EUR accounts
+    $fromAccount = null;
+    $toAccount = null;
+    foreach ($response as $account) {
+        if ($account['currency'] == $fromCurrency && $account['amount']['value'] > 0) {
+            $fromAccount = $account;
         }
-        // check if transfer / topup
-        if (!in_array($transaction['type'], ['transfer', 'topup'])) {
-            continue;
+        if ($account['currency'] == $toCurrency) {
+            $toAccount = $account;
         }
-
-
-        $payment = new \App\Models\Payment();
-        $payment->payment_method = 'Revolut';
-        $payment->platform_transaction_id = $transaction['id'];
-
-        if (Payment::where('platform_transaction_id', $payment->platform_transaction_id)->exists()) {
-            continue;
-        }
-
-        $payment->payment_currency = $transaction['legs'][0]['currency'];
-        $payment->payment_amount = $transaction['legs'][0]['amount'];
-        $payment->platform_account_id = $transaction['legs'][0]['account_id'];
-        $payment->platform_description = $transaction['legs'][0]['description'];
-        $payment->platform_entity = json_encode($transaction);
-
-        $payment->save();
-
-        $discordService = new DiscordService();
-        $discordService->sendMessage('Payment received: ' . $payment->payment_amount . ' ' . $payment->payment_currency . ' on Revolut');
-
-
-
-
     }
 
+    if (!isset($fromAccount) || !isset($toAccount)) {
+        return;
+    }
 
-
-    // now grab the id
+    $quote = $wiseService->createQuote($profileID, $fromCurrency, $fromAccount['amount']['value'], $toCurrency, $toAccount['id']);
+    $quote = $wiseService->getQuoteByID($profileID, $quote['id']);
+    dd($quote);
+    $convert = $wiseService->convertAcrossBalAccounts($profileID, $quote['id']);
+    dd($convert);
 
 
 
