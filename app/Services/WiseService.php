@@ -164,11 +164,19 @@ class WiseService
         }
 
         if (!isset($fromAccount) || !isset($toAccount)) {
-            return response()->json(['message' => 'One of the accounts does not exist or has no funds']);
+            return;
         }
 
         $quote = $wiseService->createQuote($profileID, $fromCurrency, $fromAccount['amount']['value'], $fromAccount['id'], $toCurrency, );
         $quoteID = $quote['id'];
-        return $wiseService->convertAcrossBalAccounts($profileID, $quoteID, $fromAccount['id'], $toAccount['id']);
+        $convert = $wiseService->convertAcrossBalAccounts($profileID, $quoteID, $fromAccount['id'], $toAccount['id']);
+
+        if ($convert['state'] == 'COMPLETED') {
+            $discordService = new DiscordService();
+            $discordService->sendMessage('Wise Currency Exchange Completed of ' . $convert['targetAmount']['value'] . ' ' . $fromCurrency . ' to ' . $toCurrency);
+        } else {
+            $discordService = new DiscordService();
+            $discordService->sendMessage('Wise Currency Exchange Failed: ' . json_encode($convert) );
+        }
     }
 }

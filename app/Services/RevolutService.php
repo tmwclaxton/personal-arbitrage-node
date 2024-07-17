@@ -122,10 +122,11 @@ class RevolutService
         // using the GBP account convert all to EUR
         // iterate through the accounts and grab the GBP and EUR accounts
         foreach ($accounts as $account) {
-            if ($account->currency == $fromCurrency && $account->balance > $minAmount) {
+            // these must be above 0 as revolut has fake accounts or something
+            if ($account->currency == $fromCurrency && $account->balance > $minAmount && $account->balance > 0) {
                 $fromAccount = $account;
             }
-            if ($account->currency == $toCurrency) {
+            if ($account->currency == $toCurrency && $account->balance > 0) {
                 $toAccount = $account;
             }
         }
@@ -167,10 +168,10 @@ class RevolutService
         // if state is completed then we are good
         if ($response->state == 'completed') {
             $discordService = new DiscordService();
-            $discordService->sendMessage('Revolut Currency Exchange Completed from ' . $fromCurrency . ' to ' . $toCurrency);
+            $discordService->sendMessage('Revolut Currency Exchange Completed of ' . $fromAccount->balance . ' ' . $fromCurrency . ' to ' . $toCurrency);
         } else {
             $discordService = new DiscordService();
-            $discordService->sendMessage('Revolut Currency Exchange Failed: ' . $response);
+            $discordService->sendMessage('Revolut Currency Exchange Failed: ' . json_encode($response));
         }
     }
 
