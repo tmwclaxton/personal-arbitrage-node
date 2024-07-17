@@ -72,6 +72,11 @@ Schedule::command('revolut:payment-listener')
     ->description('revolut payment listener')
     ->everyMinute()->withoutOverlapping(1);
 
+// every minute trigger a revolut payment listener job
+Schedule::command('wise:payment-listener')
+    ->description('wise payment listener')
+    ->everyMinute()->withoutOverlapping(1);
+
 // payment matcher
 Schedule::command('payment:matcher')
     ->description('payment matcher')
