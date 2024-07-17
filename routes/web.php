@@ -141,43 +141,7 @@ Route::get('/testing', function () {
     $fromCurrency = 'EUR';
 
 
-    // set up wise client
-    $client = new \TransferWise\Client(
-        [
-            "token" => env('WISE_API_KEY'),
-            "profile_id" => "test",
-            // "env" => "sandbox" // optional
-        ]
-    );
 
-    $profiles = $client->profiles->all();
-    $profileID = $profiles[0]['id'];
-    $wiseService = new \App\Services\WiseService();
-    $response = $wiseService->getBalances($profileID);
-
-
-
-    // iterate through the accounts and grab the GBP and EUR accounts
-    $fromAccount = null;
-    $toAccount = null;
-    foreach ($response as $account) {
-        if ($account['currency'] == $fromCurrency && $account['amount']['value'] > 0) {
-            $fromAccount = $account;
-        }
-        if ($account['currency'] == $toCurrency) {
-            $toAccount = $account;
-        }
-    }
-
-    if (!isset($fromAccount) || !isset($toAccount)) {
-        return;
-    }
-
-    $quote = $wiseService->createQuote($profileID, $fromCurrency, $fromAccount['amount']['value'], $fromAccount['id'], $toCurrency, );
-    // $quote = $wiseService->getQuoteByID($profileID, $quote['id']);
-    dd($quote);
-    $quoteID = $quote['id'];
-    $convert = $wiseService->convertAcrossBalAccounts($profileID, $quoteID, $fromAccount['id'], $toAccount['id']);
     dd($convert);
 
 

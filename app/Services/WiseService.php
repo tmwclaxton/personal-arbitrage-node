@@ -4,6 +4,7 @@ namespace App\Services;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use Ramsey\Uuid\Uuid;
 
 class WiseService
 {
@@ -128,11 +129,46 @@ class WiseService
             'sourceBalanceId' => $sourceBalanceId,
             'targetBalanceId' => $targetBalanceId
         ];
+
         $extraHeaders = [
-            'Content-Type' => 'application/json',
-            'X-idempotence-uuid' => uniqid()
+            'X-idempotence-uuid' => Uuid::uuid4()->toString()
         ];
 
         return $this->_makeRequest('POST', "/v2/profiles/{$profileId}/balance-movements", $params, $extraHeaders);
+    }
+
+    public function currencyExchangeAll($fromCurrency, $toCurrency, $reference = null, $requestId = null) {
+        // set up wise client
+        $client = new \TransferWise\Client(
+            [
+                "token" => env('WISE_API_KEY'),
+                "profile_id" => "test",
+            ]
+        );
+
+        $profiles = $client->profiles->all();
+        $profileID = $profiles[0]['id'];
+        $wiseService = new \App\Services\WiseService();
+        $response = $wiseService->getBalances($profileID);
+
+        // iterate through the accounts and grab the GBP and EUR accounts
+        $fromAccount = null;
+        $toAccount = null;
+        foreach ($response as $account) {
+            if ($account['currency'] == $fromCurrency && $account['amount']['value'] > 0) {
+                $fromAccount = $account;
+            }
+            if ($account['currency'] == $toCurrency) {
+                $toAccount = $account;
+            }
+        }
+
+        if (!isset($fromAccount) || !isset($toAccount)) {
+            return response()->json(['message' => 'One of the accounts does not exist or has no funds']);
+        }
+
+        $quote = $wiseService->createQuote($profileID, $fromCurrency, $fromAccount['amount']['value'], $fromAccount['id'], $toCurrency, );
+        $quoteID = $quote['id'];
+        return $wiseService->convertAcrossBalAccounts($profileID, $quoteID, $fromAccount['id'], $toAccount['id']);
     }
 }
