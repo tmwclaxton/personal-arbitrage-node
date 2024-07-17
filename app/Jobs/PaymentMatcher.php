@@ -59,9 +59,9 @@ class PaymentMatcher implements ShouldQueue
                     ', see offer ID: ' . $offer->id . ' and transaction ID: ' . $offer->transaction()->first()->id;
                 $this->sendUniqueMessage($discordService, $payment->id, $message);
 
-                // currency conversion job
-                $job = new \App\Jobs\CurrencyConverter();
-                $job->handle();
+                // // currency conversion job
+                // $job = new \App\Jobs\CurrencyConverter();
+                // $job->handle();
             }
         }
     }

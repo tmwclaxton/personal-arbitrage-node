@@ -168,7 +168,7 @@ class RevolutService
         // if state is completed then we are good
         if ($response->state == 'completed') {
             $discordService = new DiscordService();
-            $discordService->sendMessage('Revolut Currency Exchange Completed From: ' . $fromCurrency . ' To: ' . $toCurrency);
+            $discordService->sendMessage('Revolut Currency Exchange Completed from ' . $fromCurrency . ' to ' . $toCurrency);
         } else {
             $discordService = new DiscordService();
             $discordService->sendMessage('Revolut Currency Exchange Failed: ' . $response);

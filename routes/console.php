@@ -81,3 +81,8 @@ Schedule::command('wise:payment-listener')
 Schedule::command('payment:matcher')
     ->description('payment matcher')
     ->everyMinute()->withoutOverlapping(1);
+
+// currency converter
+Schedule::command('currency:converter')
+    ->description('currency converter')
+    ->everyMinute()->withoutOverlapping(1);

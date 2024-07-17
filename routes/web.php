@@ -181,7 +181,6 @@ Route::get('/testing', function () {
     }
 
 
-    dd($incomingTransfers);
 
     // now grab the id
 
