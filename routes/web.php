@@ -137,31 +137,49 @@ Route::post('auto-accept', function () {
 
 Route::get('/testing', function () {
 
-    // set up wise client
-    $client = new \TransferWise\Client(
-        [
-            "token" => env('WISE_API_KEY'),
-            "profile_id" => "test",
-            // "env" => "sandbox" // optional
-        ]
-    );
+    $revolutService = new RevolutService();
+    $transactions = $revolutService->getTransactions();
 
-    $profiles = $client->profiles->all();
-    // dd($profiles);
 
-    $wiseService = new \App\Services\WiseService();
-    $response = $wiseService->getActivities($profiles[0]['id']);
-    $activities = $response['activities'];
-    $incomingTransfers = [];
-    // dd($activities);
-    foreach ($activities as $activity) {
-        if ($activity['resource']['type'] === 'TRANSFER') {
-            // where description != <strong>Toby Matthew William Claxton</strong> and where status == "COMPLETED" and where primaryAmount contains +
-            if ($activity['description'] !== "<strong>Toby Matthew William Claxton</strong>" && $activity['status'] === "COMPLETED" && strpos($activity['primaryAmount'], '+') !== false) {
-                $incomingTransfers[] = $activity;
-            }
+    // convert transactions to an array
+    $transactions = json_decode(json_encode($transactions), true);
+
+    // iterate through the transactions and create a payment object for each
+    foreach ($transactions as $transaction) {
+        if ($transaction['state'] !== 'completed'
+            || $transaction['completed_at'] < Carbon::now()->subHour(1) || $transaction['legs'][0]['amount'] < 0) {
+            continue;
         }
+        // check if transfer / topup
+        if (!in_array($transaction['type'], ['transfer', 'topup'])) {
+            continue;
+        }
+
+
+        $payment = new \App\Models\Payment();
+        $payment->payment_method = 'Revolut';
+        $payment->platform_transaction_id = $transaction['id'];
+
+        if (Payment::where('platform_transaction_id', $payment->platform_transaction_id)->exists()) {
+            continue;
+        }
+
+        $payment->payment_currency = $transaction['legs'][0]['currency'];
+        $payment->payment_amount = $transaction['legs'][0]['amount'];
+        $payment->platform_account_id = $transaction['legs'][0]['account_id'];
+        $payment->platform_description = $transaction['legs'][0]['description'];
+        $payment->platform_entity = json_encode($transaction);
+
+        $payment->save();
+
+        $discordService = new DiscordService();
+        $discordService->sendMessage('Payment received: ' . $payment->payment_amount . ' ' . $payment->payment_currency . ' on Revolut');
+
+
+
+
     }
+
 
     dd($incomingTransfers);
 

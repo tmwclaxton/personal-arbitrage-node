@@ -38,8 +38,12 @@ class RevolutPaymentListener implements ShouldQueue
 
         // iterate through the transactions and create a payment object for each
         foreach ($transactions as $transaction) {
-            if ($transaction['state'] !== 'completed' || $transaction['type'] !== 'transfer'
+            if ($transaction['state'] !== 'completed'
                 || $transaction['completed_at'] < Carbon::now()->subHour(1) || $transaction['legs'][0]['amount'] < 0) {
+                continue;
+            }
+            // check if transfer / topup
+            if (!in_array($transaction['type'], ['transfer', 'topup'])) {
                 continue;
             }
 
