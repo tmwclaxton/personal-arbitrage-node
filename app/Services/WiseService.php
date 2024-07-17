@@ -137,7 +137,7 @@ class WiseService
         return $this->_makeRequest('POST', "/v2/profiles/{$profileId}/balance-movements", $params, $extraHeaders);
     }
 
-    public function currencyExchangeAll($fromCurrency, $toCurrency, $reference = null, $requestId = null) {
+    public function currencyExchangeAll($fromCurrency, $toCurrency, $reference = null, $requestId = null, $minAmount = 5) {
         // set up wise client
         $client = new \TransferWise\Client(
             [
@@ -155,7 +155,7 @@ class WiseService
         $fromAccount = null;
         $toAccount = null;
         foreach ($response as $account) {
-            if ($account['currency'] == $fromCurrency && $account['amount']['value'] > 0) {
+            if ($account['currency'] == $fromCurrency && $account['amount']['value'] > $minAmount) {
                 $fromAccount = $account;
             }
             if ($account['currency'] == $toCurrency) {

@@ -99,9 +99,8 @@ class RevolutService
         return $this->getToken('PAY');
     }
 
-    public function currencyExchangeAll($fromCurrency, $toCurrency, $reference = null, $requestId = null) {
+    public function currencyExchangeAll($fromCurrency, $toCurrency, $reference = null, $requestId = null, $minAmount = 5) {
         // we need two types of access tokens READ and PAY
-
 
         $revArray = $this->getToken('READ');
         if (array_key_exists('url', $revArray)) {
@@ -123,10 +122,10 @@ class RevolutService
         // using the GBP account convert all to EUR
         // iterate through the accounts and grab the GBP and EUR accounts
         foreach ($accounts as $account) {
-            if ($account->currency == $fromCurrency && $account->balance > 1) {
+            if ($account->currency == $fromCurrency && $account->balance > $minAmount) {
                 $fromAccount = $account;
             }
-            if ($account->currency == $toCurrency && $account->balance > 1) {
+            if ($account->currency == $toCurrency) {
                 $toAccount = $account;
             }
         }
