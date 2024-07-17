@@ -137,9 +137,12 @@ Route::post('auto-accept', function () {
 
 Route::get('/testing', function () {
 
-    $revolutService = new RevolutService();
-    $test = $revolutService->currencyExchangeAll("EUR", "GBP");
-    dd($test);
+    $wiseService = new \App\Services\WiseService();
+
+
+
+    $recipients = $wiseService->getRecipientAccounts("GBP");
+    dd($recipients);
 
     $client = new \Butschster\Kraken\Client(
         new GuzzleHttp\Client(),
