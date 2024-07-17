@@ -156,6 +156,7 @@ Route::get('/testing', function () {
     $response = $wiseService->getBalances($profileID);
 
 
+
     // iterate through the accounts and grab the GBP and EUR accounts
     $fromAccount = null;
     $toAccount = null;
@@ -172,10 +173,11 @@ Route::get('/testing', function () {
         return;
     }
 
-    $quote = $wiseService->createQuote($profileID, $fromCurrency, $fromAccount['amount']['value'], $toCurrency, $toAccount['id']);
-    $quote = $wiseService->getQuoteByID($profileID, $quote['id']);
+    $quote = $wiseService->createQuote($profileID, $fromCurrency, $fromAccount['amount']['value'], $fromAccount['id'], $toCurrency, );
+    // $quote = $wiseService->getQuoteByID($profileID, $quote['id']);
     dd($quote);
-    $convert = $wiseService->convertAcrossBalAccounts($profileID, $quote['id']);
+    $quoteID = $quote['id'];
+    $convert = $wiseService->convertAcrossBalAccounts($profileID, $quoteID, $fromAccount['id'], $toAccount['id']);
     dd($convert);
 
 

@@ -96,19 +96,19 @@ class WiseService
     }
 
 
-    public function createQuote($profileId, $sourceCurrency, $sourceAmount, $targetCurrency, $targetAccount): array
+    public function createQuote($profileId, $sourceCurrency, $sourceAmount, $sourceAccount, $targetCurrency): array
     {
 
-        // {"type":"SPOT","preferredPayIn":"BALANCE","payInMethod":"BALANCE","payInId":"93380492","payOut":"BALANCE","guaranteedTargetAmount":false,"sourceAmount":5,"sourceCurrency":"EUR","targetCurrency":"CAD"}
         $params = [
+            "guaranteedTargetAmount" => false,
+            "payInId" => $sourceAccount,
+            "payInMethod" => "BALANCE",
+            "payOut" => "BALANCE",
+            "preferredPayIn" => "BALANCE",
+            "sourceAmount" => $sourceAmount,
             "sourceCurrency" => $sourceCurrency,
             "targetCurrency" => $targetCurrency,
-            "sourceAmount" => $sourceAmount,
-            "targetAmount" => null,
-            "payOut" => "BALANCE",
-            "preferredPayIn" => null,
-            "targetAccount" => $targetAccount,
-            // "type" => "CONVERSION",
+            "type" => "SPOT",
             "paymentMetadata" => [
                 "transferNature" => "MOVING_MONEY_BETWEEN_OWN_ACCOUNTS"
             ]
@@ -122,11 +122,12 @@ class WiseService
         return $this->_makeRequest('GET', "/v3/profiles/{$profileId}/quotes/{$quoteId}");
     }
 
-    public function convertAcrossBalAccounts($profileId, $quoteId): array {
+    public function convertAcrossBalAccounts($profileId, $quoteId, $sourceBalanceId, $targetBalanceId): array {
         $params = [
-            'quoteId' => $quoteId
+            'quoteId' => $quoteId,
+            'sourceBalanceId' => $sourceBalanceId,
+            'targetBalanceId' => $targetBalanceId
         ];
-        // {"quoteId":"cb588723-4ce4-4fd2-af5a-dc5b7e026ebf","sourceBalanceId":93380492,"targetBalanceId":93380830}
         $extraHeaders = [
             'Content-Type' => 'application/json',
             'X-idempotence-uuid' => uniqid()
