@@ -16,9 +16,11 @@ use App\Services\PgpService;
 use App\Services\RevolutService;
 use App\WorkerClasses\LightningNode;
 use App\WorkerClasses\Robosats;
+use Brick\Math\BigDecimal;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Spatie\DiscordAlerts\Facades\DiscordAlert;
@@ -137,23 +139,16 @@ Route::post('auto-accept', function () {
 
 Route::get('/testing', function () {
 
-    $wiseService = new \App\Services\WiseService();
 
 
+    $krakenService = new \App\Services\KrakenService();
+    $btcBalance = $krakenService->getBTCBalance()->toFloat();
+    $lightningNode = new LightningNode();
+    // dd($btcBalance);
+    $satoshis = intval(round($btcBalance * 100000000, 0, PHP_ROUND_HALF_DOWN));
+    $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Deposit of ' . $btcBalance . ' BTC at ' . Carbon::now()->toDateTimeString());
+    dd($invoice);
 
-    $recipients = $wiseService->getRecipientAccounts("GBP");
-    dd($recipients);
-
-    $client = new \Butschster\Kraken\Client(
-        new GuzzleHttp\Client(),
-        new \Butschster\Kraken\NonceGenerator(),
-        (new \Butschster\Kraken\Serializer\SerializerFactory())->build(),
-        env('KRAKEN_API_KEY'),
-        env('KRAKEN_PRIVATE_KEY')
-    );
-
-    // get info to make a deposit
-    $response = $client->getAccountBalance();
 
 
 })->name('testing');
