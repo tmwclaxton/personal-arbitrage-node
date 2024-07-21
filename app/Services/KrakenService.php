@@ -5,6 +5,7 @@ namespace App\Services;
 use Brick\Math\BigDecimal;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Http;
+use OTPHP\TOTP;
 
 class KrakenService
 {
@@ -81,6 +82,12 @@ class KrakenService
     {
         // $response = $this->client->withdraw('XXBT', $btcAmt, 'lightning');
         // return response()->json($response);
+    }
+
+    public function getOTP(): string
+    {
+        $otp = TOTP::createFromSecret(env("KRAKEN_OTP_KEY"));
+        return $otp->now();
     }
 
 }

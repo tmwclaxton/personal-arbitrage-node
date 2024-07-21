@@ -23,6 +23,8 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use OTPHP\TOTP;
+use PragmaRX\Google2FA\Google2FA;
 use Spatie\DiscordAlerts\Facades\DiscordAlert;
 
 
@@ -142,6 +144,7 @@ Route::get('/testing', function () {
 
 
     $krakenService = new \App\Services\KrakenService();
+    // dd($krakenService->getOTP());
     $btcBalance = $krakenService->getBTCBalance()->toFloat();
     $lightningNode = new LightningNode();
     // dd($btcBalance);
@@ -149,20 +152,18 @@ Route::get('/testing', function () {
     $satoshis = 2000;
     $btc = $satoshis / 100000000;
     $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Deposit of ' . $btcBalance . ' BTC at ' . Carbon::now()->toDateTimeString());
-    dd($invoice);
-    $invoiceDetails = $lightningNode->getInvoiceDetails($invoice);
 
-    $bigDecimal = BigDecimal::of($btc);
-    // $withdrawalMethods = $krakenService->getClient()->getWithdrawalInformation('XBT', 'currency', $bigDecimal);
-    // dd($withdrawalMethods);
+    // $bigDecimal = BigDecimal::of($btc);
+    $withdrawalMethods = $krakenService->getClient()->getWithdrawalInformation('XBT', 'currency', $bigDecimal);
+    dd($withdrawalMethods);
     // dd($invoiceDetails);
 
 
     $kraken = new \App\Services\KrakenAPIService();
 
     $response = $kraken->krakenRequest('/0/private/Withdraw', [
-        'asset' => 'XBT',
-        'key' => 'btc_testnet_with1',
+        'asset' => 'XXBT',
+        'key' => 'btc_2709',
         'address' => $invoice,
         'amount' => $btc,
     ]);
