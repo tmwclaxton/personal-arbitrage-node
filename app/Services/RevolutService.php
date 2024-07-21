@@ -195,4 +195,38 @@ class RevolutService
         return $client->transactions->all();
     }
 
+
+    // send gbp to an account using manual transfer
+    public function sendGBP($amount, $accountNumber, $sortCode, $reference = null, $requestId = null)
+    {
+        $revArray = $this->getToken('PAY');
+        if (array_key_exists('url', $revArray)) {
+            $discordService = new DiscordService();
+            $discordService->sendMessage('Reset RevToken at: ' . $revArray['url']);
+            return;
+        } else {
+            $token = $revArray['access_token'];
+        }
+
+        // convert RevolutAccessToken to AccessToken
+        $accessToken = new \League\OAuth2\Client\Token\AccessToken([
+            'access_token' => $token,
+        ]);
+
+        $client = new \RevolutPHP\Client($accessToken);
+
+        $response = $client->transfers->create([
+            'account_id' => $accountNumber,
+            'amount' => $amount,
+            'currency' => 'GBP',
+            'reference' => $reference ?? time() . 'transfer',
+            'request_id' => $requestId ?? hash('sha256', time() . 'transfer'),
+            'target_account_id' => $accountNumber,
+            'target_currency' => 'GBP',
+            'target_account_type' => 'gb',
+            'target_account_sort_code' => $sortCode,
+        ]);
+
+        return $response;
+    }
 }

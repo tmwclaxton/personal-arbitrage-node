@@ -145,9 +145,29 @@ Route::get('/testing', function () {
     $btcBalance = $krakenService->getBTCBalance()->toFloat();
     $lightningNode = new LightningNode();
     // dd($btcBalance);
-    $satoshis = intval(round($btcBalance * 100000000, 0, PHP_ROUND_HALF_DOWN));
+    // $satoshis = intval(round($btcBalance * 100000000, 0, PHP_ROUND_HALF_DOWN));
+    $satoshis = 2000;
+    $btc = $satoshis / 100000000;
     $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Deposit of ' . $btcBalance . ' BTC at ' . Carbon::now()->toDateTimeString());
     dd($invoice);
+    $invoiceDetails = $lightningNode->getInvoiceDetails($invoice);
+
+    $bigDecimal = BigDecimal::of($btc);
+    // $withdrawalMethods = $krakenService->getClient()->getWithdrawalInformation('XBT', 'currency', $bigDecimal);
+    // dd($withdrawalMethods);
+    // dd($invoiceDetails);
+
+
+    $kraken = new \App\Services\KrakenAPIService();
+
+    $response = $kraken->krakenRequest('/0/private/Withdraw', [
+        'asset' => 'XBT',
+        'key' => 'btc_testnet_with1',
+        'address' => $invoice,
+        'amount' => $btc,
+    ]);
+
+    print_r($response);
 
 
 
