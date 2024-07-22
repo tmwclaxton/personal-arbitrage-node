@@ -176,9 +176,6 @@ Route::get('/testing', function () {
         WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::id(":r9:"))
     );
 
-    // dump the page so i can see what's going on
-    dd($driver->getPageSource());
-
     // Perform the actions from the JUnit code
     // $driver->findElement(WebDriverBy::cssSelector('.ml-4 > .inline-block > .rounded-ds-round'))->click();
     $driver->findElement(WebDriverBy::id(":r9:"))->click();
@@ -187,11 +184,27 @@ Route::get('/testing', function () {
     $driver->findElement(WebDriverBy::cssSelector(".absolute"))->click();
     $otp = $krakenService->getOTP();
     // $driver->findElement(WebDriverBy::id(":rb:"))->sendKeys("2 3 6 4 2 8    ");
+    // wait until the page is loaded
+    $driver->wait(10, 1000)->until(
+        WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::id(":rb:"))
+    );
     $driver->findElement(WebDriverBy::id(":rb:"))->sendKeys($otp);
     $driver->findElement(WebDriverBy::id(":rb:"))->sendKeys(WebDriverKeys::ENTER);
 
     // Execute JavaScript for scrolling
     $driver->executeScript("window.scrollTo(0,99.89418029785156)");
+
+    // wait until id="notification-container" is visible
+    $driver->wait(10, 1000)->until(
+        WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::id("notification-container"))
+    );
+
+
+    // screenshot
+    $driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
+    $source = $driver->getPageSource();
+    $driver->quit();
+    dd($source);
 
     // Move to the "Explore" link and perform an action
     $exploreElement = $driver->findElement(WebDriverBy::linkText("Explore"));
@@ -200,8 +213,14 @@ Route::get('/testing', function () {
 
     $driver->findElement(WebDriverBy::linkText("Portfolio"))->click();
     $driver->executeScript("window.scrollTo(0,249.3121795654297)");
+    $driver->wait(10, 1000)->until(
+        WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::cssSelector(".ms-ds-0:nth-child(4) .text-ds-kraken-14-regular:nth-child(1) .text-ds-neutral:nth-child(2)"))
+    );
     $driver->findElement(WebDriverBy::cssSelector(".ms-ds-0:nth-child(4) .text-ds-kraken-14-regular:nth-child(1) .text-ds-neutral:nth-child(2)"))->click();
 
+    $driver->wait(10, 1000)->until(
+        WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::cssSelector(".me-ds-0 .my-px"))
+    );
     $element = $driver->findElement(WebDriverBy::cssSelector(".me-ds-0 .my-px"));
     $builder->moveToElement($element)->perform();
 
@@ -211,6 +230,10 @@ Route::get('/testing', function () {
     $driver->findElement(WebDriverBy::cssSelector("#instant-btn-withdraw > .ms-ds-0"))->click();
     $driver->executeScript("window.scrollTo(0,0)");
     $driver->findElement(WebDriverBy::cssSelector(".db"))->click();
+
+    $driver->wait(10, 1000)->until(
+        WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::cssSelector("#downshift-1-item-1 > .flex-grow-1"))
+    );
     $driver->findElement(WebDriverBy::cssSelector("#downshift-1-item-1 > .flex-grow-1"))->click();
 
     $element = $driver->findElement(WebDriverBy::cssSelector(".TextButton_root__fIpnJ > .text-ds-brand"));
