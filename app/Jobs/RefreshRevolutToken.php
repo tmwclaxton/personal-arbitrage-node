@@ -29,7 +29,7 @@ class RefreshRevolutToken implements ShouldQueue
     {
         $authProvider = new \RevolutPHP\Auth\Provider([
             'clientId' => env('REVOLUT_CLIENT_ID'),
-            'privateKey' => 'file://' . storage_path('app/private/RevolutCerts/privatecert.pem'),
+            'privateKey' => 'file://' . storage_path('app/private/RevolutCerts/privatekey.pem'),
             'redirectUri' => env('REVOLUT_REDIRECT_URI'),
             'isSandbox' => false,
         ]);

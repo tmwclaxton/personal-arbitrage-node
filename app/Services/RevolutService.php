@@ -16,11 +16,32 @@ class RevolutService
 
     public function __construct()
     {
-        // we need two types of access tokens READ and PAY
+        // check if the private key, public key, and x509 certificate exists
+        if ( !file_exists(storage_path('app/private/RevolutCerts/privatekey.pem')) ) {
+            // create the directory if it does not exist
+            if (!file_exists(storage_path('app/private/RevolutCerts'))) {
+                mkdir(storage_path('app/private/RevolutCerts'), 0777, true);
+            }
+
+
+            // generate x509 certificate
+            $pgpService = new PgpService();
+            $response = $pgpService->generateX509Certificates();
+
+            // save the private key, public key, and x509 certificate to app/storage/private
+            $privateKey = $response['private_key'];
+            $publicKey = $response['public_key'];
+            $x509 = $response['x509'];
+
+            // save the private key, public key, and x509 certificate to app/storage/private
+            file_put_contents(storage_path('app/private/RevolutCerts/privatekey.pem'), $privateKey);
+            file_put_contents(storage_path('app/private/RevolutCerts/publickey.pem'), $publicKey);
+            file_put_contents(storage_path('app/private/RevolutCerts/x509.pem'), $x509);
+        }
 
         $this->authProvider = new Provider([
             'clientId' => env('REVOLUT_CLIENT_ID'),
-            'privateKey' => 'file://' . storage_path('app/private/RevolutCerts/privatecert.pem'),
+            'privateKey' => 'file://' . storage_path('app/private/RevolutCerts/privatekey.pem'),
             'redirectUri' => env('REVOLUT_REDIRECT_URI'),
             'isSandbox' => false,
         ]);

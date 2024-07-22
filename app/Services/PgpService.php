@@ -233,4 +233,43 @@ class PgpService extends Controller
         return $verified;
 
     }
+
+    public function generateX509Certificates(): array
+    {
+        // Generate the private key
+        $privateKey = openssl_pkey_new([
+            "private_key_bits" => 2048,
+            "private_key_type" => OPENSSL_KEYTYPE_RSA,
+        ]);
+
+        // Generate the public key
+        $publicKey = openssl_pkey_get_details($privateKey);
+        $publicKey = $publicKey["key"];
+
+        // Generate the X509 certificate
+        $x509 = openssl_csr_new([
+            "countryName" => "US",
+            "stateOrProvinceName" => "California",
+            "localityName" => "Mountain View",
+            "organizationName" => "Google",
+            "organizationalUnitName" => "Android",
+            "commonName" => "Android",
+        ], $privateKey);
+
+        // Sign the X509 certificate
+        $x509 = openssl_csr_sign($x509, null, $privateKey, 365);
+
+        // Export the private key
+        openssl_pkey_export($privateKey, $privateKey);
+
+        // Export the X509 certificate
+        openssl_x509_export($x509, $x509);
+
+        return [
+            "private_key" => $privateKey,
+            "public_key" => $publicKey,
+            "x509" => $x509,
+        ];
+
+    }
 }

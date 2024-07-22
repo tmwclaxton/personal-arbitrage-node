@@ -145,6 +145,7 @@ class LightningNode
             'memo' => $memo,
         ]);
         $json = json_decode($response->body(), true);
+        // dd($json);
         // grab the payment request
         return $json['paymentRequest'];
     }
