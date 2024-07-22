@@ -24,7 +24,10 @@ class GmailService
         }
 
         $totalMessages = $inbox->messages()->where('FROM', 'noreply@kraken.com')->all()->limit(1, 0)->get();
-        return $inbox->messages()->where('FROM', 'noreply@kraken.com')->all()->limit(1, $totalMessages->total())->get()[0]->getBodies()['text'];
+        $messages = $inbox->messages()->where('FROM', 'noreply@kraken.com')->all()->limit(1, $totalMessages->total())->get();
+        $message = $messages[0]->getBodies()['text'];
+        return $message;
+
     }
 
     public function grabLink($text)

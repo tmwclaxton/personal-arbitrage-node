@@ -17,6 +17,8 @@ use App\Services\RevolutService;
 use App\WorkerClasses\LightningNode;
 use App\WorkerClasses\Robosats;
 use Brick\Math\BigDecimal;
+use Facebook\WebDriver\Firefox\FirefoxDriver;
+use Facebook\WebDriver\Firefox\FirefoxProfile;
 use Facebook\WebDriver\Interactions\WebDriverActions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
@@ -151,19 +153,18 @@ Route::post('auto-accept', function () {
 
 
 Route::get('/testing', function () {
-
-    $gmailService = new \App\Services\GmailService();
-    $text = $gmailService->getLastEmail();
-
-    $link = $gmailService->grabLink($text);
-
-    dd($link);
-
+    //
+    // $gmailService = new \App\Services\GmailService();
+    // $text = $gmailService->getLastEmail();
+    //
+    // $link = $gmailService->grabLink($text);
+    //
+    // dd($link);
+    //
 
 
 
     $krakenService = new \App\Services\KrakenService();
-    // dd($krakenService->getOTP());
     $btcBalance = $krakenService->getBTCBalance()->toFloat();
     $lightningNode = new LightningNode();
     // dd($btcBalance);
@@ -176,11 +177,17 @@ Route::get('/testing', function () {
 
     // selenium-server-standalone-#.jar (version 4.x)
     $serverUrl = 'http://selenium:4444';
-    $desiredCapabilities = DesiredCapabilities::chrome();
+    $profile = new FirefoxProfile();
+    $profile->setPreference('general.useragent.override', 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36');
+
+
+    $desiredCapabilities = DesiredCapabilities::firefox();
     $desiredCapabilities->setCapability('acceptSslCerts', true);
+    $desiredCapabilities->setCapability('firefox_profile', $profile);
     $driver = RemoteWebDriver::create($serverUrl, $desiredCapabilities);
 
     $driver->get('https://www.kraken.com/sign-in');
+
 
     // Set window size
     $driver->manage()->window()->setSize(new WebDriverDimension(1085, 575));
@@ -196,41 +203,28 @@ Route::get('/testing', function () {
     $driver->findElement(WebDriverBy::id(":r9:"))->sendKeys(env('KRAKEN_USERNAME'));
     $driver->findElement(WebDriverBy::id(":ra:"))->sendKeys(env('KRAKEN_PASSWORD'));
     $driver->findElement(WebDriverBy::cssSelector(".absolute"))->click();
-    $otp = $krakenService->getOTP();
-    $driver->wait(10, 1000)->until(
-        WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::id(":rb:"))
-    );
-    $driver->findElement(WebDriverBy::id(":rb:"))->sendKeys($otp);
-    $driver->findElement(WebDriverBy::id(":rb:"))->sendKeys(WebDriverKeys::ENTER);
+    sleep(2);
+    if (count($driver->findElements(WebDriverBy::id(":rb:"))) > 0) {
+        $driver->wait(10, 1000)->until(
+            WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::id(":rb:"))
+        );
+        $otp = $krakenService->getOTP();
+        $driver->findElement(WebDriverBy::id(":rb:"))->sendKeys($otp);
+        $driver->findElement(WebDriverBy::id(":rb:"))->sendKeys(WebDriverKeys::ENTER);
+    }
 
     // Execute JavaScript for scrolling
     $driver->executeScript("window.scrollTo(0,99.89418029785156)");
 
-    $cookies = $driver->manage()->getCookies();
 
-
-
-    // grab email
-    sleep(15);
-    $gmailService = new \App\Services\GmailService();
-    $text = $gmailService->getLastEmail();
-
-    $link = $gmailService->grabLink($text);
-    if ($link === null) {
-        // close the driver
-        $driver->quit();
-        return response()->json(['error' => 'No link found']);
-    }
-
-
-    // inject the cookies
-    $driver->manage()->deleteAllCookies();
-    foreach ($cookies as $cookie) {
-        $driver->manage()->addCookie($cookie);
-    }
-
+    sleep(5);
+    // screenshot
+    $driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
+    $source = $driver->getPageSource();
+    $driver->quit();
+    dd($source);
     // go to the link with same session
-    $driver->get($link);
+    // $driver->get($link);
 
 
     // set window size
@@ -243,13 +237,20 @@ Route::get('/testing', function () {
     // click the button
     $driver->findElement(WebDriverBy::cssSelector(".my-px"))->click();
 
-    sleep(5);
+    sleep(8);
 
-    // screenshot
-    $driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
-    $source = $driver->getPageSource();
-    $driver->quit();
-    dd($source, $cookies);
+    // grab email
+    $gmailService = new \App\Services\GmailService();
+    $text = $gmailService->getLastEmail();
+
+    $link = $gmailService->grabLink($text);
+    if ($link === null) {
+        // close the driver
+        $driver->quit();
+        return response()->json(['error' => 'No link found']);
+    }
+
+
 
     // Move to the "Explore" link and perform an action
     $exploreElement = $driver->findElement(WebDriverBy::linkText("Explore"));
