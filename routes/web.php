@@ -17,10 +17,13 @@ use App\Services\RevolutService;
 use App\WorkerClasses\LightningNode;
 use App\WorkerClasses\Robosats;
 use Brick\Math\BigDecimal;
+use Facebook\WebDriver\Interactions\WebDriverActions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\WebDriverBy;
+use Facebook\WebDriver\WebDriverDimension;
 use Facebook\WebDriver\WebDriverExpectedCondition;
+use Facebook\WebDriver\WebDriverKeys;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
@@ -144,33 +147,6 @@ Route::post('auto-accept', function () {
 
 
 Route::get('/testing', function () {
-    // selenium-server-standalone-#.jar (version 4.x)
-    $serverUrl = 'http://selenium:4444';
-    $desiredCapabilities = DesiredCapabilities::chrome();
-    // $desiredCapabilities->setCapability('acceptSslCerts', false);
-    $desiredCapabilities->setCapability('acceptInsecureCerts', true);
-    $driver = RemoteWebDriver::create($serverUrl, $desiredCapabilities);
-
-    $driver->get('https://www.google.com');
-
-    // select the search input element
-    $searchInput = $driver->findElement(WebDriverBy::name('q'));
-    dd($searchInput);
-
-    // type in the search query and submit the form
-    $searchInput->sendKeys('google')->submit();
-
-    // wait for the search results to load
-    $driver->wait(10)->until(
-        WebDriverExpectedCondition::titleContains('google')
-    );
-
-    dd($driver->getTitle());
-
-    // close the browser
-    $driver->quit();
-
-
     $krakenService = new \App\Services\KrakenService();
     // dd($krakenService->getOTP());
     $btcBalance = $krakenService->getBTCBalance()->toFloat();
@@ -180,6 +156,81 @@ Route::get('/testing', function () {
     $satoshis = 2000;
     $btc = $satoshis / 100000000;
     $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Deposit of ' . $btcBalance . ' BTC at ' . Carbon::now()->toDateTimeString());
+
+
+
+    // selenium-server-standalone-#.jar (version 4.x)
+    $serverUrl = 'http://selenium:4444';
+    $desiredCapabilities = DesiredCapabilities::chrome();
+    // $desiredCapabilities->setCapability('acceptSslCerts', false);
+    $desiredCapabilities->setCapability('acceptInsecureCerts', true);
+    $driver = RemoteWebDriver::create($serverUrl, $desiredCapabilities);
+
+    $driver->get('https://www.kraken.com/sign-in');
+
+    // Set window size
+    $driver->manage()->window()->setSize(new WebDriverDimension(1085, 575));
+
+    // wait until the page is loaded
+    $driver->wait(10, 1000)->until(
+        WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::id(":r9:"))
+    );
+
+    // dump the page so i can see what's going on
+    dd($driver->getPageSource());
+
+    // Perform the actions from the JUnit code
+    // $driver->findElement(WebDriverBy::cssSelector('.ml-4 > .inline-block > .rounded-ds-round'))->click();
+    $driver->findElement(WebDriverBy::id(":r9:"))->click();
+    $driver->findElement(WebDriverBy::id(":r9:"))->sendKeys("drlclaxton@gmail.com");
+    $driver->findElement(WebDriverBy::id(":ra:"))->sendKeys("1Buzzlightyear23!");
+    $driver->findElement(WebDriverBy::cssSelector(".absolute"))->click();
+    $otp = $krakenService->getOTP();
+    // $driver->findElement(WebDriverBy::id(":rb:"))->sendKeys("2 3 6 4 2 8    ");
+    $driver->findElement(WebDriverBy::id(":rb:"))->sendKeys($otp);
+    $driver->findElement(WebDriverBy::id(":rb:"))->sendKeys(WebDriverKeys::ENTER);
+
+    // Execute JavaScript for scrolling
+    $driver->executeScript("window.scrollTo(0,99.89418029785156)");
+
+    // Move to the "Explore" link and perform an action
+    $exploreElement = $driver->findElement(WebDriverBy::linkText("Explore"));
+    $builder = new WebDriverActions($driver);
+    $builder->moveToElement($exploreElement)->perform();
+
+    $driver->findElement(WebDriverBy::linkText("Portfolio"))->click();
+    $driver->executeScript("window.scrollTo(0,249.3121795654297)");
+    $driver->findElement(WebDriverBy::cssSelector(".ms-ds-0:nth-child(4) .text-ds-kraken-14-regular:nth-child(1) .text-ds-neutral:nth-child(2)"))->click();
+
+    $element = $driver->findElement(WebDriverBy::cssSelector(".me-ds-0 .my-px"));
+    $builder->moveToElement($element)->perform();
+
+    $bodyElement = $driver->findElement(WebDriverBy::tagName("body"));
+    $builder->moveToElement($bodyElement, 0, 0)->perform();
+    $driver->executeScript("window.scrollTo(0,700.1058349609375)");
+    $driver->findElement(WebDriverBy::cssSelector("#instant-btn-withdraw > .ms-ds-0"))->click();
+    $driver->executeScript("window.scrollTo(0,0)");
+    $driver->findElement(WebDriverBy::cssSelector(".db"))->click();
+    $driver->findElement(WebDriverBy::cssSelector("#downshift-1-item-1 > .flex-grow-1"))->click();
+
+    $element = $driver->findElement(WebDriverBy::cssSelector(".TextButton_root__fIpnJ > .text-ds-brand"));
+    $builder->moveToElement($element)->perform();
+    $driver->findElement(WebDriverBy::cssSelector(".TextButton_root__fIpnJ > .text-ds-brand"))->click();
+
+    $bodyElement = $driver->findElement(WebDriverBy::tagName("body"));
+    $builder->moveToElement($bodyElement, 0, 0)->perform();
+
+    $driver->findElement(WebDriverBy::id("label"))->click();
+    $driver->findElement(WebDriverBy::id("label"))->sendKeys("lightning invoice" . Carbon::now()->toDateTimeString());
+    $driver->findElement(WebDriverBy::id("address"))->click();
+    // $driver->findElement(WebDriverBy::id("address"))->sendKeys("lnbc20u1pnfu62xpp59xe5hwt7ynxng8sc9nufx27ua4rld7j0cvfar4umw29r6aa9v40sdqqcqzzsxqrrsssp52d4ek6ulujutfdhves80zlszaaenyyc9mjsfhf4rjn54ulsn2evs9qxpqysgqq3jfjysl60mxnp4065khaqph8r962v2ahccy6tfnqugxeggkq06nnqzjfzsmra93ecxlkjwvnxk3vufcncwh884zuu6tgz74zx4j22sqmrqkzc");
+    $driver->findElement(WebDriverBy::id("address"))->sendKeys($invoice);
+    // Close the driver
+    $driver->quit();
+
+    return response()->json(['invoice' => $invoice]);
+
+
 
     // we need to use php webdriver at this point
 
