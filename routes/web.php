@@ -17,6 +17,10 @@ use App\Services\RevolutService;
 use App\WorkerClasses\LightningNode;
 use App\WorkerClasses\Robosats;
 use Brick\Math\BigDecimal;
+use Facebook\WebDriver\Remote\DesiredCapabilities;
+use Facebook\WebDriver\Remote\RemoteWebDriver;
+use Facebook\WebDriver\WebDriverBy;
+use Facebook\WebDriver\WebDriverExpectedCondition;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
@@ -140,7 +144,31 @@ Route::post('auto-accept', function () {
 
 
 Route::get('/testing', function () {
+    // selenium-server-standalone-#.jar (version 4.x)
+    $serverUrl = 'http://selenium:4444';
+    $desiredCapabilities = DesiredCapabilities::chrome();
+    // $desiredCapabilities->setCapability('acceptSslCerts', false);
+    $desiredCapabilities->setCapability('acceptInsecureCerts', true);
+    $driver = RemoteWebDriver::create($serverUrl, $desiredCapabilities);
 
+    $driver->get('https://www.google.com');
+
+    // select the search input element
+    $searchInput = $driver->findElement(WebDriverBy::name('q'));
+    dd($searchInput);
+
+    // type in the search query and submit the form
+    $searchInput->sendKeys('google')->submit();
+
+    // wait for the search results to load
+    $driver->wait(10)->until(
+        WebDriverExpectedCondition::titleContains('google')
+    );
+
+    dd($driver->getTitle());
+
+    // close the browser
+    $driver->quit();
 
 
     $krakenService = new \App\Services\KrakenService();
@@ -153,22 +181,25 @@ Route::get('/testing', function () {
     $btc = $satoshis / 100000000;
     $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Deposit of ' . $btcBalance . ' BTC at ' . Carbon::now()->toDateTimeString());
 
+    // we need to use php webdriver at this point
+
+
     // $bigDecimal = BigDecimal::of($btc);
-    $withdrawalMethods = $krakenService->getClient()->getWithdrawalInformation('XBT', 'currency', $bigDecimal);
-    dd($withdrawalMethods);
+    // $withdrawalMethods = $krakenService->getClient()->getWithdrawalInformation('XBT', 'currency', $bigDecimal);
+    // dd($withdrawalMethods);
     // dd($invoiceDetails);
 
 
-    $kraken = new \App\Services\KrakenAPIService();
-
-    $response = $kraken->krakenRequest('/0/private/Withdraw', [
-        'asset' => 'XXBT',
-        'key' => 'btc_2709',
-        'address' => $invoice,
-        'amount' => $btc,
-    ]);
-
-    print_r($response);
+    // $kraken = new \App\Services\KrakenAPIService();
+    //
+    // $response = $kraken->krakenRequest('/0/private/Withdraw', [
+    //     'asset' => 'XXBT',
+    //     'key' => 'name of address',
+    //     // 'address' => $invoice,
+    //     'amount' => $btc,
+    // ]);
+    //
+    // print_r($response);
 
 
 
