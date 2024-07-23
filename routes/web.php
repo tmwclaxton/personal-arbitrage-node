@@ -166,90 +166,59 @@ Route::get('/testing', function () {
 
 
     // selenium-server-standalone-#.jar (version 4.x)
-    $serverUrl = 'http://selenium:4444';
-    $profile = new FirefoxProfile();
-    $profile->setPreference('general.useragent.override', 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36');
 
+    $seleniumService = new \App\Services\SeleniumService();
+    $driver = $seleniumService->getDriver();
 
-    $desiredCapabilities = DesiredCapabilities::firefox();
-    $desiredCapabilities->setCapability('acceptSslCerts', true);
-    $desiredCapabilities->setCapability('firefox_profile', $profile);
-    $driver = RemoteWebDriver::create($serverUrl, $desiredCapabilities);
+    // sign in // possibly with otp
+    $seleniumService->signin($krakenService);
 
-    $driver->get('https://www.kraken.com/sign-in');
+    // approve device
+    $seleniumService->approveDevice();
 
+    // set session key lightning-network-shown-in-current-session to true
+    $driver->executeScript("window.localStorage.setItem('lightning-network-shown-in-current-session', 'true')");
 
-    // Set window size
-    $driver->manage()->window()->setSize(new WebDriverDimension(1085, 575));
+    // sign in again
+    $seleniumService->signin($krakenService, 'https://www.kraken.com/c/funding/withdraw?asset=BTC&assetType=crypto&network=Lightning&method=Bitcoin%2520Lightning');
 
-    // wait until the page is loaded
-    $driver->wait(10, 1000)->until(
-        WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::id(":r9:"))
-    );
-
-    // Perform the actions from the JUnit code
-    // $driver->findElement(WebDriverBy::cssSelector('.ml-4 > .inline-block > .rounded-ds-round'))->click();
-    $driver->findElement(WebDriverBy::id(":r9:"))->click();
-    $driver->findElement(WebDriverBy::id(":r9:"))->sendKeys(env('KRAKEN_USERNAME'));
-    $driver->findElement(WebDriverBy::id(":ra:"))->sendKeys(env('KRAKEN_PASSWORD'));
-    $driver->findElement(WebDriverBy::cssSelector(".absolute"))->click();
+    // if a div with Modal_modalRoot__BN1AL exists, click everything inside it
     sleep(2);
-    if (count($driver->findElements(WebDriverBy::id(":rb:"))) > 0) {
-        $driver->wait(10, 1000)->until(
-            WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::id(":rb:"))
-        );
-        $otp = $krakenService->getOTP();
-        $driver->findElement(WebDriverBy::id(":rb:"))->sendKeys($otp);
-        $driver->findElement(WebDriverBy::id(":rb:"))->sendKeys(WebDriverKeys::ENTER);
+    // if (count($driver->findElements(WebDriverBy::cssSelector(".tos-dialog-lightning_buttons__iWHrE")))) {
+    //     $element = $driver->findElement(WebDriverBy::cssSelector(".tos-dialog-lightning_buttons__iWHrE"));
+    //     $children = $element->findElements(WebDriverBy::xpath(".//*"));
+    //     $children[1]->click();
+    // }
+
+    // find an input with id label and send keys to it
+    $driver->findElement(WebDriverBy::id("label"))->click();
+    $driver->findElement(WebDriverBy::id("label"))->sendKeys("ag.lightning invoice" . Carbon::now()->toDateTimeString());
+    $driver->findElement(WebDriverBy::id("address"))->click();
+    $driver->findElement(WebDriverBy::id("address"))->sendKeys($invoice);
+
+    // find a button with text "Add withdrawal address" and click it
+    $text = "Add withdrawal address";
+    $span = $driver->findElement(WebDriverBy::xpath("//*[contains(text(), '$text')]"))->click();
+    // iterate up the dom tree until you find a button
+    $button = null;
+    $parent = $span;
+    while ($button === null) {
+        $parent = $parent->findElement(WebDriverBy::xpath(".."));
+        if ($parent->getTagName() === "button") {
+            $button = $parent;
+        }
     }
+    $button->click();
 
-    // Execute JavaScript for scrolling
-    $driver->executeScript("window.scrollTo(0,99.89418029785156)");
-
-
-
-
-    // set window size
-    $driver->manage()->window()->setSize(new WebDriverDimension(1085, 575));
-    // wait until the page is loaded
-    $driver->wait(10, 1000)->until(
-        WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::cssSelector(".my-px"))
-    );
-
-    // click the button
-    $driver->findElement(WebDriverBy::cssSelector(".my-px"))->click();
-
-    sleep(30);
-
-    // grab email
-    $gmailService = new \App\Services\GmailService();
-    $text = $gmailService->getLastEmail();
-
-    $link = $gmailService->grabLink($text);
-    if ($link === null) {
-        // close the driver
-        $driver->quit();
-        return response()->json(['error' => 'No link found']);
-    }
-
-    // go to the link with same session
-    $driver->get($link);
-
-    sleep(2);
-
-    // navigate to the home page
-    $driver->get('https://www.kraken.com/');
 
     // screenshot
     sleep(5);
     $driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
     $source = $driver->getPageSource();
     $driver->quit();
-    dd($source, $link);
+    dd($source, $seleniumService->linkUsed, $span, $button);
 
 
-    $driver->findElement(WebDriverBy::linkText("Portfolio"))->click();
-    $driver->executeScript("window.scrollTo(0,249.3121795654297)");
     $driver->wait(10, 1000)->until(
         WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::cssSelector(".ms-ds-0:nth-child(4) .text-ds-kraken-14-regular:nth-child(1) .text-ds-neutral:nth-child(2)"))
     );
@@ -286,6 +255,9 @@ Route::get('/testing', function () {
     $driver->findElement(WebDriverBy::id("address"))->click();
     // $driver->findElement(WebDriverBy::id("address"))->sendKeys("lnbc20u1pnfu62xpp59xe5hwt7ynxng8sc9nufx27ua4rld7j0cvfar4umw29r6aa9v40sdqqcqzzsxqrrsssp52d4ek6ulujutfdhves80zlszaaenyyc9mjsfhf4rjn54ulsn2evs9qxpqysgqq3jfjysl60mxnp4065khaqph8r962v2ahccy6tfnqugxeggkq06nnqzjfzsmra93ecxlkjwvnxk3vufcncwh884zuu6tgz74zx4j22sqmrqkzc");
     $driver->findElement(WebDriverBy::id("address"))->sendKeys($invoice);
+
+
+
 
     // Close the driver
     $driver->quit();
