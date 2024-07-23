@@ -30,12 +30,12 @@ class GmailService
 
     }
 
-    public function grabLink($text)
+    public function grabLink($text, $start): ?string
     {
         $link = null;
         $lines = explode("\n", $text);
         foreach ($lines as $line) {
-            if (str_contains($line, 'https://www.kraken.com/new-device-sign-in/web?code=')) {
+            if (str_contains($line, $start)) {
                 $link = $line;
 
                 // remove anything before the https

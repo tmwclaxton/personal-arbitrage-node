@@ -48,8 +48,8 @@ class SeleniumService
             $this->driver->get($url);
 
 
-            // Set window size
-            $this->driver->manage()->window()->setSize(new WebDriverDimension(1085, 575));
+            // Set window size to 1
+            $this->driver->manage()->window()->setSize(new WebDriverDimension(1920, 1080));
 
             // wait until the page is loaded
             $this->driver->wait(10, 1000)->until(
@@ -79,7 +79,7 @@ class SeleniumService
             $this->driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
             $source = $this->driver->getPageSource();
             $this->driver->quit();
-            dd($source);
+            dd($source, $e);
         }
     }
 
@@ -96,22 +96,9 @@ class SeleniumService
             // click the button
             $this->driver->findElement(WebDriverBy::cssSelector(".my-px"))->click();
 
-            sleep(30);
 
-            // grab email
-            $gmailService = new \App\Services\GmailService();
-            $text = $gmailService->getLastEmail();
 
-            $link = $gmailService->grabLink($text);
-            if ($link === null) {
-                // close the driver
-                $this->driver->quit();
-                return response()->json(['error' => 'No link found']);
-            }
-
-            // go to the link with same session
-            $this->driver->get($link);
-            $this->linkUsed = $link;
+            $this->driver->get($this->getLinkFromLastEmail());
 
             sleep(2);
 
@@ -120,8 +107,28 @@ class SeleniumService
             $this->driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
             $source = $this->driver->getPageSource();
             $this->driver->quit();
-            dd($source);
+            dd($source, $e);
         }
+    }
+
+    public function getLinkFromLastEmail($start = 'https://www.kraken.com/new-device-sign-in/web?code=')
+    {
+
+        sleep(25);
+        // grab email
+        $gmailService = new \App\Services\GmailService();
+        $text = $gmailService->getLastEmail();
+
+        $link = $gmailService->grabLink($text, $start);
+        if ($link === null) {
+            // close the driver
+            $this->driver->quit();
+            return response()->json(['error' => 'No link found']);
+        }
+
+        $this->linkUsed = $link;
+
+        return $link;
     }
 
     // get cookies
@@ -162,19 +169,49 @@ class SeleniumService
 
     public function clickButtonsWithText(mixed $buttons, mixed $buttonValues, array $texts): void
     {
-        $count = 0;
-        foreach ($texts as $text) {
-            $index = array_search($text, array_column($buttonValues, 'text'));
-            if ($index !== false) {
-                $count++;
+        // try {
+            foreach ($texts as $text) {
+                // $indexes = array_search($text, array_column($buttonValues, 'text'));
+                $indexes = array_keys(array_column($buttonValues, 'text'), $text);
+                foreach ($indexes as $index) {
+                    // $webDriverBy = WebDriverBy::id($buttons[$index]->getAttribute('id'));
+                    // check if button is clickable
+                    // if ($buttons[$index]->isEnabled() && $buttons[$index]->isDisplayed()
+                    //     && WebDriverExpectedCondition::elementToBeClickable($webDriverBy)
+                    //     && WebDriverExpectedCondition::visibilityOfElementLocated($webDriverBy)
+                    // ) {
+                        try {
+                            $buttons[$index]->click();
+                        } catch (\Exception $e) {
 
-                // check if button is clickable
-                if ($buttons[$index]->isEnabled() && $buttons[$index]->isDisplayed()) {
-                    $buttons[$index]->click();
-                    sleep(1);
+                        }
+                        sleep(1);
+                    // }
+
                 }
-
+                // if ($index !== false) {
+                //     $count++;
+                //     $webDriverBy = WebDriverBy::id($buttons[$index]->getAttribute('id'));
+                //     // check if button is clickable
+                //     if ($buttons[$index]->isEnabled() && $buttons[$index]->isDisplayed()
+                //         && WebDriverExpectedCondition::elementToBeClickable($webDriverBy)
+                //         && WebDriverExpectedCondition::visibilityOfElementLocated($webDriverBy)
+                //     ) {
+                //         try {
+                //             $buttons[$index]->click();
+                //         } catch (\Exception $e) {
+                //
+                //         }
+                //         sleep(1);
+                //     }
+                //
+                // }
             }
-        }
+        // } catch (\Exception $e) {
+        //     $this->driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
+        //     $source = $this->driver->getPageSource();
+        //     $this->driver->quit();
+        //     dd($source, $e, $buttons, $buttonValues);
+        // }
     }
 }

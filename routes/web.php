@@ -153,8 +153,24 @@ Route::post('auto-accept', function () {
 
 
 Route::get('/testing', function () {
+    // $krakenService = new \App\Services\KrakenService();
+    //
+    // $kraken = new \App\Services\KrakenAPIService();
+    // dd($krakenService->getClient()->getWithdrawalInformation('BTC', 'ag.lightning invoice2024-07-23 15:08:29', BigDecimal::of(0.0002)));
+    //
+    // $response = $kraken->krakenRequest('/0/private/Withdraw', [
+    //     "asset" => "BTC",
+    //     "key" => "ag.lightning invoice2024-07-23 15:08:29",
+    //     "amount" => "0.00002",
+    // ]);
+    //
+    // dd($response);
+
+
 
     $krakenService = new \App\Services\KrakenService();
+
+
     $btcBalance = $krakenService->getBTCBalance()->toFloat();
     $lightningNode = new LightningNode();
     $satoshis = 2000;
@@ -190,15 +206,23 @@ Route::get('/testing', function () {
 
     list($buttons, $buttonValues) = $seleniumService->getButtons();
 
-    $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Add withdrawal request"]);
+    $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Manage withdrawal requests", "Add withdrawal request"]);
 
-    sleep(2);
+    sleep(5);
 
-    // find an input with id label and send keys to it
-    $driver->findElement(WebDriverBy::id("label"))->click();
-    $driver->findElement(WebDriverBy::id("label"))->sendKeys("ag.lightning invoice" . Carbon::now()->toDateTimeString());
-    $driver->findElement(WebDriverBy::id("address"))->click();
-    $driver->findElement(WebDriverBy::id("address"))->sendKeys($invoice);
+    try {
+        // find an input with id label and send keys to it
+        $driver->findElement(WebDriverBy::id("label"))->click();
+        $invoiceId = "ag_lightning_invoice_" . Carbon::now()->toDateTimeString();
+        $driver->findElement(WebDriverBy::id("label"))->sendKeys($invoiceId);
+        $driver->findElement(WebDriverBy::id("address"))->click();
+        $driver->findElement(WebDriverBy::id("address"))->sendKeys($invoice);
+    } catch (\Exception $e) {
+        $driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
+        $source = $driver->getPageSource();
+        $driver->quit();
+        dd($source, $e, $buttons, $buttonValues);
+    }
 
     sleep(2);
 
@@ -206,89 +230,17 @@ Route::get('/testing', function () {
 
     $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Add withdrawal request"]);
 
+    sleep(2);
+
+    // grab email
+    $this->driver->get($seleniumService->getLinkFromLastEmail('https://www.kraken.com/withdrawal-approve?code='));
+
     // screenshot
     sleep(5);
     $driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
     $source = $driver->getPageSource();
     $driver->quit();
     dd($source, $seleniumService->linkUsed);
-
-
-    try {
-        $this->driver->wait(10, 1000)->until(
-            WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::id("label"))
-        );
-        // find an input with id label and send keys to it
-        $driver->findElement(WebDriverBy::id("label"))->click();
-        $driver->findElement(WebDriverBy::id("label"))->sendKeys("ag.lightning invoice" . Carbon::now()->toDateTimeString());
-        $driver->findElement(WebDriverBy::id("address"))->click();
-        $driver->findElement(WebDriverBy::id("address"))->sendKeys($invoice);
-
-        // find a button with text "Add withdrawal address" and click it
-        $text = "Add withdrawal address";
-        $span = $driver->findElement(WebDriverBy::xpath("//*[contains(text(), '$text')]"))->click();
-        // iterate up the dom tree until you find a button
-        $button = null;
-        $parent = $span;
-        while ($button === null) {
-            $parent = $parent->findElement(WebDriverBy::xpath(".."));
-            if ($parent->getTagName() === "button") {
-                $button = $parent;
-            }
-        }
-        $button->click();
-    } catch (\Exception $e) {
-        $driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
-        $source = $driver->getPageSource();
-        $driver->quit();
-        dd($source, $seleniumService->linkUsed);
-    }
-
-
-    // screenshot
-    sleep(5);
-    $driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
-    $source = $driver->getPageSource();
-    $driver->quit();
-    dd($source, $seleniumService->linkUsed, $span, $button);
-
-
-    $driver->wait(10, 1000)->until(
-        WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::cssSelector(".ms-ds-0:nth-child(4) .text-ds-kraken-14-regular:nth-child(1) .text-ds-neutral:nth-child(2)"))
-    );
-    $driver->findElement(WebDriverBy::cssSelector(".ms-ds-0:nth-child(4) .text-ds-kraken-14-regular:nth-child(1) .text-ds-neutral:nth-child(2)"))->click();
-
-    $driver->wait(10, 1000)->until(
-        WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::cssSelector(".me-ds-0 .my-px"))
-    );
-    $element = $driver->findElement(WebDriverBy::cssSelector(".me-ds-0 .my-px"));
-    $builder = new WebDriverActions($driver);
-    $builder->moveToElement($element)->perform();
-
-    $bodyElement = $driver->findElement(WebDriverBy::tagName("body"));
-    $builder->moveToElement($bodyElement, 0, 0)->perform();
-    $driver->executeScript("window.scrollTo(0,700.1058349609375)");
-    $driver->findElement(WebDriverBy::cssSelector("#instant-btn-withdraw > .ms-ds-0"))->click();
-    $driver->executeScript("window.scrollTo(0,0)");
-    $driver->findElement(WebDriverBy::cssSelector(".db"))->click();
-
-    $driver->wait(10, 1000)->until(
-        WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::cssSelector("#downshift-1-item-1 > .flex-grow-1"))
-    );
-    $driver->findElement(WebDriverBy::cssSelector("#downshift-1-item-1 > .flex-grow-1"))->click();
-
-    $element = $driver->findElement(WebDriverBy::cssSelector(".TextButton_root__fIpnJ > .text-ds-brand"));
-    $builder->moveToElement($element)->perform();
-    $driver->findElement(WebDriverBy::cssSelector(".TextButton_root__fIpnJ > .text-ds-brand"))->click();
-
-    $bodyElement = $driver->findElement(WebDriverBy::tagName("body"));
-    $builder->moveToElement($bodyElement, 0, 0)->perform();
-
-    $driver->findElement(WebDriverBy::id("label"))->click();
-    $driver->findElement(WebDriverBy::id("label"))->sendKeys("lightning invoice" . Carbon::now()->toDateTimeString());
-    $driver->findElement(WebDriverBy::id("address"))->click();
-    // $driver->findElement(WebDriverBy::id("address"))->sendKeys("lnbc20u1pnfu62xpp59xe5hwt7ynxng8sc9nufx27ua4rld7j0cvfar4umw29r6aa9v40sdqqcqzzsxqrrsssp52d4ek6ulujutfdhves80zlszaaenyyc9mjsfhf4rjn54ulsn2evs9qxpqysgqq3jfjysl60mxnp4065khaqph8r962v2ahccy6tfnqugxeggkq06nnqzjfzsmra93ecxlkjwvnxk3vufcncwh884zuu6tgz74zx4j22sqmrqkzc");
-    $driver->findElement(WebDriverBy::id("address"))->sendKeys($invoice);
 
 
 
