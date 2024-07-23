@@ -2,15 +2,25 @@
 
 namespace App\Services;
 
+use App\WorkerClasses\LightningNode;
 use Brick\Math\BigDecimal;
+use Facebook\WebDriver\WebDriverBy;
 use GuzzleHttp\Client;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use OTPHP\TOTP;
 
 class KrakenService
 {
 
     private \Butschster\Kraken\Client $client;
+    private string $apiUrl = "https://api.kraken.com";
+
+    private const API_VERSION = 0;
+
+    private Client $httpClient;
 
     public function __construct()
     {
@@ -21,6 +31,7 @@ class KrakenService
             env('KRAKEN_API_KEY'),
             env('KRAKEN_PRIVATE_KEY')
         );
+        $this->httpClient = new Client();
     }
 
     public function getClient(): \Butschster\Kraken\Client
@@ -59,6 +70,97 @@ class KrakenService
         return $this->buyBitcoin($floatAmt);
     }
 
+    public function sendFullAmtToLightning() {
+        $krakenService = new \App\Services\KrakenService();
+        $btcBalance = $krakenService->getBTCBalance();
+        // make btc balance a big decimal
+        $btc = $btcBalance->jsonSerialize();
+        $satoshis = $btc * 100000000;
+        $lightningNode = new LightningNode();
+        $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Withdrawal of ' . $btcBalance . ' BTC at ' . Carbon::now()->toDateTimeString());
+
+
+        $seleniumService = new \App\Services\SeleniumService();
+        $driver = $seleniumService->getDriver();
+
+        // sign in // possibly with otp
+        $seleniumService->signin($krakenService);
+
+        // approve device
+        $seleniumService->approveDevice();
+
+        // set session key lightning-network-shown-in-current-session to true
+        $driver->executeScript("window.localStorage.setItem('lightning-network-shown-in-current-session', 'true')");
+
+        // sign in again
+        $seleniumService->signin($krakenService, 'https://www.kraken.com/c/funding/withdraw?asset=BTC&assetType=crypto&network=Lightning&method=Bitcoin%2520Lightning');
+
+        sleep(6);
+
+        list($buttons, $buttonValues) = $seleniumService->getButtons();
+
+        $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Okay", "Agree and continue"]);
+
+        // scroll down slightly
+        $driver->executeScript("window.scrollTo(0,700.1058349609375)");
+
+        sleep(2);
+
+
+        list($buttons, $buttonValues) = $seleniumService->getButtons();
+        $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Manage withdrawal requests"]);
+
+        sleep(2);
+
+        list($buttons, $buttonValues) = $seleniumService->getButtons();
+        $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Add withdrawal request"]);
+
+        try {
+            // find an input with id label and send keys to it
+            $driver->findElement(WebDriverBy::id("label"))->click();
+            $invoiceId = "ag_lightning_invoice_" . Carbon::now()->toDateTimeString();
+            $driver->findElement(WebDriverBy::id("label"))->sendKeys($invoiceId);
+            $driver->findElement(WebDriverBy::id("address"))->click();
+            $driver->findElement(WebDriverBy::id("address"))->sendKeys($invoice);
+        } catch (\Exception $e) {
+            $driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
+            $source = $driver->getPageSource();
+            $driver->quit();
+            // dd($source, $e, $buttons, $buttonValues);
+            Log::error($e);
+
+            return response()->json(['error' => 'Error sending invoice']);
+        }
+
+        sleep(2);
+
+        list($buttons, $buttonValues) = $seleniumService->getButtons();
+        $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Add withdrawal request"]);
+
+        sleep(2);
+
+        // grab email
+        $driver->get($seleniumService->getLinkFromLastEmail('https://www.kraken.com/withdrawal-approve?code='));
+
+        // screenshot
+        sleep(5);
+
+        $krakenService->withdrawFunds(
+            'XBT',
+            $invoiceId,
+            $btc
+        );
+
+        // Close the driver
+        $driver->quit();
+
+        return response()->json([
+            'success' => 'Withdrawal request sent',
+            'invoice' => $invoice,
+        ]);
+    }
+
+
     public function buyBitcoin($amtInGBP): \Butschster\Kraken\Responses\Entities\AddOrder\OrderAdded|\Illuminate\Http\JsonResponse
     {
         // if less than £6 return error as it is not enough to buy bitcoin
@@ -78,16 +180,88 @@ class KrakenService
     }
 
 
-    public function sendBtcToLightning($btcAmt): \Illuminate\Http\JsonResponse
-    {
-        // $response = $this->client->withdraw('XXBT', $btcAmt, 'lightning');
-        // return response()->json($response);
-    }
+    // public function sendBtcToLightning($btcAmt): \Illuminate\Http\JsonResponse
+    // {
+    //     // $response = $this->client->withdraw('XXBT', $btcAmt, 'lightning');
+    //     // return response()->json($response);
+    // }
 
     public function getOTP(): string
     {
         $otp = TOTP::createFromSecret(env("KRAKEN_OTP_KEY"));
         return $otp->now();
+    }
+
+
+    public function request(
+        string $method,
+        array $parameters = [],
+        string $requestMethod = 'POST',
+    ) {
+        $headers = ['User-Agent' => 'Kraken PHP API Agent'];
+        $isPublic = Str::startsWith($method, 'public/');
+
+        if (!$isPublic) {
+            // $parameters['otp'] = $this->getOTP();
+            $nonce = explode(' ', microtime());
+            $nonce = $nonce[1] . str_pad(substr($nonce[0], 2, 6), 6, '0');
+            $parameters['nonce'] = $nonce;
+            $headers['API-Key'] = env('KRAKEN_API_KEY');
+            $headers['API-Sign'] = $this->makeSignature($method, $parameters);
+        }
+
+        $response = match ($requestMethod) {
+            'GET' => $this->httpClient->request($requestMethod, $this->apiUrl . $this->buildPath($method), [
+                'headers' => $headers,
+                'query' => $parameters,
+                'verify' => true,
+            ]),
+            default => $this->httpClient->request($requestMethod, $this->apiUrl . $this->buildPath($method), [
+                'headers' => $headers,
+                'form_params' => $parameters,
+                'verify' => true,
+            ]),
+        };
+
+        return $response->getBody()->getContents();
+
+
+    }
+
+
+    private function buildPath(string $method): string
+    {
+        return '/' . self::API_VERSION . '/' . $method;
+    }
+
+    /**
+     * Message signature using HMAC-SHA512 of (URI path + SHA256(nonce + POST data))
+     * and base64 decoded secret API key
+     */
+    private function makeSignature(string $method, array $parameters = []): string
+    {
+        $queryString = http_build_query($parameters, '', '&');
+
+        $signature = hash_hmac(
+            'sha512',
+            $this->buildPath($method) . hash('sha256', $parameters['nonce'] . $queryString, true),
+            base64_decode(env('KRAKEN_PRIVATE_KEY')),
+            true
+        );
+
+        return base64_encode($signature);
+    }
+
+    public function withdrawFunds(string $asset, string $key, string $amount)
+    {
+        return $this->request(
+            method: 'private/Withdraw',
+            parameters: [
+                'asset' => $asset,
+                'key' => $key,
+                'amount' => $amount,
+            ],
+        );
     }
 
 }

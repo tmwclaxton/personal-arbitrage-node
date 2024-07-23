@@ -153,124 +153,13 @@ Route::post('auto-accept', function () {
 
 
 Route::get('/testing', function () {
-    $krakenService = new \App\Services\KrakenService();
-
-    $kraken = new \App\Services\KrakenAPIService();
-    // dd($krakenService->getClient()->getWithdrawalInformation('BTC', 'ag.lightning invoice2024-07-23 15:08:29', BigDecimal::of(0.0002)));
-
-    $response = $kraken->krakenRequest('/0/private/Withdraw', [
-        "asset" => "XBT",
-        "key" => "ag_lightning_invoice_2024-07-23 17:42:00",
-        "amount" => "0.00002",
-    ]);
-
-    dd($response);
-
-
-
-    $krakenService = new \App\Services\KrakenService();
-
-
-    $btcBalance = $krakenService->getBTCBalance()->toFloat();
-    $lightningNode = new LightningNode();
-    $satoshis = 2000;
-    $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Deposit of ' . $btcBalance . ' BTC at ' . Carbon::now()->toDateTimeString());
-
-
-    $seleniumService = new \App\Services\SeleniumService();
-    $driver = $seleniumService->getDriver();
-
-    // sign in // possibly with otp
-    $seleniumService->signin($krakenService);
-
-    // approve device
-    $seleniumService->approveDevice();
-
-    // set session key lightning-network-shown-in-current-session to true
-    $driver->executeScript("window.localStorage.setItem('lightning-network-shown-in-current-session', 'true')");
-
-    // sign in again
-    $seleniumService->signin($krakenService, 'https://www.kraken.com/c/funding/withdraw?asset=BTC&assetType=crypto&network=Lightning&method=Bitcoin%2520Lightning');
-
-    sleep(6);
-
-    list($buttons, $buttonValues) = $seleniumService->getButtons();
-
-    $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Okay", "Agree and continue"]);
-
-    // scroll down slightly
-    $driver->executeScript("window.scrollTo(0,700.1058349609375)");
-
-    sleep(2);
-
-
-    list($buttons, $buttonValues) = $seleniumService->getButtons();
-    $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Manage withdrawal requests"]);
-
-    sleep(2);
-
-    list($buttons, $buttonValues) = $seleniumService->getButtons();
-    $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Add withdrawal request"]);
-
-    try {
-        // find an input with id label and send keys to it
-        $driver->findElement(WebDriverBy::id("label"))->click();
-        $invoiceId = "ag_lightning_invoice_" . Carbon::now()->toDateTimeString();
-        $driver->findElement(WebDriverBy::id("label"))->sendKeys($invoiceId);
-        $driver->findElement(WebDriverBy::id("address"))->click();
-        $driver->findElement(WebDriverBy::id("address"))->sendKeys($invoice);
-    } catch (\Exception $e) {
-        $driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
-        $source = $driver->getPageSource();
-        $driver->quit();
-        dd($source, $e, $buttons, $buttonValues);
-    }
-
-    sleep(2);
-
-    list($buttons, $buttonValues) = $seleniumService->getButtons();
-    $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Add withdrawal request"]);
-
-    sleep(2);
-
-    // grab email
-    $driver->get($seleniumService->getLinkFromLastEmail('https://www.kraken.com/withdrawal-approve?code='));
-
-    // screenshot
-    sleep(5);
-    $driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
-    $source = $driver->getPageSource();
-    $driver->quit();
-    dd($source, $seleniumService->linkUsed);
 
 
 
 
-    // Close the driver
-    $driver->quit();
-    return response()->json(['invoice' => $invoice]);
+    // return response()->json(['invoice' => $invoice]);
 
 
-
-    // we need to use php webdriver at this point
-
-
-    // $bigDecimal = BigDecimal::of($btc);
-    // $withdrawalMethods = $krakenService->getClient()->getWithdrawalInformation('XBT', 'currency', $bigDecimal);
-    // dd($withdrawalMethods);
-    // dd($invoiceDetails);
-
-
-    // $kraken = new \App\Services\KrakenAPIService();
-    //
-    // $response = $kraken->krakenRequest('/0/private/Withdraw', [
-    //     'asset' => 'XXBT',
-    //     'key' => 'name of address',
-    //     // 'address' => $invoice,
-    //     'amount' => $btc,
-    // ]);
-    //
-    // print_r($response);
 
 
 
