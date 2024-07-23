@@ -30,21 +30,56 @@ class KrakenAPIService
 
     public function krakenRequest($uriPath, $data)
     {
-        $data['nonce'] = strval(time() * 1000); // Current nonce
-        $signature = $this->getKrakenSignature($uriPath, $data, $this->apiSec);
-        try {
-            $response = $this->client->post($this->apiUrl . $uriPath, [
-                'headers' => [
-                    'API-Key' => $this->apiKey,
-                    'API-Sign' => $signature,
-                ],
-                'form_params' => $data,
-            ]);
+        // $data['nonce'] = strval(time() * 1000); // Current nonce
+        // $signature = $this->getKrakenSignature($uriPath, $data, $this->apiSec);
+        // try {
+        //     $response = $this->client->post($this->apiUrl . $uriPath, [
+        //         'headers' => [
+        //             'API-Key' => $this->apiKey,
+        //             'API-Sign' => $signature,
+        //         ],
+        //         'form_params' => $data,
+        //     ]);
+        //
+        //     return json_decode($response->getBody(), true);
+        // } catch (RequestException $e) {
+        //     return ['error' => $e->getMessage()];
+        // }
 
-            return json_decode($response->getBody(), true);
-        } catch (RequestException $e) {
-            return ['error' => $e->getMessage()];
+
+        $url_path = 'https://api.kraken.com/' . $uriPath;
+
+        $kraken_nonce = strval(time() * 1000);
+        $kraken_post_data = array('nonce' => $kraken_nonce);
+        $kraken_post_data = array_merge($kraken_post_data, $data);
+
+        $url_encoded_post_data = http_build_query($kraken_post_data);
+        $encoded = $kraken_nonce . $url_encoded_post_data;
+
+        $message = $uriPath . hash('sha256', $encoded, true);
+
+        $kraken_signature = base64_encode(hash_hmac('sha512', $message, base64_decode($this->apiSec), true));
+
+        $options = array(
+            'http' => array(
+                'header'  => array(
+                    "API-Key: " . $this->apiKey,
+                    "API-Sign: " . $kraken_signature,
+                    "Content-Type: application/x-www-form-urlencoded"
+                ),
+                'method'  => 'POST',
+                'content' => $url_encoded_post_data,
+            ),
+        );
+
+        $context  = stream_context_create($options);
+        $response = file_get_contents($url_path, false, $context);
+
+        if ($response === FALSE) {
+            die('Error occurred');
         }
+
+        return json_decode($response, true);
     }
 }
 

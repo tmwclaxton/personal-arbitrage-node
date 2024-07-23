@@ -153,18 +153,18 @@ Route::post('auto-accept', function () {
 
 
 Route::get('/testing', function () {
-    // $krakenService = new \App\Services\KrakenService();
-    //
-    // $kraken = new \App\Services\KrakenAPIService();
+    $krakenService = new \App\Services\KrakenService();
+
+    $kraken = new \App\Services\KrakenAPIService();
     // dd($krakenService->getClient()->getWithdrawalInformation('BTC', 'ag.lightning invoice2024-07-23 15:08:29', BigDecimal::of(0.0002)));
-    //
-    // $response = $kraken->krakenRequest('/0/private/Withdraw', [
-    //     "asset" => "BTC",
-    //     "key" => "ag.lightning invoice2024-07-23 15:08:29",
-    //     "amount" => "0.00002",
-    // ]);
-    //
-    // dd($response);
+
+    $response = $kraken->krakenRequest('/0/private/Withdraw', [
+        "asset" => "XBT",
+        "key" => "ag_lightning_invoice_2024-07-23 17:42:00",
+        "amount" => "0.00002",
+    ]);
+
+    dd($response);
 
 
 
@@ -205,10 +205,12 @@ Route::get('/testing', function () {
 
 
     list($buttons, $buttonValues) = $seleniumService->getButtons();
+    $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Manage withdrawal requests"]);
 
-    $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Manage withdrawal requests", "Add withdrawal request"]);
+    sleep(2);
 
-    sleep(5);
+    list($buttons, $buttonValues) = $seleniumService->getButtons();
+    $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Add withdrawal request"]);
 
     try {
         // find an input with id label and send keys to it
@@ -227,13 +229,12 @@ Route::get('/testing', function () {
     sleep(2);
 
     list($buttons, $buttonValues) = $seleniumService->getButtons();
-
     $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Add withdrawal request"]);
 
     sleep(2);
 
     // grab email
-    $this->driver->get($seleniumService->getLinkFromLastEmail('https://www.kraken.com/withdrawal-approve?code='));
+    $driver->get($seleniumService->getLinkFromLastEmail('https://www.kraken.com/withdrawal-approve?code='));
 
     // screenshot
     sleep(5);

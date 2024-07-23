@@ -174,19 +174,16 @@ class SeleniumService
                 // $indexes = array_search($text, array_column($buttonValues, 'text'));
                 $indexes = array_keys(array_column($buttonValues, 'text'), $text);
                 foreach ($indexes as $index) {
-                    // $webDriverBy = WebDriverBy::id($buttons[$index]->getAttribute('id'));
+                    $webDriverBy = WebDriverBy::id($buttons[$index]->getAttribute('id'));
                     // check if button is clickable
-                    // if ($buttons[$index]->isEnabled() && $buttons[$index]->isDisplayed()
-                    //     && WebDriverExpectedCondition::elementToBeClickable($webDriverBy)
-                    //     && WebDriverExpectedCondition::visibilityOfElementLocated($webDriverBy)
-                    // ) {
-                        try {
-                            $buttons[$index]->click();
-                        } catch (\Exception $e) {
-
-                        }
+                    if ($buttons[$index]->isEnabled() && $buttons[$index]->isDisplayed()
+                        && WebDriverExpectedCondition::elementToBeClickable($webDriverBy)
+                        && WebDriverExpectedCondition::visibilityOfElementLocated($webDriverBy)
+                    ) {
+                        $buttons[$index]->click();
                         sleep(1);
-                    // }
+                        break;
+                    }
 
                 }
                 // if ($index !== false) {
