@@ -157,15 +157,9 @@ Route::get('/testing', function () {
     $krakenService = new \App\Services\KrakenService();
     $btcBalance = $krakenService->getBTCBalance()->toFloat();
     $lightningNode = new LightningNode();
-    // dd($btcBalance);
-    // $satoshis = intval(round($btcBalance * 100000000, 0, PHP_ROUND_HALF_DOWN));
     $satoshis = 2000;
-    $btc = $satoshis / 100000000;
     $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Deposit of ' . $btcBalance . ' BTC at ' . Carbon::now()->toDateTimeString());
 
-
-
-    // selenium-server-standalone-#.jar (version 4.x)
 
     $seleniumService = new \App\Services\SeleniumService();
     $driver = $seleniumService->getDriver();
@@ -182,7 +176,6 @@ Route::get('/testing', function () {
     // sign in again
     $seleniumService->signin($krakenService, 'https://www.kraken.com/c/funding/withdraw?asset=BTC&assetType=crypto&network=Lightning&method=Bitcoin%2520Lightning');
 
-    // if a div with Modal_modalRoot__BN1AL exists, click everything inside it
     sleep(6);
 
     list($buttons, $buttonValues) = $seleniumService->getButtons();
@@ -207,20 +200,18 @@ Route::get('/testing', function () {
     $driver->findElement(WebDriverBy::id("address"))->click();
     $driver->findElement(WebDriverBy::id("address"))->sendKeys($invoice);
 
-    sleep(5);
-
-    // screenshot
-    $driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
-    $source = $driver->getPageSource();
-    $driver->quit();
-    dd($source, $seleniumService->linkUsed);
-
     sleep(2);
 
     list($buttons, $buttonValues) = $seleniumService->getButtons();
 
     $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Add withdrawal request"]);
 
+    // screenshot
+    sleep(5);
+    $driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
+    $source = $driver->getPageSource();
+    $driver->quit();
+    dd($source, $seleniumService->linkUsed);
 
 
     try {
