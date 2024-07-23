@@ -153,16 +153,6 @@ Route::post('auto-accept', function () {
 
 
 Route::get('/testing', function () {
-    //
-    // $gmailService = new \App\Services\GmailService();
-    // $text = $gmailService->getLastEmail();
-    //
-    // $link = $gmailService->grabLink($text);
-    //
-    // dd($link);
-    //
-
-
 
     $krakenService = new \App\Services\KrakenService();
     $btcBalance = $krakenService->getBTCBalance()->toFloat();
@@ -217,14 +207,6 @@ Route::get('/testing', function () {
     $driver->executeScript("window.scrollTo(0,99.89418029785156)");
 
 
-    sleep(5);
-    // screenshot
-    $driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
-    $source = $driver->getPageSource();
-    $driver->quit();
-    dd($source);
-    // go to the link with same session
-    // $driver->get($link);
 
 
     // set window size
@@ -237,7 +219,7 @@ Route::get('/testing', function () {
     // click the button
     $driver->findElement(WebDriverBy::cssSelector(".my-px"))->click();
 
-    sleep(8);
+    sleep(30);
 
     // grab email
     $gmailService = new \App\Services\GmailService();
@@ -250,12 +232,21 @@ Route::get('/testing', function () {
         return response()->json(['error' => 'No link found']);
     }
 
+    // go to the link with same session
+    $driver->get($link);
 
+    sleep(2);
 
-    // Move to the "Explore" link and perform an action
-    $exploreElement = $driver->findElement(WebDriverBy::linkText("Explore"));
-    $builder = new WebDriverActions($driver);
-    $builder->moveToElement($exploreElement)->perform();
+    // navigate to the home page
+    $driver->get('https://www.kraken.com/');
+
+    // screenshot
+    sleep(5);
+    $driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
+    $source = $driver->getPageSource();
+    $driver->quit();
+    dd($source, $link);
+
 
     $driver->findElement(WebDriverBy::linkText("Portfolio"))->click();
     $driver->executeScript("window.scrollTo(0,249.3121795654297)");
@@ -268,6 +259,7 @@ Route::get('/testing', function () {
         WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::cssSelector(".me-ds-0 .my-px"))
     );
     $element = $driver->findElement(WebDriverBy::cssSelector(".me-ds-0 .my-px"));
+    $builder = new WebDriverActions($driver);
     $builder->moveToElement($element)->perform();
 
     $bodyElement = $driver->findElement(WebDriverBy::tagName("body"));
@@ -294,9 +286,9 @@ Route::get('/testing', function () {
     $driver->findElement(WebDriverBy::id("address"))->click();
     // $driver->findElement(WebDriverBy::id("address"))->sendKeys("lnbc20u1pnfu62xpp59xe5hwt7ynxng8sc9nufx27ua4rld7j0cvfar4umw29r6aa9v40sdqqcqzzsxqrrsssp52d4ek6ulujutfdhves80zlszaaenyyc9mjsfhf4rjn54ulsn2evs9qxpqysgqq3jfjysl60mxnp4065khaqph8r962v2ahccy6tfnqugxeggkq06nnqzjfzsmra93ecxlkjwvnxk3vufcncwh884zuu6tgz74zx4j22sqmrqkzc");
     $driver->findElement(WebDriverBy::id("address"))->sendKeys($invoice);
+
     // Close the driver
     $driver->quit();
-
     return response()->json(['invoice' => $invoice]);
 
 
