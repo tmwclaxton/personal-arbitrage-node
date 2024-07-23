@@ -183,12 +183,23 @@ Route::get('/testing', function () {
     $seleniumService->signin($krakenService, 'https://www.kraken.com/c/funding/withdraw?asset=BTC&assetType=crypto&network=Lightning&method=Bitcoin%2520Lightning');
 
     // if a div with Modal_modalRoot__BN1AL exists, click everything inside it
+    sleep(6);
+
+    list($buttons, $buttonValues) = $seleniumService->getButtons();
+
+    $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Okay", "Agree and continue"]);
+
+    // scroll down slightly
+    $driver->executeScript("window.scrollTo(0,700.1058349609375)");
+
     sleep(2);
-    // if (count($driver->findElements(WebDriverBy::cssSelector(".tos-dialog-lightning_buttons__iWHrE")))) {
-    //     $element = $driver->findElement(WebDriverBy::cssSelector(".tos-dialog-lightning_buttons__iWHrE"));
-    //     $children = $element->findElements(WebDriverBy::xpath(".//*"));
-    //     $children[1]->click();
-    // }
+
+
+    list($buttons, $buttonValues) = $seleniumService->getButtons();
+
+    $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Add withdrawal request"]);
+
+    sleep(2);
 
     // find an input with id label and send keys to it
     $driver->findElement(WebDriverBy::id("label"))->click();
@@ -196,19 +207,51 @@ Route::get('/testing', function () {
     $driver->findElement(WebDriverBy::id("address"))->click();
     $driver->findElement(WebDriverBy::id("address"))->sendKeys($invoice);
 
-    // find a button with text "Add withdrawal address" and click it
-    $text = "Add withdrawal address";
-    $span = $driver->findElement(WebDriverBy::xpath("//*[contains(text(), '$text')]"))->click();
-    // iterate up the dom tree until you find a button
-    $button = null;
-    $parent = $span;
-    while ($button === null) {
-        $parent = $parent->findElement(WebDriverBy::xpath(".."));
-        if ($parent->getTagName() === "button") {
-            $button = $parent;
+    sleep(5);
+
+    // screenshot
+    $driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
+    $source = $driver->getPageSource();
+    $driver->quit();
+    dd($source, $seleniumService->linkUsed);
+
+    sleep(2);
+
+    list($buttons, $buttonValues) = $seleniumService->getButtons();
+
+    $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Add withdrawal request"]);
+
+
+
+    try {
+        $this->driver->wait(10, 1000)->until(
+            WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::id("label"))
+        );
+        // find an input with id label and send keys to it
+        $driver->findElement(WebDriverBy::id("label"))->click();
+        $driver->findElement(WebDriverBy::id("label"))->sendKeys("ag.lightning invoice" . Carbon::now()->toDateTimeString());
+        $driver->findElement(WebDriverBy::id("address"))->click();
+        $driver->findElement(WebDriverBy::id("address"))->sendKeys($invoice);
+
+        // find a button with text "Add withdrawal address" and click it
+        $text = "Add withdrawal address";
+        $span = $driver->findElement(WebDriverBy::xpath("//*[contains(text(), '$text')]"))->click();
+        // iterate up the dom tree until you find a button
+        $button = null;
+        $parent = $span;
+        while ($button === null) {
+            $parent = $parent->findElement(WebDriverBy::xpath(".."));
+            if ($parent->getTagName() === "button") {
+                $button = $parent;
+            }
         }
+        $button->click();
+    } catch (\Exception $e) {
+        $driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
+        $source = $driver->getPageSource();
+        $driver->quit();
+        dd($source, $seleniumService->linkUsed);
     }
-    $button->click();
 
 
     // screenshot

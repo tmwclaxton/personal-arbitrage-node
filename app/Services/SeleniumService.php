@@ -9,6 +9,7 @@ use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverDimension;
 use Facebook\WebDriver\WebDriverExpectedCondition;
 use Facebook\WebDriver\WebDriverKeys;
+use Facebook\WebDriver\WebDriverPlatform;
 use Illuminate\Support\Carbon;
 
 class SeleniumService
@@ -22,6 +23,7 @@ class SeleniumService
         $profile = new FirefoxProfile();
         $profile->setPreference('general.useragent.override', 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36');
         $desiredCapabilities = DesiredCapabilities::firefox();
+        // $desiredCapabilities->setPlatform(WebDriverPlatform::WINDOWS);
         $desiredCapabilities->setCapability('acceptSslCerts', true);
         $desiredCapabilities->setCapability('firefox_profile', $profile);
         $this->driver = RemoteWebDriver::create($serverUrl, $desiredCapabilities);
@@ -133,6 +135,46 @@ class SeleniumService
     {
         foreach ($cookies as $cookie) {
             $this->driver->manage()->addCookie($cookie);
+        }
+    }
+
+    public function getButtons()
+    {
+        // dump all buttons
+        $buttons = $this->driver->findElements(WebDriverBy::tagName('button'));
+        // foreach button grab the text inside it
+        $buttonValues = [];
+        foreach ($buttons as $button) {
+            $saveSpans = [];
+            $text = $button->getText();
+            // check if the button has any spans inside it
+            if (count($button->findElements(WebDriverBy::tagName('span'))) > 0) {
+                $spans = $button->findElements(WebDriverBy::tagName('span'));
+                foreach ($spans as $span) {
+                    $saveSpans[] = $span->getText();
+                }
+            }
+            $buttonValues[] = ['text' => $text, 'spans' => $saveSpans];
+        }
+
+        return [$buttons, $buttonValues];
+    }
+
+    public function clickButtonsWithText(mixed $buttons, mixed $buttonValues, array $texts): void
+    {
+        $count = 0;
+        foreach ($texts as $text) {
+            $index = array_search($text, array_column($buttonValues, 'text'));
+            if ($index !== false) {
+                $count++;
+
+                // check if button is clickable
+                if ($buttons[$index]->isEnabled() && $buttons[$index]->isDisplayed()) {
+                    $buttons[$index]->click();
+                    sleep(1);
+                }
+
+            }
         }
     }
 }
