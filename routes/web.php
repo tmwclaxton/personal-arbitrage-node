@@ -176,14 +176,8 @@ Route::get('monzo-refresh', function () {
 
 Route::get('/testing', function () {
     $revolutService = new RevolutService();
-    $accessToken = new \League\OAuth2\Client\Token\AccessToken([
-        'access_token' => $revolutService->getReadToken()['access_token']
-    ]);
-
-        $client = new \RevolutPHP\Client($accessToken);
-        $counterParties = $client->accounts->all();
-        dd($counterParties);
-
+    $revolutService->currencyExchangeAll("EUR", "GBP");
+dd($revolutService->getGBPBalance());
     // wise send to personal revolut account
     // $payment = null;
     // $wiseService = new \App\Services\WiseService();

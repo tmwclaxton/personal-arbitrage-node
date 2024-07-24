@@ -170,11 +170,25 @@ class RevolutService
             if ($account->currency == $fromCurrency && $account->balance > $minAmount && $account->balance > 0) {
                 $fromAccount = $account;
             }
-            if ($account->currency == $toCurrency && $account->balance > 0) {
-                $toAccount = $account;
+
+            if ($toCurrency == "GBP") {
+                // we have 2 GBP accounts
+                // 29d35a62-1130-4aef-8d51-7ccd484b25bd
+                if ($account->id == "29d35a62-1130-4aef-8d51-7ccd484b25bd") {
+                    $toAccount = $account;
+                }
+            } else {
+                if ($account->currency == $toCurrency) {
+                    $toAccount = $account;
+                }
             }
         }
-        if (!isset($fromAccount) || !isset($toAccount)) {
+        if (!isset($fromAccount)) {
+            return;
+        }
+        if (!isset($toAccount)) {
+            $discordService = new DiscordService();
+            $discordService->sendMessage('Revolut Currency Exchange Failed: ' . 'No account found for ' . $toCurrency);
             return;
         }
 
