@@ -11,13 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('revolut_access_tokens', function (Blueprint $table) {
+        Schema::create('monzo_access_tokens', function (Blueprint $table) {
             $table->id();
             $table->string('type');
             $table->string('access_token');
             $table->string('refresh_token');
             $table->unsignedInteger('expires');
-            $table->string('resource_owner_id')->nullable();
+            $table->string('user_id');
+            $table->string('client_id');
             $table->timestamps();
         });
     }
@@ -27,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('revolut_access_tokens');
+        Schema::dropIfExists('monzo_access_tokens');
     }
 };

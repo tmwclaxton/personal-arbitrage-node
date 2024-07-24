@@ -6,12 +6,14 @@ use App\Http\Controllers\ProfileController;
 use App\Jobs\ConfirmPayment;
 use App\Models\AdminDashboard;
 use App\Models\BtcFiat;
+use App\Models\MonzoAccessToken;
 use App\Models\Offer;
 use App\Models\Payment;
 use App\Models\RevolutAccessToken;
 use App\Models\Robot;
 use App\Models\Transaction;
 use App\Services\DiscordService;
+use App\Services\MonzoService;
 use App\Services\PgpService;
 use App\Services\RevolutService;
 use App\WorkerClasses\LightningNode;
@@ -151,9 +153,33 @@ Route::post('auto-accept', function () {
     ])->dispatch();
 })->name('auto-accept');
 
+Route::get('monzo-redirect', function () {
+    $monzoService = new MonzoService();
+    $redirect = $monzoService->redirectUserToMonzo();
+    return response()->json(['redirect' => $redirect]);
+})->name('monzoRedirect');
+
+Route::get('monzo-exchange', function () {
+    $monzoService = new MonzoService();
+    $code = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJlYiI6InhYL2pmTXpwUm54VFBZYzR3dzZKIiwianRpIjoiYXV0aHpjb2RlXzAwMDBBa0ZvZDBOakY3WndQdFY1aGgiLCJ0eXAiOiJhemMiLCJ2IjoiNiJ9.Cj7uispLSPHalEIYzjmC7IY-EsvBkEtPJBXfsed2o5pIz3IWOTqzLXwwckOHUwiCLmHxZUMCIrr6a_MZHYJFcw';
+    $exchange = $monzoService->exchangeCode($code);
+    return response()->json(['exchange' => $exchange]);
+})->name('monzoExchange');
+
+Route::get('monzo-refresh', function () {
+    $monzoService = new MonzoService();
+    $monzoAccessToken = MonzoAccessToken::all()->first();
+    $refreshedToken = $monzoService->refreshAccessToken($monzoAccessToken);
+    return response()->json(['refreshedToken' => $refreshedToken]);
+})->name('monzoRefresh');
+
 
 Route::get('/testing', function () {
 
+    $monzoService = new MonzoService();
+    // $redirect = $monzoService->redirectUserToMonzo();
+    $exchange = $monzoService->exchangeCode('eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJlYiI6IjZDR1IvNDJyeC9aSlJ3NURSWjBBIiwianRpIjoiYXV0aHpjb2RlXzAwMDBBa0ZrNEcxR2k4NUVHcmxZRXoiLCJ0eXAiOiJhemMiLCJ2IjoiNiJ9.tEMvah3fRiL_xNIpfkDeWlORWbjag0tF2snCOtj19C1dZah4thveVA35WHXLKNw_VbsCKmgaRzfjpP6fwVYl7w');
+    dd($exchange);
 
 
 
