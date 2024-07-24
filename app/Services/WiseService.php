@@ -14,22 +14,28 @@ class WiseService
 
     protected $profileID;
 
+    protected $httpClient;
+
     public function __construct()
     {
-        $this->client = new Client();
+        $this->httpClient = new Client();
         $this->apiKey = env('WISE_API_KEY');
         $this->baseUrl = 'https://api.transferwise.com';
         // set up wise client
-        $client = new \TransferWise\Client(
+        $this->client = new \TransferWise\Client(
             [
                 "token" => env('WISE_API_KEY'),
                 "profile_id" => "test",
             ]
         );
 
-        $profiles = $client->profiles->all();
+        $profiles = $this->client->profiles->all();
         $profileID = $profiles[0]['id'];
         $this->profileID = $profileID;
+    }
+
+    public function getClient() {
+        return $this->client;
     }
 
     /**
@@ -46,7 +52,7 @@ class WiseService
         $url = $this->baseUrl . $endpoint;
 
         try {
-            $response = $this->client->request($method, $url, [
+            $response = $this->httpClient->request($method, $url, [
                 'headers' => array_merge([
                     'Authorization' => 'Bearer ' . $this->apiKey,
                     'Accept'        => 'application/json',
@@ -135,6 +141,15 @@ class WiseService
         ];
 
         return $this->_makeRequest('POST', "/v2/profiles/{$this->profileID}/balance-movements", $params, $extraHeaders);
+    }
+
+    public function getGBPAccount() {
+        $accounts = $this->getBalances();
+        foreach ($accounts as $account) {
+            if ($account['currency'] == 'GBP') {
+                return $account;
+            }
+        }
     }
 
     public function currencyExchangeAll($fromCurrency, $toCurrency, $reference = null, $requestId = null, $minAmount = 5) {

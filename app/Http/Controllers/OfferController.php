@@ -59,6 +59,9 @@ class OfferController extends Controller
         foreach ($offers as $offer) {
             $offer->expires_at = Carbon::parse($offer->expires_at)->diffForHumans();
             $offer->updated_at_readable = Carbon::parse($offer->updated_at)->diffForHumans();
+            if ($offer->auto_accept_at) {
+                $offer->auto_accept_at = Carbon::parse($offer->auto_accept_at)->diffForHumans();
+            }
             // round amount to 2 decimal places
             $offer->amount = number_format($offer->amount, 2);
             // round min_amount to 2 decimal places and max amount to 2 decimal places

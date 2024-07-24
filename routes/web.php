@@ -177,9 +177,71 @@ Route::get('monzo-refresh', function () {
 Route::get('/testing', function () {
 
     // wise send to personal revolut account
+    // $payment = null;
+    // $wiseService = new \App\Services\WiseService();
+    // // dd($accounts);
+    // $gbpAccount = $wiseService->getGBPAccount();
+    // dd($balances);
+    //
+    // $accounts = $wiseService->getClient()->recipient_accounts->all();
+    // // iterate through accounts and find id 819366129
+    // foreach ($accounts['content'] as $account) {
+    //     if ($account->id == 819366129) {
+    //         $payment = $wiseService->getClient()->payments->create([
+    //             // 'sourceAccount' => ,
+    //             'targetAccount' => 819366129,
+    //             'amount' => [
+    //                 'value' => 1,
+    //                 'currency' => 'GBP'
+    //             ]
+    //         ]);
+    //     }
+    // }
 
     // revolut send to personal account
+    $payment = null;
+    $revolutService = new RevolutService();
+    $accessToken = new \League\OAuth2\Client\Token\AccessToken([
+        'access_token' => $revolutService->getReadToken()['access_token']
+    ]);
 
+    if ($revolutService->getGBPBalance() >= 20) {
+        $client = new \RevolutPHP\Client($accessToken);
+        $counterParties = $client->counterparties->all();
+        dd($counterParties);
+        $counterParty = null;
+        foreach ($counterParties as $cp) {
+            if (!isset($cp->revtag)) {
+                continue;
+            }
+            if ($cp->revtag === 'tobyclaxton') {
+                $counterParty = $cp;
+                break;
+            }
+        }
+        $payment = array(
+            "request_id" => bin2hex(random_bytes(16)),
+            "account_id" => "29d35a62-1130-4aef-8d51-7ccd484b25bd",
+            "receiver" => array(
+                "counterparty_id" => $counterParty->id,
+                "account_id" => $counterParty->accounts[0]->id,
+            ),
+            "amount" => $revolutService->getGBPBalance(),
+            "currency" => "GBP",
+            "reference" => "Move to personal account " . Carbon::now()->toDateTimeString()
+        );
+        $accessToken = new \League\OAuth2\Client\Token\AccessToken([
+            'access_token' => $revolutService->getPayToken()['access_token']
+        ]);
+        $client = new \RevolutPHP\Client($accessToken);
+        $client->payments->create($payment);
+
+        $discordService = new DiscordService();
+        $discordService->sendMessage('Sent ' . $revolutService->getGBPBalance() . ' GBP to personal account');
+
+    }
+
+    return response()->json(['payment' => $payment]);
 
 
 })->name('testing');

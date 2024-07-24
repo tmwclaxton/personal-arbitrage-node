@@ -58,9 +58,9 @@ Schedule::command('auto:accept')
     ->everyThreeMinutes()->withoutOverlapping(1);
 
 // auto accept final
-// Schedule::command('auto:accept-final')
-//     ->description('auto accept final')
-//     ->everyMinute()->withoutOverlapping(1);
+Schedule::command('auto:accept-final')
+    ->description('auto accept final')
+    ->everyMinute()->withoutOverlapping(1);
 
 // app:warning-system
 Schedule::command('app:warning-system')
@@ -97,3 +97,7 @@ Schedule::command('kraken:auto-purchaser')
     ->description('kraken auto purchaser')
     ->everyTenMinutes()->withoutOverlapping(1);
 
+Schedule::call(function () {
+    $revolutService = new \App\Services\RevolutService();
+    $revolutService->sendAllToPersonal();
+})->everyMinute();

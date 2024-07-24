@@ -6,6 +6,7 @@ use App\Models\AdminDashboard;
 use App\Models\RevolutAccessToken;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Redis;
 use RevolutPHP\Auth\Provider;
 
@@ -49,6 +50,7 @@ class RevolutService
 
         // grab admin dashboard
         $this->adminDashboard = AdminDashboard::all()->first();
+
     }
 
     public function getToken($type) {
@@ -270,5 +272,77 @@ class RevolutService
         ]);
 
         return $response;
+    }
+
+    public function getGBPBalance()
+    {
+        $revArray = $this->getReadToken();
+        if (array_key_exists('url', $revArray)) {
+            $discordService = new DiscordService();
+            $discordService->sendMessage('Reset RevToken at: ' . $revArray['url']);
+            return [];
+        } else {
+            $token = $revArray['access_token'];
+        }
+
+        // convert RevolutAccessToken to AccessToken
+        $accessToken = new \League\OAuth2\Client\Token\AccessToken([
+            'access_token' => $token,
+        ]);
+
+        $client = new \RevolutPHP\Client($accessToken);
+        $accounts = $client->accounts->all();
+
+        // using the GBP account convert all to EUR
+        // iterate through the accounts and grab the GBP and EUR accounts
+        foreach ($accounts as $account) {
+            // these must be above 0 as revolut has fake accounts or something
+            if ($account->currency == 'GBP' && $account->balance > 0) {
+                return $account->balance;
+            }
+        }
+        return 0;
+    }
+
+    public function sendAllToPersonal() {
+        // revolut send to personal account
+        $payment = null;
+        $accessToken = new \League\OAuth2\Client\Token\AccessToken([
+            'access_token' => $this->getReadToken()['access_token']
+        ]);
+
+        if ($this->getGBPBalance() > 20) {
+            $client = new \RevolutPHP\Client($accessToken);
+            $counterParties = $client->counterparties->all();
+            $counterParty = null;
+            foreach ($counterParties as $cp) {
+                if (!isset($cp->revtag)) {
+                    continue;
+                }
+                if ($cp->revtag === 'tobyclaxton') {
+                    $counterParty = $cp;
+                    break;
+                }
+            }
+            $payment = array(
+                "request_id" => bin2hex(random_bytes(16)),
+                "account_id" => "1515184a-910c-4957-8cf5-72522385c81a",
+                "receiver" => array(
+                    "counterparty_id" => $counterParty->id,
+                    "account_id" => $counterParty->accounts[0]->id,
+                ),
+                "amount" => $this->getGBPBalance(),
+                "currency" => "GBP",
+                "reference" => "Move to personal account " . Carbon::now()->toDateTimeString()
+            );
+            $accessToken = new \League\OAuth2\Client\Token\AccessToken([
+                'access_token' => $this->getPayToken()['access_token']
+            ]);
+            $client = new \RevolutPHP\Client($accessToken);
+            $client->payments->create($payment);
+
+            $discordService = new DiscordService();
+            $discordService->sendMessage('Sent ' . $this->getGBPBalance() . ' GBP to personal wise account');
+        }
     }
 }

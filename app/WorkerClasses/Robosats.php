@@ -630,7 +630,7 @@ class Robosats
                             return 'No tag / pseudonym found for ' . $paymentMethod;
                         }
 
-                        $message = 'Hey! My ' . $pseudonym . ' is ' . $tag . '. Just leave the description empty.  Cheers!';
+                        $message = 'Hey! My ' . $pseudonym . ' is ' . $tag . ' - Just leave the description empty.  Cheers!';
                         break;
                     } else {
                         $discordService = new DiscordService();
