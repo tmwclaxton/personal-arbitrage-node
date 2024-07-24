@@ -22,6 +22,8 @@ class KrakenService
 
     private Client $httpClient;
 
+    private DiscordService $discordService;
+
     public function __construct()
     {
         $this->client = new \Butschster\Kraken\Client(
@@ -32,6 +34,7 @@ class KrakenService
             env('KRAKEN_PRIVATE_KEY')
         );
         $this->httpClient = new Client();
+        $this->discordService = new DiscordService();
     }
 
     public function getClient(): \Butschster\Kraken\Client
@@ -71,8 +74,10 @@ class KrakenService
     }
 
     public function sendFullAmtToLightning() {
+
         $krakenService = new \App\Services\KrakenService();
         $btcBalance = $krakenService->getBTCBalance();
+        $this->discordService->sendMessage('Sending ' . $btcBalance . ' BTC to lightning node');
         // make btc balance a big decimal
         $btc = $btcBalance->jsonSerialize();
         $satoshis = $btc * 100000000;
@@ -168,6 +173,7 @@ class KrakenService
             return response()->json(['error' => 'Amount is too low to buy bitcoin'], 400);
         }
 
+        $this->discordService->sendMessage('Buying bitcoin with ' . $amtInGBP . ' GBP');
 
         // buy bitcoin
         $order = new \Butschster\Kraken\Requests\AddOrderRequest(

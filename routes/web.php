@@ -176,10 +176,14 @@ Route::get('monzo-refresh', function () {
 
 Route::get('/testing', function () {
 
-    $monzoService = new MonzoService();
-    // $redirect = $monzoService->redirectUserToMonzo();
-    $exchange = $monzoService->exchangeCode('eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJlYiI6IjZDR1IvNDJyeC9aSlJ3NURSWjBBIiwianRpIjoiYXV0aHpjb2RlXzAwMDBBa0ZrNEcxR2k4NUVHcmxZRXoiLCJ0eXAiOiJhemMiLCJ2IjoiNiJ9.tEMvah3fRiL_xNIpfkDeWlORWbjag0tF2snCOtj19C1dZah4thveVA35WHXLKNw_VbsCKmgaRzfjpP6fwVYl7w');
-    dd($exchange);
+
+
+
+
+    // $monzoService = new MonzoService();
+    // // $redirect = $monzoService->redirectUserToMonzo();
+    // $exchange = $monzoService->exchangeCode('eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJlYiI6IjZDR1IvNDJyeC9aSlJ3NURSWjBBIiwianRpIjoiYXV0aHpjb2RlXzAwMDBBa0ZrNEcxR2k4NUVHcmxZRXoiLCJ0eXAiOiJhemMiLCJ2IjoiNiJ9.tEMvah3fRiL_xNIpfkDeWlORWbjag0tF2snCOtj19C1dZah4thveVA35WHXLKNw_VbsCKmgaRzfjpP6fwVYl7w');
+    // dd($exchange);
 
 
 

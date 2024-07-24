@@ -86,3 +86,8 @@ Schedule::command('payment:matcher')
 Schedule::command('currency:converter')
     ->description('currency converter')
     ->everyMinute()->withoutOverlapping(1);
+
+// kraken auto purchaser
+Schedule::command('kraken:auto-purchaser')
+    ->description('kraken auto purchaser')
+    ->everyTenMinutes()->withoutOverlapping(1);

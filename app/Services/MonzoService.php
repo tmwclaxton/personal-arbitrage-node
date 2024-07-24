@@ -102,4 +102,23 @@ class MonzoService
 
         return json_decode($response->getBody()->getContents(), true);
     }
+
+    public function sendMoney($destination_account_number, $destination_sort_code, $amount, $reference)
+    {
+        $monzoAccessToken = MonzoAccessToken::where('user_id', $this->user_id)->first();
+
+        $response = $this->client->post('https://api.monzo.com/payments', [
+            'headers' => ['Authorization' => 'Bearer ' . $monzoAccessToken->access_token],
+            'json' => [
+                'account_id' => $this->account_id,
+                'destination_account_number' => $destination_account_number,
+                'destination_sort_code' => $destination_sort_code,
+                'amount' => $amount, // amount in pence
+                'reference' => $reference,
+                'dedupe_id' => bin2hex(random_bytes(16)) // a unique identifier for the transaction
+            ]
+        ]);
+
+        return json_decode($response->getBody()->getContents(), true);
+    }
 }
