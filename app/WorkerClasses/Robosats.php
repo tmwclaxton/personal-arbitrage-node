@@ -632,10 +632,6 @@ class Robosats
 
                         $message = 'Hey! My ' . $pseudonym . ' is ' . $tag . ' - Just leave the description empty.  Cheers!';
                         break;
-                    } else {
-                        $discordService = new DiscordService();
-                        $discordService->sendMessage('Major error: No payment methods available for ' . $offer->robosatsId);
-                        return 'No payment methods available for ' . $offer->robosatsId;
                     }
                 }
 
