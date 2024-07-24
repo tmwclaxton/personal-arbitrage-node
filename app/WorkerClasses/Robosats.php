@@ -459,7 +459,7 @@ class Robosats
 
         // grab the largest amount we can accept whether it is range or not
         $calculations = (new OfferController())->calculateLargestAmount($offer, $channelBalances);
-        if (is_array($calculations)) {
+        if (is_array($calculations) && $calculations['estimated_offer_amount'] > 0) {
             $offer->accepted_offer_amount_sat = $calculations['estimated_offer_amount_sats'];
             $offer->accepted_offer_amount = $calculations['estimated_offer_amount'];
             $offer->accepted_offer_profit_sat = $calculations['estimated_profit_sats'];
@@ -525,6 +525,12 @@ class Robosats
             return 'BtcFiat is suspiciously old';
         }
 
+
+        // check if offer satoshi amount is above adminDashboard->max_satoshi_amount
+        if ($offer->accepted_offer_amount_sat > $adminDashboard->max_satoshi_amount) {
+            (new DiscordService)->sendMessage('Error: Offer accepted amount is above max_satoshi_amount in admin dashboard');
+            return 'Offer accepted amount is above max_satoshi_amount in admin dashboard';
+        }
 
 
         // last chance to back out
@@ -597,7 +603,7 @@ class Robosats
                 $privateKey = $robot->private_key;
 
                 // depending on what payment methods are available change the message, preference order is revolut, wise, paypal friends & family, strike
-                $message = 'Hey! My revolut is ';
+                $message = '';
                 $preferredPaymentMethods = ['Revolut', 'Wise', 'Paypal Friends & Family', 'Strike'];
                 foreach ($preferredPaymentMethods as $paymentMethod) {
                     if (in_array($paymentMethod, json_decode($robot->offer->payment_methods))) {
@@ -626,6 +632,10 @@ class Robosats
 
                         $message = 'Hey! My ' . $pseudonym . ' is ' . $tag . '. Just leave the description empty.  Cheers!';
                         break;
+                    } else {
+                        $discordService = new DiscordService();
+                        $discordService->sendMessage('Major error: No payment methods available for ' . $offer->robosatsId);
+                        return 'No payment methods available for ' . $offer->robosatsId;
                     }
                 }
 

@@ -27,7 +27,8 @@
                 </div>
                 <div class="flex flex-col"><p class="mt-2 text-gray-500 italic">Expires at: {{ offer.expires_at }}</p>
                     <div class="border border-gray-200 mt-2"></div>
-                     <p class="mt-2 text-gray-500 italic">Last updated at: {{ offer.updated_at_readable }}</p>
+                    <p class="mt-2 text-gray-500 italic">Last updated at: {{ offer.updated_at_readable }}</p>
+                    <p v-if="offer.auto_accept_at" class="mt-2 text-gray-500 italic font-bold">Auto accepting at: {{ offer.auto_accept_at }}</p>
                     <!--<p class="mt-2 text-gray-500">Explicit: {{ offer.is_explicit ? 'Yes' : 'No' }}</p>-->
                     <!--<p class="mt-2 text-gray-500">Satoshis: {{ offer.satoshis ?? 'N/A' }}</p>-->
                     <p class="mt-2 text-gray-500">Maker: {{ offer.maker }}</p>

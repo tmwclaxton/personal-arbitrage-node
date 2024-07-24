@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\AdminDashboard;
 use App\Services\DiscordService;
 use App\WorkerClasses\LightningNode;
 use Brick\Math\BigDecimal;
@@ -35,6 +36,13 @@ class KrakenAutoPurchaser implements ShouldQueue
      */
     public function handle(): void
     {
+
+        $adminDashboard = AdminDashboard::all()->first();
+        // check if autoTopUp is enabled
+        if (!$adminDashboard->autoTopUp) {
+            return;
+        }
+
         $lightningNode = new LightningNode();
         $balance = $lightningNode->getLightningWalletBalance();
         if ($balance['localBalance'] < 600000) {

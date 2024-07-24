@@ -19,7 +19,7 @@ return new class extends Migration
             $table->integer('remoteBalance')->default(0);
             $table->json('channelBalances')->nullable();
             $table->boolean('panicButton')->default(false);
-            $table->boolean('autoTopup')->default(false);
+            $table->boolean('autoTopup')->default(true);
             $table->boolean('autoAccept')->default(false);
             $table->boolean('autoBond')->default(true);
             $table->boolean('autoEscrow')->default(true);
@@ -28,6 +28,8 @@ return new class extends Migration
             $table->decimal('sell_premium', 5, 2)->default(2);
             $table->decimal('buy_premium', 5, 2)->default(-1);
             $table->integer('min_satoshi_profit')->default(5000);
+            //max_satoshi_amount
+            $table->integer('max_satoshi_amount')->default(400000);
             $table->integer('max_concurrent_transactions')->default(1);
             $table->integer('max_wait_time')->default(10000);
 

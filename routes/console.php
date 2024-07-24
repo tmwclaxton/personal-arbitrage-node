@@ -57,6 +57,11 @@ Schedule::command('auto:accept')
     ->description('auto accept')
     ->everyThreeMinutes()->withoutOverlapping(1);
 
+// auto accept final
+// Schedule::command('auto:accept-final')
+//     ->description('auto accept final')
+//     ->everyMinute()->withoutOverlapping(1);
+
 // app:warning-system
 Schedule::command('app:warning-system')
     ->description('app warning system')
@@ -91,3 +96,4 @@ Schedule::command('currency:converter')
 Schedule::command('kraken:auto-purchaser')
     ->description('kraken auto purchaser')
     ->everyTenMinutes()->withoutOverlapping(1);
+

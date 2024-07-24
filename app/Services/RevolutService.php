@@ -6,6 +6,7 @@ use App\Models\AdminDashboard;
 use App\Models\RevolutAccessToken;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use Illuminate\Support\Facades\Redis;
 use RevolutPHP\Auth\Provider;
 
 class RevolutService
@@ -53,10 +54,22 @@ class RevolutService
     public function getToken($type) {
         // if revolut code is null, then we need to create a new RevolutAccessToken
         if ($this->adminDashboard->revolut_code == null && RevolutAccessToken::where('type', $type)->count() == 0) {
+
+            // Define the Redis key for tracking the request time
+            $redisKey = 'revolut_auth_code_request';
+
+            // Check if the key exists in Redis
+            if (Redis::get($redisKey)) {
+                return ['message' => 'Please wait for 10 minutes before requesting another authorization code'];
+            }
+
             // scope PAY
             $url = $this->authProvider->getAuthorizationUrl([
                 'scope' => $type,
             ]);
+
+            Redis::set($redisKey, true, 'EX', 600);
+
 
             return ['url' => $url, 'message' => 'Please visit the URL to get the code'];
         }
@@ -72,7 +85,7 @@ class RevolutService
                 'type' => $type,
                 'access_token' => $accessToken->getToken(),
                 'refresh_token' => $accessToken->getRefreshToken(),
-                'expires_at' => $accessToken->getExpires(),
+                'expires' => $accessToken->getExpires(),
             ]);
 
             // set the revolut code to null
@@ -89,9 +102,17 @@ class RevolutService
             // if the token is expired
             if ($accessToken->hasExpired()) {
 
-                $newAccessToken = $this->authProvider->getAccessToken('refresh_token', [
-                    'refresh_token' =>  $revolutAccessToken->refresh_token
-                ]);
+                //
+                try {
+                    $newAccessToken = $this->authProvider->getAccessToken('refresh_token', [
+                        'refresh_token' =>  $revolutAccessToken->refresh_token
+                    ]);
+                } catch (\Exception $e) {
+                    // if the refresh token is invalid, then  delete the RevolutAccessToken
+                    $revolutAccessToken->delete();
+                    // error out
+                    return "Refresh token is invalid";
+                }
 
                 $revolutAccessToken = RevolutAccessToken::where('refresh_token',  $revolutAccessToken->refresh_token)->first();
                 $revolutAccessToken->access_token = $newAccessToken->getToken();
@@ -123,7 +144,7 @@ class RevolutService
     public function currencyExchangeAll($fromCurrency, $toCurrency, $reference = null, $requestId = null, $minAmount = 5) {
         // we need two types of access tokens READ and PAY
 
-        $revArray = $this->getToken('READ');
+        $revArray = $this->getReadToken();
         if (array_key_exists('url', $revArray)) {
             $discordService = new DiscordService();
             $discordService->sendMessage('Reset RevToken at: ' . $revArray['url']);
@@ -170,7 +191,7 @@ class RevolutService
         ];
 
         $token = null;
-        $revArray = $this->getToken('PAY');
+        $revArray = $this->getPayToken();
         if (array_key_exists('url', $revArray)) {
             $discordService = new DiscordService();
             $discordService->sendMessage('Reset RevToken at: ' . $revArray['url']);
@@ -198,7 +219,7 @@ class RevolutService
 
     public function getTransactions()
     {
-        $revArray = $this->getToken('READ');
+        $revArray = $this->getReadToken();
         if (array_key_exists('url', $revArray)) {
             $discordService = new DiscordService();
             $discordService->sendMessage('Reset RevToken at: ' . $revArray['url']);
@@ -220,7 +241,7 @@ class RevolutService
     // send gbp to an account using manual transfer
     public function sendGBP($amount, $accountNumber, $sortCode, $reference = null, $requestId = null)
     {
-        $revArray = $this->getToken('PAY');
+        $revArray = $this->getPayToken();
         if (array_key_exists('url', $revArray)) {
             $discordService = new DiscordService();
             $discordService->sendMessage('Reset RevToken at: ' . $revArray['url']);

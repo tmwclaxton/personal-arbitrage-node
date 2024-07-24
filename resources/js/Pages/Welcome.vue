@@ -139,6 +139,8 @@ const panicButtonToggle = () => {
                 <div class="border-b border-zinc-300 dark:border-zinc-700"></div>
                 <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Min Sat Profit: </span><TextInput v-model="tempAdminDashboard.min_satoshi_profit" /></div>
                 <p class="text-xs w-96">This is for the auto accept feature. If the profit is less than this value, the offer will not be accepted.</p>
+                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Max Sat Amount: </span><TextInput v-model="tempAdminDashboard.max_satoshi_amount" /></div>
+
             </div>
             <div class="text-left pl-5 flex flex-col gap-y-1 border-r border-black dark:border-white/70 pr-5">
                 <div class="flex flex-row justify-between items-center"><span class="font-bold text-xl mb-2">More Config:</span></div>

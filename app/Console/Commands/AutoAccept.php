@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Http\Controllers\OfferController;
 use App\Jobs\releaseOffer;
 use App\Models\AdminDashboard;
+use App\Models\Offer;
 use App\Models\Transaction;
 use App\Services\DiscordService;
 use Illuminate\Console\Command;
@@ -87,7 +88,8 @@ class AutoAccept extends Command
 
             // grab the largest amount we can accept whether it is range or not
             $calculations = (new OfferController())->calculateLargestAmount($offer, $channelBalances);
-            if (is_array($calculations)) {
+            // if not array or if estimated_offer_amount is null or 0, remove the offer
+            if (is_array($calculations) && $calculations['estimated_offer_amount'] > 0) {
                 $offer->estimated_profit_sat = $calculations['estimated_profit_sats'];
                 $offer->estimated_offer_amount_sat = $calculations['estimated_offer_amount_sats'];
                 $offer->estimated_offer_amount = $calculations['estimated_offer_amount'];
@@ -99,8 +101,14 @@ class AutoAccept extends Command
             }
         }
 
+        // remove any offers who estimated_profit_sat is less than AdminDashboard->min_satoshi_profit
+        $offers = $offers->filter(function ($value, $key) use ($adminDashboard) {
+            return $value->estimated_profit_sat >= $adminDashboard->min_satoshi_profit;
+        });
 
-
+        if ($offers->count() == 0) {
+            return 0;
+        }
 
         // First, collect the premiums and estimated profits to calculate min and max
         $premiums = $offers->pluck('premium')->toArray();
@@ -140,13 +148,15 @@ class AutoAccept extends Command
             if ($offer->job_locked) {
                 continue;
             }
+            $discordService = new DiscordService();
+            $discordService->sendMessage('Auto accepting offer ' . $offer->robosatsId . ' in 2 minutes for ' . $offer->estimated_offer_amount . ' ' . $offer->currency . ' at ' . $offer->premium . '% premium');
+            // reset offer
+            $offer = Offer::find($offer->id);
             $offer->job_locked = true;
+            // 2 minutes from now
+            $offer->auto_accept_at = Carbon::now()->addMinutes(2);
             $offer->save();
-            Bus::chain([
-                new \App\Jobs\CreateRobots($offer, $adminDashboard),
-                new \App\Jobs\AcceptSellOffer($offer, $adminDashboard),
-                new releaseOffer($offer)
-            ])->dispatch();
+
 
         }
 

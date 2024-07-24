@@ -265,13 +265,13 @@ class OfferController extends Controller
             }
             $variationAmounts = [
                 $offer->min_satoshi_amount,
-                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) / 8,
-                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) / 4,
-                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) * 3 / 8,
-                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) / 2,
-                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) * 5 / 8,
-                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) * 3 / 4,
-                ($offer->min_satoshi_amount + $offer->max_satoshi_amount) * 7 / 8,
+                $offer->min_satoshi_amount + ($offer->max_satoshi_amount - $offer->min_satoshi_amount) / 8,
+                $offer->min_satoshi_amount + ($offer->max_satoshi_amount - $offer->min_satoshi_amount) / 4,
+                $offer->min_satoshi_amount + ($offer->max_satoshi_amount - $offer->min_satoshi_amount) * 3 / 8,
+                $offer->min_satoshi_amount + ($offer->max_satoshi_amount - $offer->min_satoshi_amount) / 2,
+                $offer->min_satoshi_amount + ($offer->max_satoshi_amount - $offer->min_satoshi_amount) * 5 / 8,
+                $offer->min_satoshi_amount +  ($offer->max_satoshi_amount - $offer->min_satoshi_amount) * 3 / 4,
+                $offer->min_satoshi_amount + ($offer->max_satoshi_amount - $offer->min_satoshi_amount) * 7 / 8,
                 $offer->max_satoshi_amount
             ];
         } else {
@@ -281,6 +281,16 @@ class OfferController extends Controller
             }
             $variationAmounts = [$offer->satoshis_now];
         }
+
+        // THIS FILTERS OUT ANY VARIATION AMOUNTS THAT ARE GREATER THAN THE MAX SATOSHI AMOUNT
+        $adminDashboard = AdminDashboard::all()->first();
+        $max_satoshi_amount = $adminDashboard->max_satoshi_amount;
+        // remove any variation amounts that are greater than the max_satoshi_amount
+        $variationAmounts = array_filter($variationAmounts, function ($variationAmount) use ($max_satoshi_amount) {
+            return $variationAmount <= $max_satoshi_amount;
+        });
+        //////
+
         // foreach $variationAmounts try to find the largest offer that can be accepted
         $largestAmountSat = 0;
         // order the variation amounts from largest to smallest
@@ -305,8 +315,12 @@ class OfferController extends Controller
         }
 
         if ($largestAmountSat == 0) {
-            (new DiscordService)->sendMessage('Error: Insufficient balance (ps need 100000 extra for fees for bond and potentially fees)');
-            return 'Insufficient balance (ps need 100000 extra for fees for bond and potentially fees)';
+            // (new DiscordService)->sendMessage('Error: Insufficient balance (ps need 100000 extra for fees for bond and potentially fees)');
+            return [
+                'estimated_offer_amount_sats' => 0,
+                'estimated_offer_amount' => 0,
+                'estimated_profit_sats' => 0
+            ];
         }
 
         $estimated_offer_amount_sat = $offer->range ? $offer->satoshis_now : $largestAmountSat;

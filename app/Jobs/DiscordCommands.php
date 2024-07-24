@@ -12,6 +12,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Redis;
 
 class DiscordCommands implements ShouldQueue
 {
@@ -33,7 +34,10 @@ class DiscordCommands implements ShouldQueue
         $commands = [
             '!panic',
             '!calm',
-            '!confirm'
+            '!confirm',
+            '!resetRevolut',
+            '!getRevPayToken',
+            '!getRevReadToken',
         ];
         $discordService = new DiscordService();
         $latestMessages = $discordService->getLatestMessages();
@@ -73,6 +77,21 @@ class DiscordCommands implements ShouldQueue
                             $secondWord = explode(' ', $message['content'])[1];
                             $offer = Offer::where('robosatsId', $secondWord)->first();
                             ConfirmPayment::dispatch($offer, $adminDashboard);
+                            break;
+                        case '!resetRevolut':
+                            // unset revolut_auth_code_request in Redis
+                            Redis::del('revolut_auth_code_request');
+                            break;
+                        case '!getRevPayToken':
+                            $revolutService = new \App\Services\RevolutService();
+                            $revArray = $revolutService->getPayToken();
+                            $discordService->sendMessage('Reset RevToken at: ' . $revArray['url']);
+
+                            break;
+                        case '!getRevReadToken':
+                            $revolutService = new \App\Services\RevolutService();
+                            $revArray = $revolutService->getReadToken();
+                            $discordService->sendMessage('Reset RevToken at: ' . $revArray['url']);
                             break;
                         default:
                             $discordService->sendMessage('Command not recognized');
