@@ -312,6 +312,8 @@ class RevolutService
         ]);
 
         if ($this->getGBPBalance() > 20) {
+            $discordService = new DiscordService();
+            $discordService->sendMessage('Sending ' . $this->getGBPBalance() . ' GBP to personal revolut account');
             $client = new \RevolutPHP\Client($accessToken);
             $counterParties = $client->counterparties->all();
             $counterParty = null;
@@ -326,7 +328,7 @@ class RevolutService
             }
             $payment = array(
                 "request_id" => bin2hex(random_bytes(16)),
-                "account_id" => "1515184a-910c-4957-8cf5-72522385c81a",
+                "account_id" => "29d35a62-1130-4aef-8d51-7ccd484b25bd",
                 "receiver" => array(
                     "counterparty_id" => $counterParty->id,
                     "account_id" => $counterParty->accounts[0]->id,
@@ -341,8 +343,6 @@ class RevolutService
             $client = new \RevolutPHP\Client($accessToken);
             $client->payments->create($payment);
 
-            $discordService = new DiscordService();
-            $discordService->sendMessage('Sent ' . $this->getGBPBalance() . ' GBP to personal wise account');
         }
     }
 }

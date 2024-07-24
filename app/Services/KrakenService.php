@@ -69,6 +69,9 @@ class KrakenService
     public function buyFullAmt(): \Butschster\Kraken\Responses\Entities\AddOrder\OrderAdded|\Illuminate\Http\JsonResponse
     {
         $response = $this->getGBPBalance();
+        // subtract 2 from the amount to account for fees  given its big decimal
+        $response = $response->minus(2);
+        // dd($response);
         $floatAmt = round($response->toFloat(), 2, PHP_ROUND_HALF_DOWN);
         return $this->buyBitcoin($floatAmt);
     }

@@ -175,6 +175,14 @@ Route::get('monzo-refresh', function () {
 
 
 Route::get('/testing', function () {
+    $revolutService = new RevolutService();
+    $accessToken = new \League\OAuth2\Client\Token\AccessToken([
+        'access_token' => $revolutService->getReadToken()['access_token']
+    ]);
+
+        $client = new \RevolutPHP\Client($accessToken);
+        $counterParties = $client->accounts->all();
+        dd($counterParties);
 
     // wise send to personal revolut account
     // $payment = null;

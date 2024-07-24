@@ -39,23 +39,25 @@ class KrakenAutoPurchaser implements ShouldQueue
 
         $adminDashboard = AdminDashboard::all()->first();
         // check if autoTopUp is enabled
-        if (!$adminDashboard->autoTopUp) {
-            return;
-        }
+        // if (!$adminDashboard->autoTopUp) {
+        //     return;
+        // }
 
         $lightningNode = new LightningNode();
+        $kraken = new \App\Services\KrakenService();
+        $response = $kraken->getGBPBalance();
+        $discordService = new DiscordService();
+        if ($response->isGreaterThan(BigDecimal::of('10'))) {
+            $discordService->sendMessage('Auto purchasing BTC from Kraken');
+
+            $kraken->buyFullAmt();
+            sleep(5);
+            $kraken->sendFullAmtToLightning();
+        } else {
+        }
         $balance = $lightningNode->getLightningWalletBalance();
         if ($balance['localBalance'] < 600000) {
-            $kraken = new \App\Services\KrakenService();
-            $response = $kraken->getGBPBalance();
-            if ($response->isGreaterThan(BigDecimal::of('10'))) {
-                $kraken->buyFullAmt();
-                sleep(5);
-                $kraken->sendFullAmtToLightning();
-            } else {
-                $discordService = new DiscordService();
-                $discordService->sendMessage('Send money to Kraken!');
-            }
+            $discordService->sendMessage('Send money to Kraken!');
         }
     }
 }
