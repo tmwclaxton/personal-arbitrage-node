@@ -40,6 +40,6 @@ jobs:
           export WWWUSER=${WWWUSER:-$UID}
           export WWWGROUP=${WWWGROUP:-$(id -g)}
           docker-compose -f docker-compose.yml build
-          docker tag rapidresearch/app ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
+          docker tag arbitrage-bot/app ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
           docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
