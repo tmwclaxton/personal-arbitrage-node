@@ -39,7 +39,8 @@ jobs:
         run: |
           export WWWUSER=${WWWUSER:-$UID}
           export WWWGROUP=${WWWGROUP:-$(id -g)}
-          docker-compose -f docker-compose.yml build
+#          docker-compose -f docker-compose.yml build
+          docker build --build-arg WWWGROUP=${WWWGROUP} -f ./docker/8.3/Dockerfile -t arbitrage-bot/app ./docker/8.3
           docker tag arbitrage-bot/app ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
           docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
