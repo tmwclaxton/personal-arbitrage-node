@@ -3,8 +3,7 @@ name: "Production Deploy"
 on:
   workflow_dispatch:
   push:
-    branches:
-      - master
+    branches: [ "master" ]
 
 env:
   AWS_REGION: "eu-west-2"
@@ -15,7 +14,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
       - name: ConfigureAWS credentials
@@ -41,7 +39,6 @@ jobs:
           export WWWGROUP=${WWWGROUP:-$(id -g)}
           export DOCKER_DEFAULT_PLATFORM=linux/arm64
           docker-compose -f docker-compose.yml build
-#          docker build --build-arg WWWGROUP=${WWWGROUP} -f ./docker/8.3/Dockerfile -t arbitrage-bot/app ./docker/8.3
           docker tag arbitrage-bot/app ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
           docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
