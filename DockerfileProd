@@ -63,6 +63,8 @@ RUN useradd -ms /bin/bash --no-user-group -g $WWWGROUP -u 1337 sail
 RUN mkdir /etc/supervisor/logs
 RUN touch /etc/supervisor/logs/worker.log
 
+COPY . /var/www/html
+
 # check storage folder and logs folder exists
 RUN if [ ! -d "/var/www/html/storage" ]; then mkdir /var/www/html/storage; fi
 RUN if [ ! -d "/var/www/html/storage/logs" ]; then mkdir /var/www/html/storage/logs; fi
@@ -88,10 +90,10 @@ RUN npm install --no-audit --no-progress
 # npm run build
 RUN npm run build
 
-COPY start-container /usr/local/bin/start-container
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY workers /etc/supervisor/conf.d/workers
-COPY php.ini /etc/php/8.3/cli/conf.d/99-sail.ini
+COPY docker/8.3/start-container /usr/local/bin/start-container
+COPY docker/8.3/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker/8.3/workers /etc/supervisor/conf.d/workers
+COPY docker/8.3/php.ini /etc/php/8.3/cli/conf.d/99-sail.ini
 
 RUN chmod +x /usr/local/bin/start-container
 

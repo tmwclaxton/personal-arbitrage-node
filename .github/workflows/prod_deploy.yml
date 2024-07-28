@@ -42,7 +42,7 @@ jobs:
         run: |
           export WWWUSER=${WWWUSER:-$UID}
           export WWWGROUP=${WWWGROUP:-$(id -g)}
-          docker build --platform linux/arm64 --file ./docker/8.3/Dockerfile --build-arg WWWGROUP=${WWWGROUP} --build-arg WWWUSER=${WWWUSER} --tag arbitrage-bot/app ./docker/8.3
+          docker build --platform linux/arm64 --file DockerfileProd --build-arg WWWGROUP=${WWWGROUP} --build-arg WWWUSER=${WWWUSER} --tag arbitrage-bot/app ./docker/8.3
 
       - name: Re-login to Amazon ECR
         id: re-login-ecr
