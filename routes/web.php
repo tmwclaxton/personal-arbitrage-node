@@ -69,6 +69,9 @@ Route::post('/updateAdminDashboard', function () {
 
 Route::get('/', [\App\Http\Controllers\OfferController::class, 'index'])->name('welcome');
 Route::get('/offers', [\App\Http\Controllers\OfferController::class, 'getOffers'])->name('offers.index');
+Route::get('/transactions', [\App\Http\Controllers\TransactionController::class, 'index'])->name('transactions.index');
+Route::get('/payments', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payments.index');
+Route::get('/config', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('dashboard.index');
 
 
 Route::post('/create-robot', function () {
@@ -177,7 +180,7 @@ Route::get('monzo-refresh', function () {
 Route::get('/testing', function () {
     $revolutService = new RevolutService();
     $revolutService->currencyExchangeAll("EUR", "GBP");
-dd($revolutService->getGBPBalance());
+    dd($revolutService->getGBPBalance());
     // wise send to personal revolut account
     // $payment = null;
     // $wiseService = new \App\Services\WiseService();

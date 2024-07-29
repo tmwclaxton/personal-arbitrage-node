@@ -34,7 +34,7 @@ class OfferController extends Controller
         return $offers;
     }
 
-    private function getInfo()
+    public function getInfo()
     {
 
         $btcFiats = BtcFiat::where('currency', 'USD')->orWhere('currency', 'GBP')->orWhere('currency', 'EUR')->get();
