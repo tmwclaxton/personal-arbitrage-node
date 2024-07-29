@@ -88,8 +88,6 @@ RUN if [ ! -d "/var/www/html/vendor" ]; then mkdir /var/www/html/vendor; fi
 # run composer install
 RUN composer install --no-interaction --no-plugins --no-scripts --prefer-dist --optimize-autoloader
 
-RUN php artisan config:clear
-RUN php artisan cache:clear
 RUN php artisan storage:link
 
 # run npm install
