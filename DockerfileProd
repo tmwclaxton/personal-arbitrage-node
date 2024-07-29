@@ -79,6 +79,9 @@ RUN if [ ! -d "/var/www/html/storage/framework/cache/data" ]; then mkdir /var/ww
 RUN if [ ! -d "/var/www/html/storage/framework/sessions" ]; then mkdir /var/www/html/storage/framework/sessions; fi
 RUN if [ ! -d "/var/www/html/storage/framework/views" ]; then mkdir /var/www/html/storage/framework/views; fi
 
+# set permission for storage folder to read and write and create
+RUN chown -R sail:sail /var/www/html/storage
+
 # create laravel log file
 RUN touch /var/www/html/storage/logs/laravel.log
 RUN touch /var/www/html/storage/logs/worker.log
