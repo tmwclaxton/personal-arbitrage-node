@@ -10,8 +10,8 @@ ARG POSTGRES_VERSION=15
 WORKDIR /var/www/html
 
 ENV DEBIAN_FRONTEND noninteractive
-
 ENV TZ=UTC
+
 ENV SUPERVISOR_PHP_COMMAND="/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan serve --host=0.0.0.0 --port=80"
 ENV SUPERVISOR_PHP_USER="sail"
 
@@ -63,12 +63,12 @@ RUN useradd -ms /bin/bash --no-user-group -g $WWWGROUP -u 1337 sail
 RUN mkdir /etc/supervisor/logs
 RUN touch /etc/supervisor/logs/worker.log
 
-COPY . /var/www/html
-COPY /var/www/html/docker/8.3/start-container /usr/local/bin/start-container
-COPY /var/www/html/docker/8.3/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY /var/www/html/docker/8.3/workers /etc/supervisor/conf.d/workers
-COPY /var/www/html/docker/8.3/php.ini /etc/php/8.3/cli/conf.d/99-sail.ini
+COPY docker/8.3/start-container /usr/local/bin/start-container
+COPY docker/8.3/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker/8.3/php.ini /etc/php/8.3/cli/conf.d/99-sail.ini
+COPY docker/8.3/workers /etc/supervisor/conf.d/workers
 
+COPY . /var/www/html
 
 # check storage folder and logs folder exists
 RUN if [ ! -d "/var/www/html/storage" ]; then mkdir /var/www/html/storage; fi
@@ -88,6 +88,8 @@ RUN if [ ! -d "/var/www/html/vendor" ]; then mkdir /var/www/html/vendor; fi
 # run composer install
 RUN composer install --no-interaction --no-plugins --no-scripts --prefer-dist --optimize-autoloader
 
+RUN php artisan config:clear
+RUN php artisan cache:clear
 RUN php artisan storage:link
 
 # run npm install
