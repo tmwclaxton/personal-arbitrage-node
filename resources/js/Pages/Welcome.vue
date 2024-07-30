@@ -54,7 +54,7 @@ setInterval(() => {
     }).catch(error => {
         console.log(error);
     });
-}, 1000);
+}, 10000);
 
 let tempAdminDashboard = JSON.parse(JSON.stringify(props.adminDashboard));
 // convert tempAdminDashboard.payment_methods to array from json string
