@@ -83,7 +83,7 @@ const panicButtonToggle = () => {
 
 <template>
     <Head title="Offers" />
-    <div class="bg-gray-50 text-black/50 dark:bg-black dark:text-white/50 min-h-screen">
+    <div class="min-h-screen">
 
         <p class="font-bold text-2xl mx-auto text-center py-5">Lightning Arbitrage Solutions</p>
 
@@ -106,7 +106,7 @@ const panicButtonToggle = () => {
                 class="text-xs text-white font-bold py-2 px-4 rounded"
                 :class="tempAdminDashboard.panicButton ?
             'bg-red-500 hover:bg-red-400 border-red-800 hover:border-red-600' :
-            'bg-zinc-500 hover:bg-zinc-400 border-zinc-600 hover:border-zinc-500'">
+            'bg-zinc-500 hover:bg-zinc-400 !border-zinc-600 hover:border-zinc-500'">
 
                 Panic Button {{ tempAdminDashboard.panicButton ? 'ON' : 'OFF' }}
             </danger-button>
@@ -145,7 +145,7 @@ const panicButtonToggle = () => {
 
 
             <div class="relative flex flex-col flex-grow items-center justify-center selection:bg-[#FF2D20] selection:text-white">
-                <div class="grid grid-cols-5 gap-6  mx-auto" v-if="accessOffers.length > 0">
+                <div class="grid grid-cols-1 gap-6  mx-auto" v-if="accessOffers.length > 0">
                     <Offer v-for="offer in accessOffers" :key="offer.robosatsId" :offer="offer" />
                 </div>
                 <div class="mx-auto" v-else>

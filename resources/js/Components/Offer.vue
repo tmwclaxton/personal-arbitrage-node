@@ -1,12 +1,57 @@
 <template>
-    <div class="max-w-md p-8 mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
+    <div class="max-w-md p-4 mx-auto bg-white dark:bg-zinc-900 dark:text-white dark:border-zinc-700 dark:shadow-lg
+    rounded-xl shadow-md overflow-hidden md:max-w-2xl">
+
+            <div class="flex flex-row gap-1">
+
+                    <danger-button v-on:click="autoRun"
+                                   class="w-full text-center !w-24 h-10 break-words ">
+                        <p class="text-center w-full">Auto Run</p>
+                    </danger-button>
+
+                    <primary-button v-on:click="uniqueRobot"
+                                    class="w-full text-center !w-24 h-10 break-words ">
+                        <p class="text-center w-full">Create Robots</p>
+                    </primary-button>
+
+                    <primary-button v-on:click="acceptOffer"
+                                    class="w-full text-center !w-24 h-10 break-words ">
+                        <p class="text-center w-full">Accept</p>
+                    </primary-button>
+
+                    <primary-button class="w-full text-center !w-24 h-10 break-words " v-on:click="payBond">
+                        <p class="text-center w-full">Bond</p>
+                    </primary-button>
+
+                    <primary-button v-on:click="payEscrow"
+                                    class="w-full text-center !w-24 h-10 break-words ">
+                        <p class="text-center w-full">Escrow</p>
+                    </primary-button>
+
+
+                    <primary-button class="w-full text-center p-0" v-on:click="sendPaymentHandle">
+                        <p class="text-center w-full">Message</p>
+                    </primary-button>
+
+                    <primary-button class="w-full text-center p-0" v-on:click="confirmPayment">
+                        <p class="text-center w-full">Confirm</p>
+                    </primary-button>
+                </div>
+
+            <div class="border-b border-gray-200 dark:border-zinc-700 my-2 "></div>
             <div class=" flex flew-row gap-4">
-                <div class="flex flex-col w-44 flex-shrink-0">
-                    <div class="uppercase tracking-wide text-sm text-indigo-500 font-semibold">{{
-                            offer.provider
-                        }}
+
+
+
+
+                <div class="flex flex-col max-w-44 flex-shrink-0">
+                    <div class="uppercase tracking-wide text-sm text-indigo-500 font-semibold">
+                        <span v-text="offer.provider"></span>
+                        <!--<span class="text-gray-500 mx-1">·</span>-->
+                        <span class="mt-2 text-gray-500 font-bold">{{ offer.accepted ? ' · Accepted' : '' }}</span>
+
                     </div>
-                    <p class="block mt-1 text-lg leading-tight font-medium text-black  ">
+                    <p class="block mt-1 text-lg leading-tight font-bold underline ">
                         Offer #{{ offer.robosatsId }}
                     </p>
                     <!--<p class="mt-2 text-gray-500 font-bold">Currency: {{ offer.currency }}</p>-->
@@ -21,79 +66,47 @@
                     <p v-if="offer.has_range" class="mt-2 text-gray-500">Max Amount: {{ offer.max_amount ?? 'N/A' }}</p>
                     <p v-if="offer.has_range" class="mt-0.5 text-gray-500 text-xs">Sats: {{ offer.max_satoshi_amount ?? 'N/A' }}</p>
                     <p v-if="offer.has_range" class="mt-0.5 text-gray-500 text-xs">Profit: {{ offer.max_satoshi_amount_profit ?? 'N/A' }}</p>
-                    <p class="mt-2 text-gray-500">Premium: {{ offer.premium }}</p>
-                    <p class="mt-2 text-gray-500 ">Payment Methods: <br><span class="break-words font-bold">{{ offer.payment_methods }}</span></p>
-                    <p class="mt-2 text-gray-500 font-bold">Accepted: {{ offer.accepted ? 'Yes' : 'No' }}</p>
+
+                    <div v-if="offer.transaction" class="border border-gray-200 dark:border-zinc-700 my-4"></div>
+
+                    <div v-if="offer.transaction">
+                        <p class="mt-2 text-gray-500 font-bold">Transaction Status: {{
+                                offer.transaction.status_message
+                            }}</p>
+                    </div>
+
                 </div>
                 <div class="flex flex-col"><p class="mt-2 text-gray-500 italic">Expires at: {{ offer.expires_at }}</p>
-                    <div class="border border-gray-200 mt-2"></div>
                     <p class="mt-2 text-gray-500 italic">Last updated at: {{ offer.updated_at_readable }}</p>
                     <p v-if="offer.auto_accept_at" class="mt-2 text-gray-500 italic font-bold">Auto accepting at: {{ offer.auto_accept_at }}</p>
+                    <div class="border border-gray-200 dark:border-zinc-700 mt-2"></div>
                     <!--<p class="mt-2 text-gray-500">Explicit: {{ offer.is_explicit ? 'Yes' : 'No' }}</p>-->
                     <!--<p class="mt-2 text-gray-500">Satoshis: {{ offer.satoshis ?? 'N/A' }}</p>-->
-                    <p class="mt-2 text-gray-500">Maker: {{ offer.maker }}</p>
+                    <!--<p class="mt-2 text-gray-500">Maker: {{ offer.maker }}</p>-->
                     <p class="mt-2 text-gray-500">Escrow Duration: {{ offer.escrow_duration }}</p>
                     <p class="mt-2 text-gray-500">Bond Size: {{ offer.bond_size }}</p>
+                    <p class="mt-2 text-gray-500">Premium: {{ offer.premium }}</p>
+                    <p class="mt-2 text-gray-500 ">Payment Methods: <br><span class="break-words font-bold">{{ offer.payment_methods }}</span></p>
+
+                </div>
+
+
+                <div v-if="offer.robots && offer.robots.length > 0" class="border-r border-gray-200 my-4"></div>
+
+                <div v-if="offer.robots && offer.robots.length > 0">
+                    <p class="mt-2 text-gray-500 "><span class="font-bold">Nickname</span>: <br>{{ offer.robots[0].nickname }}</p>
+                    <p class="mt-2 text-gray-500 "><span class="font-bold">Token</span>: <br>{{ offer.robots[0].token }}</p>
+                    <div v-for="robot in offer.robots" :key="robot.id">
+                        <p class="mt-2 text-gray-500">Provider: {{ robot.provider }}</p>
+                    </div>
                 </div>
             </div>
 
-            <div class="border border-gray-200 my-4"></div>
-            <div class="grid grid-cols-2 gap-3">
-
-                <primary-button v-on:click="autoRun"
-                                class="w-full text-center col-span-2 text-center px-auto">
-                    <p class="text-center w-full">Auto Run</p>
-                </primary-button>
-
-                <primary-button v-on:click="uniqueRobot"
-                                class="w-full text-center">
-                    Create Unique Robot
-                </primary-button>
-
-                <primary-button v-on:click="acceptOffer"
-                                class="w-full text-center">
-                    Accept Offer
-                </primary-button>
-
-                <primary-button class="w-full text-center" v-on:click="payBond">
-                    Pay Bond
-                </primary-button>
-
-                <primary-button v-on:click="payEscrow"
-                    class="w-full text-center">
-                    Pay Escrow
-                </primary-button>
 
 
-                <primary-button class="w-full text-center" v-on:click="sendPaymentHandle">
-                    Send Payment Handle
-                </primary-button>
 
-                <primary-button class="w-full text-center" v-on:click="confirmPayment">
-                    Confirm Payment Received
-                </primary-button>
-            </div>
 
-            <div v-if="offer.transaction" class="border border-gray-200 my-4"></div>
 
-            <div v-if="offer.transaction">
-                <!--<p class="mt-2 text-gray-500 font-bold">Transaction ID: {{-->
-                <!--    offer.transaction.id-->
-                <!--}}</p>-->
-                <p class="mt-2 text-gray-500 font-bold">Transaction Status: {{
-                        offer.transaction.status_message
-                    }}</p>
-            </div>
-
-            <div v-if="offer.robots" class="border border-gray-200 my-4"></div>
-
-            <div v-if="offer.robots && offer.robots.length > 0">
-                <p class="mt-2 text-gray-500 "><span class="font-bold">Nickname</span>: <br>{{ offer.robots[0].nickname }}</p>
-                <p class="mt-2 text-gray-500 "><span class="font-bold">Token</span>: <br>{{ offer.robots[0].token }}</p>
-                <div v-for="robot in offer.robots" :key="robot.id">
-                    <p class="mt-2 text-gray-500">Provider: {{ robot.provider }}</p>
-                </div>
-            </div>
 
 
 
@@ -104,6 +117,7 @@
 import { Head } from '@inertiajs/vue3';
 import { defineProps } from 'vue';
 import PrimaryButton from "@/Components/PrimaryButton.vue";
+import DangerButton from "@/Components/DangerButton.vue";
 
 const props = defineProps(['offer']);
 
