@@ -71,18 +71,20 @@ if [ $? -eq 1 ]; then
         docker rm deployment_arbitrage-bot_1
     fi
 
-    docker-compose -f docker-compose.yml --env-file .env up -d
+    # check if volume deployment_sail-laravel exists if so delete it
+    docker volume ls | grep deployment_sail-laravel
+
+    if [ $? -eq 0 ]; then
+        docker volume rm deployment_sail-laravel
+    fi
+
+    docker-compose -f ~/Deployment/docker-compose.yml --env-file ~/Deployment/.env up -d
 
     # wait for the container to start then run cmd 'npm run build'
-    sleep 20
+    # sleep 20
 
-    # remove all the files in public/build/assets
-    docker exec -it deployment_arbitrage-bot_1 rm -r /app/public/build/assets
 
-    # recreate the folder
-    docker exec -it deployment_arbitrage-bot_1 mkdir /app/public/build/assets
-
-    docker exec -it deployment_arbitrage-bot_1 npm run build
+    # docker exec -it deployment_arbitrage-bot_1 npm run build
 
 else
     echo "The latest image is not more recent than the current image"

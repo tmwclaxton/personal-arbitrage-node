@@ -1,5 +1,5 @@
 <template>
-    <div class="max-w-md p-4 mx-auto bg-white dark:bg-zinc-900 dark:text-zinc-200 dark:border-zinc-700 dark:shadow-lg
+    <div class="max-w-md p-4 mx-auto bg-white dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700 dark:shadow-lg
     rounded-xl shadow-md overflow-hidden md:max-w-2xl">
 
             <div class="grid grid-cols-4  gap-1">
@@ -36,9 +36,9 @@
                     <primary-button class="w-full text-center p-0 !w-24 h-10 break-words" v-on:click="confirmPayment">
                         <p class="text-center w-full">Confirm</p>
                     </primary-button>
-                    <primary-button class="w-full text-center p-0 !w-24 h-10 break-words" v-on:click="">
+                    <secondary-button class="w-full text-center p-0 !w-24 h-10 break-words" v-on:click="">
                         <p class="text-center w-full">View Chat</p>
-                    </primary-button>
+                    </secondary-button>
                 </div>
 
             <div class="border-b border-gray-200 dark:border-zinc-700 my-2 "></div>
@@ -121,6 +121,7 @@ import { Head } from '@inertiajs/vue3';
 import { defineProps } from 'vue';
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import DangerButton from "@/Components/DangerButton.vue";
+import SecondaryButton from "@/Components/SecondaryButton.vue";
 
 const props = defineProps(['offer']);
 

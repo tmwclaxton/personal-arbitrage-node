@@ -193,6 +193,39 @@ const showSidebar = ref(true);
 
                     <primary-button class="h-8 mt-4 mx-auto" @click="clicked">Save Changes</primary-button>
 
+
+                    <div class="flex flex-col gap-y-3 border-t-2 border-zinc-300 dark:border-white/70 mt-4 pt-1">
+
+                        <div class="text-left  ">
+                            <p class=""><span class="font-bold text-xl mb-2">Wallet:</span></p>
+
+                            <p class=""><span class="font-bold">Lighting Wallet Balance:</span> {{ tempAdminDashboard.localBalance }} </p>
+                            <p class=""><span class="font-bold">Remote Balance:</span> {{ tempAdminDashboard.remoteBalance }} </p>
+                            <div class="border-b border-zinc-300 dark:border-zinc-700"></div>
+                            <div class="flex flex-col gap-y-1 text-xs pt-2">
+                                <div v-for="channelBalance in channelBalances"
+                                     class="flex flex-row gap-x-2">
+                                    <span class="font-bold"> {{ channelBalance.channelName }}: </span>
+                                    <span class="font-bold text-green-500"> {{ channelBalance.localBalance }} </span>
+                                    <span class="font-bold text-red-500"> {{ channelBalance.remoteBalance }} </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-y-3 border-t-2 border-zinc-300 dark:border-white/70 mt-4 pt-1">
+                        <div class="text-left flex flex-col gap-y-1 ">
+                            <div class="flex flex-row justify-between items-center"><span class="font-bold text-xl mb-2">Statistics (satoshies):</span>
+                            </div>
+                            <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Profit: </span><span
+                                v-text="tempAdminDashboard.satoshi_profit"/></div>
+                            <div class="flex flex-row justify-between items-center"><span
+                                class="font-bold mr-1">Fees: </span><span v-text="tempAdminDashboard.satoshi_fees"/></div>
+                            <div class="flex flex-row justify-between items-center"><span
+                                class="font-bold mr-1">Trade Volume: </span><span
+                                v-text="tempAdminDashboard.trade_volume_satoshis"/></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
