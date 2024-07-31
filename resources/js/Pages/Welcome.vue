@@ -70,6 +70,10 @@ const clicked = () => {
     }).catch(error => {
         console.log(error);
     });
+
+    setTimeout(() => {
+        router.reload()
+    }, 500);
 }
 
 const panicButtonToggle = () => {
