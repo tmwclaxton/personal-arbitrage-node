@@ -178,9 +178,9 @@ Route::get('monzo-refresh', function () {
 
 
 Route::get('/testing', function () {
-    $revolutService = new RevolutService();
-    $revolutService->currencyExchangeAll("EUR", "GBP");
-    dd($revolutService->getGBPBalance());
+    // $revolutService = new RevolutService();
+    // $revolutService->currencyExchangeAll("EUR", "GBP");
+    // dd($revolutService->getGBPBalance());
     // wise send to personal revolut account
     // $payment = null;
     // $wiseService = new \App\Services\WiseService();
@@ -210,20 +210,19 @@ Route::get('/testing', function () {
         'access_token' => $revolutService->getReadToken()['access_token']
     ]);
 
-    if ($revolutService->getGBPBalance() >= 20) {
+    if ($revolutService->getGBPBalance() >= 4) {
         $client = new \RevolutPHP\Client($accessToken);
         $counterParties = $client->counterparties->all();
-        dd($counterParties);
         $counterParty = null;
         foreach ($counterParties as $cp) {
-            if (!isset($cp->revtag)) {
-                continue;
-            }
-            if ($cp->revtag === 'tobyclaxton') {
+            if ($cp->id === '9f7f4336-69b3-440a-9767-dfa5e9a01a27') { // payward ltd account
                 $counterParty = $cp;
                 break;
             }
         }
+        $discordService = new DiscordService();
+        $discordService->sendMessage('Sent ' . $revolutService->getGBPBalance() . ' GBP to Kraken account');
+
         $payment = array(
             "request_id" => bin2hex(random_bytes(16)),
             "account_id" => "29d35a62-1130-4aef-8d51-7ccd484b25bd",
@@ -233,7 +232,7 @@ Route::get('/testing', function () {
             ),
             "amount" => $revolutService->getGBPBalance(),
             "currency" => "GBP",
-            "reference" => "Move to personal account " . Carbon::now()->toDateTimeString()
+            "reference" => "Store fiat as BTC in Kraken"
         );
         $accessToken = new \League\OAuth2\Client\Token\AccessToken([
             'access_token' => $revolutService->getPayToken()['access_token']
@@ -241,8 +240,7 @@ Route::get('/testing', function () {
         $client = new \RevolutPHP\Client($accessToken);
         $client->payments->create($payment);
 
-        $discordService = new DiscordService();
-        $discordService->sendMessage('Sent ' . $revolutService->getGBPBalance() . ' GBP to personal account');
+
 
     }
 

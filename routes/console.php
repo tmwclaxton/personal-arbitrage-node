@@ -93,9 +93,9 @@ Schedule::command('currency:converter')
     ->everyMinute()->withoutOverlapping(1);
 
 // kraken auto purchaser
-Schedule::command('kraken:auto-purchaser')
-    ->description('kraken auto purchaser')
-    ->everyTenMinutes()->withoutOverlapping(1);
+// Schedule::command('kraken:auto-purchaser')
+//     ->description('kraken auto purchaser')
+//     ->everyTenMinutes()->withoutOverlapping(1);
 
 // Schedule::call(function () {
 //     $revolutService = new \App\Services\RevolutService();

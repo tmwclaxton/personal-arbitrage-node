@@ -52,9 +52,18 @@ class KrakenAutoPurchaser implements ShouldQueue
 
             $kraken->buyFullAmt();
             sleep(5);
-            $kraken->sendFullAmtToLightning();
-        } else {
+            // $kraken->sendFullAmtToLightning();
         }
+
+
+        // kraken get BTC balance
+        $btcBalance = $kraken->getBTCBalance();
+        // if BTC balance greater than 0 send to lightning node
+        if ($btcBalance->isGreaterThan(BigDecimal::of('0'))) {
+            $kraken->sendFullAmtToLightning();
+        }
+
+        sleep(5);
         $balance = $lightningNode->getLightningWalletBalance();
         if ($balance['localBalance'] < 600000) {
             $discordService->sendMessage('Send money to Kraken!');

@@ -318,27 +318,28 @@ class RevolutService
         return 0;
     }
 
-    public function sendAllToPersonal() {
+    public function sendAllGBPToAccount($accountId = '9f7f4336-69b3-440a-9767-dfa5e9a01a27') {
         // revolut send to personal account
         $payment = null;
         $accessToken = new \League\OAuth2\Client\Token\AccessToken([
             'access_token' => $this->getReadToken()['access_token']
         ]);
 
-        if ($this->getGBPBalance() > 20) {
+        if ($this->getGBPBalance() >= 20) {
             $discordService = new DiscordService();
-            $discordService->sendMessage('Sending ' . $this->getGBPBalance() . ' GBP to personal revolut account');
+            $discordService->sendMessage('Sending ' . $this->getGBPBalance() . ' GBP to Kraken account');
             $client = new \RevolutPHP\Client($accessToken);
             $counterParties = $client->counterparties->all();
             $counterParty = null;
             foreach ($counterParties as $cp) {
-                if (!isset($cp->revtag)) {
-                    continue;
-                }
-                if ($cp->revtag === 'tobyclaxton') {
+                if ($cp->id === $accountId) {
                     $counterParty = $cp;
                     break;
                 }
+            }
+            if ($counterParty == null) {
+                $discordService->sendMessage('Counterparty not found to send GBP to');
+                return;
             }
             $payment = array(
                 "request_id" => bin2hex(random_bytes(16)),
@@ -349,7 +350,7 @@ class RevolutService
                 ),
                 "amount" => $this->getGBPBalance(),
                 "currency" => "GBP",
-                "reference" => "Move to personal account " . Carbon::now()->toDateTimeString()
+                "reference" => "Store fiat as BTC in Kraken"
             );
             $accessToken = new \League\OAuth2\Client\Token\AccessToken([
                 'access_token' => $this->getPayToken()['access_token']

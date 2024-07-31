@@ -53,23 +53,31 @@ class SeleniumService
 
             // wait until the page is loaded
             $this->driver->wait(10, 1000)->until(
-                WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::id(":r9:"))
+                WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::name("username"))
             );
 
+            $usernameAttribute = $this->driver->findElement(WebDriverBy::name("username"));
+            $passwordAttribute = $this->driver->findElement(WebDriverBy::name("password"));
+
+
+
             // Perform the actions from the JUnit code
-            // $this->driver->findElement(WebDriverBy::cssSelector('.ml-4 > .inline-block > .rounded-ds-round'))->click();
-            $this->driver->findElement(WebDriverBy::id(":r9:"))->click();
-            $this->driver->findElement(WebDriverBy::id(":r9:"))->sendKeys(env('KRAKEN_USERNAME'));
-            $this->driver->findElement(WebDriverBy::id(":ra:"))->sendKeys(env('KRAKEN_PASSWORD'));
-            $this->driver->findElement(WebDriverBy::cssSelector(".absolute"))->click();
-            sleep(2);
-            if (count($this->driver->findElements(WebDriverBy::id(":rb:"))) > 0) {
-                $this->driver->wait(10, 1000)->until(
-                    WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::id(":rb:"))
-                );
+            $usernameAttribute->click();
+            $usernameAttribute->sendKeys(env('KRAKEN_USERNAME'));
+            $passwordAttribute->sendKeys(env('KRAKEN_PASSWORD'));
+            $passwordAttribute->sendKeys(WebDriverKeys::ENTER);
+
+
+            // $buttons = $this->getButtons();
+            // // click the continue button
+            // $this->clickButtonsWithText($buttons[0], $buttons[1], ["Continue"]);
+
+            sleep(10);
+            if (count($this->driver->findElements(WebDriverBy::name("tfa"))) || count($this->driver->findElements(WebDriverBy::name("otp"))) ) {
                 $otp = $krakenService->getOTP();
-                $this->driver->findElement(WebDriverBy::id(":rb:"))->sendKeys($otp);
-                $this->driver->findElement(WebDriverBy::id(":rb:"))->sendKeys(WebDriverKeys::ENTER);
+                $otpInput = $this->driver->findElement(WebDriverBy::name("tfa"));
+                $otpInput->sendKeys($otp);
+                $otpInput->sendKeys(WebDriverKeys::ENTER);
             }
 
             // Execute JavaScript for scrolling
@@ -87,15 +95,22 @@ class SeleniumService
     {
         try {
             // set window size
-            $this->driver->manage()->window()->setSize(new WebDriverDimension(1085, 575));
+            $this->driver->manage()->window()->setSize(new WebDriverDimension(1920, 1080));
             // wait until the page is loaded
             $this->driver->wait(10, 1000)->until(
                 WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::cssSelector(".my-px"))
             );
-
-            // click the button
+            //
+            // // click the button
             $this->driver->findElement(WebDriverBy::cssSelector(".my-px"))->click();
 
+
+            // if above code stops working, use the code below
+            // sleep(5);
+            //
+            // $buttons = $this->getButtons();
+            // // click button with send email or resend email
+            // $this->clickButtonsWithText($buttons[0], $buttons[1], ["Send email", "Resend email"]);
 
 
             $this->driver->get($this->getLinkFromLastEmail());
@@ -186,23 +201,6 @@ class SeleniumService
                     }
 
                 }
-                // if ($index !== false) {
-                //     $count++;
-                //     $webDriverBy = WebDriverBy::id($buttons[$index]->getAttribute('id'));
-                //     // check if button is clickable
-                //     if ($buttons[$index]->isEnabled() && $buttons[$index]->isDisplayed()
-                //         && WebDriverExpectedCondition::elementToBeClickable($webDriverBy)
-                //         && WebDriverExpectedCondition::visibilityOfElementLocated($webDriverBy)
-                //     ) {
-                //         try {
-                //             $buttons[$index]->click();
-                //         } catch (\Exception $e) {
-                //
-                //         }
-                //         sleep(1);
-                //     }
-                //
-                // }
             }
         // } catch (\Exception $e) {
         //     $this->driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
@@ -211,4 +209,5 @@ class SeleniumService
         //     dd($source, $e, $buttons, $buttonValues);
         // }
     }
+
 }
