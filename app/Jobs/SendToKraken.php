@@ -28,7 +28,7 @@ class SendToKraken implements ShouldQueue
     public function handle(): void
     {
         $revolutService = new RevolutService();
-        $revolutService->sendAllGBPToAccount();
+        $revolutService->sendAllGBPToAccount(env('REVOLUT_RECIPIENT_ACCOUNT_ID_KRAKEN'));
 
     }
 }

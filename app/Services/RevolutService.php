@@ -173,8 +173,7 @@ class RevolutService
 
             if ($toCurrency == "GBP") {
                 // we have 2 GBP accounts
-                // 29d35a62-1130-4aef-8d51-7ccd484b25bd
-                if ($account->id == "29d35a62-1130-4aef-8d51-7ccd484b25bd") {
+                if ($account->id == env('REVOLUT_GBP_ACCOUNT_ID')) {
                     $toAccount = $account;
                 }
             } else {
@@ -318,7 +317,7 @@ class RevolutService
         return 0;
     }
 
-    public function sendAllGBPToAccount($accountId = '9f7f4336-69b3-440a-9767-dfa5e9a01a27') {
+    public function sendAllGBPToAccount($accountId) {
         // revolut send to personal account
         $payment = null;
         $accessToken = new \League\OAuth2\Client\Token\AccessToken([
@@ -343,7 +342,7 @@ class RevolutService
             }
             $payment = array(
                 "request_id" => bin2hex(random_bytes(16)),
-                "account_id" => "29d35a62-1130-4aef-8d51-7ccd484b25bd",
+                "account_id" => env('REVOLUT_GBP_ACCOUNT_ID'),
                 "receiver" => array(
                     "counterparty_id" => $counterParty->id,
                     "account_id" => $counterParty->accounts[0]->id,

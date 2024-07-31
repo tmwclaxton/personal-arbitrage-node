@@ -103,7 +103,7 @@ class WiseService
     }
 
 
-    public function createQuote($sourceCurrency, $sourceAmount, $sourceAccount, $targetCurrency): array
+    public function createQuote($sourceCurrency, $sourceAmount, $sourceAccount, $targetCurrency, $transferNature = "MOVING_MONEY_BETWEEN_OWN_ACCOUNTS"): array
     {
 
         $params = [
@@ -117,7 +117,7 @@ class WiseService
             "targetCurrency" => $targetCurrency,
             "type" => "SPOT",
             "paymentMetadata" => [
-                "transferNature" => "MOVING_MONEY_BETWEEN_OWN_ACCOUNTS"
+                "transferNature" => $transferNature
             ]
         ];
 

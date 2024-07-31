@@ -51,13 +51,25 @@ class SeleniumService
             // Set window size to 1
             $this->driver->manage()->window()->setSize(new WebDriverDimension(1920, 1080));
 
-            // wait until the page is loaded
-            $this->driver->wait(10, 1000)->until(
-                WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::name("username"))
-            );
+            $this->driver->executeScript("window.scrollTo(0," . rand(0, 20) . ")");
+
+            sleep(2);
+
+
+            $linkValues = $this->getLinks();
+            // if any of the links contain the text "Sign in" click it
+            $text = "Sign in";
+            if ( in_array($text, array_column($linkValues, 'text')) )
+            {
+                $this->clickLinksWithText($linkValues, ["Sign in"]);
+            }
+            sleep(rand(5, 10));
+
+
 
             $usernameAttribute = $this->driver->findElement(WebDriverBy::name("username"));
             $passwordAttribute = $this->driver->findElement(WebDriverBy::name("password"));
+
 
 
 
@@ -68,12 +80,13 @@ class SeleniumService
             $passwordAttribute->sendKeys(WebDriverKeys::ENTER);
 
 
+
             // $buttons = $this->getButtons();
             // // click the continue button
             // $this->clickButtonsWithText($buttons[0], $buttons[1], ["Continue"]);
 
-            sleep(10);
-            if (count($this->driver->findElements(WebDriverBy::name("tfa"))) || count($this->driver->findElements(WebDriverBy::name("otp"))) ) {
+            sleep(rand(10, 15));
+            if (count($this->driver->findElements(WebDriverBy::name("tfa"))) > 0) {
                 $otp = $krakenService->getOTP();
                 $otpInput = $this->driver->findElement(WebDriverBy::name("tfa"));
                 $otpInput->sendKeys($otp);
@@ -81,8 +94,10 @@ class SeleniumService
             }
 
             // Execute JavaScript for scrolling
-            $this->driver->executeScript("window.scrollTo(0,99.89418029785156)");
+            $this->driver->executeScript("window.scrollTo(0," . rand(80, 120) . ")");
+
         } catch (\Exception $e) {
+            dd($e);
             sleep(5);
             $this->driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
             $source = $this->driver->getPageSource();
@@ -208,6 +223,38 @@ class SeleniumService
         //     $this->driver->quit();
         //     dd($source, $e, $buttons, $buttonValues);
         // }
+    }
+
+    // grab links from the page and the text inside them
+    public function getLinks(): array
+    {
+        $links = $this->driver->findElements(WebDriverBy::tagName('a'));
+        $linkValues = [];
+        foreach ($links as $link) {
+            $linkValues[] = ['text' => $link->getText(), 'href' => $link->getAttribute('href')];
+        }
+
+        return $linkValues;
+    }
+
+    // click links with text
+    public function clickLinksWithText(mixed $links, array $texts): void
+    {
+        foreach ($texts as $text) {
+            $indexes = array_keys(array_column($links, 'text'), $text);
+            foreach ($indexes as $index) {
+                $webDriverBy = WebDriverBy::id($links[$index]->getAttribute('id'));
+                // check if link is clickable
+                if ($links[$index]->isEnabled() && $links[$index]->isDisplayed()
+                    && WebDriverExpectedCondition::elementToBeClickable($webDriverBy)
+                    && WebDriverExpectedCondition::visibilityOfElementLocated($webDriverBy)
+                ) {
+                    $links[$index]->click();
+                    sleep(1);
+                    break;
+                }
+            }
+        }
     }
 
 }

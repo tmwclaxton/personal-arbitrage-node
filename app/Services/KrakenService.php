@@ -80,7 +80,7 @@ class KrakenService
 
         $krakenService = new \App\Services\KrakenService();
         $btcBalance = $krakenService->getBTCBalance();
-        $this->discordService->sendMessage('Sending ' . $btcBalance . ' BTC to lightning node');
+        // $this->discordService->sendMessage('Sending ' . $btcBalance . ' BTC to lightning node');
         // make btc balance a big decimal
         $btc = $btcBalance->jsonSerialize();
         $satoshis = $btc * 100000000;
@@ -102,6 +102,12 @@ class KrakenService
 
         // sign in again
         $seleniumService->signin($krakenService, 'https://www.kraken.com/c/funding/withdraw?asset=BTC&assetType=crypto&network=Lightning&method=Bitcoin%2520Lightning');
+        // sleep(3);
+        // $links = $seleniumService->getLinks();
+        // $seleniumService->clickLinksWithText($links, ["Transfer crypto"]);
+        // sleep(3);
+        // $buttons = $seleniumService->getButtons();
+        // $seleniumService->clickButtonsWithText($buttons[0], $buttons[1], ["Okay", "Agree and continue","Withdraw"]);
 
         sleep(6);
 
@@ -110,7 +116,7 @@ class KrakenService
         $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Okay", "Agree and continue"]);
 
         // scroll down slightly
-        $driver->executeScript("window.scrollTo(0,700.1058349609375)");
+        $driver->executeScript("window.scrollTo(0," . rand(650, 720) . ")");
 
         sleep(2);
 
