@@ -53,7 +53,7 @@ class SeleniumService
 
             $this->driver->executeScript("window.scrollTo(0," . rand(0, 20) . ")");
 
-            sleep(2);
+            sleep(5);
 
 
             $linkValues = $this->getLinks();
@@ -63,13 +63,10 @@ class SeleniumService
             {
                 $this->clickLinksWithText($linkValues, ["Sign in"]);
             }
-            sleep(rand(5, 10));
-
-
+            sleep(rand(5,7));
 
             $usernameAttribute = $this->driver->findElement(WebDriverBy::name("username"));
             $passwordAttribute = $this->driver->findElement(WebDriverBy::name("password"));
-
 
 
 
@@ -78,7 +75,6 @@ class SeleniumService
             $usernameAttribute->sendKeys(env('KRAKEN_USERNAME'));
             $passwordAttribute->sendKeys(env('KRAKEN_PASSWORD'));
             $passwordAttribute->sendKeys(WebDriverKeys::ENTER);
-
 
 
             // $buttons = $this->getButtons();
@@ -94,10 +90,8 @@ class SeleniumService
             }
 
             // Execute JavaScript for scrolling
-            $this->driver->executeScript("window.scrollTo(0," . rand(80, 120) . ")");
-
+            $this->driver->executeScript("window.scrollTo(0,99.89418029785156)");
         } catch (\Exception $e) {
-            dd($e);
             sleep(5);
             $this->driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
             $source = $this->driver->getPageSource();
@@ -116,9 +110,9 @@ class SeleniumService
                 WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::cssSelector(".my-px"))
             );
             //
-            // // click the button
-            $this->driver->findElement(WebDriverBy::cssSelector(".my-px"))->click();
 
+            // we may need to click the button if email doesn't auto send
+            // $this->driver->findElement(WebDriverBy::cssSelector(".my-px"))->click();
 
             // if above code stops working, use the code below
             // sleep(5);
@@ -127,7 +121,10 @@ class SeleniumService
             // // click button with send email or resend email
             // $this->clickButtonsWithText($buttons[0], $buttons[1], ["Send email", "Resend email"]);
 
+            sleep(25);
 
+            // resize the window to split the screen
+            $this->driver->manage()->window()->setSize(new WebDriverDimension(960, 1080));
             $this->driver->get($this->getLinkFromLastEmail());
 
             sleep(2);
@@ -144,16 +141,17 @@ class SeleniumService
     public function getLinkFromLastEmail($start = 'https://www.kraken.com/new-device-sign-in/web?code=')
     {
 
-        sleep(25);
         // grab email
         $gmailService = new \App\Services\GmailService();
         $text = $gmailService->getLastEmail();
 
         $link = $gmailService->grabLink($text, $start);
         if ($link === null) {
-            // close the driver
-            $this->driver->quit();
-            return response()->json(['error' => 'No link found']);
+
+            $discordService = new \App\Services\DiscordService();
+            $discordService->sendMessage('No link found');
+            return null;
+
         }
 
         $this->linkUsed = $link;

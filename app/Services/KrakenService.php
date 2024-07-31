@@ -80,7 +80,7 @@ class KrakenService
 
         $krakenService = new \App\Services\KrakenService();
         $btcBalance = $krakenService->getBTCBalance();
-        // $this->discordService->sendMessage('Sending ' . $btcBalance . ' BTC to lightning node');
+        $this->discordService->sendMessage('Sending ' . $btcBalance . ' BTC to lightning node');
         // make btc balance a big decimal
         $btc = $btcBalance->jsonSerialize();
         $satoshis = $btc * 100000000;
@@ -102,12 +102,20 @@ class KrakenService
 
         // sign in again
         $seleniumService->signin($krakenService, 'https://www.kraken.com/c/funding/withdraw?asset=BTC&assetType=crypto&network=Lightning&method=Bitcoin%2520Lightning');
-        // sleep(3);
+        // sleep(rand(1,2));
         // $links = $seleniumService->getLinks();
         // $seleniumService->clickLinksWithText($links, ["Transfer crypto"]);
-        // sleep(3);
+        // sleep(rand(1,2));
         // $buttons = $seleniumService->getButtons();
-        // $seleniumService->clickButtonsWithText($buttons[0], $buttons[1], ["Okay", "Agree and continue","Withdraw"]);
+        // $seleniumService->clickButtonsWithText($buttons[0], $buttons[1], ["Withdraw"]);
+        //
+        // // select button by id network-selector
+        // $driver->findElement(WebDriverBy::id("network-selector"))->click();
+        //
+        // sleep(rand(1,2));
+        //
+        // // select list item by id downshift-0-item-1
+        // $driver->findElement(WebDriverBy::id("downshift-0-item-1"))->click();
 
         sleep(6);
 
@@ -122,7 +130,7 @@ class KrakenService
 
 
         list($buttons, $buttonValues) = $seleniumService->getButtons();
-        $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Manage withdrawal requests"]);
+        $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Manage withdrawal requests", "Manage requests"]);
 
         sleep(2);
 
@@ -151,9 +159,9 @@ class KrakenService
         list($buttons, $buttonValues) = $seleniumService->getButtons();
         $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Add withdrawal request"]);
 
-        sleep(2);
 
         // grab email
+        sleep(25);
         $driver->get($seleniumService->getLinkFromLastEmail('https://www.kraken.com/withdrawal-approve?code='));
 
         // screenshot
