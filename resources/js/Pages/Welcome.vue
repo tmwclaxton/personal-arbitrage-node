@@ -78,6 +78,7 @@ const panicButtonToggle = () => {
     clicked();
 }
 
+const showSidebar = ref(true);
 
 </script>
 
@@ -101,6 +102,8 @@ const panicButtonToggle = () => {
             </div>
         </div>
         <div class="w-full flex flex-row gap-x-3 mt-2 mx-auto justify-center">
+            <primary-button class="" @click="showSidebar = !showSidebar" v-text="showSidebar ? 'Hide Sidebar' : 'Show Sidebar'"></primary-button>
+
             <danger-button
                 v-on:click="panicButtonToggle"
                 class="text-xs text-white font-bold py-2 px-4 rounded"
@@ -120,32 +123,77 @@ const panicButtonToggle = () => {
 
         <div v-if="tempAdminDashboard" class="w-screen flex flex-row mx-auto px-10 my-5 mt-2 item s-center justify-center">
 
-            <div class="flex flex-col text-left border-r-2 dark:border-zinc-700 dark:border-white/70 pr-5">
-                <p class=""><span class="font-bold text-xl mb-2">Automation:</span></p>
-                <div class="border-b border-zinc-300 dark:border-zinc-700 my-1"></div>
+            <div v-if="showSidebar"
+                class="flex flex-row gap-x-2 h-full  pr-2">
+                <div class="flex flex-col text-left ">
 
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Auto Accept</span><ToggleButton v-model="tempAdminDashboard.autoAccept" size="sm" activeColor="bg-green-500" inactiveColor="bg-red-500" /></div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Auto Bond</span><ToggleButton v-model="tempAdminDashboard.autoBond" size="sm" activeColor="bg-green-500" inactiveColor="bg-red-500" /></div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Auto Escrow</span><ToggleButton v-model="tempAdminDashboard.autoEscrow" size="sm" activeColor="bg-green-500" inactiveColor="bg-red-500" /></div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Auto Chat</span><ToggleButton v-model="tempAdminDashboard.autoMessage" size="sm" activeColor="bg-green-500" inactiveColor="bg-red-500" /></div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Auto Confirm</span><ToggleButton v-model="tempAdminDashboard.autoConfirm" size="sm" activeColor="bg-green-500" inactiveColor="bg-red-500" /></div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Auto Topup:</span>     <ToggleButton v-model="tempAdminDashboard.autoTopup" size="sm" activeColor="bg-green-500" inactiveColor="bg-red-500" /></div>
+                    <p class=""><span class="font-bold text-xl mb-2">Automation:</span></p>
+                    <div class="border-b border-zinc-300 dark:border-zinc-700 my-1"></div>
 
-                <div class="flex flex-row justify-between items-center"><span class="font-bold text-xl mt-2">Offer Selection:</span></div>
-                <div class="border-b border-zinc-300 dark:border-zinc-700 my-1"></div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Sell Premium: </span><TextInput class="w-16 h-6" v-model="tempAdminDashboard.sell_premium" /></div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Buy Premium: </span><TextInput class="w-16 h-6"  v-model="tempAdminDashboard.buy_premium"/></div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Concurrent Transactions: </span><TextInput class="w-16 h-6"  v-model="tempAdminDashboard.max_concurrent_transactions" /></div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Min Sat Profit: </span><TextInput class="w-36 h-6"  v-model="tempAdminDashboard.min_satoshi_profit" /></div>
-                <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Max Sat Amount: </span><TextInput class="w-36 h-6"  v-model="tempAdminDashboard.max_satoshi_amount" /></div>
+                    <div class="flex flex-row justify-between items-center"><span
+                        class="font-bold mr-1">Auto Accept</span>
+                        <ToggleButton v-model="tempAdminDashboard.autoAccept" size="sm" activeColor="bg-green-500"
+                                      inactiveColor="bg-red-500"/>
+                    </div>
+                    <div class="flex flex-row justify-between items-center"><span
+                        class="font-bold mr-1">Auto Bond</span>
+                        <ToggleButton v-model="tempAdminDashboard.autoBond" size="sm" activeColor="bg-green-500"
+                                      inactiveColor="bg-red-500"/>
+                    </div>
+                    <div class="flex flex-row justify-between items-center"><span
+                        class="font-bold mr-1">Auto Escrow</span>
+                        <ToggleButton v-model="tempAdminDashboard.autoEscrow" size="sm" activeColor="bg-green-500"
+                                      inactiveColor="bg-red-500"/>
+                    </div>
+                    <div class="flex flex-row justify-between items-center"><span
+                        class="font-bold mr-1">Auto Chat</span>
+                        <ToggleButton v-model="tempAdminDashboard.autoMessage" size="sm" activeColor="bg-green-500"
+                                      inactiveColor="bg-red-500"/>
+                    </div>
+                    <div class="flex flex-row justify-between items-center"><span
+                        class="font-bold mr-1">Auto Confirm</span>
+                        <ToggleButton v-model="tempAdminDashboard.autoConfirm" size="sm" activeColor="bg-green-500"
+                                      inactiveColor="bg-red-500"/>
+                    </div>
+                    <div class="flex flex-row justify-between items-center"><span
+                        class="font-bold mr-1">Auto Topup:</span>
+                        <ToggleButton v-model="tempAdminDashboard.autoTopup" size="sm" activeColor="bg-green-500"
+                                      inactiveColor="bg-red-500"/>
+                    </div>
 
-                <primary-button class="h-8 mt-4 mx-auto" @click="clicked">Save Changes</primary-button>
+                    <div class="flex flex-row justify-between items-center"><span class="font-bold text-xl mt-2">Offer Selection:</span>
+                    </div>
+                    <div class="border-b border-zinc-300 dark:border-zinc-700 my-1"></div>
+                    <div class="flex flex-row justify-between items-center"><span
+                        class="font-bold mr-1">Sell Premium: </span>
+                        <TextInput class="w-16 h-6" v-model="tempAdminDashboard.sell_premium"/>
+                    </div>
+                    <div class="flex flex-row justify-between items-center"><span
+                        class="font-bold mr-1">Buy Premium: </span>
+                        <TextInput class="w-16 h-6" v-model="tempAdminDashboard.buy_premium"/>
+                    </div>
+                    <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Concurrent Transactions: </span>
+                        <TextInput class="w-16 h-6" v-model="tempAdminDashboard.max_concurrent_transactions"/>
+                    </div>
+                    <div class="flex flex-row justify-between items-center"><span
+                        class="font-bold mr-1">Min Sat Profit: </span>
+                        <TextInput class="w-36 h-6" v-model="tempAdminDashboard.min_satoshi_profit"/>
+                    </div>
+                    <div class="flex flex-row justify-between items-center"><span
+                        class="font-bold mr-1">Max Sat Amount: </span>
+                        <TextInput class="w-36 h-6" v-model="tempAdminDashboard.max_satoshi_amount"/>
+                    </div>
 
+                    <primary-button class="h-8 mt-4 mx-auto" @click="clicked">Save Changes</primary-button>
+
+                </div>
             </div>
 
 
-            <div class="relative flex flex-col flex-grow items-center justify-center selection:bg-[#FF2D20] selection:text-white">
-                <div class="grid grid-cols-1 gap-6  mx-auto" v-if="accessOffers.length > 0">
+            <div class="relative flex flex-col flex-grow items-center justify-center selection:bg-[#FF2D20] selection:text-white"
+                v-bind:class="showSidebar ? 'border-l-2 dark:border-zinc-700 dark:border-white/70' : ''">
+                <div class="grid gap-6  mx-auto" v-if="accessOffers.length > 0"
+                     v-bind:class="showSidebar ? 'grid-cols-1' : 'grid-cols-2'">
                     <Offer v-for="offer in accessOffers" :key="offer.robosatsId" :offer="offer" />
                 </div>
                 <div class="mx-auto" v-else>

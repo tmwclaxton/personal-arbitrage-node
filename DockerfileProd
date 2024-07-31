@@ -68,7 +68,7 @@ COPY docker/8.3/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/8.3/php.ini /etc/php/8.3/cli/conf.d/99-sail.ini
 COPY docker/8.3/workers /etc/supervisor/conf.d/workers
 
-#COPY . /var/www/html
+COPY . /var/www/html
 
 # check storage folder and logs folder exists
 RUN if [ ! -d "/var/www/html/storage" ]; then mkdir /var/www/html/storage; fi
