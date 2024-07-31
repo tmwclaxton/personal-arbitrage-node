@@ -29,12 +29,15 @@
                     </primary-button>
 
 
-                    <primary-button class="w-full text-center p-0" v-on:click="sendPaymentHandle">
-                        <p class="text-center w-full">Message</p>
+                    <primary-button class="w-full text-center p-0 !w-24 h-10 break-words" v-on:click="sendPaymentHandle">
+                        <p class="text-center w-full">Auto Chat</p>
                     </primary-button>
 
-                    <primary-button class="w-full text-center p-0" v-on:click="confirmPayment">
+                    <primary-button class="w-full text-center p-0 !w-24 h-10 break-words" v-on:click="confirmPayment">
                         <p class="text-center w-full">Confirm</p>
+                    </primary-button>
+                    <primary-button class="w-full text-center p-0 !w-24 h-10 break-words" v-on:click="">
+                        <p class="text-center w-full">View Chat</p>
                     </primary-button>
                 </div>
 
