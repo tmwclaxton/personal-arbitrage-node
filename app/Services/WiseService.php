@@ -18,6 +18,7 @@ class WiseService
 
     public function __construct()
     {
+
         $this->httpClient = new Client();
         $this->apiKey = env('WISE_API_KEY');
         $this->baseUrl = 'https://api.transferwise.com';
@@ -51,6 +52,7 @@ class WiseService
     {
         $url = $this->baseUrl . $endpoint;
 
+        $authHeaders = [];
         try {
             $response = $this->httpClient->request($method, $url, [
                 'headers' => array_merge([
@@ -69,7 +71,16 @@ class WiseService
                 throw new \Exception("Request failed with status code: {$statusCode}");
             }
         } catch (RequestException $e) {
-            throw new \Exception("Error making request: " . $e->getMessage());
+            $headers = $e->getResponse()->getHeaders();
+            // if the headers contain x-2fa-approval and x-2fa-approval-result then set authHeaders
+            if (isset($headers['x-2fa-approval']) && isset($headers['x-2fa-approval-result'])) {
+                $authHeaders = [
+                    'X-2FA-Approval' => $headers['x-2fa-approval'][0],
+                    'X-2FA-Approval-Result' => $headers['x-2fa-approval-result'][0]
+                ];
+            } else {
+                throw new \Exception("Error making request: " . $e->getMessage());
+            }
         }
     }
 
@@ -103,7 +114,8 @@ class WiseService
     }
 
 
-    public function createQuote($sourceCurrency, $sourceAmount, $sourceAccount, $targetCurrency, $transferNature = "MOVING_MONEY_BETWEEN_OWN_ACCOUNTS"): array
+    public function createQuote($sourceCurrency, $sourceAmount, $sourceAccount, $targetCurrency,
+                                $targetAccount = null, $transferNature = null): array
     {
 
         $params = [
@@ -116,10 +128,17 @@ class WiseService
             "sourceCurrency" => $sourceCurrency,
             "targetCurrency" => $targetCurrency,
             "type" => "SPOT",
-            "paymentMetadata" => [
-                "transferNature" => $transferNature
-            ]
         ];
+
+        if ($targetAccount) {
+            $params['targetAccount'] = $targetAccount;
+        }
+
+        if ($transferNature) {
+            $params['paymentMetadata'] = [
+                "transferNature" => $transferNature
+            ];
+        }
 
         return $this->_makeRequest("POST", "/v3/profiles/{$this->profileID}/quotes", $params);
     }
@@ -143,6 +162,29 @@ class WiseService
         return $this->_makeRequest('POST', "/v2/profiles/{$this->profileID}/balance-movements", $params, $extraHeaders);
     }
 
+    public function transferToRecipient($quoteId, $recipientId, $reference): array {
+        $params = [
+            'quoteUuid' => $quoteId,
+            'targetAccount' => $recipientId,
+            'customerTransactionId' => Uuid::uuid4()->toString(),
+            'details' => [
+                'reference' => $reference
+            ]
+        ];
+
+        return $this->_makeRequest('POST', "/v1/transfers", $params);
+    }
+
+    public function fundTransfer($transferId): array
+    {
+        $params = [
+            'type' => 'BALANCE'
+        ];
+
+        return $this->_makeRequest('POST', "/v3/profiles/{$this->profileID}/transfers/{$transferId}/payments", $params);
+    }
+
+
     public function getGBPAccount() {
         $accounts = $this->getBalances();
         foreach ($accounts as $account) {
@@ -150,6 +192,12 @@ class WiseService
                 return $account;
             }
         }
+        return null;
+    }
+
+    public function getGBPBalance() {
+        $gbpAccount = $this->getGBPAccount();
+        return $gbpAccount['amount']['value'];
     }
 
     public function currencyExchangeAll($fromCurrency, $toCurrency, $reference = null, $requestId = null, $minAmount = 5) {
@@ -173,7 +221,7 @@ class WiseService
             return;
         }
 
-        $quote = $wiseService->createQuote($fromCurrency, $fromAccount['amount']['value'], $fromAccount['id'], $toCurrency, );
+        $quote = $wiseService->createQuote($fromCurrency, $fromAccount['amount']['value'], $fromAccount['id'], $toCurrency, null, "MOVING_MONEY_BETWEEN_OWN_ACCOUNTS");
         $quoteID = $quote['id'];
         $convert = $wiseService->convertAcrossBalAccounts($quoteID, $fromAccount['id'], $toAccount['id']);
 

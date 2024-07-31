@@ -207,17 +207,14 @@ Route::get('/testing', function () {
     }
 
     $recipients = $wiseService->getRecipientAccounts("GBP");
+
     foreach ($recipients['content'] as $account) {
-        if ($account->id == env('WISE_RECIPIENT_ID_FOR_REVOLUT')) {
-            // $payment = $wiseService->getClient()->payments->create([
-            //     'sourceAccount' => $gbpAccount->id,
-            //     'targetAccount' => 819366129,
-            //     'amount' => [
-            //         'value' => 1,
-            //         'currency' => 'GBP'
-            //     ]
-            // ]);
-            $wiseService->createQuote("GBP", 1, $gbpAccount->id, "EUR");
+        if ($account['id'] == env('WISE_RECIPIENT_ID_FOR_REVOLUT')) {
+
+            $quote = $wiseService->createQuote("GBP", $wiseService->getGBPBalance(), $gbpAccount['id'], "GBP", $account['id'], "MOVING_MONEY_BETWEEN_OWN_ACCOUNTS");
+            $transfer = $wiseService->transferToRecipient($quote['id'], $account['id'], "Send to Revolut");
+            $fundTransfer = $wiseService->fundTransfer($transfer['id']);
+            dd($fundTransfer);
         }
     }
 
