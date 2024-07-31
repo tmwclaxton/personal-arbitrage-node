@@ -76,6 +76,9 @@ const panicButtonToggle = () => {
     tempAdminDashboard.panicButton = !tempAdminDashboard.panicButton;
     console.log('panic button toggled');
     clicked();
+    setTimeout(() => {
+        router.reload()
+    }, 500);
 }
 
 const showSidebar = ref(true);
