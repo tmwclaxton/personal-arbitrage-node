@@ -5,38 +5,38 @@
             <div class="grid grid-cols-4  gap-1">
 
                     <danger-button v-on:click="autoRun"
-                                   class="w-full text-center !w-24 h-10 break-words ">
+                                   class="w-full text-center  h-10 break-words ">
                         <p class="text-center w-full">Auto Run</p>
                     </danger-button>
 
                     <primary-button v-on:click="uniqueRobot"
-                                    class="w-full text-center !w-24 h-10 break-words ">
+                                    class="w-full text-center  h-10 break-words ">
                         <p class="text-center w-full">Create Robots</p>
                     </primary-button>
 
                     <primary-button v-on:click="acceptOffer"
-                                    class="w-full text-center !w-24 h-10 break-words ">
+                                    class="w-full text-center  h-10 break-words ">
                         <p class="text-center w-full">Accept</p>
                     </primary-button>
 
-                    <primary-button class="w-full text-center !w-24 h-10 break-words " v-on:click="payBond">
+                    <primary-button class="w-full text-center  h-10 break-words " v-on:click="payBond">
                         <p class="text-center w-full">Bond</p>
                     </primary-button>
 
                     <primary-button v-on:click="payEscrow"
-                                    class="w-full text-center !w-24 h-10 break-words ">
+                                    class="w-full text-center  h-10 break-words ">
                         <p class="text-center w-full">Escrow</p>
                     </primary-button>
 
 
-                    <primary-button class="w-full text-center p-0 !w-24 h-10 break-words" v-on:click="sendPaymentHandle">
+                    <primary-button class="w-full text-center p-0  h-10 break-words" v-on:click="sendPaymentHandle">
                         <p class="text-center w-full">Auto Chat</p>
                     </primary-button>
 
-                    <primary-button class="w-full text-center p-0 !w-24 h-10 break-words" v-on:click="confirmPayment">
+                    <primary-button class="w-full text-center p-0  h-10 break-words" v-on:click="confirmPayment">
                         <p class="text-center w-full">Confirm</p>
                     </primary-button>
-                    <secondary-button class="w-full text-center p-0 !w-24 h-10 break-words" v-on:click="">
+                    <secondary-button class="w-full text-center p-0  h-10 break-words" v-on:click="">
                         <p class="text-center w-full">View Chat</p>
                     </secondary-button>
                 </div>
@@ -63,6 +63,8 @@
                     <p v-if="!offer.has_range"  class="mt-2 text-zinc-500 dark:text-zinc-200">Amount: {{ offer.amount ?? 'N/A' }}</p>
                     <p v-if="!offer.has_range"  class="text-zinc-500 dark:text-zinc-200 text-xs">Sats: {{ offer.satoshis_now ?? 'N/A' }}</p>
                     <p v-if="!offer.has_range"  class="text-zinc-500 dark:text-zinc-200 text-xs">Sats Profit: {{ offer.satoshi_amount_profit ?? 'N/A' }}</p>
+
+                    <!-- if accepted offer amount is select hide below!!!-->
                     <p v-if="offer.has_range" class="mt-2 text-zinc-500 dark:text-zinc-200">Min Amount: {{ offer.min_amount ?? 'N/A' }}</p>
                     <p v-if="offer.has_range" class="text-zinc-500 dark:text-zinc-200 text-xs">Sats: {{ offer.min_satoshi_amount ?? 'N/A' }}</p>
                     <p v-if="offer.has_range" class="text-zinc-500 dark:text-zinc-200 text-xs">Profit: {{ offer.min_satoshi_amount_profit ?? 'N/A' }}</p>

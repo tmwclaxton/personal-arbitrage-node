@@ -30,6 +30,7 @@ use Facebook\WebDriver\WebDriverDimension;
 use Facebook\WebDriver\WebDriverExpectedCondition;
 use Facebook\WebDriver\WebDriverKeys;
 use Illuminate\Foundation\Application;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
@@ -42,6 +43,9 @@ use Spatie\DiscordAlerts\Facades\DiscordAlert;
 use Webklex\IMAP\Facades\Client;
 use Webklex\PHPIMAP\Folder;
 use Webklex\PHPIMAP\Message;
+use WebSocket\Connection;
+use WebSocket\Middleware\CloseHandler;
+use WebSocket\Middleware\PingResponder;
 
 
 Route::post('/updateAdminDashboard', function () {
@@ -187,10 +191,123 @@ Route::get('/testing', function () {
     // dd($response);
 
 
+    $offer = Offer::find(340);
 
-    $krakenService = new \App\Services\KrakenService();
-    $response = $krakenService->sendFullAmtToLightning();
-    dd($response);
+    $robot = $offer->robots()->first();
+
+    $b91 = new \Katoga\Allyourbase\Base91();
+    $decoded = $b91->decode($robot->sha256);
+    $hex = bin2hex($decoded);
+    $url = 'ws://192.168.0.18:12596' . '/mainnet/' . $offer->provider . '/ws/chat/' . $offer->robosatsId . '/?token_sha256_hex=' . $hex;
+
+    // create a new client
+    $client = new \WebSocket\Client($url);
+    $messages = [];
+
+    $client->text(json_encode([
+        'type' => 'message',
+        'message' => $robot->public_key,
+        'nick' => $robot->nickname
+    ]));
+
+    $client->text(json_encode([
+        'type' => 'message',
+        'message' => '-----SERVE HISTORY-----',
+        'nick' => $robot->nickname
+    ]));
+
+    $startTime = time();
+    $duration = 10; // Duration in seconds
+
+    try {
+        while (true) {
+            try {
+                $message = $client->receive();
+                if ($message) {
+                    $messages[] = $message;
+                }
+            } catch (ConnectionException $e) {
+                // Handle timeout or connection error
+                sleep(1);
+                break;
+            }
+
+            // Exit the loop after 15 seconds
+            if (time() - $startTime > $duration) {
+                break;
+            }
+        }
+    } catch (\Exception $e) {
+        echo "Error: " . $e->getMessage();
+    }
+
+    // filter messages for opcode text
+    $messages = array_filter($messages, function ($message) {
+        return $message->getOpcode() == "text";
+    });
+
+    // each message is type WebSocket\Message\Text and we need to grab the content property first
+    $messages = array_map(function ($message) {
+        return $message->getContent();
+    }, $messages);
+
+    // filter messages if they have a key of 'index'
+    $messages = array_filter($messages, function ($message) {
+        $message = json_decode($message, true);
+        return array_key_exists('index', $message);
+    });
+
+    // sort messages by index
+    usort($messages, function ($a, $b) {
+        $a = json_decode($a, true);
+        $b = json_decode($b, true);
+        return $a['index'] <=> $b['index'];
+    });
+
+    // $myMessages = [];
+    // $theirMessages = [];
+    // foreach ($messages as $message) {
+    //     $message = json_decode($message, true);
+    //     if ($message['user_nick'] == $robot->nickname) {
+    //         $myMessages[] = $message;
+    //     } else {
+    //         $theirMessages[] = $message;
+    //     }
+    // }
+    //
+    // // decode my messages with my private key
+    // $pgpService = new PgpService();
+    // $myDecodedMessages = [];
+    // foreach ($myMessages as $message) {
+    //     $myDecodedMessages[] = $pgpService->decrypt($message['message'], $robot->private_key, $robot->token);
+    // }
+
+    // decrypt all messages with my private key
+    $pgpService = new PgpService();
+    $privateKey = $robot->private_key;
+
+    $formattedMessages = [];
+    foreach ($messages as $message) {
+        $message = json_decode($message, true);
+        $content = $message['message'];
+        // user_nick and
+        $content = str_replace("\\", "\n", $content);
+        $decodedMessage = $pgpService->decrypt($privateKey, $content, $robot->token);
+        $formattedMessages[] = [
+            'index' => $message['index'],
+            'user_nick' => $message['user_nick'],
+            'time' => $message['time'],
+            'message' => $decodedMessage
+        ];
+    }
+
+
+    dd($messages, $formattedMessages);
+
+
+
+
+
 
 
 

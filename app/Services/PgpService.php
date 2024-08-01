@@ -131,11 +131,11 @@ class PgpService extends Controller
         $crypt_gpg->clearPassphrases();
 
         // import the public key
-        $publicKeyImport = $crypt_gpg->importKey($private_key);
-        $fingerPrint = $publicKeyImport['fingerprint'];
+        $privateKeyImport = $crypt_gpg->importKey($private_key);
+        $fingerPrint = $privateKeyImport['fingerprint'];
 
         // Add the keys
-        $public_key = $crypt_gpg->addDecryptKey($fingerPrint, $passphrase);
+        $private_key = $crypt_gpg->addDecryptKey($fingerPrint, $passphrase);
         // $crypt_gpg->addPassphrase($fingerPrint, $passphrase);
 
         // Decrypt the message
