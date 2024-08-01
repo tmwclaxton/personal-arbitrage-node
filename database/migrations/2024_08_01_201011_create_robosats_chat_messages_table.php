@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('robosats_chat_messages', function (Blueprint $table) {
             $table->id();
+            $table->foreignIdFor(\App\Models\Offer::class)->constrained()->cascadeOnDelete();
+            $table->integer('index');
+            $table->string('message');
+            $table->string('user_nick');
+            $table->timestamp('sent_at');
             $table->timestamps();
         });
     }

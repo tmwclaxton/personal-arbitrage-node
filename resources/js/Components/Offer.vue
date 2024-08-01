@@ -72,7 +72,7 @@
                     <p v-if="offer.has_range" class="text-zinc-500 dark:text-zinc-200 text-xs">Sats: {{ offer.max_satoshi_amount ?? 'N/A' }}</p>
                     <p v-if="offer.has_range" class="text-zinc-500 dark:text-zinc-200 text-xs">Profit: {{ offer.max_satoshi_amount_profit ?? 'N/A' }}</p>
 
-            
+
 
                 </div>
                 <div class="flex flex-col"><p class="text-zinc-500 dark:text-zinc-200 italic">Expires at: {{ offer.expires_at }}</p>
