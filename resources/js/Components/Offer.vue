@@ -72,13 +72,7 @@
                     <p v-if="offer.has_range" class="text-zinc-500 dark:text-zinc-200 text-xs">Sats: {{ offer.max_satoshi_amount ?? 'N/A' }}</p>
                     <p v-if="offer.has_range" class="text-zinc-500 dark:text-zinc-200 text-xs">Profit: {{ offer.max_satoshi_amount_profit ?? 'N/A' }}</p>
 
-                    <div v-if="offer.transaction" class="border border-gray-200 dark:border-zinc-700 my-4"></div>
-
-                    <div v-if="offer.transaction">
-                        <p class="mt-2 text-zinc-500 dark:text-zinc-200 font-bold">Transaction Status: {{
-                                offer.transaction.status_message
-                            }}</p>
-                    </div>
+            
 
                 </div>
                 <div class="flex flex-col"><p class="text-zinc-500 dark:text-zinc-200 italic">Expires at: {{ offer.expires_at }}</p>
@@ -98,11 +92,23 @@
 
                 <div v-if="offer.robots && offer.robots.length > 0" class="border-r border-gray-200 my-4"></div>
 
-                <div v-if="offer.robots && offer.robots.length > 0">
-                    <p class="mt-2 text-zinc-500 dark:text-zinc-200 "><span class="font-bold">Nickname</span>: <br>{{ offer.robots[0].nickname }}</p>
-                    <p class="mt-2 text-zinc-500 dark:text-zinc-200 "><span class="font-bold">Token</span>: <br>{{ offer.robots[0].token }}</p>
-                    <div v-for="robot in offer.robots" :key="robot.id">
-                        <p class="mt-2 text-zinc-500 dark:text-zinc-200">Provider: {{ robot.provider }}</p>
+                <div class="flex flex-col gap-2">
+                    <div v-if="offer.robots && offer.robots.length > 0">
+                        <p class="mt-2 text-zinc-500 dark:text-zinc-200 "><span class="font-bold">Nickname</span>: <br>{{
+                                offer.robots[0].nickname
+                            }}</p>
+                        <p class="mt-2 text-zinc-500 dark:text-zinc-200 "><span class="font-bold">Token</span>:
+                            <br>{{ offer.robots[0].token }}</p>
+                        <div v-for="robot in offer.robots" :key="robot.id">
+                            <p class="mt-2 text-zinc-500 dark:text-zinc-200">Provider: {{ robot.provider }}</p>
+                        </div>
+                    </div>
+                    <div v-if="offer.transaction" class="border border-gray-200 dark:border-zinc-700 my-4"></div>
+
+                    <div v-if="offer.transaction">
+                        <p class="mt-2 text-zinc-500 dark:text-zinc-200 font-bold">Transaction Status: {{
+                                offer.transaction.status_message
+                            }}</p>
                     </div>
                 </div>
             </div>
