@@ -143,8 +143,11 @@ class KrakenService
         // if clicks === 0 then click button with class TextButton_root__fIpnJ
 
         // if ($counts === 0) {
-            $driver->findElement(WebDriverBy::className("TextButton_root__fIpnJ"))->click();
-        // }
+        // $driver->findElement(WebDriverBy::className(".TextButton_root__fIpnJ"))->click();
+        // document.querySelector('.TextButton_root__fIpnJ').click()
+
+        // run script to click button
+        $driver->executeScript("document.querySelector('.TextButton_root__fIpnJ').click()");
 
         sleep(5);
 

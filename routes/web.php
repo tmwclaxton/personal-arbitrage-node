@@ -188,7 +188,8 @@ Route::get('/testing', function () {
 
 
 
-    // $response = $krakenService->sendFullAmtToLightning();
+    $krakenService = new \App\Services\KrakenService();
+    $response = $krakenService->sendFullAmtToLightning();
     dd($response);
 
 
