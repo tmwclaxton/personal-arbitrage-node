@@ -179,12 +179,12 @@ Route::get('monzo-refresh', function () {
 
 Route::get('/testing', function () {
 
-    $krakenService = new \App\Services\KrakenService();
-    $seleniumService = new \App\Services\SeleniumService();
-    dd($seleniumService->getLinkFromLastEmail());
+    // $seleniumService = new \App\Services\SeleniumService();
+    // dd($seleniumService->getLinkFromLastEmail());
 
     // $response = $krakenService->getClient()->getAccountBalance();
     // dd($response);
+    $krakenService = new \App\Services\KrakenService();
     $response = $krakenService->sendFullAmtToLightning();
     dd($response);
 

@@ -121,11 +121,22 @@ class SeleniumService
             // // click button with send email or resend email
             // $this->clickButtonsWithText($buttons[0], $buttons[1], ["Send email", "Resend email"]);
 
-            sleep(25);
+            $iterations = 0;
+            $code = null;
+            while ($code === null) {
+                sleep(5);
+                $code = $this->getLinkFromLastEmail();
+                $iterations++;
+                if ($iterations > 5) {
+                    $discordService = new DiscordService();
+                    $discordService->sendMessage('No link found in most recent email from Kraken.');
+                    return response()->json(['error' => 'No link found in most recent email from Kraken.']);
+                }
+            }
 
             // resize the window to split the screen
             $this->driver->manage()->window()->setSize(new WebDriverDimension(960, 1080));
-            $this->driver->get($this->getLinkFromLastEmail());
+            $this->driver->get($code);
 
             sleep(2);
 
@@ -148,8 +159,8 @@ class SeleniumService
         $link = $gmailService->grabLink($text, $start);
         if ($link === null) {
 
-            $discordService = new \App\Services\DiscordService();
-            $discordService->sendMessage('No link found');
+            // $discordService = new \App\Services\DiscordService();
+            // $discordService->sendMessage('No link found in most recent email from Kraken.');
             return null;
 
         }

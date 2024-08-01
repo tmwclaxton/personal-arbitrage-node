@@ -151,6 +151,9 @@ class KrakenService
             // dd($source, $e, $buttons, $buttonValues);
             Log::error($e);
 
+            $discordService = new DiscordService();
+            $discordService->sendMessage('Error sending invoice for Kraken BTC withdrawal');
+
             return response()->json(['error' => 'Error sending invoice']);
         }
 
@@ -161,10 +164,19 @@ class KrakenService
 
 
         // grab email
-        sleep(25);
-        $driver->get($seleniumService->getLinkFromLastEmail('https://www.kraken.com/withdrawal-approve?code='));
+        $iterations = 0;
+        $code = null;
+        while ($code === null) {
+            sleep(5);
+            $code = $seleniumService->getLinkFromLastEmail('https://www.kraken.com/withdrawal-approve?code=');
+            $iterations++;
+            if ($iterations > 5) {
+                $discordService = new DiscordService();
+                $discordService->sendMessage('No link found in most recent email from Kraken.');
+                return response()->json(['error' => 'No link found in most recent email from Kraken.']);
+            }
+        }
 
-        // screenshot
         sleep(5);
 
         $krakenService->withdrawFunds(
