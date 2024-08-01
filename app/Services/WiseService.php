@@ -5,6 +5,7 @@ namespace App\Services;
 use Crypt_GPG;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use phpseclib3\Crypt\RSA;
 use Ramsey\Uuid\Uuid;
 
 class WiseService
@@ -138,15 +139,9 @@ class WiseService
     }
 
     public function signedOTT($ott) {
-        // use crypt_gpg to sign the ott
-        $signedOTT = '';
-
-
-
-        $pgpService = new PgpService();
-        $signedOTT = $pgpService->sign($this->privateKey, $ott);
-        dd($signedOTT);
-        return $signedOTT;
+        $privateKey = RSA::loadPrivateKey($this->privateKey);
+        $signedOTT = $privateKey->sign($ott);
+        return base64_encode($signedOTT);
     }
 
     // ott status

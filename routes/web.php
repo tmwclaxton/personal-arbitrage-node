@@ -212,13 +212,13 @@ Route::get('/testing', function () {
     }
 
     //wise delete all transfers
-    // $transfers = $wiseService->getClient()->transfers->list(['offset' => 0, 'limit' => 100]);
-    //
-    // foreach ($transfers as $transfer) {
-    //     if ($transfer['reference'] == "Send to Revolut" && $transfer['status'] != "cancelled") {
-    //         $wiseService->getClient()->transfers->cancel($transfer['id']);
-    //     }
-    // }
+    $transfers = $wiseService->getClient()->transfers->list(['offset' => 0, 'limit' => 100]);
+
+    foreach ($transfers as $transfer) {
+        if ($transfer['reference'] == "Send to Revolut" && $transfer['status'] != "cancelled") {
+            $wiseService->getClient()->transfers->cancel($transfer['id']);
+        }
+    }
     // dd($transfers);
 
 
