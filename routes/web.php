@@ -184,9 +184,10 @@ Route::get('/testing', function () {
 
     // $response = $krakenService->getClient()->getAccountBalance();
     // dd($response);
-    $krakenService = new \App\Services\KrakenService();
-    $response = $krakenService->sendFullAmtToLightning();
-    dd($response);
+
+    // $krakenService = new \App\Services\KrakenService();
+    // $response = $krakenService->sendFullAmtToLightning();
+    // dd($response);
 
 
 
@@ -210,12 +211,24 @@ Route::get('/testing', function () {
         }
     }
 
+    //wise delete all transfers
+    // $transfers = $wiseService->getClient()->transfers->list(['offset' => 0, 'limit' => 100]);
+    //
+    // foreach ($transfers as $transfer) {
+    //     if ($transfer['reference'] == "Send to Revolut" && $transfer['status'] != "cancelled") {
+    //         $wiseService->getClient()->transfers->cancel($transfer['id']);
+    //     }
+    // }
+    // dd($transfers);
+
+
     $recipients = $wiseService->getRecipientAccounts("GBP");
 
     foreach ($recipients['content'] as $account) {
         if ($account['id'] == env('WISE_RECIPIENT_ID_FOR_REVOLUT')) {
 
-            $quote = $wiseService->createQuote("GBP", $wiseService->getGBPBalance(), $gbpAccount['id'], "GBP", $account['id'], "MOVING_MONEY_BETWEEN_OWN_ACCOUNTS");
+            // $quote = $wiseService->createQuote("GBP", $wiseService->getGBPBalance(), $gbpAccount['id'], "GBP", $account['id'], "MOVING_MONEY_BETWEEN_OWN_ACCOUNTS");
+            $quote = $wiseService->createQuote("GBP", 4, $gbpAccount['id'], "GBP", $account['id'], "", "BANK_TRANSFER");
             $transfer = $wiseService->transferToRecipient($quote['id'], $account['id'], "Send to Revolut");
             $fundTransfer = $wiseService->fundTransfer($transfer['id']);
             dd($fundTransfer);

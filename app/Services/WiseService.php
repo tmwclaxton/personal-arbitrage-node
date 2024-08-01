@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Crypt_GPG;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use Ramsey\Uuid\Uuid;
@@ -16,8 +17,38 @@ class WiseService
 
     protected $httpClient;
 
+    protected $privateKey;
+    protected $publicKey;
+    protected $x509;
+
     public function __construct()
     {
+        // check if the private key, public key, and x509 certificate exists
+        if ( !file_exists(storage_path('app/private/WiseCerts/privatekey.pem')) ) {
+            // create the directory if it does not exist
+            if (!file_exists(storage_path('app/private/WiseCerts'))) {
+                mkdir(storage_path('app/private/WiseCerts'), 0777, true);
+            }
+
+
+            // generate x509 certificate
+            $pgpService = new PgpService();
+            $response = $pgpService->generateX509Certificates();
+
+            // save the private key, public key, and x509 certificate to app/storage/private
+            $this->privateKey = $response['private_key'];
+            $this->publicKey = $response['public_key'];
+            $this->x509 = $response['x509'];
+
+            // save the private key, public key, and x509 certificate to app/storage/private
+            file_put_contents(storage_path('app/private/WiseCerts/privatekey.pem'), $this->privateKey);
+            file_put_contents(storage_path('app/private/WiseCerts/publickey.pem'), $this->publicKey);
+            file_put_contents(storage_path('app/private/WiseCerts/x509.pem'), $this->x509);
+        } else {
+            $this->privateKey = file_get_contents(storage_path('app/private/WiseCerts/privatekey.pem'));
+            $this->publicKey = file_get_contents(storage_path('app/private/WiseCerts/publickey.pem'));
+            $this->x509 = file_get_contents(storage_path('app/private/WiseCerts/x509.pem'));
+        }
 
         $this->httpClient = new Client();
         $this->apiKey = env('WISE_API_KEY');
@@ -26,7 +57,7 @@ class WiseService
         $this->client = new \TransferWise\Client(
             [
                 "token" => env('WISE_API_KEY'),
-                "profile_id" => "test",
+                "profile_id" => "55698621",
             ]
         );
 
@@ -78,10 +109,70 @@ class WiseService
                     'X-2FA-Approval' => $headers['x-2fa-approval'][0],
                     'X-2FA-Approval-Result' => $headers['x-2fa-approval-result'][0]
                 ];
+                // get status of the ott
+                $ott = $authHeaders['X-2FA-Approval'];
+                $ottStatus = $this->getOttStatus($ott);
+                $primaryChallenge = $ottStatus['oneTimeTokenProperties']['challenges'][0]['primaryChallenge'];
+                $alternatives = $ottStatus['oneTimeTokenProperties']['challenges'][0]['alternatives'];
+
+                // if primary challenge is signature
+                if ($primaryChallenge['type'] === "SIGNATURE") {
+                    $signedOTT = $this->signedOTT($ott);
+
+                    // retry the request with the signed ott as a header X-Signature
+                    $extraHeaders['x-2fa-approval'] = $ott;
+                    $extraHeaders['X-Signature'] = $signedOTT;
+                    return $this->_makeRequest($method, $endpoint, $params, $extraHeaders);
+
+                } else if ($primaryChallenge['type'] === "PIN") {
+                    $discordService = new DiscordService();
+                    $discordService->sendMessage('Wise PIN Challenge not implemented yet');
+                    // $verifyPin = $this->verifyPin($ott);
+                }
             } else {
                 throw new \Exception("Error making request: " . $e->getMessage());
             }
         }
+
+
+    }
+
+    public function signedOTT($ott) {
+        // use crypt_gpg to sign the ott
+        $signedOTT = '';
+
+
+
+        $pgpService = new PgpService();
+        $signedOTT = $pgpService->sign($this->privateKey, $ott);
+        dd($signedOTT);
+        return $signedOTT;
+    }
+
+    // ott status
+    public function getOttStatus($ott) {
+        $extraHeaders = [
+            'One-Time-Token' => $ott
+        ];
+
+        return $this->_makeRequest('GET', "/v1/one-time-token/status", [], $extraHeaders);
+   }
+
+    // verify pin
+    public function verifyPin($ott) {
+        $params = [
+            'pin' => env('WISE_PIN'),
+        ];
+
+        $extraHeaders = [
+            'Content-Type' => 'application/jose+json',
+            'X-TW-JOSE-Method' => 'jwe',
+            'Accept' => 'application/jose+json',
+            'Accept-Encoding' => '*',
+            'One-Time-Token' => $ott
+        ];
+
+        return $this->_makeRequest('POST', "/v1/one-time-token/pin/verify", $params, $extraHeaders);
     }
 
 
@@ -115,14 +206,15 @@ class WiseService
 
 
     public function createQuote($sourceCurrency, $sourceAmount, $sourceAccount, $targetCurrency,
-                                $targetAccount = null, $transferNature = null): array
+                                $targetAccount = null, $transferNature = null, $payOut = "BALANCE"
+    ): array
     {
 
         $params = [
             "guaranteedTargetAmount" => false,
             "payInId" => $sourceAccount,
             "payInMethod" => "BALANCE",
-            "payOut" => "BALANCE",
+            "payOut" => $payOut,
             "preferredPayIn" => "BALANCE",
             "sourceAmount" => $sourceAmount,
             "sourceCurrency" => $sourceCurrency,
