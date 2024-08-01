@@ -56,18 +56,29 @@ class SeleniumService
             sleep(5);
 
 
-            $linkValues = $this->getLinks();
-            // if any of the links contain the text "Sign in" click it
-            $text = "Sign in";
-            if ( in_array($text, array_column($linkValues, 'text')) )
-            {
-                $this->clickLinksWithText($linkValues, ["Sign in"]);
-            }
-            sleep(rand(5,7));
+            // $linkValues = $this->getLinks();
+            // // if any of the links contain the text "Sign in" click it
+            // $signInText = "Sign in";
+            // if ( in_array($signInText, array_column($linkValues[1], 'text')) )
+            // {
+            //     $this->clickLinksWithText($linkValues[0], [$signInText]);
+            // } else {
+            //     $discordService = new DiscordService();
+            //     $discordService->sendMessage('No sign in link found on Kraken sign in page.');
+            // }
+            // sleep(rand(5,7));
 
             $usernameAttribute = $this->driver->findElement(WebDriverBy::name("username"));
             $passwordAttribute = $this->driver->findElement(WebDriverBy::name("password"));
 
+            // if ($this->driver->findElements(WebDriverBy::name("username")) == null) {
+            //     $stripText = 'https://www.kraken.com';
+            //     $newUrl = str_replace($stripText, '', $url);
+            //     $this->driver->get('https://www.kraken.com/sign-in?redirect=' . $newUrl);
+            //     sleep(5);
+            //     $usernameAttribute = $this->driver->findElement(WebDriverBy::name("username"));
+            //     $passwordAttribute = $this->driver->findElement(WebDriverBy::name("password"));
+            // }
 
 
             // Perform the actions from the JUnit code
@@ -86,11 +97,15 @@ class SeleniumService
                 $otp = $krakenService->getOTP();
                 $otpInput = $this->driver->findElement(WebDriverBy::name("tfa"));
                 $otpInput->sendKeys($otp);
-                $otpInput->sendKeys(WebDriverKeys::ENTER);
+                // $otpInput->sendKeys(WebDriverKeys::ENTER);
+                $buttons = $this->getButtons();
+                // click the Enter button
+                $this->clickButtonsWithText($buttons[0], $buttons[1], ["Enter"]);
             }
 
             // Execute JavaScript for scrolling
             $this->driver->executeScript("window.scrollTo(0,99.89418029785156)");
+
         } catch (\Exception $e) {
             sleep(5);
             $this->driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
@@ -158,11 +173,7 @@ class SeleniumService
 
         $link = $gmailService->grabLink($text, $start);
         if ($link === null) {
-
-            // $discordService = new \App\Services\DiscordService();
-            // $discordService->sendMessage('No link found in most recent email from Kraken.');
             return null;
-
         }
 
         $this->linkUsed = $link;
@@ -243,7 +254,7 @@ class SeleniumService
             $linkValues[] = ['text' => $link->getText(), 'href' => $link->getAttribute('href')];
         }
 
-        return $linkValues;
+        return [$links, $linkValues];
     }
 
     // click links with text
@@ -253,17 +264,12 @@ class SeleniumService
             $indexes = array_keys(array_column($links, 'text'), $text);
             foreach ($indexes as $index) {
                 $webDriverBy = WebDriverBy::id($links[$index]->getAttribute('id'));
-                // check if link is clickable
-                if ($links[$index]->isEnabled() && $links[$index]->isDisplayed()
-                    && WebDriverExpectedCondition::elementToBeClickable($webDriverBy)
-                    && WebDriverExpectedCondition::visibilityOfElementLocated($webDriverBy)
-                ) {
-                    $links[$index]->click();
-                    sleep(1);
-                    break;
-                }
+                $links[$index]->click();
+                sleep(1);
+                break;
             }
         }
+
     }
 
 }

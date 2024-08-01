@@ -80,7 +80,7 @@ class KrakenService
 
         $krakenService = new \App\Services\KrakenService();
         $btcBalance = $krakenService->getBTCBalance();
-        $this->discordService->sendMessage('Sending ' . $btcBalance . ' BTC to lightning node');
+        // $this->discordService->sendMessage('Sending ' . $btcBalance . ' BTC to lightning node');
         // make btc balance a big decimal
         $btc = $btcBalance->jsonSerialize();
         $satoshis = $btc * 100000000;
@@ -101,7 +101,7 @@ class KrakenService
         $driver->executeScript("window.localStorage.setItem('lightning-network-shown-in-current-session', 'true')");
 
         // sign in again
-        $seleniumService->signin($krakenService, 'https://www.kraken.com/c/funding/withdraw?asset=BTC&assetType=crypto&network=Lightning&method=Bitcoin%2520Lightning');
+        $seleniumService->signin($krakenService, 'https://www.kraken.com/sign-in?redirect=%2Fc%2Ffunding%2Fwithdraw%3Fasset%3DBTC%26assetType%3Dcrypto%26network%3DLightning%26method%3DBitcoin%2520Lightning');
         // sleep(rand(1,2));
         // $links = $seleniumService->getLinks();
         // $seleniumService->clickLinksWithText($links, ["Transfer crypto"]);
@@ -117,7 +117,7 @@ class KrakenService
         // // select list item by id downshift-0-item-1
         // $driver->findElement(WebDriverBy::id("downshift-0-item-1"))->click();
 
-        sleep(6);
+        sleep(rand(10, 15));
 
         list($buttons, $buttonValues) = $seleniumService->getButtons();
 
@@ -148,13 +148,11 @@ class KrakenService
             $driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
             $source = $driver->getPageSource();
             $driver->quit();
-            // dd($source, $e, $buttons, $buttonValues);
-            Log::error($e);
 
             $discordService = new DiscordService();
             $discordService->sendMessage('Error sending invoice for Kraken BTC withdrawal');
+            dd($source, $e, $buttons, $buttonValues);
 
-            return response()->json(['error' => 'Error sending invoice']);
         }
 
         sleep(2);
