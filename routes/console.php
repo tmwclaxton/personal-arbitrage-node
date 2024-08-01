@@ -101,3 +101,7 @@ Schedule::command('currency:converter')
 //     $revolutService = new \App\Services\RevolutService();
 //     $revolutService->sendAllToPersonal();
 // })->everyMinute();
+
+Schedule::command('btc:purchase-detailer')
+    ->description('btc purchase detailer')
+    ->everyMinute()->withoutOverlapping(5);

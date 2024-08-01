@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Jobs\ConfirmPayment;
 use App\Models\AdminDashboard;
 use App\Models\BtcFiat;
+use App\Models\BtcPurchase;
 use App\Models\MonzoAccessToken;
 use App\Models\Offer;
 use App\Models\Payment;
@@ -185,8 +186,9 @@ Route::get('/testing', function () {
     // $response = $krakenService->getClient()->getAccountBalance();
     // dd($response);
 
-    $krakenService = new \App\Services\KrakenService();
-    $response = $krakenService->sendFullAmtToLightning();
+
+
+    // $response = $krakenService->sendFullAmtToLightning();
     dd($response);
 
 
@@ -238,7 +240,10 @@ Route::get('/testing', function () {
 
 
 
+
 })->name('testing');
+
+// private function to convert bigDecimal to decimal(16, 8)
 
 
 require __DIR__.'/auth.php';

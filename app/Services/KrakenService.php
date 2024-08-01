@@ -228,7 +228,15 @@ class KrakenService
             'XXBTZGBP',
         );
         $order->setVolume($this->convertGBPToBTC($amtInGBP));
-        return $this->client->addOrder($order);
+        $orderCreation = $this->client->addOrder($order);
+
+
+        $btcPurchase = new \App\Models\BtcPurchase();
+        $btcPurchase->tx_id = $orderCreation->txId[0];
+        $btcPurchase->primaryDescription = $orderCreation->description->order;
+        $btcPurchase->save();
+
+        return $orderCreation;
     }
 
 
