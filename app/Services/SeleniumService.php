@@ -217,8 +217,9 @@ class SeleniumService
         return [$buttons, $buttonValues];
     }
 
-    public function clickButtonsWithText(mixed $buttons, mixed $buttonValues, array $texts): void
+    public function clickButtonsWithText(mixed $buttons, mixed $buttonValues, array $texts): int
     {
+        $clicks = 0;
         // try {
             foreach ($texts as $text) {
                 // $indexes = array_search($text, array_column($buttonValues, 'text'));
@@ -227,10 +228,11 @@ class SeleniumService
                     $webDriverBy = WebDriverBy::id($buttons[$index]->getAttribute('id'));
                     // check if button is clickable
                     if ($buttons[$index]->isEnabled() && $buttons[$index]->isDisplayed()
-                        && WebDriverExpectedCondition::elementToBeClickable($webDriverBy)
+                        // && WebDriverExpectedCondition::elementToBeClickable($webDriverBy)
                         && WebDriverExpectedCondition::visibilityOfElementLocated($webDriverBy)
                     ) {
                         $buttons[$index]->click();
+                        $clicks++;
                         sleep(1);
                         break;
                     }
@@ -243,6 +245,8 @@ class SeleniumService
         //     $this->driver->quit();
         //     dd($source, $e, $buttons, $buttonValues);
         // }
+
+        return $clicks;
     }
 
     // grab links from the page and the text inside them

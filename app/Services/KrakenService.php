@@ -78,6 +78,8 @@ class KrakenService
 
     public function sendFullAmtToLightning() {
 
+
+
         $krakenService = new \App\Services\KrakenService();
         $btcBalance = $krakenService->getBTCBalance();
         // $this->discordService->sendMessage('Sending ' . $btcBalance . ' BTC to lightning node');
@@ -90,6 +92,10 @@ class KrakenService
 
         $seleniumService = new \App\Services\SeleniumService();
         $driver = $seleniumService->getDriver();
+        // THIS IS TO SET REDIS KEYS plz dont delete
+        $code = $seleniumService->getLinkFromLastEmail('https://www.kraken.com/withdrawal-approve?code=');
+        $code = $seleniumService->getLinkFromLastEmail();
+        //
 
         // sign in // possibly with otp
         $seleniumService->signin($krakenService);
@@ -126,13 +132,21 @@ class KrakenService
         // scroll down slightly
         $driver->executeScript("window.scrollTo(0," . rand(650, 720) . ")");
 
-        sleep(2);
+        sleep(5);
 
 
         list($buttons, $buttonValues) = $seleniumService->getButtons();
-        $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Manage withdrawal requests", "Manage requests"]);
+        $counts = 0;
+        // $counts += $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Manage withdrawal requests"]);
+        // $counts += $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Manage requests"]);
 
-        sleep(2);
+        // if clicks === 0 then click button with class TextButton_root__fIpnJ
+
+        // if ($counts === 0) {
+            $driver->findElement(WebDriverBy::className("TextButton_root__fIpnJ"))->click();
+        // }
+
+        sleep(5);
 
         list($buttons, $buttonValues) = $seleniumService->getButtons();
         $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Add withdrawal request"]);
@@ -175,6 +189,8 @@ class KrakenService
             }
         }
 
+        $driver->get($code);
+
         sleep(5);
 
         $krakenService->withdrawFunds(
@@ -185,6 +201,9 @@ class KrakenService
 
         // Close the driver
         $driver->quit();
+
+        $discordService = new DiscordService();
+        $discordService->sendMessage('Withdrawal Complete: ' . $btc . ' BTC to ' . $invoice);
 
         return response()->json([
             'success' => 'Withdrawal request sent',

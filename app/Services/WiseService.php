@@ -80,7 +80,7 @@ class WiseService
      * @return array
      * @throws \Exception
      */
-    private function _makeRequest(string $method, string $endpoint, array $params = [], array $extraHeaders = []): array
+    private function _makeRequest(string $method, string $endpoint, array $params = [], array $extraHeaders = [], bool $retry = true): array
     {
         $url = $this->baseUrl . $endpoint;
 
@@ -105,7 +105,7 @@ class WiseService
         } catch (RequestException $e) {
             $headers = $e->getResponse()->getHeaders();
             // if the headers contain x-2fa-approval and x-2fa-approval-result then set authHeaders
-            if (isset($headers['x-2fa-approval']) && isset($headers['x-2fa-approval-result'])) {
+            if (isset($headers['x-2fa-approval']) && isset($headers['x-2fa-approval-result']) && $retry) {
                 $authHeaders = [
                     'X-2FA-Approval' => $headers['x-2fa-approval'][0],
                     'X-2FA-Approval-Result' => $headers['x-2fa-approval-result'][0]
@@ -123,7 +123,7 @@ class WiseService
                     // retry the request with the signed ott as a header X-Signature
                     $extraHeaders['x-2fa-approval'] = $ott;
                     $extraHeaders['X-Signature'] = $signedOTT;
-                    return $this->_makeRequest($method, $endpoint, $params, $extraHeaders);
+                    $request = $this->_makeRequest($method, $endpoint, $params, $extraHeaders, false);
 
                 } else if ($primaryChallenge['type'] === "PIN") {
                     $discordService = new DiscordService();
@@ -131,7 +131,12 @@ class WiseService
                     // $verifyPin = $this->verifyPin($ott);
                 }
             } else {
-                throw new \Exception("Error making request: " . $e->getMessage());
+                // throw new \Exception("Error making request: " . $e->getMessage());
+                dd($e);
+            }
+
+            if (isset($request)) {
+                return $request;
             }
         }
 

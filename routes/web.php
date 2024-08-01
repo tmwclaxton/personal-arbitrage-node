@@ -185,9 +185,9 @@ Route::get('/testing', function () {
     // $response = $krakenService->getClient()->getAccountBalance();
     // dd($response);
 
-    // $krakenService = new \App\Services\KrakenService();
-    // $response = $krakenService->sendFullAmtToLightning();
-    // dd($response);
+    $krakenService = new \App\Services\KrakenService();
+    $response = $krakenService->sendFullAmtToLightning();
+    dd($response);
 
 
 
