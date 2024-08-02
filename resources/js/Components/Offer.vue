@@ -1,11 +1,11 @@
 <template>
-         <!--:class="{ showSidebar && offer.accepted ? 'grid-span-2' : 'grid-span-1' }">-->
+
+    <!--'col-span-2': showSidebar && offer.accepted,-->
+    <!--'col-span-3': !showSidebar && offer.accepted,-->
+    <!--'col-span-1': !offer.accepted,-->
+
     <div class="max-w-md p-4 mx-auto bg-white dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700 dark:shadow-lg
-    rounded-xl shadow-md overflow-hidden md:max-w-2xl"  :class="{
-            'col-span-2': showSidebar && offer.accepted,
-            'col-span-3': !showSidebar && offer.accepted,
-            'col-span-1': !offer.accepted
-        }">
+    rounded-xl shadow-md overflow-hidden md:max-w-2xl"  :class="{'col-span-2': showSidebar && offer.accepted, 'col-span-3': !showSidebar && offer.accepted, 'col-span-1': !offer.accepted}">
 
         <div v-if="offer.transaction">
             <p class="mt-2 text-zinc-500 dark:text-zinc-200 font-bold">Transaction Status: {{
@@ -16,8 +16,8 @@
             <div class="grid grid-cols-3  gap-1">
 
                     <danger-button v-on:click="autoRun"
-                                     :disabled="offer.job_locked"
-                                   class="w-full text-center  h-10 break-words ">
+                                     :disabled="offer.job_locked || offer.accepted"
+                                   class="w-full text-center  h-10 break-words disabled:opacity-50">
                         <p class="text-center w-full">Auto Run</p>
                     </danger-button>
 

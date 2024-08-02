@@ -43,16 +43,16 @@ class DiscordCommands implements ShouldQueue
             '!chat',
             '!viewChat',
             '!collaborativeCancel',
-            // '!toggleAutoAccept',
-            // '!toggleAutoBond',
-            // '!toggleAutoEscrow',
-            // '!toggleAutoChat',
-            // '!toggleAutoTopup',
-            // '!setSellPremium',
-            // '!setBuyPremium',
-            // '!setConcurrentTransactions',
-            // '!setMinSatProfit',
-            // '!setMaxSatAmount',
+            '!toggleAutoAccept',
+            '!toggleAutoBond',
+            '!toggleAutoEscrow',
+            '!toggleAutoChat',
+            '!toggleAutoTopup',
+            '!setSellPremium',
+            '!setBuyPremium',
+            '!setConcurrentTransactions',
+            '!setMinSatProfit',
+            '!setMaxSatAmount',
         ];
         $discordService = new DiscordService();
         $latestMessages = $discordService->getLatestMessages();
@@ -82,6 +82,15 @@ class DiscordCommands implements ShouldQueue
                     // if it is, send a message to the discord channel
                     $adminDashboard = AdminDashboard::all()->first();
                     switch ($firstWord) {
+                        case '!help':
+
+                            $commandsFormatted = "";
+                            foreach ($commands as $command) {
+                                $commandsFormatted = $commandsFormatted . $command . "\n";
+                            }
+                            $discordService->sendMessage("Available commands: \n" . $commandsFormatted);
+
+                            break;
                         case '!panic':
                             $adminDashboard->panicButton = true;
                             $adminDashboard->save();
@@ -137,6 +146,73 @@ class DiscordCommands implements ShouldQueue
                             $robosats = new \App\WorkerClasses\Robosats();
                             $response = $robosats->collaborativeCancel($offer);
                             break;
+                        case '!toggleAutoAccept':
+                            $adminDashboard->autoAccept = !$adminDashboard->autoAccept;
+                            $adminDashboard->save();
+                            break;
+                        case '!toggleAutoBond':
+                            $adminDashboard->autoBond = !$adminDashboard->autoBond;
+                            $adminDashboard->save();
+                            break;
+                        case '!toggleAutoEscrow':
+                            $adminDashboard->autoEscrow = !$adminDashboard->autoEscrow;
+                            $adminDashboard->save();
+                            break;
+                        case '!toggleAutoChat':
+                            $adminDashboard->autoChat = !$adminDashboard->autoChat;
+                            $adminDashboard->save();
+                            break;
+                        case '!toggleAutoTopup':
+                            $adminDashboard->autoTopup = !$adminDashboard->autoTopup;
+                            $adminDashboard->save();
+                            break;
+                        case '!setSellPremium':
+                            $adminDashboard->sellPremium = explode(' ', $message['content'])[1];
+                            // ensure the value is a float and positive
+                            if (!is_numeric($adminDashboard->sellPremium) || $adminDashboard->sellPremium < 0) {
+                                $discordService->sendMessage('Invalid value for sell premium');
+                                break;
+                            }
+                            $adminDashboard->save();
+                            break;
+                        case '!setBuyPremium':
+                            $adminDashboard->buyPremium = explode(' ', $message['content'])[1];
+                            // ensure the value is a float and negative
+                            if (!is_numeric($adminDashboard->buyPremium) || $adminDashboard->buyPremium > 0) {
+                                $discordService->sendMessage('Invalid value for buy premium');
+                                break;
+                            }
+                            $adminDashboard->save();
+                            break;
+                        case '!setConcurrentTransactions':
+                            $adminDashboard->concurrentTransactions = explode(' ', $message['content'])[1];
+                            // ensure the value is an integer and positive
+                            if (!is_numeric($adminDashboard->concurrentTransactions) || $adminDashboard->concurrentTransactions < 0) {
+                                $discordService->sendMessage('Invalid value for concurrent transactions');
+                                break;
+                            }
+                            $adminDashboard->save();
+                            break;
+                        case '!setMinSatProfit':
+                            $adminDashboard->minSatProfit = explode(' ', $message['content'])[1];
+                            // ensure the value is an integer and positive
+                            if (!is_numeric($adminDashboard->minSatProfit) || $adminDashboard->minSatProfit < 0) {
+                                $discordService->sendMessage('Invalid value for minimum satoshi profit');
+                                break;
+                            }
+                            $adminDashboard->save();
+                            break;
+                        case '!setMaxSatAmount':
+                            $adminDashboard->maxSatAmount = explode(' ', $message['content'])[1];
+                            // ensure the value is an integer and positive
+                            if (!is_numeric($adminDashboard->maxSatAmount) || $adminDashboard->maxSatAmount < 0) {
+                                $discordService->sendMessage('Invalid value for maximum satoshi amount');
+                                break;
+                            }
+                            $adminDashboard->save();
+                            break;
+
+
                         default:
                             $discordService->sendMessage('Command not recognized');
                             break;

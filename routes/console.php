@@ -114,4 +114,4 @@ Schedule::command('btc:purchase-detailer')
 // get:robosats-messages
 Schedule::command('get:robosats-messages')
     ->description('get robosats messages')
-    ->everyThreeMinutes()->withoutOverlapping(1);
+    ->everyMinute()->withoutOverlapping(1);
