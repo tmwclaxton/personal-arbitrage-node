@@ -125,6 +125,11 @@ const showSidebar = ref(true);
                     Config
                 </secondary-button>
             </Link>
+            <Link :href="route('dashboard.index')">
+                <secondary-button >
+                    Transaction History
+                </secondary-button>
+            </Link>
         </div>
         <div class="my-5 border-b-2 border-gray-300 dark:border-zinc-700"></div>
 

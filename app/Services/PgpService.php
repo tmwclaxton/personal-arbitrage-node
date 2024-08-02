@@ -122,32 +122,6 @@ class PgpService extends Controller
 
         return $encrypted;
 
-
-        // // add the peer public key
-        // if ($publicKey) {
-        //     $publicKeyImport = $crypt_gpg->importKey($publicKey);
-        //     $publicFingerPrint = $publicKeyImport['fingerprint'];
-        //     $public_key = $crypt_gpg->addEncryptKey($publicFingerPrint);
-        // }
-        //
-        //
-        // if (!$peerPublicKey) {
-        //     // Encrypt the message
-        //     $encrypted = $crypt_gpg->setEngineOptions(array('sign' =>  '--faked-system-time ' . $newTime))
-        //     ->encryptAndSign($message, true);
-        //     return $encrypted;
-        // } else {
-        //     // Encrypt the message
-        //     $encrypted = $crypt_gpg
-        //         ->setEngineOptions(array(
-        //             'encrypt' => '--recipient ' . $peerFingerPrint . ' --recipient ' . $publicFingerPrint,
-        //             'sign' =>  '--faked-system-time ' . $newTime,
-        //
-        //         ))
-        //     ->encryptAndSign($message, true);
-        //     return $encrypted;
-        // }
-
     }
 
     public function decrypt($private_key, $encrypted_message, $passphrase)
@@ -157,11 +131,11 @@ class PgpService extends Controller
         $crypt_gpg->clearPassphrases();
 
         // import the public key
-        $publicKeyImport = $crypt_gpg->importKey($private_key);
-        $fingerPrint = $publicKeyImport['fingerprint'];
+        $privateKeyImport = $crypt_gpg->importKey($private_key);
+        $fingerPrint = $privateKeyImport['fingerprint'];
 
         // Add the keys
-        $public_key = $crypt_gpg->addDecryptKey($fingerPrint, $passphrase);
+        $private_key = $crypt_gpg->addDecryptKey($fingerPrint, $passphrase);
         // $crypt_gpg->addPassphrase($fingerPrint, $passphrase);
 
         // Decrypt the message
@@ -171,7 +145,7 @@ class PgpService extends Controller
 
     }
 
-    public function sign($privateKey, $message, $passphrase, $publicKey = null)
+    public function sign($privateKey, $message, $passphrase = null, $publicKey = null)
     {
         // Initialize the Crypt_GPG instance
         $crypt_gpg = new Crypt_GPG();
@@ -211,7 +185,6 @@ class PgpService extends Controller
         }
 
         return $signed;
-
     }
 
     public function verify($public_key, $signed_message)
@@ -248,12 +221,12 @@ class PgpService extends Controller
 
         // Generate the X509 certificate
         $x509 = openssl_csr_new([
-            "countryName" => "US",
-            "stateOrProvinceName" => "California",
-            "localityName" => "Mountain View",
-            "organizationName" => "Google",
-            "organizationalUnitName" => "Android",
-            "commonName" => "Android",
+            "countryName" => "UK",
+            "stateOrProvinceName" => "Belfast",
+            "localityName" => "Northern Ireland",
+            "organizationName" => "Lightning Arbitrage Solutions",
+            "organizationalUnitName" => "",
+            "commonName" => "Lightning Arbitrage Solutions",
         ], $privateKey);
 
         // Sign the X509 certificate

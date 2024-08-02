@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\AdminDashboard;
 use App\Models\DiscordMessage;
 use App\Models\Offer;
+use App\Models\RobosatsChatMessage;
 use App\Services\DiscordService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -32,12 +33,26 @@ class DiscordCommands implements ShouldQueue
     public function handle(): void
     {
         $commands = [
+            '!help',
             '!panic',
             '!calm',
             '!confirm',
             '!resetRevolut',
             '!getRevPayToken',
             '!getRevReadToken',
+            '!chat',
+            '!viewChat',
+            '!collaborativeCancel',
+            // '!toggleAutoAccept',
+            // '!toggleAutoBond',
+            // '!toggleAutoEscrow',
+            // '!toggleAutoChat',
+            // '!toggleAutoTopup',
+            // '!setSellPremium',
+            // '!setBuyPremium',
+            // '!setConcurrentTransactions',
+            // '!setMinSatProfit',
+            // '!setMaxSatAmount',
         ];
         $discordService = new DiscordService();
         $latestMessages = $discordService->getLatestMessages();
@@ -62,6 +77,8 @@ class DiscordCommands implements ShouldQueue
                 // check if the command is in the list of commands
                 $firstWord = explode(' ', $message['content'])[0];
                 if (in_array($firstWord, $commands)) {
+                    $discordService->sendMessage('Executing command: ' . $message['content']);
+
                     // if it is, send a message to the discord channel
                     $adminDashboard = AdminDashboard::all()->first();
                     switch ($firstWord) {
@@ -93,12 +110,38 @@ class DiscordCommands implements ShouldQueue
                             $revArray = $revolutService->getReadToken();
                             $discordService->sendMessage('Reset RevToken at: ' . $revArray['url']);
                             break;
+                        case '!chat':
+                            // grab offer id then message //!chat 6960 hello?
+                            $offerId = explode(' ', $message['content'])[1];
+                            $messageContent = explode(' ', $message['content'], 3)[2];
+                            $offer = Offer::where('robosatsId', $offerId)->first();
+                            $robot = $offer->robots()->first();
+                            $robosats = new \App\WorkerClasses\Robosats();
+                            $robosats->webSocketCommunicate($offer, $robot, $messageContent);
+                            break;
+                        case '!viewChat':
+                            // grab offer id //!viewChat 6960
+                            $offerId = explode(' ', $message['content'])[1];
+                            $offer = Offer::where('robosatsId', $offerId)->first();
+                            $chatMessages = RobosatsChatMessage::where('offer_id', $offer->id)->get();
+                            $messages = "";
+                            foreach ($chatMessages as $chatMessage) {
+                                $messages = $messages . "**" . $chatMessage->user_nick . "**: " . $chatMessage->message . " \n";
+                            }
+                            $discordService->sendMessage($messages);
+                            break;
+                        case '!collaborativeCancel':
+                            // grab offer id //!collaborativeCancel 6960
+                            $offerId = explode(' ', $message['content'])[1];
+                            $offer = Offer::where('robosatsId', $offerId)->first();
+                            $robosats = new \App\WorkerClasses\Robosats();
+                            $response = $robosats->collaborativeCancel($offer);
+                            break;
                         default:
                             $discordService->sendMessage('Command not recognized');
                             break;
 
                     }
-                    $discordService->sendMessage('Executing command: ' . $message['content']);
                 }
 
             }

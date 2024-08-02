@@ -59,13 +59,17 @@ class DiscordService
      * @throws GuzzleException
      * @throws \Exception
      */
-    public function sendMessage(string $message)
+    public function sendMessage(string $message, string $channelId = null): void
     {
+        if ($channelId === null) {
+            $channelId = $this->channelId;
+        }
+
         $payload = [
             'content' => $message
         ];
 
-        $response = $this->client->post("channels/{$this->channelId}/messages", [
+        $response = $this->client->post("channels/{$channelId}/messages", [
             'json' => $payload
         ]);
 
@@ -91,5 +95,20 @@ class DiscordService
     //
     // }
 
+    // public function createChannel(string $name): void
+    // {
+    //     $payload = [
+    //         'name' => $name,
+    //         'type' => 0
+    //     ];
+    //
+    //     $response = $this->client->post("guilds/{$this->applicationId}/channels", [
+    //         'json' => $payload
+    //     ]);
+    //
+    //     if ($response->getStatusCode() !== 201) {
+    //         throw new \Exception('Failed to create channel.');
+    //     }
+    // }
 
 }

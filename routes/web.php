@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Jobs\ConfirmPayment;
 use App\Models\AdminDashboard;
 use App\Models\BtcFiat;
+use App\Models\BtcPurchase;
 use App\Models\MonzoAccessToken;
 use App\Models\Offer;
 use App\Models\Payment;
@@ -29,6 +30,7 @@ use Facebook\WebDriver\WebDriverDimension;
 use Facebook\WebDriver\WebDriverExpectedCondition;
 use Facebook\WebDriver\WebDriverKeys;
 use Illuminate\Foundation\Application;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
@@ -41,6 +43,9 @@ use Spatie\DiscordAlerts\Facades\DiscordAlert;
 use Webklex\IMAP\Facades\Client;
 use Webklex\PHPIMAP\Folder;
 use Webklex\PHPIMAP\Message;
+use WebSocket\Connection;
+use WebSocket\Middleware\CloseHandler;
+use WebSocket\Middleware\PingResponder;
 
 
 Route::post('/updateAdminDashboard', function () {
@@ -69,6 +74,8 @@ Route::post('/updateAdminDashboard', function () {
 
 Route::get('/', [\App\Http\Controllers\OfferController::class, 'index'])->name('welcome');
 Route::get('/offers', [\App\Http\Controllers\OfferController::class, 'getOffers'])->name('offers.index');
+// Route::get('/offer/{offer_id}/chat', [\App\Http\Controllers\OfferController::class, 'chatRoom'])->name('offers.chat');
+// Route::post('/offer/{offer_id}/chat', [\App\Http\Controllers\OfferController::class, 'sendMessage'])->name('offers.chat');
 Route::get('/transactions', [\App\Http\Controllers\TransactionController::class, 'index'])->name('transactions.index');
 Route::get('/payments', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payments.index');
 Route::get('/config', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('dashboard.index');
@@ -141,7 +148,7 @@ Route::post('/send-payment-handle', function () {
     $offerId = request('offer_id');
     $offer = Offer::find($offerId);
     $robosats = new Robosats();
-    $response = $robosats->webSocketCommunicate($offer);
+    $robosats->sendHandle($offer);
 })->name('send-payment-handle');
 
 
@@ -156,98 +163,110 @@ Route::post('auto-accept', function () {
     ])->dispatch();
 })->name('auto-accept');
 
-Route::get('monzo-redirect', function () {
-    $monzoService = new MonzoService();
-    $redirect = $monzoService->redirectUserToMonzo();
-    return response()->json(['redirect' => $redirect]);
-})->name('monzoRedirect');
 
-Route::get('monzo-exchange', function () {
-    $monzoService = new MonzoService();
-    $code = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJlYiI6InhYL2pmTXpwUm54VFBZYzR3dzZKIiwianRpIjoiYXV0aHpjb2RlXzAwMDBBa0ZvZDBOakY3WndQdFY1aGgiLCJ0eXAiOiJhemMiLCJ2IjoiNiJ9.Cj7uispLSPHalEIYzjmC7IY-EsvBkEtPJBXfsed2o5pIz3IWOTqzLXwwckOHUwiCLmHxZUMCIrr6a_MZHYJFcw';
-    $exchange = $monzoService->exchangeCode($code);
-    return response()->json(['exchange' => $exchange]);
-})->name('monzoExchange');
+// collaborative cancel
+Route::post('collaborative-cancel', function () {
+    $offerId = request('offer_id');
+    $offer = Offer::find($offerId);
+    $robosats = new Robosats();
+    $response = $robosats->collaborativeCancel($offer);
+    return $response;
+})->name('collaborative-cancel');
 
-Route::get('monzo-refresh', function () {
-    $monzoService = new MonzoService();
-    $monzoAccessToken = MonzoAccessToken::all()->first();
-    $refreshedToken = $monzoService->refreshAccessToken($monzoAccessToken);
-    return response()->json(['refreshedToken' => $refreshedToken]);
-})->name('monzoRefresh');
+
+
+// Route::get('monzo-redirect', function () {
+//     $monzoService = new MonzoService();
+//     $redirect = $monzoService->redirectUserToMonzo();
+//     return response()->json(['redirect' => $redirect]);
+// })->name('monzoRedirect');
+//
+// Route::get('monzo-exchange', function () {
+//     $monzoService = new MonzoService();
+//     $code = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJlYiI6InhYL2pmTXpwUm54VFBZYzR3dzZKIiwianRpIjoiYXV0aHpjb2RlXzAwMDBBa0ZvZDBOakY3WndQdFY1aGgiLCJ0eXAiOiJhemMiLCJ2IjoiNiJ9.Cj7uispLSPHalEIYzjmC7IY-EsvBkEtPJBXfsed2o5pIz3IWOTqzLXwwckOHUwiCLmHxZUMCIrr6a_MZHYJFcw';
+//     $exchange = $monzoService->exchangeCode($code);
+//     return response()->json(['exchange' => $exchange]);
+// })->name('monzoExchange');
+//
+// Route::get('monzo-refresh', function () {
+//     $monzoService = new MonzoService();
+//     $monzoAccessToken = MonzoAccessToken::all()->first();
+//     $refreshedToken = $monzoService->refreshAccessToken($monzoAccessToken);
+//     return response()->json(['refreshedToken' => $refreshedToken]);
+// })->name('monzoRefresh');
 
 
 Route::get('/testing', function () {
+
+    // $seleniumService = new \App\Services\SeleniumService();
+    // dd($seleniumService->getLinkFromLastEmail());
+
+    // $response = $krakenService->getClient()->getAccountBalance();
+    // dd($response);
+
+
+
+    dd("testing");
+
+
+
+
+
+
+
+
+
+
     // $revolutService = new RevolutService();
     // $revolutService->currencyExchangeAll("EUR", "GBP");
     // dd($revolutService->getGBPBalance());
     // wise send to personal revolut account
-    // $payment = null;
-    // $wiseService = new \App\Services\WiseService();
-    // // dd($accounts);
-    // $gbpAccount = $wiseService->getGBPAccount();
-    // dd($balances);
-    //
-    // $accounts = $wiseService->getClient()->recipient_accounts->all();
-    // // iterate through accounts and find id 819366129
-    // foreach ($accounts['content'] as $account) {
-    //     if ($account->id == 819366129) {
-    //         $payment = $wiseService->getClient()->payments->create([
-    //             // 'sourceAccount' => ,
-    //             'targetAccount' => 819366129,
-    //             'amount' => [
-    //                 'value' => 1,
-    //                 'currency' => 'GBP'
-    //             ]
-    //         ]);
-    //     }
-    // }
-
-    // revolut send to personal account
     $payment = null;
-    $revolutService = new RevolutService();
-    $accessToken = new \League\OAuth2\Client\Token\AccessToken([
-        'access_token' => $revolutService->getReadToken()['access_token']
-    ]);
+    $wiseService = new \App\Services\WiseService();
 
-    if ($revolutService->getGBPBalance() >= 4) {
-        $client = new \RevolutPHP\Client($accessToken);
-        $counterParties = $client->counterparties->all();
-        $counterParty = null;
-        foreach ($counterParties as $cp) {
-            if ($cp->id === '9f7f4336-69b3-440a-9767-dfa5e9a01a27') { // payward ltd account
-                $counterParty = $cp;
-                break;
-            }
+    // $gbpAccount = $wiseService->getGBPAccount();
+    // dd($gbpAccount);
+
+    // grab accounts
+    $accounts = $wiseService->getBalances();
+    $gbpAccount = null;
+    foreach ($accounts as $account) {
+        if ($account['currency'] == 'GBP') {
+            $gbpAccount = $account;
         }
-        $discordService = new DiscordService();
-        $discordService->sendMessage('Sent ' . $revolutService->getGBPBalance() . ' GBP to Kraken account');
-
-        $payment = array(
-            "request_id" => bin2hex(random_bytes(16)),
-            "account_id" => "29d35a62-1130-4aef-8d51-7ccd484b25bd",
-            "receiver" => array(
-                "counterparty_id" => $counterParty->id,
-                "account_id" => $counterParty->accounts[0]->id,
-            ),
-            "amount" => $revolutService->getGBPBalance(),
-            "currency" => "GBP",
-            "reference" => "Store fiat as BTC in Kraken"
-        );
-        $accessToken = new \League\OAuth2\Client\Token\AccessToken([
-            'access_token' => $revolutService->getPayToken()['access_token']
-        ]);
-        $client = new \RevolutPHP\Client($accessToken);
-        $client->payments->create($payment);
-
-
-
     }
 
-    return response()->json(['payment' => $payment]);
+    //wise delete all transfers
+    $transfers = $wiseService->getClient()->transfers->list(['offset' => 0, 'limit' => 100]);
+
+    foreach ($transfers as $transfer) {
+        if ($transfer['reference'] == "Send to Revolut" && $transfer['status'] != "cancelled") {
+            $wiseService->getClient()->transfers->cancel($transfer['id']);
+        }
+    }
+    // dd($transfers);
+
+
+    $recipients = $wiseService->getRecipientAccounts("GBP");
+
+    foreach ($recipients['content'] as $account) {
+        if ($account['id'] == env('WISE_RECIPIENT_ID_FOR_REVOLUT')) {
+
+            // $quote = $wiseService->createQuote("GBP", $wiseService->getGBPBalance(), $gbpAccount['id'], "GBP", $account['id'], "MOVING_MONEY_BETWEEN_OWN_ACCOUNTS");
+            $quote = $wiseService->createQuote("GBP", 4, $gbpAccount['id'], "GBP", $account['id'], "", "BANK_TRANSFER");
+            $transfer = $wiseService->transferToRecipient($quote['id'], $account['id'], "Send to Revolut");
+            $fundTransfer = $wiseService->fundTransfer($transfer['id']);
+            dd($fundTransfer);
+        }
+    }
+
+
+
 
 
 })->name('testing');
+
+// private function to convert bigDecimal to decimal(16, 8)
 
 
 require __DIR__.'/auth.php';

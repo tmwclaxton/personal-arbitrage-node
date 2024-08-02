@@ -37,7 +37,7 @@ class SendPaymentHandle implements ShouldQueue
     {
         if (!$this->adminDashboard->panicButton) {
             $robosats = new Robosats();
-            $robosats->webSocketCommunicate($this->offer);
+            $robosats->sendHandle($this->offer);
         } else {
             // throw an exception
             throw new \Exception('Panic button is enabled - SendPaymentHandle.php');

@@ -78,18 +78,25 @@ class KrakenService
 
     public function sendFullAmtToLightning() {
 
+
+
         $krakenService = new \App\Services\KrakenService();
         $btcBalance = $krakenService->getBTCBalance();
-        $this->discordService->sendMessage('Sending ' . $btcBalance . ' BTC to lightning node');
+        // $this->discordService->sendMessage('Sending ' . $btcBalance . ' BTC to lightning node');
         // make btc balance a big decimal
         $btc = $btcBalance->jsonSerialize();
-        $satoshis = $btc * 100000000;
+        // ensure satoshis is an integer
+        $satoshis = intval($btc * 100000000);
         $lightningNode = new LightningNode();
         $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Withdrawal of ' . $btcBalance . ' BTC at ' . Carbon::now()->toDateTimeString());
 
 
         $seleniumService = new \App\Services\SeleniumService();
         $driver = $seleniumService->getDriver();
+        // THIS IS TO SET REDIS KEYS plz dont delete
+        $code = $seleniumService->getLinkFromLastEmail('https://www.kraken.com/withdrawal-approve?code=');
+        $code = $seleniumService->getLinkFromLastEmail();
+        //
 
         // sign in // possibly with otp
         $seleniumService->signin($krakenService);
@@ -101,24 +108,49 @@ class KrakenService
         $driver->executeScript("window.localStorage.setItem('lightning-network-shown-in-current-session', 'true')");
 
         // sign in again
-        $seleniumService->signin($krakenService, 'https://www.kraken.com/c/funding/withdraw?asset=BTC&assetType=crypto&network=Lightning&method=Bitcoin%2520Lightning');
+        $seleniumService->signin($krakenService, 'https://www.kraken.com/sign-in?redirect=%2Fc%2Ffunding%2Fwithdraw%3Fasset%3DBTC%26assetType%3Dcrypto%26network%3DLightning%26method%3DBitcoin%2520Lightning');
+        // sleep(rand(1,2));
+        // $links = $seleniumService->getLinks();
+        // $seleniumService->clickLinksWithText($links, ["Transfer crypto"]);
+        // sleep(rand(1,2));
+        // $buttons = $seleniumService->getButtons();
+        // $seleniumService->clickButtonsWithText($buttons[0], $buttons[1], ["Withdraw"]);
+        //
+        // // select button by id network-selector
+        // $driver->findElement(WebDriverBy::id("network-selector"))->click();
+        //
+        // sleep(rand(1,2));
+        //
+        // // select list item by id downshift-0-item-1
+        // $driver->findElement(WebDriverBy::id("downshift-0-item-1"))->click();
 
-        sleep(6);
+        sleep(rand(10, 15));
 
         list($buttons, $buttonValues) = $seleniumService->getButtons();
 
         $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Okay", "Agree and continue"]);
 
         // scroll down slightly
-        $driver->executeScript("window.scrollTo(0,700.1058349609375)");
+        $driver->executeScript("window.scrollTo(0," . rand(650, 720) . ")");
 
-        sleep(2);
+        sleep(5);
 
 
         list($buttons, $buttonValues) = $seleniumService->getButtons();
-        $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Manage withdrawal requests"]);
+        $counts = 0;
+        // $counts += $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Manage withdrawal requests"]);
+        // $counts += $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Manage requests"]);
 
-        sleep(2);
+        // if clicks === 0 then click button with class TextButton_root__fIpnJ
+
+        // if ($counts === 0) {
+        // $driver->findElement(WebDriverBy::className(".TextButton_root__fIpnJ"))->click();
+        // document.querySelector('.TextButton_root__fIpnJ').click()
+
+        // run script to click button
+        $driver->executeScript("document.querySelector('.TextButton_root__fIpnJ').click()");
+
+        sleep(5);
 
         list($buttons, $buttonValues) = $seleniumService->getButtons();
         $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Add withdrawal request"]);
@@ -134,10 +166,11 @@ class KrakenService
             $driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
             $source = $driver->getPageSource();
             $driver->quit();
-            // dd($source, $e, $buttons, $buttonValues);
-            Log::error($e);
 
-            return response()->json(['error' => 'Error sending invoice']);
+            $discordService = new DiscordService();
+            $discordService->sendMessage('Error sending invoice for Kraken BTC withdrawal');
+            dd($source, $e, $buttons, $buttonValues);
+
         }
 
         sleep(2);
@@ -145,12 +178,23 @@ class KrakenService
         list($buttons, $buttonValues) = $seleniumService->getButtons();
         $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Add withdrawal request"]);
 
-        sleep(2);
 
         // grab email
-        $driver->get($seleniumService->getLinkFromLastEmail('https://www.kraken.com/withdrawal-approve?code='));
+        $iterations = 0;
+        $code = null;
+        while ($code === null) {
+            sleep(5);
+            $code = $seleniumService->getLinkFromLastEmail('https://www.kraken.com/withdrawal-approve?code=');
+            $iterations++;
+            if ($iterations > 5) {
+                $discordService = new DiscordService();
+                $discordService->sendMessage('No link found in most recent email from Kraken.');
+                return response()->json(['error' => 'No link found in most recent email from Kraken.']);
+            }
+        }
 
-        // screenshot
+        $driver->get($code);
+
         sleep(5);
 
         $krakenService->withdrawFunds(
@@ -161,6 +205,9 @@ class KrakenService
 
         // Close the driver
         $driver->quit();
+
+        $discordService = new DiscordService();
+        $discordService->sendMessage('Withdrawal Complete: ' . $btc . ' BTC to ' . $invoice);
 
         return response()->json([
             'success' => 'Withdrawal request sent',
@@ -185,7 +232,15 @@ class KrakenService
             'XXBTZGBP',
         );
         $order->setVolume($this->convertGBPToBTC($amtInGBP));
-        return $this->client->addOrder($order);
+        $orderCreation = $this->client->addOrder($order);
+
+
+        $btcPurchase = new \App\Models\BtcPurchase();
+        $btcPurchase->tx_id = $orderCreation->txId[0];
+        $btcPurchase->primaryDescription = $orderCreation->description->order;
+        $btcPurchase->save();
+
+        return $orderCreation;
     }
 
 

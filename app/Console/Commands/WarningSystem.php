@@ -80,19 +80,19 @@ class WarningSystem extends Command
      */
     protected function triggerWarning(Offer $offer, array $data, array $warnData): void
     {
-        $twilio = new Twilio(getenv('TWILIO_ACCOUNT_SID'), getenv('TWILIO_AUTH_TOKEN'), getenv('TWILIO_PHONE_NUMBER'));
-        $message = 'Offer ' . $offer->id . ' has been in no. ' . $offer->status .
-            ' status (' . RobosatsStatus::getStatusText($offer->status) . ') for ' . Carbon::parse($data['timestamp'])->diffInMinutes() .
-            '. Please check the offer' .
-            ' using the following token: ' . $offer->robots()->first()->token . ' and take necessary action.';
-
-        $twilio->message("07837370669", $message);
-        $twilio->message("07711800899", $message);
+        // $twilio = new Twilio(getenv('TWILIO_ACCOUNT_SID'), getenv('TWILIO_AUTH_TOKEN'), getenv('TWILIO_PHONE_NUMBER'));
+        // $message = 'Offer ' . $offer->id . ' has been in no. ' . $offer->status .
+        //     ' status (' . RobosatsStatus::getStatusText($offer->status) . ') for ' . Carbon::parse($data['timestamp'])->diffInMinutes() .
+        //     '. Please check the offer' .
+        //     ' using the following token: ' . $offer->robots()->first()->token . ' and take necessary action.';
+        //
+        // $twilio->message("07837370669", $message);
+        // $twilio->message("07711800899", $message);
 
         $discord = new DiscordService();
         $discord->sendMessage('**Warning**: Offer ' . $offer->id . ' has been in no. ' . $offer->status .
-            ' status (' . RobosatsStatus::getStatusText($offer->status) . ') for ' . Carbon::parse($data['timestamp'])->diffInMinutes() .
-            '. Please check the offer' .
+            ' status (' . RobosatsStatus::getStatusText($offer->status) . ') for ' . round(Carbon::parse($data['timestamp'])->diffInMinutes()) .
+            ' minutes. Please check the offer' .
             ' using the following token: ' . $offer->robots()->first()->token . ' and take necessary action.');
 
 

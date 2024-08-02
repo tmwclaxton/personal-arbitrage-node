@@ -51,14 +51,34 @@ class SeleniumService
             // Set window size to 1
             $this->driver->manage()->window()->setSize(new WebDriverDimension(1920, 1080));
 
-            // wait until the page is loaded
-            $this->driver->wait(10, 1000)->until(
-                WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::name("username"))
-            );
+            $this->driver->executeScript("window.scrollTo(0," . rand(0, 20) . ")");
+
+            sleep(5);
+
+
+            // $linkValues = $this->getLinks();
+            // // if any of the links contain the text "Sign in" click it
+            // $signInText = "Sign in";
+            // if ( in_array($signInText, array_column($linkValues[1], 'text')) )
+            // {
+            //     $this->clickLinksWithText($linkValues[0], [$signInText]);
+            // } else {
+            //     $discordService = new DiscordService();
+            //     $discordService->sendMessage('No sign in link found on Kraken sign in page.');
+            // }
+            // sleep(rand(5,7));
 
             $usernameAttribute = $this->driver->findElement(WebDriverBy::name("username"));
             $passwordAttribute = $this->driver->findElement(WebDriverBy::name("password"));
 
+            // if ($this->driver->findElements(WebDriverBy::name("username")) == null) {
+            //     $stripText = 'https://www.kraken.com';
+            //     $newUrl = str_replace($stripText, '', $url);
+            //     $this->driver->get('https://www.kraken.com/sign-in?redirect=' . $newUrl);
+            //     sleep(5);
+            //     $usernameAttribute = $this->driver->findElement(WebDriverBy::name("username"));
+            //     $passwordAttribute = $this->driver->findElement(WebDriverBy::name("password"));
+            // }
 
 
             // Perform the actions from the JUnit code
@@ -72,16 +92,20 @@ class SeleniumService
             // // click the continue button
             // $this->clickButtonsWithText($buttons[0], $buttons[1], ["Continue"]);
 
-            sleep(10);
-            if (count($this->driver->findElements(WebDriverBy::name("tfa"))) || count($this->driver->findElements(WebDriverBy::name("otp"))) ) {
+            sleep(rand(10, 15));
+            if (count($this->driver->findElements(WebDriverBy::name("tfa"))) > 0) {
                 $otp = $krakenService->getOTP();
                 $otpInput = $this->driver->findElement(WebDriverBy::name("tfa"));
                 $otpInput->sendKeys($otp);
-                $otpInput->sendKeys(WebDriverKeys::ENTER);
+                // $otpInput->sendKeys(WebDriverKeys::ENTER);
+                $buttons = $this->getButtons();
+                // click the Enter button
+                $this->clickButtonsWithText($buttons[0], $buttons[1], ["Enter"]);
             }
 
             // Execute JavaScript for scrolling
             $this->driver->executeScript("window.scrollTo(0,99.89418029785156)");
+
         } catch (\Exception $e) {
             sleep(5);
             $this->driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
@@ -101,9 +125,9 @@ class SeleniumService
                 WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::cssSelector(".my-px"))
             );
             //
-            // // click the button
-            $this->driver->findElement(WebDriverBy::cssSelector(".my-px"))->click();
 
+            // we may need to click the button if email doesn't auto send
+            // $this->driver->findElement(WebDriverBy::cssSelector(".my-px"))->click();
 
             // if above code stops working, use the code below
             // sleep(5);
@@ -112,8 +136,22 @@ class SeleniumService
             // // click button with send email or resend email
             // $this->clickButtonsWithText($buttons[0], $buttons[1], ["Send email", "Resend email"]);
 
+            $iterations = 0;
+            $code = null;
+            while ($code === null) {
+                sleep(5);
+                $code = $this->getLinkFromLastEmail();
+                $iterations++;
+                if ($iterations > 5) {
+                    $discordService = new DiscordService();
+                    $discordService->sendMessage('No link found in most recent email from Kraken.');
+                    return response()->json(['error' => 'No link found in most recent email from Kraken.']);
+                }
+            }
 
-            $this->driver->get($this->getLinkFromLastEmail());
+            // resize the window to split the screen
+            $this->driver->manage()->window()->setSize(new WebDriverDimension(960, 1080));
+            $this->driver->get($code);
 
             sleep(2);
 
@@ -129,16 +167,13 @@ class SeleniumService
     public function getLinkFromLastEmail($start = 'https://www.kraken.com/new-device-sign-in/web?code=')
     {
 
-        sleep(25);
         // grab email
         $gmailService = new \App\Services\GmailService();
         $text = $gmailService->getLastEmail();
 
         $link = $gmailService->grabLink($text, $start);
         if ($link === null) {
-            // close the driver
-            $this->driver->quit();
-            return response()->json(['error' => 'No link found']);
+            return null;
         }
 
         $this->linkUsed = $link;
@@ -182,8 +217,9 @@ class SeleniumService
         return [$buttons, $buttonValues];
     }
 
-    public function clickButtonsWithText(mixed $buttons, mixed $buttonValues, array $texts): void
+    public function clickButtonsWithText(mixed $buttons, mixed $buttonValues, array $texts): int
     {
+        $clicks = 0;
         // try {
             foreach ($texts as $text) {
                 // $indexes = array_search($text, array_column($buttonValues, 'text'));
@@ -192,10 +228,11 @@ class SeleniumService
                     $webDriverBy = WebDriverBy::id($buttons[$index]->getAttribute('id'));
                     // check if button is clickable
                     if ($buttons[$index]->isEnabled() && $buttons[$index]->isDisplayed()
-                        && WebDriverExpectedCondition::elementToBeClickable($webDriverBy)
+                        // && WebDriverExpectedCondition::elementToBeClickable($webDriverBy)
                         && WebDriverExpectedCondition::visibilityOfElementLocated($webDriverBy)
                     ) {
                         $buttons[$index]->click();
+                        $clicks++;
                         sleep(1);
                         break;
                     }
@@ -208,6 +245,35 @@ class SeleniumService
         //     $this->driver->quit();
         //     dd($source, $e, $buttons, $buttonValues);
         // }
+
+        return $clicks;
+    }
+
+    // grab links from the page and the text inside them
+    public function getLinks(): array
+    {
+        $links = $this->driver->findElements(WebDriverBy::tagName('a'));
+        $linkValues = [];
+        foreach ($links as $link) {
+            $linkValues[] = ['text' => $link->getText(), 'href' => $link->getAttribute('href')];
+        }
+
+        return [$links, $linkValues];
+    }
+
+    // click links with text
+    public function clickLinksWithText(mixed $links, array $texts): void
+    {
+        foreach ($texts as $text) {
+            $indexes = array_keys(array_column($links, 'text'), $text);
+            foreach ($indexes as $index) {
+                $webDriverBy = WebDriverBy::id($links[$index]->getAttribute('id'));
+                $links[$index]->click();
+                sleep(1);
+                break;
+            }
+        }
+
     }
 
 }
