@@ -160,8 +160,14 @@ class RevolutService
             'access_token' => $token,
         ]);
 
-        $client = new \RevolutPHP\Client($accessToken);
-        $accounts = $client->accounts->all();
+        try {
+            $client = new \RevolutPHP\Client($accessToken);
+            $accounts = $client->accounts->all();
+        } catch (\Exception $e) {
+            $discordService = new DiscordService();
+            $discordService->sendMessage('Revolut Currency Exchange Failed: ' . $e->getMessage());
+            return;
+        }
 
         // using the GBP account convert all to EUR
         // iterate through the accounts and grab the GBP and EUR accounts
@@ -219,9 +225,15 @@ class RevolutService
             'access_token' => $token,
         ]);
 
-        $client = new \RevolutPHP\Client($accessToken);
+        try {
+            $client = new \RevolutPHP\Client($accessToken);
+            $response = $client->exchanges->exchange($exchange);
+        } catch (\Exception $e) {
+            $discordService = new DiscordService();
+            $discordService->sendMessage('Revolut Currency Exchange Failed: ' . $e->getMessage());
+            return;
+        }
 
-        $response = $client->exchanges->exchange($exchange);
         // if state is completed then we are good
         if ($response->state == 'completed') {
             $discordService = new DiscordService();
@@ -248,8 +260,18 @@ class RevolutService
             'access_token' => $token,
         ]);
 
-        $client = new \RevolutPHP\Client($accessToken);
-        return $client->transactions->all();
+        // $client = new \RevolutPHP\Client($accessToken);
+        // $transactions $client->transactions->all();
+        try {
+            $client = new \RevolutPHP\Client($accessToken);
+            $transactions = $client->transactions->all();
+        } catch (\Exception $e) {
+            $discordService = new DiscordService();
+            $discordService->sendMessage('Revolut Transactions Failed: ' . $e->getMessage());
+            return [];
+        }
+
+        return $transactions;
     }
 
 
@@ -355,7 +377,11 @@ class RevolutService
                 'access_token' => $this->getPayToken()['access_token']
             ]);
             $client = new \RevolutPHP\Client($accessToken);
-            $client->payments->create($payment);
+            try {
+                $client->payments->create($payment);
+            } catch (\Exception $e) {
+                $discordService->sendMessage('Error sending GBP to Kraken: ' . $e->getMessage());
+            }
 
         }
     }

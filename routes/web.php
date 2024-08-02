@@ -204,8 +204,8 @@ Route::get('/testing', function () {
     // $response = $krakenService->getClient()->getAccountBalance();
     // dd($response);
 
-    $revolutService = new RevolutService();
-    $response = $revolutService->getTransactions();
+    $kraken = new \App\Services\KrakenService();
+    $response = $kraken->getGBPBalance();
     dd($response);
 
 

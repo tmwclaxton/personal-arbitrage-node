@@ -95,7 +95,7 @@ Schedule::command('currency:converter')
 // kraken auto purchaser
 Schedule::command('kraken:auto-purchaser')
     ->description('kraken auto purchaser')
-    ->everyTenMinutes()->withoutOverlapping(1);
+    ->everyThreeMinutes()->withoutOverlapping(1);
 
 // Schedule::call(function () {
 //     $revolutService = new \App\Services\RevolutService();
@@ -105,7 +105,7 @@ Schedule::command('kraken:auto-purchaser')
 // kraken auto sender
 Schedule::command('kraken:send-money')
     ->description('Kraken send money from Revolut and Wise')
-    ->everyTenMinutes()->withoutOverlapping(1);
+    ->everyThreeMinutes()->withoutOverlapping(1);
 
 Schedule::command('btc:purchase-detailer')
     ->description('btc purchase detailer')

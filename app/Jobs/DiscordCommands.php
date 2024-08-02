@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\AdminDashboard;
 use App\Models\DiscordMessage;
 use App\Models\Offer;
+use App\Models\RevolutAccessToken;
 use App\Models\RobosatsChatMessage;
 use App\Services\DiscordService;
 use Illuminate\Bus\Queueable;
@@ -109,12 +110,17 @@ class DiscordCommands implements ShouldQueue
                             Redis::del('revolut_auth_code_request');
                             break;
                         case '!getRevPayToken':
+                            $revToken = RevolutAccessToken::where('type', 'PAY')->first();
+                            $revToken->delete();
                             $revolutService = new \App\Services\RevolutService();
                             $revArray = $revolutService->getPayToken();
                             $discordService->sendMessage('Reset RevToken at: ' . $revArray['url']);
 
                             break;
                         case '!getRevReadToken':
+                            // delete the read token
+                            $revToken = RevolutAccessToken::where('type', 'READ')->first();
+                            $revToken->delete();
                             $revolutService = new \App\Services\RevolutService();
                             $revArray = $revolutService->getReadToken();
                             $discordService->sendMessage('Reset RevToken at: ' . $revArray['url']);
