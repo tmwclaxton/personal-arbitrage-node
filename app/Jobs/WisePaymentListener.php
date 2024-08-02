@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\Payment;
 use App\Services\DiscordService;
 use App\Services\RevolutService;
+use App\Services\WiseService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -29,16 +30,15 @@ class WisePaymentListener implements ShouldQueue
      */
     public function handle(): void
     {
-        // set up wise client
-        $client = new \TransferWise\Client(
-            [
-                "token" => env('WISE_API_KEY'),
-                "profile_id" => "test",
-                // "env" => "sandbox" // optional
-            ]
-        );
 
-        $profiles = $client->profiles->all();
+        $adminDashboard = \App\Models\AdminDashboard::all()->first();
+        if ($adminDashboard->panicButton) {
+            return;
+        }
+
+        $wiseService = new WiseService();
+
+        $profiles = $wiseService->getClient()->profiles->all();
 
         $wiseService = new \App\Services\WiseService();
         $response = $wiseService->getActivities($profiles[0]['id']);
@@ -47,7 +47,7 @@ class WisePaymentListener implements ShouldQueue
         foreach ($activities as $activity) {
             if (
                 $activity['type'] === "TRANSFER" &&
-                $activity['description'] !== "<strong>Toby Matthew William Claxton</strong>" &&
+                // $activity['description'] !== "<strong>Toby Matthew William Claxton</strong>" &&
                 $activity['status'] === "COMPLETED" &&
                 str_contains($activity['primaryAmount'], '+') &&
                 $activity['createdOn'] > Carbon::now()->subHour(1)

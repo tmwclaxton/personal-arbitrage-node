@@ -18,7 +18,7 @@ const props = defineProps({
 
 const accessOffers = ref(props.offers);
 const channelBalances = ref(JSON.parse(props.adminDashboard.channelBalances));
-
+const refreshKey = ref(0);
 
 //auto refresh page every 10 seconds soft
 setInterval(() => {
@@ -48,7 +48,9 @@ setInterval(() => {
             }
         }
         accessOffers.value = response.data.offers;
+        // tempAdminDashboard.value = response.data.adminDashboard;
         channelBalances.value = JSON.parse(response.data.adminDashboard.channelBalances);
+        refreshKey.value += 1;
         // for each
 
     }).catch(error => {
@@ -56,15 +58,15 @@ setInterval(() => {
     });
 }, 10000);
 
-let tempAdminDashboard = JSON.parse(JSON.stringify(props.adminDashboard));
+let tempAdminDashboard = ref(JSON.parse(JSON.stringify(props.adminDashboard)));
 // convert tempAdminDashboard.payment_methods to array from json string
-tempAdminDashboard.payment_methods = JSON.parse(tempAdminDashboard.payment_methods);
-tempAdminDashboard.payment_currencies = JSON.parse(tempAdminDashboard.payment_currencies);
+tempAdminDashboard.value.payment_methods = JSON.parse(tempAdminDashboard.value.payment_methods);
+tempAdminDashboard.value.payment_currencies = JSON.parse(tempAdminDashboard.value.payment_currencies);
 
 
 const clicked = () => {
     axios.post(route('updateAdminDashboard'), {
-        adminDashboard: tempAdminDashboard
+        adminDashboard: tempAdminDashboard.value,
     }).then(response => {
         console.log(response.data);
     }).catch(error => {
@@ -108,12 +110,12 @@ const showSidebar = ref(true);
                 <p>Loading BTC prices...</p>
             </div>
         </div>
-        <div class="w-full flex flex-row gap-x-3 mt-2 mx-auto justify-center">
-            <primary-button class="" @click="showSidebar = !showSidebar" v-text="showSidebar ? 'Hide Sidebar' : 'Show Sidebar'"></primary-button>
+        <div class="w-full flex flex-row flex-wrap gap-3 mt-2 mx-auto justify-center">
+            <primary-button class="h-12" @click="showSidebar = !showSidebar" v-text="showSidebar ? 'Hide Sidebar' : 'Show Sidebar'"></primary-button>
 
             <danger-button
                 v-on:click="panicButtonToggle"
-                class="text-xs text-white font-bold py-2 px-4 rounded"
+                class="h-12 text-xs text-white font-bold py-2 px-4 rounded"
                 :class="tempAdminDashboard.panicButton ?
             'bg-red-500 hover:bg-red-400 border-red-800 hover:border-red-600' :
             'bg-zinc-500 hover:bg-zinc-400 !border-zinc-600 hover:border-zinc-500'">
@@ -121,13 +123,18 @@ const showSidebar = ref(true);
                 Panic Button {{ tempAdminDashboard.panicButton ? 'ON' : 'OFF' }}
             </danger-button>
             <Link :href="route('dashboard.index')">
-                <secondary-button >
+                <secondary-button  class="h-12">
                     Config
                 </secondary-button>
             </Link>
-            <Link :href="route('dashboard.index')">
-                <secondary-button >
+            <Link :href="route('dashboard.index')" >
+                <secondary-button class="h-12">
                     Transaction History
+                </secondary-button>
+            </Link>
+            <Link :href="route('dashboard.index')" >
+                <secondary-button class="h-12">
+                    Graphs
                 </secondary-button>
             </Link>
         </div>
@@ -135,7 +142,7 @@ const showSidebar = ref(true);
 
         <div v-if="tempAdminDashboard" class="w-screen flex flex-row mx-auto px-10 my-5 mt-2 item s-center justify-center">
 
-            <div v-if="showSidebar"
+            <div v-if="showSidebar" :key="refreshKey"
                 class="flex flex-row gap-x-2 h-full  pr-2">
                 <div class="flex flex-col text-left ">
 
@@ -235,11 +242,12 @@ const showSidebar = ref(true);
             </div>
 
 
-            <div class="relative flex flex-col flex-grow items-center justify-center selection:bg-[#FF2D20] selection:text-white"
+            <div class="relative flex flex-col flex-grow items-center selection:bg-[#FF2D20] selection:text-white"
                 v-bind:class="showSidebar ? 'border-l-2 dark:border-zinc-700 dark:border-white/70' : ''">
-                <div class="grid gap-6  mx-auto" v-if="accessOffers.length > 0"
-                     v-bind:class="showSidebar ? 'grid-cols-1' : 'grid-cols-2'">
-                    <Offer v-for="offer in accessOffers" :key="offer.robosatsId" :offer="offer" />
+                <div class="grid gap-6 gap-x-4 mx-auto px-2" v-if="accessOffers.length > 0"
+                     v-bind:class="showSidebar ? 'grid-cols-2' : 'grid-cols-3'">
+                    <Offer v-for="offer in accessOffers" :key="offer.robosatsId" :offer="offer"
+                        :showSidebar="showSidebar"/>
                 </div>
                 <div class="mx-auto" v-else>
                     <p class="text-lg">No offers available</p>

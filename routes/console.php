@@ -45,7 +45,7 @@ Schedule::command('refresh:discord-commands')
 
 Schedule::command('refresh:offers')
     ->description('refresh robosat offers')
-    ->everyMinute()->withoutOverlapping(1);
+    ->everyThirtySeconds()->withoutOverlapping(1);
 
 Schedule::command('refresh:fiats')
     ->description('refresh fiats')
@@ -70,7 +70,7 @@ Schedule::command('app:warning-system')
 // refresh revolut token
 Schedule::command('refresh:revolut-token')
     ->description('refresh revolut token')
-    ->everyTenMinutes()->withoutOverlapping(1);
+    ->everyThreeMinutes()->withoutOverlapping(1);
 
 // every minute trigger a revolut payment listener job
 Schedule::command('revolut:payment-listener')
@@ -95,7 +95,7 @@ Schedule::command('currency:converter')
 // kraken auto purchaser
 Schedule::command('kraken:auto-purchaser')
     ->description('kraken auto purchaser')
-    ->everyTenMinutes()->withoutOverlapping(1);
+    ->everyThreeMinutes()->withoutOverlapping(1);
 
 // Schedule::call(function () {
 //     $revolutService = new \App\Services\RevolutService();
@@ -105,7 +105,7 @@ Schedule::command('kraken:auto-purchaser')
 // kraken auto sender
 Schedule::command('kraken:send-money')
     ->description('Kraken send money from Revolut and Wise')
-    ->everyTenMinutes()->withoutOverlapping(1);
+    ->everyThreeMinutes()->withoutOverlapping(1);
 
 Schedule::command('btc:purchase-detailer')
     ->description('btc purchase detailer')
@@ -114,4 +114,9 @@ Schedule::command('btc:purchase-detailer')
 // get:robosats-messages
 Schedule::command('get:robosats-messages')
     ->description('get robosats messages')
-    ->everyThreeMinutes()->withoutOverlapping(1);
+    ->everyMinute()->withoutOverlapping(1);
+
+// auto confirm final
+Schedule::command('auto:confirm-final')
+    ->description('auto confirm final')
+    ->everyMinute()->withoutOverlapping(1);

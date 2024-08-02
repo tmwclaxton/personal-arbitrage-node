@@ -63,8 +63,12 @@ class OfferController extends Controller
             if ($offer->auto_accept_at) {
                 $offer->auto_accept_at = Carbon::parse($offer->auto_accept_at)->diffForHumans();
             }
+            if ($offer->auto_confirm_at) {
+                $offer->auto_confirm_at = Carbon::parse($offer->auto_confirm_at)->diffForHumans();
+            }
             // round amount to 2 decimal places
             $offer->amount = number_format($offer->amount, 2);
+            $offer->accepted_offer_amount = number_format($offer->accepted_offer_amount, 2) . ' ' . $offer->currency;
             // round min_amount to 2 decimal places and max amount to 2 decimal places
             $offer->min_amount = number_format($offer->min_amount, 2);
             $offer->max_amount = number_format($offer->max_amount, 2);

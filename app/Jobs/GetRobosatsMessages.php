@@ -2,9 +2,12 @@
 
 namespace App\Jobs;
 
+use App\Models\Offer;
+use App\Services\PgpService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
@@ -25,6 +28,10 @@ class GetRobosatsMessages implements ShouldQueue
      */
     public function handle(): void
     {
+        $adminDashboard = \App\Models\AdminDashboard::all()->first();
+        if ($adminDashboard->panicButton) {
+            return;
+        }
         $offers = Offer::where('status', '=', 9)->get();
 
         foreach ($offers as $offer) {
@@ -124,6 +131,9 @@ class GetRobosatsMessages implements ShouldQueue
                     'message' => $decodedMessage
                 ]);
                 $robosatsChatMessage->save();
+
+                $discordService = new \App\Services\DiscordService();
+                $discordService->sendMessage("**New message in chatroom for offer ID: " . $offer->robosatsId . "**\n" . $decodedMessage);
             }
         }
     }

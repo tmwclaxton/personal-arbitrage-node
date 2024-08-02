@@ -17,6 +17,7 @@ use App\Services\DiscordService;
 use App\Services\MonzoService;
 use App\Services\PgpService;
 use App\Services\RevolutService;
+use App\Services\WiseService;
 use App\WorkerClasses\LightningNode;
 use App\WorkerClasses\Robosats;
 use Brick\Math\BigDecimal;
@@ -198,12 +199,32 @@ Route::post('collaborative-cancel', function () {
 
 Route::get('/testing', function () {
 
+    $offer = Offer::find(405);
+    $transaction = $offer->transaction()->first();
+    $payment = Payment::where('transaction_id', $transaction->id)->first();
+
+    $platformEntity = json_decode($payment->platform_entity);
+    $reference = $platformEntity->reference;
+    dd(intval($reference));
+
+
+
     // $seleniumService = new \App\Services\SeleniumService();
     // dd($seleniumService->getLinkFromLastEmail());
 
     // $response = $krakenService->getClient()->getAccountBalance();
     // dd($response);
+    $wiseService = new WiseService();
 
+    $profiles = $wiseService->getClient()->profiles->all();
+
+    $wiseService = new \App\Services\WiseService();
+    $response = $wiseService->getActivities($profiles[0]['id']);
+    $activities = $response['activities'];
+    dd($activities);
+    $kraken = new \App\Services\KrakenService();
+    $response = $kraken->getGBPBalance();
+    dd($response);
 
 
     dd("testing");
