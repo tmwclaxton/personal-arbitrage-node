@@ -18,7 +18,7 @@ const props = defineProps({
 
 const accessOffers = ref(props.offers);
 const channelBalances = ref(JSON.parse(props.adminDashboard.channelBalances));
-
+const refreshKey = ref(0);
 
 //auto refresh page every 10 seconds soft
 setInterval(() => {
@@ -48,7 +48,9 @@ setInterval(() => {
             }
         }
         accessOffers.value = response.data.offers;
+        tempAdminDashboard.value = response.data.adminDashboard;
         channelBalances.value = JSON.parse(response.data.adminDashboard.channelBalances);
+        refreshKey.value += 1;
         // for each
 
     }).catch(error => {
@@ -56,15 +58,15 @@ setInterval(() => {
     });
 }, 10000);
 
-let tempAdminDashboard = JSON.parse(JSON.stringify(props.adminDashboard));
+let tempAdminDashboard = ref(JSON.parse(JSON.stringify(props.adminDashboard)));
 // convert tempAdminDashboard.payment_methods to array from json string
-tempAdminDashboard.payment_methods = JSON.parse(tempAdminDashboard.payment_methods);
-tempAdminDashboard.payment_currencies = JSON.parse(tempAdminDashboard.payment_currencies);
+tempAdminDashboard.value.payment_methods = JSON.parse(tempAdminDashboard.value.payment_methods);
+tempAdminDashboard.value.payment_currencies = JSON.parse(tempAdminDashboard.value.payment_currencies);
 
 
 const clicked = () => {
     axios.post(route('updateAdminDashboard'), {
-        adminDashboard: tempAdminDashboard
+        adminDashboard: tempAdminDashboard.value,
     }).then(response => {
         console.log(response.data);
     }).catch(error => {
@@ -135,7 +137,7 @@ const showSidebar = ref(true);
 
         <div v-if="tempAdminDashboard" class="w-screen flex flex-row mx-auto px-10 my-5 mt-2 item s-center justify-center">
 
-            <div v-if="showSidebar"
+            <div v-if="showSidebar" :key="refreshKey"
                 class="flex flex-row gap-x-2 h-full  pr-2">
                 <div class="flex flex-col text-left ">
 

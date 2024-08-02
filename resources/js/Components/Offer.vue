@@ -12,7 +12,7 @@
                     offer.transaction.status_message
                 }}</p>
         </div>
-        <div v-if="offer.transaction" class="border border-gray-200 dark:border-zinc-700 mt-2 mb-4"></div>
+        <div v-if="offer.transaction" class="border border-gray-200 dark:border-zinc-700 mt-2 mb-2"></div>
             <div class="grid grid-cols-3  gap-1">
 
                     <danger-button v-on:click="autoRun"
@@ -79,7 +79,7 @@
 
 
                 <div class="flex flex-col max-w-44 flex-shrink-0">
-                    <div class="uppercase tracking-wide text-sm text-indigo-500 font-semibold">
+                    <div class="mt-0.5 uppercase tracking-wide text-sm text-indigo-500 font-semibold">
                         <span v-text="offer.provider"></span>
                         <!--<span class="text-zinc-500 dark:text-zinc-200 mx-1">·</span>-->
                         <span class="mt-2 text-zinc-500 dark:text-zinc-200 font-bold">{{ offer.accepted ? ' · Accepted' : '' }}</span>

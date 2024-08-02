@@ -207,7 +207,8 @@ class KrakenService
         $driver->quit();
 
         $discordService = new DiscordService();
-        $discordService->sendMessage('Withdrawal Complete: ' . $btc . ' BTC to ' . $invoice);
+        $discordService->sendMessage('Withdrawal Complete: ' . $btc . ' BTC');
+        // to ' . $invoice);
 
         return response()->json([
             'success' => 'Withdrawal request sent',
