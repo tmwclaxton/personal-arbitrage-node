@@ -34,6 +34,8 @@ class CurrencyConverter implements ShouldQueue
             return;
         }
 
+        //!TODO: Add currency exchange event recording
+
         $revolutService = new RevolutService();
         $revolutService->currencyExchangeAll("EUR", "GBP");
         $revolutService->currencyExchangeAll("USD", "GBP");
@@ -41,12 +43,6 @@ class CurrencyConverter implements ShouldQueue
         $wiseService->currencyExchangeAll("EUR", "GBP");
         $wiseService->currencyExchangeAll("USD", "GBP");
 
-        // wise currency exchange
-
-
-        // send to kraken job
-        // $job = new \App\Jobs\SendToKraken();
-        // $job->handle();
 
     }
 }
