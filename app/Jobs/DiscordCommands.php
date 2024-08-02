@@ -49,6 +49,7 @@ class DiscordCommands implements ShouldQueue
             '!toggleAutoEscrow',
             '!toggleAutoChat',
             '!toggleAutoTopup',
+            '!toggleAutoConfirm',
             '!setSellPremium',
             '!setBuyPremium',
             '!setConcurrentTransactions',
@@ -155,22 +156,32 @@ class DiscordCommands implements ShouldQueue
                         case '!toggleAutoAccept':
                             $adminDashboard->autoAccept = !$adminDashboard->autoAccept;
                             $adminDashboard->save();
+                            $discordService->sendMessage('Auto accept is now ' . ($adminDashboard->autoAccept ? 'on' : 'off'));
                             break;
                         case '!toggleAutoBond':
                             $adminDashboard->autoBond = !$adminDashboard->autoBond;
                             $adminDashboard->save();
+                            $discordService->sendMessage('Auto bond is now ' . ($adminDashboard->autoBond ? 'on' : 'off'));
                             break;
                         case '!toggleAutoEscrow':
                             $adminDashboard->autoEscrow = !$adminDashboard->autoEscrow;
                             $adminDashboard->save();
+                            $discordService->sendMessage('Auto escrow is now ' . ($adminDashboard->autoEscrow ? 'on' : 'off'));
                             break;
                         case '!toggleAutoChat':
                             $adminDashboard->autoChat = !$adminDashboard->autoChat;
                             $adminDashboard->save();
+                            $discordService->sendMessage('Auto chat is now ' . ($adminDashboard->autoChat ? 'on' : 'off'));
                             break;
                         case '!toggleAutoTopup':
                             $adminDashboard->autoTopup = !$adminDashboard->autoTopup;
                             $adminDashboard->save();
+                            $discordService->sendMessage('Auto topup is now ' . ($adminDashboard->autoTopup ? 'on' : 'off'));
+                            break;
+                        case '!toggleAutoConfirm':
+                            $adminDashboard->autoConfirm = !$adminDashboard->autoConfirm;
+                            $adminDashboard->save();
+                            $discordService->sendMessage('Auto confirm is now ' . ($adminDashboard->autoConfirm ? 'on' : 'off'));
                             break;
                         case '!setSellPremium':
                             $adminDashboard->sellPremium = explode(' ', $message['content'])[1];

@@ -48,7 +48,7 @@ setInterval(() => {
             }
         }
         accessOffers.value = response.data.offers;
-        tempAdminDashboard.value = response.data.adminDashboard;
+        // tempAdminDashboard.value = response.data.adminDashboard;
         channelBalances.value = JSON.parse(response.data.adminDashboard.channelBalances);
         refreshKey.value += 1;
         // for each
