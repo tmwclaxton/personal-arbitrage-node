@@ -201,7 +201,7 @@ class RevolutService
                 'account_id' => $toAccount->id,
                 'currency' => 'GBP',
             ],
-            'reference' => $reference ?? time() . 'exchange',
+            'reference' => $reference ?? 'exchange - ' . time(),
             'request_id' => $requestId ?? hash('sha256', time() . 'exchange')
         ];
 

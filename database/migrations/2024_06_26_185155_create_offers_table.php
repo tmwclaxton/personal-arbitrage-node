@@ -74,6 +74,9 @@ return new class extends Migration
             $table->integer('job_last_status')->default(0);
 
             $table->timestamp('auto_accept_at')->nullable();
+            $table->timestamp('auto_confirm_at')->nullable();
+
+            $table->string('discord_channel_id')->nullable();
             $table->timestamps();
         });
     }

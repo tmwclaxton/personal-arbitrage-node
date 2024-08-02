@@ -74,6 +74,8 @@ Route::post('/updateAdminDashboard', function () {
 
 Route::get('/', [\App\Http\Controllers\OfferController::class, 'index'])->name('welcome');
 Route::get('/offers', [\App\Http\Controllers\OfferController::class, 'getOffers'])->name('offers.index');
+// Route::get('/offer/{offer_id}/chat', [\App\Http\Controllers\OfferController::class, 'chatRoom'])->name('offers.chat');
+// Route::post('/offer/{offer_id}/chat', [\App\Http\Controllers\OfferController::class, 'sendMessage'])->name('offers.chat');
 Route::get('/transactions', [\App\Http\Controllers\TransactionController::class, 'index'])->name('transactions.index');
 Route::get('/payments', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payments.index');
 Route::get('/config', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('dashboard.index');
@@ -146,7 +148,7 @@ Route::post('/send-payment-handle', function () {
     $offerId = request('offer_id');
     $offer = Offer::find($offerId);
     $robosats = new Robosats();
-    $response = $robosats->webSocketCommunicate($offer);
+    $robosats->sendHandle($offer);
 })->name('send-payment-handle');
 
 
@@ -161,25 +163,37 @@ Route::post('auto-accept', function () {
     ])->dispatch();
 })->name('auto-accept');
 
-Route::get('monzo-redirect', function () {
-    $monzoService = new MonzoService();
-    $redirect = $monzoService->redirectUserToMonzo();
-    return response()->json(['redirect' => $redirect]);
-})->name('monzoRedirect');
 
-Route::get('monzo-exchange', function () {
-    $monzoService = new MonzoService();
-    $code = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJlYiI6InhYL2pmTXpwUm54VFBZYzR3dzZKIiwianRpIjoiYXV0aHpjb2RlXzAwMDBBa0ZvZDBOakY3WndQdFY1aGgiLCJ0eXAiOiJhemMiLCJ2IjoiNiJ9.Cj7uispLSPHalEIYzjmC7IY-EsvBkEtPJBXfsed2o5pIz3IWOTqzLXwwckOHUwiCLmHxZUMCIrr6a_MZHYJFcw';
-    $exchange = $monzoService->exchangeCode($code);
-    return response()->json(['exchange' => $exchange]);
-})->name('monzoExchange');
+// collaborative cancel
+Route::post('collaborative-cancel', function () {
+    $offerId = request('offer_id');
+    $offer = Offer::find($offerId);
+    $robosats = new Robosats();
+    $response = $robosats->collaborativeCancel($offer);
+    return $response;
+})->name('collaborative-cancel');
 
-Route::get('monzo-refresh', function () {
-    $monzoService = new MonzoService();
-    $monzoAccessToken = MonzoAccessToken::all()->first();
-    $refreshedToken = $monzoService->refreshAccessToken($monzoAccessToken);
-    return response()->json(['refreshedToken' => $refreshedToken]);
-})->name('monzoRefresh');
+
+
+// Route::get('monzo-redirect', function () {
+//     $monzoService = new MonzoService();
+//     $redirect = $monzoService->redirectUserToMonzo();
+//     return response()->json(['redirect' => $redirect]);
+// })->name('monzoRedirect');
+//
+// Route::get('monzo-exchange', function () {
+//     $monzoService = new MonzoService();
+//     $code = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJlYiI6InhYL2pmTXpwUm54VFBZYzR3dzZKIiwianRpIjoiYXV0aHpjb2RlXzAwMDBBa0ZvZDBOakY3WndQdFY1aGgiLCJ0eXAiOiJhemMiLCJ2IjoiNiJ9.Cj7uispLSPHalEIYzjmC7IY-EsvBkEtPJBXfsed2o5pIz3IWOTqzLXwwckOHUwiCLmHxZUMCIrr6a_MZHYJFcw';
+//     $exchange = $monzoService->exchangeCode($code);
+//     return response()->json(['exchange' => $exchange]);
+// })->name('monzoExchange');
+//
+// Route::get('monzo-refresh', function () {
+//     $monzoService = new MonzoService();
+//     $monzoAccessToken = MonzoAccessToken::all()->first();
+//     $refreshedToken = $monzoService->refreshAccessToken($monzoAccessToken);
+//     return response()->json(['refreshedToken' => $refreshedToken]);
+// })->name('monzoRefresh');
 
 
 Route::get('/testing', function () {
@@ -191,118 +205,9 @@ Route::get('/testing', function () {
     // dd($response);
 
 
-    $offer = Offer::find(340);
 
-    $robot = $offer->robots()->first();
+    dd("testing");
 
-    $b91 = new \Katoga\Allyourbase\Base91();
-    $decoded = $b91->decode($robot->sha256);
-    $hex = bin2hex($decoded);
-    $url = 'ws://192.168.0.18:12596' . '/mainnet/' . $offer->provider . '/ws/chat/' . $offer->robosatsId . '/?token_sha256_hex=' . $hex;
-
-    // create a new client
-    $client = new \WebSocket\Client($url);
-    $messages = [];
-
-    $client->text(json_encode([
-        'type' => 'message',
-        'message' => $robot->public_key,
-        'nick' => $robot->nickname
-    ]));
-
-    $client->text(json_encode([
-        'type' => 'message',
-        'message' => '-----SERVE HISTORY-----',
-        'nick' => $robot->nickname
-    ]));
-
-    $startTime = time();
-    $duration = 10; // Duration in seconds
-
-    try {
-        while (true) {
-            try {
-                $message = $client->receive();
-                if ($message) {
-                    $messages[] = $message;
-                }
-            } catch (ConnectionException $e) {
-                // Handle timeout or connection error
-                sleep(1);
-                break;
-            }
-
-            // Exit the loop after 15 seconds
-            if (time() - $startTime > $duration) {
-                break;
-            }
-        }
-    } catch (\Exception $e) {
-        echo "Error: " . $e->getMessage();
-    }
-
-    // filter messages for opcode text
-    $messages = array_filter($messages, function ($message) {
-        return $message->getOpcode() == "text";
-    });
-
-    // each message is type WebSocket\Message\Text and we need to grab the content property first
-    $messages = array_map(function ($message) {
-        return $message->getContent();
-    }, $messages);
-
-    // filter messages if they have a key of 'index'
-    $messages = array_filter($messages, function ($message) {
-        $message = json_decode($message, true);
-        return array_key_exists('index', $message);
-    });
-
-    // sort messages by index
-    usort($messages, function ($a, $b) {
-        $a = json_decode($a, true);
-        $b = json_decode($b, true);
-        return $a['index'] <=> $b['index'];
-    });
-
-    // $myMessages = [];
-    // $theirMessages = [];
-    // foreach ($messages as $message) {
-    //     $message = json_decode($message, true);
-    //     if ($message['user_nick'] == $robot->nickname) {
-    //         $myMessages[] = $message;
-    //     } else {
-    //         $theirMessages[] = $message;
-    //     }
-    // }
-    //
-    // // decode my messages with my private key
-    // $pgpService = new PgpService();
-    // $myDecodedMessages = [];
-    // foreach ($myMessages as $message) {
-    //     $myDecodedMessages[] = $pgpService->decrypt($message['message'], $robot->private_key, $robot->token);
-    // }
-
-    // decrypt all messages with my private key
-    $pgpService = new PgpService();
-    $privateKey = $robot->private_key;
-
-    $formattedMessages = [];
-    foreach ($messages as $message) {
-        $message = json_decode($message, true);
-        $content = $message['message'];
-        // user_nick and
-        $content = str_replace("\\", "\n", $content);
-        $decodedMessage = $pgpService->decrypt($privateKey, $content, $robot->token);
-        $formattedMessages[] = [
-            'index' => $message['index'],
-            'user_nick' => $message['user_nick'],
-            'time' => $message['time'],
-            'message' => $decodedMessage
-        ];
-    }
-
-
-    dd($messages, $formattedMessages);
 
 
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AdminDashboard;
 use App\Models\BtcFiat;
 use App\Models\Offer;
+use App\Models\RobosatsChatMessage;
 use App\Models\Transaction;
 use App\Services\DiscordService;
 use App\WorkerClasses\HelperFunctions;
@@ -349,5 +350,26 @@ class OfferController extends Controller
             'estimated_offer_amount' => $estimated_offer_amount,
             'estimated_profit_sats' => $estimated_profit_sats
         ];
+    }
+
+    public function chatRoom($offerId)
+    {
+        $offer = Offer::find($offerId);
+        $messages = RobosatsChatMessage::where('offer_id', $offer->id)->get();
+        return Inertia::render('ChatRoom', [
+            'offer' => $offer,
+            'messages' => $messages
+        ]);
+    }
+
+    public function sendMessage(Request $request)
+    {
+        $message = $request->message;
+        $offerId = $request->offer_id;
+        $offer = Offer::find($offerId);
+        $robot = $offer->robots()->first();
+        $robosats = new Robosats();
+        $robosats->webSocketCommunicate($offer, $robot, $message);
+        return response()->json(['message' => 'Message sent']);
     }
 }

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('message');
             $table->string('user_nick');
             $table->timestamp('sent_at');
+            $table->boolean('sent_to_discord')->default(false);
             $table->timestamps();
         });
     }

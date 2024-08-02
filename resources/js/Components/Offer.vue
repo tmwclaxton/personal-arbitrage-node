@@ -2,7 +2,13 @@
     <div class="max-w-md p-4 mx-auto bg-white dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700 dark:shadow-lg
     rounded-xl shadow-md overflow-hidden md:max-w-2xl">
 
-            <div class="grid grid-cols-4  gap-1">
+        <div v-if="offer.transaction">
+            <p class="mt-2 text-zinc-500 dark:text-zinc-200 font-bold">Transaction Status: {{
+                    offer.transaction.status_message
+                }}</p>
+        </div>
+        <div v-if="offer.transaction" class="border border-gray-200 dark:border-zinc-700 mt-2 mb-4"></div>
+            <div class="grid grid-cols-3  gap-1">
 
                     <danger-button v-on:click="autoRun"
                                    class="w-full text-center  h-10 break-words ">
@@ -39,6 +45,12 @@
                     <secondary-button class="w-full text-center p-0  h-10 break-words" v-on:click="">
                         <p class="text-center w-full">View Chat</p>
                     </secondary-button>
+
+
+                    <danger-button v-on:click="collaborativeCancel"
+                                   class="w-full text-center  h-10 break-words ">
+                        <p class="text-center w-full">Collaborative Cancel</p>
+                    </danger-button>
                 </div>
 
             <div class="border-b border-gray-200 dark:border-zinc-700 my-2 "></div>
@@ -76,7 +88,9 @@
 
                 </div>
                 <div class="flex flex-col"><p class="text-zinc-500 dark:text-zinc-200 italic">Expires at: {{ offer.expires_at }}</p>
+                    <div class="border border-gray-200 dark:border-zinc-700 my-1"></div>
                     <p class="text-zinc-500 dark:text-zinc-200 italic">Last updated at: {{ offer.updated_at_readable }}</p>
+                    <div v-if="offer.auto_accept_at" class="border border-gray-200 dark:border-zinc-700 my-1"></div>
                     <p v-if="offer.auto_accept_at" class="text-zinc-500 dark:text-zinc-200 italic font-bold">Auto accepting at: {{ offer.auto_accept_at }}</p>
                     <div class="border border-gray-200 dark:border-zinc-700 my-1"></div>
                     <!--<p class="mt-2 text-zinc-500 dark:text-zinc-200">Explicit: {{ offer.is_explicit ? 'Yes' : 'No' }}</p>-->
@@ -90,11 +104,11 @@
                 </div>
 
 
-                <div v-if="offer.robots && offer.robots.length > 0" class="border-r border-gray-200 my-4"></div>
+                <div v-if="offer.robots && offer.robots.length > 0" class="border-r border-gray-200  "></div>
 
                 <div class="flex flex-col gap-2">
                     <div v-if="offer.robots && offer.robots.length > 0">
-                        <p class="mt-2 text-zinc-500 dark:text-zinc-200 "><span class="font-bold">Nickname</span>: <br>{{
+                        <p class="  text-zinc-500 dark:text-zinc-200 "><span class="font-bold">Nickname</span>: <br>{{
                                 offer.robots[0].nickname
                             }}</p>
                         <p class="mt-2 text-zinc-500 dark:text-zinc-200 "><span class="font-bold">Token</span>:
@@ -103,13 +117,7 @@
                             <p class="mt-2 text-zinc-500 dark:text-zinc-200">Provider: {{ robot.provider }}</p>
                         </div>
                     </div>
-                    <div v-if="offer.transaction" class="border border-gray-200 dark:border-zinc-700 my-4"></div>
 
-                    <div v-if="offer.transaction">
-                        <p class="mt-2 text-zinc-500 dark:text-zinc-200 font-bold">Transaction Status: {{
-                                offer.transaction.status_message
-                            }}</p>
-                    </div>
                 </div>
             </div>
 
@@ -211,6 +219,18 @@ const sendPaymentHandle = () => {
     console.log('sending payment handle');
 
     axios.post(route('send-payment-handle'), {
+        offer_id: props.offer.id
+    }).then(response => {
+        console.log(response);
+    }).catch(error => {
+        console.log(error);
+    });
+}
+
+const collaborativeCancel = () => {
+    console.log('collaborative cancel');
+
+    axios.post(route('collaborative-cancel'), {
         offer_id: props.offer.id
     }).then(response => {
         console.log(response);

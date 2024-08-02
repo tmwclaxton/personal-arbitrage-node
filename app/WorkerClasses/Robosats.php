@@ -577,17 +577,56 @@ class Robosats
     }
 
 
-    public function webSocketCommunicate($offer) { ;
+    public function sendHandle($offer): void {
 
+        $adminDashboard = AdminDashboard::all()->first();
         $robot = $offer->robots()->first();
 
+        // depending on what payment methods are available change the message, preference order is revolut, wise, paypal friends & family, strike
+        $message = '';
+        $preferredPaymentMethods = ['Revolut', 'Wise', 'Paypal Friends & Family', 'Strike'];
+        foreach ($preferredPaymentMethods as $paymentMethod) {
+            if (in_array($paymentMethod, json_decode($robot->offer->payment_methods))) {
+                if ($paymentMethod == null) {
+                    continue;
+                }
+                switch ($paymentMethod) {
+                    case 'Revolut':
+                        $tag = $adminDashboard->revolut_handle;
+                        $pseudonym = "Revtag";
+                        break;
+                    case 'Wise':
+                        $tag = $adminDashboard->wise_handle;
+                        $pseudonym = "Wise handle";
+                        break;
+                    case 'Paypal Friends & Family':
+                        $tag = $adminDashboard->paypal_handle;
+                        $pseudonym = "Paypal";
+                        break;
+                }
+
+                if (empty($tag) || empty($pseudonym)) {
+                    (new DiscordService)->sendMessage('Error: No tag / pseudonym found for ' . $paymentMethod);
+                    return;
+                }
+
+                $message = 'Hey! My ' . $pseudonym . ' is ' . $tag . ' - If possible, please put the order ID in the payment reference (' . $offer->robosatsId . ').  Cheers!';
+                break;
+            }
+        }
+        $this->webSocketCommunicate($offer, $robot, $message);
+
+        (new DiscordService)->sendMessage('Expect a payment on ' . $paymentMethod . ' for ' . round($robot->offer->accepted_offer_amount, 2)
+            . ' ' . $robot->offer->currency . ' soon! Once received, confirm the payment by typing !confirm ' . $offer->robosatsId . ' in the chat.');
+
+
+    }
+
+    public function webSocketCommunicate($offer, $robot, $messageContent): void {
         $b91 = new \Katoga\Allyourbase\Base91();
         $decoded = $b91->decode($robot->sha256);
         $hex = bin2hex($decoded);
         $url = $this->wsHost . '/mainnet/' . $offer->provider . '/ws/chat/' . $offer->robosatsId . '/?token_sha256_hex=' . $hex;
-
-
-        $adminDashboard = AdminDashboard::all()->first();
 
         // create a new client
         $client = new Client($url);
@@ -595,52 +634,20 @@ class Robosats
             // Add standard middlewares
             ->addMiddleware(new CloseHandler())
             ->addMiddleware(new PingResponder())
-            ->onText(function (Client $client, Connection $connection, Message $message) use ($offer, $adminDashboard, $robot) {
+            ->onText(function (Client $client, Connection $connection, Message $message) use ($offer, $robot, $messageContent) {
                 $peerPublicKey = json_decode($message->getContent(), true)['message'];
 
                 $pgpService = new PgpService();
                 $publicKey = $robot->public_key;
                 $privateKey = $robot->private_key;
 
-                // depending on what payment methods are available change the message, preference order is revolut, wise, paypal friends & family, strike
-                $message = '';
-                $preferredPaymentMethods = ['Revolut', 'Wise', 'Paypal Friends & Family', 'Strike'];
-                foreach ($preferredPaymentMethods as $paymentMethod) {
-                    if (in_array($paymentMethod, json_decode($robot->offer->payment_methods))) {
-                        if ($paymentMethod == null) {
-                            continue;
-                        }
-                        switch ($paymentMethod) {
-                            case 'Revolut':
-                                $tag = $adminDashboard->revolut_handle;
-                                $pseudonym = "Revtag";
-                                break;
-                            case 'Wise':
-                                $tag = $adminDashboard->wise_handle;
-                                $pseudonym = "Wise handle";
-                                break;
-                            case 'Paypal Friends & Family':
-                                $tag = $adminDashboard->paypal_handle;
-                                $pseudonym = "Paypal";
-                                break;
-                        }
-
-                        if (empty($tag) || empty($pseudonym)) {
-                            (new DiscordService)->sendMessage('Error: No tag / pseudonym found for ' . $paymentMethod);
-                            return 'No tag / pseudonym found for ' . $paymentMethod;
-                        }
-
-                        $message = 'Hey! My ' . $pseudonym . ' is ' . $tag . ' - Just leave the description empty.  Cheers!';
-                        break;
-                    }
-                }
 
                 // last chance to back out
                 if (AdminDashboard::all()->first()->panicButton) {
                     return 'Panic button is on';
                 }
 
-                $encryptedMessage = $pgpService->encryptAndSign($publicKey, $privateKey, $message , $robot->token, $peerPublicKey);
+                $encryptedMessage = $pgpService->encryptAndSign($publicKey, $privateKey, $messageContent , $robot->token, $peerPublicKey);
                 $encryptedMessage = str_replace("\n", '\\', $encryptedMessage);
 
 
@@ -651,18 +658,12 @@ class Robosats
                 ]);
                 $client->text($json);
 
-                (new DiscordService)->sendMessage('Expect a payment on ' . $paymentMethod . ' for ' . round($robot->offer->accepted_offer_amount, 2)
-                    . ' ' . $robot->offer->currency . ' soon! Once received, confirm the payment by typing !confirm ' . $offer->robosatsId . ' in the chat.');
-
                 // shutdown the client
                 $client->close();
 
                 return 'done';
             })
             ->start();
-
-
-        return "done";
     }
 
     public function confirmReceipt(Offer $offer, Transaction $transaction) {
@@ -869,6 +870,18 @@ class Robosats
         // post request
         $response = Http::withHeaders($this->getHeaders($robot->offer))->timeout(90)->post($url, ['invoice' => $signedInvoice]);
         $response = json_decode($response->body(), true);
+
+        return $response;
+    }
+
+    public function collaborativeCancel($offer)
+    {
+        $url = $this->host . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
+        $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'cancel']);
+        $response = json_decode($response->body(), true);
+
+        $discordService = new DiscordService();
+        $discordService->sendMessage('Collaborative cancel initiated for order ' . $offer->robosatsId);
 
         return $response;
     }

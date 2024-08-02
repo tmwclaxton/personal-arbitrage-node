@@ -85,7 +85,8 @@ class KrakenService
         // $this->discordService->sendMessage('Sending ' . $btcBalance . ' BTC to lightning node');
         // make btc balance a big decimal
         $btc = $btcBalance->jsonSerialize();
-        $satoshis = $btc * 100000000;
+        // ensure satoshis is an integer
+        $satoshis = intval($btc * 100000000);
         $lightningNode = new LightningNode();
         $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Withdrawal of ' . $btcBalance . ' BTC at ' . Carbon::now()->toDateTimeString());
 
