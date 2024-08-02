@@ -1,6 +1,11 @@
 <template>
+         <!--:class="{ showSidebar && offer.accepted ? 'grid-span-2' : 'grid-span-1' }">-->
     <div class="max-w-md p-4 mx-auto bg-white dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700 dark:shadow-lg
-    rounded-xl shadow-md overflow-hidden md:max-w-2xl">
+    rounded-xl shadow-md overflow-hidden md:max-w-2xl"  :class="{
+            'col-span-2': showSidebar && offer.accepted,
+            'col-span-3': !showSidebar && offer.accepted,
+            'col-span-1': !offer.accepted
+        }">
 
         <div v-if="offer.transaction">
             <p class="mt-2 text-zinc-500 dark:text-zinc-200 font-bold">Transaction Status: {{
@@ -11,43 +16,57 @@
             <div class="grid grid-cols-3  gap-1">
 
                     <danger-button v-on:click="autoRun"
+                                     :disabled="offer.job_locked"
                                    class="w-full text-center  h-10 break-words ">
                         <p class="text-center w-full">Auto Run</p>
                     </danger-button>
 
                     <primary-button v-on:click="uniqueRobot"
+                                    v-if="!offer.robots || offer.robots.length === 0"
                                     class="w-full text-center  h-10 break-words ">
                         <p class="text-center w-full">Create Robots</p>
                     </primary-button>
 
                     <primary-button v-on:click="acceptOffer"
+                                    v-if="!offer.accepted"
                                     class="w-full text-center  h-10 break-words ">
                         <p class="text-center w-full">Accept</p>
                     </primary-button>
 
-                    <primary-button class="w-full text-center  h-10 break-words " v-on:click="payBond">
+                    <primary-button class="w-full text-center  h-10 break-words "
+                                    v-on:click="payBond"
+                                    v-if="offer.accepted && offer.status === 3"
+                    >
                         <p class="text-center w-full">Bond</p>
                     </primary-button>
 
                     <primary-button v-on:click="payEscrow"
+                                    v-if="offer.accepted && (offer.status === 6 || offer.status === 7)"
                                     class="w-full text-center  h-10 break-words ">
                         <p class="text-center w-full">Escrow</p>
                     </primary-button>
 
 
-                    <primary-button class="w-full text-center p-0  h-10 break-words" v-on:click="sendPaymentHandle">
+                    <primary-button class="w-full text-center p-0  h-10 break-words"
+                                    v-if="offer.accepted && (offer.status === 9 || offer.status === 10)"
+                                    v-on:click="sendPaymentHandle">
                         <p class="text-center w-full">Auto Chat</p>
                     </primary-button>
 
-                    <primary-button class="w-full text-center p-0  h-10 break-words" v-on:click="confirmPayment">
+                    <primary-button class="w-full text-center p-0  h-10 break-words"
+                                    v-if="offer.accepted && (offer.status === 9 || offer.status === 10)"
+                                    v-on:click="confirmPayment">
                         <p class="text-center w-full">Confirm</p>
                     </primary-button>
-                    <secondary-button class="w-full text-center p-0  h-10 break-words" v-on:click="">
+                    <secondary-button class="w-full text-center p-0  h-10 break-words"
+                                      v-if="offer.accepted && (offer.status === 9 || offer.status === 10)"
+                                      v-on:click="">
                         <p class="text-center w-full">View Chat</p>
                     </secondary-button>
 
 
                     <danger-button v-on:click="collaborativeCancel"
+                                      v-if="offer.accepted && (offer.status === 9 || offer.status === 10)"
                                    class="w-full text-center  h-10 break-words ">
                         <p class="text-center w-full">Collaborative Cancel</p>
                     </danger-button>
@@ -139,7 +158,7 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 import DangerButton from "@/Components/DangerButton.vue";
 import SecondaryButton from "@/Components/SecondaryButton.vue";
 
-const props = defineProps(['offer']);
+const props = defineProps(['offer', 'showSidebar']);
 
 const autoRun = () => {
     console.log('auto run');

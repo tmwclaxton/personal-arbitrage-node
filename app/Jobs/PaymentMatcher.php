@@ -53,7 +53,15 @@ class PaymentMatcher implements ShouldQueue
                 $this->sendUniqueMessage($discordService, $payment->id, $message);
             } else {
                 $offer = $offers->first();
-                $payment->transaction_id = $offer->transaction()->first()->id;
+                $transaction = $offer->transaction()->first();
+                // check if the transaction has a status of 14
+                if ($transaction->status !== 14) {
+                    $message = '**Warning**: Found a matching order for the payment of ' . $payment->payment_amount . ' ' . $payment->payment_currency .
+                        ', but the transaction status is not successful, see offer ID: ' . $offer->id . ' and transaction ID: ' . $offer->transaction()->first()->id;
+                    $this->sendUniqueMessage($discordService, $payment->id, $message);
+                    continue;
+                }
+                $payment->transaction_id = $transaction->id;
                 $payment->save();
                 $message = 'Found a matching order for the payment of ' . $payment->payment_amount . ' ' . $payment->payment_currency .
                     ', see offer ID: ' . $offer->id . ' and transaction ID: ' . $offer->transaction()->first()->id;
