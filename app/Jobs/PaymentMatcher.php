@@ -95,7 +95,7 @@ class PaymentMatcher implements ShouldQueue
                 if ($adminDashboard->autoConfirm) {
                     $message .= ". Auto confirming in " . $autoConfirmAt->diffForHumans();
                     $robosatsService = new \App\WorkerClasses\Robosats();
-                    $robosatsService->webSocketCommunicate($offer, $transaction, "Your payment has been received. Please wait while we confirm the transaction (~10 minutes).");
+                    $robosatsService->webSocketCommunicate($offer, $transaction, "Your payment has been received. Please wait while we confirm the transaction (~" . $autoConfirmAt->diffForHumans() . ")");
                 }
 
                 $this->sendUniqueMessage($discordService, $payment->id, $message);
