@@ -199,6 +199,16 @@ Route::post('collaborative-cancel', function () {
 
 Route::get('/testing', function () {
 
+    $offer = Offer::find(405);
+    $transaction = $offer->transaction()->first();
+    $payment = Payment::where('transaction_id', $transaction->id)->first();
+
+    $platformEntity = json_decode($payment->platform_entity);
+    $reference = $platformEntity->reference;
+    dd(intval($reference));
+
+
+
     // $seleniumService = new \App\Services\SeleniumService();
     // dd($seleniumService->getLinkFromLastEmail());
 

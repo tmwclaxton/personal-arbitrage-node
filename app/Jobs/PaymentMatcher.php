@@ -62,7 +62,7 @@ class PaymentMatcher implements ShouldQueue
                 $payment->transaction_id = $transaction->id;
                 $payment->save();
 
-                // default confirm at 5 minutes in the future timestamp
+                // default confirm at 10 minutes in the future timestamp
                 $autoConfirmAt = Carbon::now()->addMinutes(10);
                 $reference = "";
                 switch ($payment->payment_method) {
@@ -83,8 +83,8 @@ class PaymentMatcher implements ShouldQueue
                 }
 
                 // if the reference is equal to robosatsID, then we can auto confirm in 2 minutes
-                if ($reference === $offer->robosatsId) {
-                    $autoConfirmAt = Carbon::now()->addMinutes(4);
+                if (intval($reference) === intval($offer->robosatsId)) {
+                    $autoConfirmAt = Carbon::now()->addMinutes(5);
                 }
 
                 $message = "Found a matching order for the payment of " . $payment->payment_amount . " " . $payment->payment_currency .
@@ -94,6 +94,8 @@ class PaymentMatcher implements ShouldQueue
                 // if autoConfirm is on add message
                 if ($adminDashboard->autoConfirm) {
                     $message .= ". Auto confirming in " . $autoConfirmAt->diffForHumans();
+                    $robosatsService = new \App\WorkerClasses\Robosats();
+                    $robosatsService->webSocketCommunicate($offer, $transaction, "Your payment has been received. Please wait while we confirm the transaction (~10 minutes).");
                 }
 
                 $this->sendUniqueMessage($discordService, $payment->id, $message);

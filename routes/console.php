@@ -117,6 +117,6 @@ Schedule::command('get:robosats-messages')
     ->everyMinute()->withoutOverlapping(1);
 
 // auto confirm final
-// Schedule::command('auto:confirm-final')
-//     ->description('auto confirm final')
-//     ->everyMinute()->withoutOverlapping(1);
+Schedule::command('auto:confirm-final')
+    ->description('auto confirm final')
+    ->everyMinute()->withoutOverlapping(1);

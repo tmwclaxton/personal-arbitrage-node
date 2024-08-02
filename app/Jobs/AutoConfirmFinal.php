@@ -37,6 +37,8 @@ class AutoConfirmFinal implements ShouldQueue
 
         $offers = Offer::where('auto_confirm_at', '<=', Carbon::now())->whereNotNull('auto_confirm_at')->get();
         foreach ($offers as $offer) {
+            $discordService = new \App\Services\DiscordService();
+            $discordService->sendMessage('Auto confirming offer ' . $offer->robosatsId);
             $transaction = $offer->transaction;
             $robosatsService = new Robosats();
             $robosatsService->confirmReceipt($offer, $transaction);
