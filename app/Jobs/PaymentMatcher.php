@@ -29,6 +29,11 @@ class PaymentMatcher implements ShouldQueue
      */
     public function handle(): void
     {
+        $adminDashboard = \App\Models\AdminDashboard::all()->first();
+        if ($adminDashboard->panicButton) {
+            return;
+        }
+
         // search for payments with a transaction_id of null and where created_at is less than 1 hour ago
         $payments = Payment::where('transaction_id', null)
             ->where('created_at', '>', Carbon::now()->subHour(1))

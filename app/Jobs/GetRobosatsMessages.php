@@ -28,6 +28,10 @@ class GetRobosatsMessages implements ShouldQueue
      */
     public function handle(): void
     {
+        $adminDashboard = \App\Models\AdminDashboard::all()->first();
+        if ($adminDashboard->panicButton) {
+            return;
+        }
         $offers = Offer::where('status', '=', 9)->get();
 
         foreach ($offers as $offer) {

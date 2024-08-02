@@ -27,6 +27,11 @@ class SendToKraken implements ShouldQueue
      */
     public function handle(): void
     {
+        $adminDashboard = \App\Models\AdminDashboard::all()->first();
+        if ($adminDashboard->panicButton) {
+            return;
+        }
+
         $revolutService = new RevolutService();
         $revolutService->sendAllGBPToAccount(env('REVOLUT_RECIPIENT_ACCOUNT_ID_KRAKEN'));
 

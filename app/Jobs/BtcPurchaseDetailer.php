@@ -33,6 +33,11 @@ class BtcPurchaseDetailer implements ShouldQueue
         $btcPurchases = BtcPurchase::whereNull('ref_id')->get();
         $response  = $krakenService->getClient()->getClosedOrders();
 
+        $adminDashboard = \App\Models\AdminDashboard::all()->first();
+        if ($adminDashboard->panicButton) {
+            return;
+        }
+
         foreach ($response->closed as $txId => $order) {
             // check if txId exists in btcPurchases
             $btcPurchase = $btcPurchases->where('tx_id', $txId)->first();

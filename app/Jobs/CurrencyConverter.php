@@ -28,6 +28,12 @@ class CurrencyConverter implements ShouldQueue
      */
     public function handle(): void
     {
+
+        $adminDashboard = \App\Models\AdminDashboard::all()->first();
+        if ($adminDashboard->panicButton) {
+            return;
+        }
+
         $revolutService = new RevolutService();
         $revolutService->currencyExchangeAll("EUR", "GBP");
         $revolutService->currencyExchangeAll("USD", "GBP");

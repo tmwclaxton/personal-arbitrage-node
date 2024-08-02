@@ -39,7 +39,7 @@ class KrakenAutoPurchaser implements ShouldQueue
 
         $adminDashboard = AdminDashboard::all()->first();
         // check if autoTopUp is enabled
-        if (!$adminDashboard->autoTopUp) {
+        if (!$adminDashboard->autoTopUp || $adminDashboard->panicButton) {
             return;
         }
 

@@ -29,6 +29,12 @@ class WisePaymentListener implements ShouldQueue
      */
     public function handle(): void
     {
+
+        $adminDashboard = \App\Models\AdminDashboard::all()->first();
+        if ($adminDashboard->panicButton) {
+            return;
+        }
+
         // set up wise client
         $client = new \TransferWise\Client(
             [

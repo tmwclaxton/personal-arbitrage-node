@@ -29,6 +29,11 @@ class RevolutPaymentListener implements ShouldQueue
      */
     public function handle(): void
     {
+        $adminDashboard = \App\Models\AdminDashboard::all()->first();
+        if ($adminDashboard->panicButton) {
+            return;
+        }
+
         $revolutService = new RevolutService();
         $transactions = $revolutService->getTransactions();
 
