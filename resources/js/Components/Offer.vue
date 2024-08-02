@@ -5,7 +5,7 @@
     <!--'col-span-1': !offer.accepted,-->
 
     <div class="max-w-md p-4 mx-auto bg-white dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700 dark:shadow-lg
-    rounded-xl shadow-md overflow-hidden md:max-w-2xl"  :class="{'col-span-2': showSidebar && offer.accepted, 'col-span-3': !showSidebar && offer.accepted, 'col-span-1': !offer.accepted}">
+    rounded-xl shadow-md overflow-hidden md:max-w-2xl"  :class="{'col-span-2': showSidebar && (offer.accepted || (offer.robots && offer.robots.length > 0)), 'col-span-3': !showSidebar && (offer.accepted || (offer.robots && offer.robots.length > 0)), 'col-span-1': !offer.accepted}">
 
         <div v-if="offer.transaction">
             <p class="mt-2 text-zinc-500 dark:text-zinc-200 font-bold">Transaction Status: {{
@@ -111,6 +111,8 @@
                     <p class="text-zinc-500 dark:text-zinc-200 italic">Last updated at: {{ offer.updated_at_readable }}</p>
                     <div v-if="offer.auto_accept_at" class="border border-gray-200 dark:border-zinc-700 my-1"></div>
                     <p v-if="offer.auto_accept_at" class="text-zinc-500 dark:text-zinc-200 italic font-bold">Auto accepting at: {{ offer.auto_accept_at }}</p>
+                    <div v-if="offer.auto_confirm_at" class="border border-gray-200 dark:border-zinc-700 my-1"></div>
+                    <p v-if="offer.auto_confirm_at" class="text-zinc-500 dark:text-zinc-200 italic font-bold">Auto confirming at: {{ offer.auto_confirm_at }}</p>
                     <div class="border border-gray-200 dark:border-zinc-700 my-1"></div>
                     <!--<p class="mt-2 text-zinc-500 dark:text-zinc-200">Explicit: {{ offer.is_explicit ? 'Yes' : 'No' }}</p>-->
                     <!--<p class="mt-2 text-zinc-500 dark:text-zinc-200">Satoshis: {{ offer.satoshis ?? 'N/A' }}</p>-->

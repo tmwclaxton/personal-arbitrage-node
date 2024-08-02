@@ -70,7 +70,7 @@ Schedule::command('app:warning-system')
 // refresh revolut token
 Schedule::command('refresh:revolut-token')
     ->description('refresh revolut token')
-    ->everyTenMinutes()->withoutOverlapping(1);
+    ->everyThreeMinutes()->withoutOverlapping(1);
 
 // every minute trigger a revolut payment listener job
 Schedule::command('revolut:payment-listener')
@@ -115,3 +115,8 @@ Schedule::command('btc:purchase-detailer')
 Schedule::command('get:robosats-messages')
     ->description('get robosats messages')
     ->everyMinute()->withoutOverlapping(1);
+
+// auto confirm final
+// Schedule::command('auto:confirm-final')
+//     ->description('auto confirm final')
+//     ->everyMinute()->withoutOverlapping(1);

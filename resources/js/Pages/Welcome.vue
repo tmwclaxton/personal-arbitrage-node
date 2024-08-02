@@ -237,7 +237,7 @@ const showSidebar = ref(true);
 
             <div class="relative flex flex-col flex-grow items-center justify-center selection:bg-[#FF2D20] selection:text-white"
                 v-bind:class="showSidebar ? 'border-l-2 dark:border-zinc-700 dark:border-white/70' : ''">
-                <div class="grid gap-6  mx-auto" v-if="accessOffers.length > 0"
+                <div class="grid gap-6 gap-x-4 mx-auto px-2" v-if="accessOffers.length > 0"
                      v-bind:class="showSidebar ? 'grid-cols-2' : 'grid-cols-3'">
                     <Offer v-for="offer in accessOffers" :key="offer.robosatsId" :offer="offer"
                         :showSidebar="showSidebar"/>

@@ -11,20 +11,21 @@ class AutoConfirmFinal extends Command
      *
      * @var string
      */
-    protected $signature = 'app:auto-confirm-final';
+    protected $signature = 'auto:confirm-final';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Final confirmation of payment';
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        //
+        $job = new \App\Jobs\AutoConfirmFinal();
+        $job->handle();
     }
 }

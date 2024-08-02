@@ -61,9 +61,48 @@ class PaymentMatcher implements ShouldQueue
                 $transaction = $offer->transaction()->first();
                 $payment->transaction_id = $transaction->id;
                 $payment->save();
-                $message = 'Found a matching order for the payment of ' . $payment->payment_amount . ' ' . $payment->payment_currency .
-                    ', see offer ID: ' . $offer->id . ' and transaction ID: ' . $offer->transaction()->first()->id;
+
+                // default confirm at 5 minutes in the future timestamp
+                $autoConfirmAt = Carbon::now()->addMinutes(10);
+                $reference = "";
+                switch ($payment->payment_method) {
+                    case 'Revolut':
+                        $platformEntity = json_decode($payment->platform_entity);
+                        $reference = $platformEntity->reference;
+                        break;
+                    case 'Wise':
+                        //{"id": "TU9ORVRBUllfQUNUSVZJVFk6OjU1Njk4NjIxOjpUUkFOU0ZFUjo6MTE2NDEyNzU5Mw==", "type": "TRANSFER", "title": "<strong>Toby Claxton</strong>", "amount": "20", "sender": "Toby Claxton", "status": "COMPLETED", "currency": "GBP", "resource": {"id": "1164127593", "type": "TRANSFER"}, "createdOn": "2024-07-31T18:50:58.783Z", "updatedOn": "2024-07-31T18:51:05.186Z", "description": "", "primaryAmount": "<positive>+ 20 GBP</positive>", "formattedAmount": "20 GBP", "secondaryAmount": ""}
+                        // $platformEntity = json_decode($payment->platform_entity);
+                        // $reference = $platformEntity->resource->id;
+                        //!TODO: Wise doesn't give us the reference in the main object!
+                        $discordService->sendMessage('Wise method not implemented yet');
+                        return;
+                    default:
+                        $discordService->sendMessage('Unknown payment method: ' . $payment->payment_method);
+                        return;
+                }
+
+                // if the reference is equal to robosatsID, then we can auto confirm in 2 minutes
+                if ($reference === $offer->robosatsId) {
+                    $autoConfirmAt = Carbon::now()->addMinutes(4);
+                }
+
+                $message = "Found a matching order for the payment of " . $payment->payment_amount . " " . $payment->payment_currency .
+                    ", see robosats ID: " . $offer->robosatsId . " and transaction ID: " . $offer->transaction()->first()->id;
+                    // ". Auto confirming in " . $autoConfirmAt->diffForHumans();
+
+                // if autoConfirm is on add message
+                if ($adminDashboard->autoConfirm) {
+                    $message .= ". Auto confirming in " . $autoConfirmAt->diffForHumans();
+                }
+
                 $this->sendUniqueMessage($discordService, $payment->id, $message);
+
+                if ($adminDashboard->autoConfirm) {
+                    // set the auto confirm at timestamp on offer
+                    $offer->auto_confirm_at = $autoConfirmAt;
+                    $offer->save();
+                }
 
                 // currency conversion job
                 $job = new \App\Jobs\CurrencyConverter();
