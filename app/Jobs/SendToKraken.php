@@ -28,7 +28,7 @@ class SendToKraken implements ShouldQueue
     public function handle(): void
     {
         $adminDashboard = \App\Models\AdminDashboard::all()->first();
-        if ($adminDashboard->panicButton) {
+        if (!$adminDashboard->autoTopup || $adminDashboard->panicButton) {
             return;
         }
 

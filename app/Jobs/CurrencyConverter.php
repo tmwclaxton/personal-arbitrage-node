@@ -30,7 +30,7 @@ class CurrencyConverter implements ShouldQueue
     {
 
         $adminDashboard = \App\Models\AdminDashboard::all()->first();
-        if ($adminDashboard->panicButton) {
+        if (!$adminDashboard->autoTopup || $adminDashboard->panicButton) {
             return;
         }
 
