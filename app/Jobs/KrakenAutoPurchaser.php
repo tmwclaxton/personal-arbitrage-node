@@ -39,9 +39,9 @@ class KrakenAutoPurchaser implements ShouldQueue
 
         $adminDashboard = AdminDashboard::all()->first();
         // check if autoTopUp is enabled
-        // if (!$adminDashboard->autoTopUp) {
-        //     return;
-        // }
+        if (!$adminDashboard->autoTopUp) {
+            return;
+        }
 
         $lightningNode = new LightningNode();
         $kraken = new \App\Services\KrakenService();
