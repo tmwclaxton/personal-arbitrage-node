@@ -42,6 +42,7 @@ class DiscordCommands implements ShouldQueue
             '!getRevReadToken',
             '!chat',
             '!viewChat',
+            '!collaborativeCancel',
             // '!toggleAutoAccept',
             // '!toggleAutoBond',
             // '!toggleAutoEscrow',
@@ -128,6 +129,13 @@ class DiscordCommands implements ShouldQueue
                                 $messages = $messages . "**" . $chatMessage->user_nick . "**: " . $chatMessage->message . " \n";
                             }
                             $discordService->sendMessage($messages);
+                            break;
+                        case '!collaborativeCancel':
+                            // grab offer id //!collaborativeCancel 6960
+                            $offerId = explode(' ', $message['content'])[1];
+                            $offer = Offer::where('robosatsId', $offerId)->first();
+                            $robosats = new \App\WorkerClasses\Robosats();
+                            $response = $robosats->collaborativeCancel($offer);
                             break;
                         default:
                             $discordService->sendMessage('Command not recognized');
