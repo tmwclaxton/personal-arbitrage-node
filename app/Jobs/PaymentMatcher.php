@@ -57,10 +57,11 @@ class PaymentMatcher implements ShouldQueue
                 $message = '**Warning**: No offers found for payment ' . $payment->id . ' of ' . $payment->payment_amount . ' ' . $payment->payment_currency;
                 $this->sendUniqueMessage($discordService, $payment->id, $message);
             } else {
-                $offer = $offers->first();
+                $offerId = $offers->first()->id;
+                $offer = \App\Models\Offer::find($offerId);
+                $robot = $offer->robots()->first();
                 $transaction = $offer->transaction()->first();
                 $payment->transaction_id = $transaction->id;
-                $payment->save();
 
                 // default confirm at 10 minutes in the future timestamp
                 $autoConfirmAt = Carbon::now()->addMinutes(10);
@@ -82,20 +83,28 @@ class PaymentMatcher implements ShouldQueue
                         return;
                 }
 
-                // if the reference is equal to robosatsID, then we can auto confirm in 2 minutes
-                if (intval($reference) === intval($offer->robosatsId)) {
-                    $autoConfirmAt = Carbon::now()->addMinutes(5);
-                }
 
                 $message = "Found a matching order for the payment of " . $payment->payment_amount . " " . $payment->payment_currency .
                     ", see robosats ID: " . $offer->robosatsId . " and transaction ID: " . $offer->transaction()->first()->id;
-                    // ". Auto confirming in " . $autoConfirmAt->diffForHumans();
+
+                if ($reference !== null && $reference !== "") {
+                    // remove any non-numeric characters
+                    $reference = preg_replace('/[^0-9]/', '', $reference);
+                    if ($reference !== "") {
+                        // if the reference is equal to robosatsID, then we can auto confirm in 2 minutes
+                        if (intval($reference) === intval($offer->robosatsId)) {
+                            $autoConfirmAt = Carbon::now()->addMinutes(5);
+                            $message .= ". Additionally, the reference matches the robosats ID, so auto confirming in 5 minutes rather than 10";
+                        }
+                    }
+                }
+
 
                 // if autoConfirm is on add message
                 if ($adminDashboard->autoConfirm) {
                     $message .= ". Auto confirming in " . $autoConfirmAt->diffForHumans();
                     $robosatsService = new \App\WorkerClasses\Robosats();
-                    $robosatsService->webSocketCommunicate($offer, $transaction, "Your payment has been received. Please wait while we confirm the transaction (~" . $autoConfirmAt->diffForHumans() . ")");
+                    $robosatsService->webSocketCommunicate($offer, $robot, "Your payment of " . $payment->payment_amount . " " . $payment->payment_currency . " has been received. Please wait while I confirm the transaction (~" . $autoConfirmAt->diffForHumans() . ")");
                 }
 
                 $this->sendUniqueMessage($discordService, $payment->id, $message);
@@ -105,6 +114,8 @@ class PaymentMatcher implements ShouldQueue
                     $offer->auto_confirm_at = $autoConfirmAt;
                     $offer->save();
                 }
+
+                $payment->save();
 
                 // currency conversion job
                 $job = new \App\Jobs\CurrencyConverter();

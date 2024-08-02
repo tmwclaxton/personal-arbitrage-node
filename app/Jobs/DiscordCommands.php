@@ -184,49 +184,54 @@ class DiscordCommands implements ShouldQueue
                             $discordService->sendMessage('Auto confirm is now ' . ($adminDashboard->autoConfirm ? 'on' : 'off'));
                             break;
                         case '!setSellPremium':
-                            $adminDashboard->sellPremium = explode(' ', $message['content'])[1];
+                            $adminDashboard->sell_premium = intval(explode(' ', $message['content'])[1]);
                             // ensure the value is a float and positive
-                            if (!is_numeric($adminDashboard->sellPremium) || $adminDashboard->sellPremium < 0) {
-                                $discordService->sendMessage('Invalid value for sell premium');
+                            if ($adminDashboard->sell_premium < 0) {
+                                $discordService->sendMessage('Invalid value for sell premium ' . $adminDashboard->sell_premium);
                                 break;
                             }
                             $adminDashboard->save();
+                            $discordService->sendMessage('Sell premium set to ' . $adminDashboard->sell_premium);
                             break;
                         case '!setBuyPremium':
-                            $adminDashboard->buyPremium = explode(' ', $message['content'])[1];
+                            $adminDashboard->buy_premium = intval(explode(' ', $message['content'])[1]);
                             // ensure the value is a float and negative
-                            if (!is_numeric($adminDashboard->buyPremium) || $adminDashboard->buyPremium > 0) {
+                            if ($adminDashboard->buy_premium > 0) {
                                 $discordService->sendMessage('Invalid value for buy premium');
                                 break;
                             }
                             $adminDashboard->save();
+                            $discordService->sendMessage('Buy premium set to ' . $adminDashboard->buy_premium);
                             break;
                         case '!setConcurrentTransactions':
-                            $adminDashboard->concurrentTransactions = explode(' ', $message['content'])[1];
+                            $adminDashboard->max_concurrent_transactions = intval(explode(' ', $message['content'])[1]);
                             // ensure the value is an integer and positive
-                            if (!is_numeric($adminDashboard->concurrentTransactions) || $adminDashboard->concurrentTransactions < 0) {
+                            if ($adminDashboard->max_concurrent_transactions < 0) {
                                 $discordService->sendMessage('Invalid value for concurrent transactions');
                                 break;
                             }
                             $adminDashboard->save();
+                            $discordService->sendMessage('Concurrent transactions set to ' . $adminDashboard->max_concurrent_transactions);
                             break;
                         case '!setMinSatProfit':
-                            $adminDashboard->minSatProfit = explode(' ', $message['content'])[1];
+                            $adminDashboard->min_satoshi_profit = intval(explode(' ', $message['content'])[1]);
                             // ensure the value is an integer and positive
-                            if (!is_numeric($adminDashboard->minSatProfit) || $adminDashboard->minSatProfit < 0) {
+                            if ($adminDashboard->min_satoshi_profit < 0) {
                                 $discordService->sendMessage('Invalid value for minimum satoshi profit');
                                 break;
                             }
                             $adminDashboard->save();
+                            $discordService->sendMessage('Minimum satoshi profit set to ' . $adminDashboard->min_satoshi_profit);
                             break;
                         case '!setMaxSatAmount':
-                            $adminDashboard->maxSatAmount = explode(' ', $message['content'])[1];
+                            $adminDashboard->max_satoshi_amount = intval(explode(' ', $message['content'])[1]);
                             // ensure the value is an integer and positive
-                            if (!is_numeric($adminDashboard->maxSatAmount) || $adminDashboard->maxSatAmount < 0) {
+                            if ($adminDashboard->max_satoshi_amount < 0) {
                                 $discordService->sendMessage('Invalid value for maximum satoshi amount');
                                 break;
                             }
                             $adminDashboard->save();
+                            $discordService->sendMessage('Maximum satoshi amount set to ' . $adminDashboard->max_satoshi_amount);
                             break;
 
 

@@ -45,7 +45,7 @@ Schedule::command('refresh:discord-commands')
 
 Schedule::command('refresh:offers')
     ->description('refresh robosat offers')
-    ->everyMinute()->withoutOverlapping(1);
+    ->everyThirtySeconds()->withoutOverlapping(1);
 
 Schedule::command('refresh:fiats')
     ->description('refresh fiats')

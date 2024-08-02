@@ -110,12 +110,12 @@ const showSidebar = ref(true);
                 <p>Loading BTC prices...</p>
             </div>
         </div>
-        <div class="w-full flex flex-row gap-x-3 mt-2 mx-auto justify-center">
-            <primary-button class="" @click="showSidebar = !showSidebar" v-text="showSidebar ? 'Hide Sidebar' : 'Show Sidebar'"></primary-button>
+        <div class="w-full flex flex-row flex-wrap gap-3 mt-2 mx-auto justify-center">
+            <primary-button class="h-12" @click="showSidebar = !showSidebar" v-text="showSidebar ? 'Hide Sidebar' : 'Show Sidebar'"></primary-button>
 
             <danger-button
                 v-on:click="panicButtonToggle"
-                class="text-xs text-white font-bold py-2 px-4 rounded"
+                class="h-12 text-xs text-white font-bold py-2 px-4 rounded"
                 :class="tempAdminDashboard.panicButton ?
             'bg-red-500 hover:bg-red-400 border-red-800 hover:border-red-600' :
             'bg-zinc-500 hover:bg-zinc-400 !border-zinc-600 hover:border-zinc-500'">
@@ -123,13 +123,18 @@ const showSidebar = ref(true);
                 Panic Button {{ tempAdminDashboard.panicButton ? 'ON' : 'OFF' }}
             </danger-button>
             <Link :href="route('dashboard.index')">
-                <secondary-button >
+                <secondary-button  class="h-12">
                     Config
                 </secondary-button>
             </Link>
-            <Link :href="route('dashboard.index')">
-                <secondary-button >
+            <Link :href="route('dashboard.index')" >
+                <secondary-button class="h-12">
                     Transaction History
+                </secondary-button>
+            </Link>
+            <Link :href="route('dashboard.index')" >
+                <secondary-button class="h-12">
+                    Graphs
                 </secondary-button>
             </Link>
         </div>
@@ -237,7 +242,7 @@ const showSidebar = ref(true);
             </div>
 
 
-            <div class="relative flex flex-col flex-grow items-center justify-center selection:bg-[#FF2D20] selection:text-white"
+            <div class="relative flex flex-col flex-grow items-center selection:bg-[#FF2D20] selection:text-white"
                 v-bind:class="showSidebar ? 'border-l-2 dark:border-zinc-700 dark:border-white/70' : ''">
                 <div class="grid gap-6 gap-x-4 mx-auto px-2" v-if="accessOffers.length > 0"
                      v-bind:class="showSidebar ? 'grid-cols-2' : 'grid-cols-3'">
