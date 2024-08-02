@@ -32,7 +32,8 @@ class GetRobosatsMessages implements ShouldQueue
         if ($adminDashboard->panicButton) {
             return;
         }
-        $offers = Offer::where('status', '=', 9)->get();
+        // 9 / 10
+        $offers = Offer::where('status', 9)->orWhere('status', 10)->get();
 
         foreach ($offers as $offer) {
 

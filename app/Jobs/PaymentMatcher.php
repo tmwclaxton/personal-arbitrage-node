@@ -69,7 +69,9 @@ class PaymentMatcher implements ShouldQueue
                 switch ($payment->payment_method) {
                     case 'Revolut':
                         $platformEntity = json_decode($payment->platform_entity);
-                        $reference = $platformEntity->reference;
+                        if (isset($platformEntity->reference)) {
+                            $reference = $platformEntity->reference;
+                        }
                         break;
                     case 'Wise':
                         //{"id": "TU9ORVRBUllfQUNUSVZJVFk6OjU1Njk4NjIxOjpUUkFOU0ZFUjo6MTE2NDEyNzU5Mw==", "type": "TRANSFER", "title": "<strong>Toby Claxton</strong>", "amount": "20", "sender": "Toby Claxton", "status": "COMPLETED", "currency": "GBP", "resource": {"id": "1164127593", "type": "TRANSFER"}, "createdOn": "2024-07-31T18:50:58.783Z", "updatedOn": "2024-07-31T18:51:05.186Z", "description": "", "primaryAmount": "<positive>+ 20 GBP</positive>", "formattedAmount": "20 GBP", "secondaryAmount": ""}
