@@ -101,6 +101,23 @@ class AutoAccept extends Command
             }
         }
 
+        // grab ongoing transactions
+        $transactions = Transaction::where('status', '<', 14)->get();
+        // grab offer ids from ongoing transactions
+        $offerIds = $transactions->pluck('offer_id')->toArray();
+        // we don't want to accept any offers that are for the same amount & currency as an ongoing transaction
+        $onGoingOffers = Offer::whereIn('id', $offerIds)->get();
+        foreach ($onGoingOffers as $onGoingOffer) {
+            $onGoingOfferAmount = $onGoingOffer->accepted_offer_amount;
+            $onGoingOfferCurrency = $onGoingOffer->currency;
+            // remove the any offers that are for the same amount & currency as an ongoing transaction
+            $offers = $offers->filter(function ($value, $key) use ($onGoingOfferAmount, $onGoingOfferCurrency) {
+                return $value->estimated_offer_amount != $onGoingOfferAmount || $value->currency != $onGoingOfferCurrency;
+            });
+        }
+
+
+
         // remove any offers who estimated_profit_sat is less than AdminDashboard->min_satoshi_profit
         $offers = $offers->filter(function ($value, $key) use ($adminDashboard) {
             return $value->estimated_profit_sat >= $adminDashboard->min_satoshi_profit;
