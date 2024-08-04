@@ -191,6 +191,14 @@ const showSidebar = ref(true);
                         class="font-bold mr-1">Sitting Sell Offers Count: </span>
                         <TextInput class="w-16 h-6" v-model="tempAdminDashboard.sitting_sell_offers_count"/>
                     </div>
+                    <div class="flex flex-row justify-between items-center"><span
+                        class="font-bold mr-1">Sitting Sell Offers Min Premium: </span>
+                        <TextInput class="w-16 h-6" v-model="tempAdminDashboard.sitting_sell_offers_min_premium"/>
+                    </div>
+                    <div class="flex flex-row justify-between items-center"><span
+                        class="font-bold mr-1">Sitting Sell Offers Max Premium: </span>
+                        <TextInput class="w-16 h-6" v-model="tempAdminDashboard.sitting_sell_offers_max_premium"/>
+                    </div>
                     <!--<div class="flex flex-row justify-between items-center"><span-->
                     <!--    class="font-bold mr-1">Buy Premium: </span>-->
                     <!--    <TextInput class="w-16 h-6" v-model="tempAdminDashboard.buy_premium"/>-->

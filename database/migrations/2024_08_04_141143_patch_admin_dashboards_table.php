@@ -17,7 +17,8 @@ return new class extends Migration
             $table->float('wise_balance')->nullable();
             $table->float('kraken_balance')->nullable();
             $table->integer('sitting_sell_offers_count')->default(0);
-            $table->float('sitting_sell_offers_premium')->nullable(0);
+            $table->float('sitting_sell_offers_min_premium')->nullable(0);
+            $table->float('sitting_sell_offers_max_premium')->nullable(0);
         });
     }
 

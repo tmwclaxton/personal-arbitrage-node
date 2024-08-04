@@ -81,6 +81,7 @@
                 <div class="flex flex-col max-w-44 flex-shrink-0">
                     <div class="mt-0.5 uppercase tracking-wide text-sm text-indigo-500 font-semibold">
                         <span v-text="offer.provider"></span>
+                        <span class="ml-1" v-text="offer.is_maker ? ' (Maker)' : '(Taker)'"></span>
                         <!--<span class="text-zinc-500 dark:text-zinc-200 mx-1">·</span>-->
                         <span class="mt-2 text-zinc-500 dark:text-zinc-200 font-bold">{{ offer.accepted ? ' · Accepted' : '' }}</span>
 

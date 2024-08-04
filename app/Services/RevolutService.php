@@ -375,7 +375,7 @@ class RevolutService
                 ),
                 "amount" => $account->balance,
                 "currency" => $currency,
-                "reference" => "Store fiat as $currency in Kraken"
+                "reference" => "Store fiat as BTC in Kraken"
             );
             $accessToken = $this->getAccessToken($this->getPayToken());
             if ($accessToken == null) {

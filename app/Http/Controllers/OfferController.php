@@ -176,14 +176,24 @@ class OfferController extends Controller
         $provider = rtrim($provider, '/');
         $offer['provider'] = $provider;
 
-        // buy is 1 and sell is 2
-        $offer['type'] = $offer['type'] == 1 ? 'buy' : 'sell';
+        // buy is 1 and sell is 2 // if we are the taker
+        if ($offer['is_taker']) {
+            $offer['type'] = $offer['type'] == 1 ? 'buy' : 'sell';
+        } else {
+            $offer['type'] = $offer['type'] == 1 ? 'sell' : 'buy';
+        }
 
         // convert the expires_at i.e. "2024-06-28T06:24:07.984166Z" to correct format
         $offer['expires_at'] = date('Y-m-d H:i:s', strtotime($offer['expires_at']));
 
         // convert the created_at i.e. "2024-06-28T06:24:07.984166Z" to correct format
         $offer['created_at'] = date('Y-m-d H:i:s', strtotime($offer['created_at']));
+
+        // if payment_method is given, change to payment_methods
+        if (isset($offer['payment_method'])) {
+            $offer['payment_methods'] = [$offer['payment_method']];
+            unset($offer['payment_method']);
+        }
 
         // if the items Instant and Sepa are in the payment_methods, remove them and replace them with 'Instant SEPA'
         if (in_array('Instant', $offer['payment_methods']) && in_array('SEPA', $offer['payment_methods'])) {
@@ -249,6 +259,11 @@ class OfferController extends Controller
 
         }
 
+        $bond_invoice = $offer['bond_invoice'];
+        // remove the bond_invoice from the offer
+        unset($offer['bond_invoice']);
+        unset($offer['bond_satoshis']);
+
         // iterate through each key in the offer and set corresponding attributes
         $newOffer = new Offer();
 
@@ -261,6 +276,21 @@ class OfferController extends Controller
             Offer::where('robosatsId', $offer['robosatsId'])->update($offer);
         } else {
             $newOffer->save();
+        }
+
+        // so we can grab the id of the new offer
+        $newOffer = Offer::where('robosatsId', $offer['robosatsId'])->first();
+        if ($bond_invoice) {
+            // create a transaction as we have the bond invoice in the response
+            $transaction = new Transaction();
+            $transaction->offer_id = $newOffer->id;
+            $transaction->bond_invoice = $bond_invoice;
+            // check if the transaction exists
+            if (Transaction::where('offer_id', $newOffer->id)->exists()) {
+                Transaction::where('offer_id', $newOffer->id)->update($transaction->toArray());
+            } else {
+                $transaction->save();
+            }
         }
     }
 

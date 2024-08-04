@@ -68,7 +68,8 @@ class AutoJobs extends Command
             $offer->save();
 
             // if status is 3 then dispatch a bond job
-            if ($offer->status == 3 && $adminDashboard->autoBond) {
+            if (($offer->status == 3 || ($offer->is_maker && $offer->status == 0))
+                && $adminDashboard->autoBond) {
                 PayBond::dispatch($offer, $adminDashboard);
             }
             if (($offer->status == 6 || $offer->status == 7) && $adminDashboard->autoEscrow) {

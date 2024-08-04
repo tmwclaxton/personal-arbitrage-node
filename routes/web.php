@@ -198,79 +198,24 @@ Route::post('collaborative-cancel', function () {
 
 
 Route::get('/testing', function () {
-    //
-    $lightningNode = new LightningNode();
-    $kraken = new \App\Services\KrakenService();
 
-    $response = $kraken->getGBPBalance();
-    $discordService = new DiscordService();
-    if ($response->isGreaterThan(BigDecimal::of('10'))) {
-        $discordService->sendMessage('Auto purchasing BTC with GBP from Kraken');
+    $robosats = new Robosats();
+    $response = $robosats->createSellOffer(
+        "EUR",
+        20,
+        'satstralia',
+        false,
+        20,
+        "Revolut",
+        3,
+        null
+    );
 
-        $kraken->buyFullAmt("GBP", $kraken->getGBPBalance());
-        sleep(5);
-    }
-
-    $response = $kraken->getEURBalance();
-    $discordService = new DiscordService();
-    if ($response->isGreaterThan(BigDecimal::of('10'))) {
-        $discordService->sendMessage('Auto purchasing BTC with EUR from Kraken');
-
-        $kraken->buyFullAmt("EUR", $kraken->getEURBalance());
-        sleep(5);
-    }
-
-
-    // kraken get BTC balance
-    $btcBalance = $kraken->getBTCBalance();
-    // if BTC balance greater than 0 send to lightning node
-    if ($btcBalance->isGreaterThan(BigDecimal::of('0'))) {
-        $kraken->sendFullAmtToLightning();
-    }
-
-    sleep(5);
-    $balance = $lightningNode->getLightningWalletBalance();
-    if ($balance['localBalance'] < 600000) {
-        $discordService->sendMessage('Send money to Kraken!');
-    }
-
-    dd("testing");
-
-
-
-    // $seleniumService = new \App\Services\SeleniumService();
-    // dd($seleniumService->getLinkFromLastEmail());
-
-    // $response = $krakenService->getClient()->getAccountBalance();
-    // dd($response);
-    $wiseService = new WiseService();
-
-    $profiles = $wiseService->getClient()->profiles->all();
-
-    $wiseService = new \App\Services\WiseService();
-    $response = $wiseService->getActivities($profiles[0]['id']);
-    $activities = $response['activities'];
-    dd($activities);
-    $kraken = new \App\Services\KrakenService();
-    $response = $kraken->getGBPBalance();
     dd($response);
 
 
-    dd("testing");
 
-
-
-
-
-
-
-
-
-
-    // $revolutService = new RevolutService();
-    // $revolutService->currencyExchangeAll("EUR", "GBP");
-    // dd($revolutService->getGBPBalance());
-    // wise send to personal revolut account
+    dd('testing');
     $payment = null;
     $wiseService = new \App\Services\WiseService();
 
