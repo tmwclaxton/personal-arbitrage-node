@@ -339,6 +339,21 @@ class Robosats
 
     }
 
+    public function getAllOffers($buyOffers, $sellOffers) {
+        $allOffers = [];
+        foreach ($buyOffers as $provider => $offers) {
+            $allOffers[$provider] = $offers;
+        }
+        foreach ($sellOffers as $provider => $offers) {
+            if (!array_key_exists($provider, $allOffers)) {
+                $allOffers[$provider] = [];
+            }
+            $allOffers[$provider] = array_merge($allOffers[$provider], $offers);
+        }
+
+        return $allOffers;
+    }
+
     public function getNegativePremiumBuyOffers($buyOffers, $minNegativePremium = -1) {
 
         // for buys the more negative the premium the better
@@ -356,7 +371,7 @@ class Robosats
         // $negativePremiumBuyOffers = $this->removePaymentMethods($negativePremiumBuyOffers);
 
         // only accept revolut
-        $negativePremiumBuyOffers = $this->onlyPaymentMethods($negativePremiumBuyOffers, ['Revolut', 'Paypal Friends & Family']);
+        // $negativePremiumBuyOffers = $this->onlyPaymentMethods($negativePremiumBuyOffers, ['Revolut', 'Paypal Friends & Family']);
 
         return $negativePremiumBuyOffers;
     }
@@ -725,9 +740,17 @@ class Robosats
         }
 
 
-        (new OfferController())->insertOffer($response, $offer->provider);
+        $offer = (new OfferController())->insertOffer($response, $offer->provider);
+        $offer->job_last_status = null;
+        $offer->save();
 
+        // create a transaction as we have the bond invoice in the response
+        // check if the transaction exists
 
+        $transaction = new Transaction();
+        $transaction->offer_id = $offer->id;
+        $transaction->bond_invoice = $response['bond_invoice'];
+        $transaction->save();
 
         return $response;
     }
@@ -765,7 +788,7 @@ class Robosats
         if ($response['status'] == 1) {
             if ($offer->transaction()) {
                 // delete transaction
-                $transaction->delete();
+                // $transaction->delete();
                 // set accepted to false
                 $offer->accepted = false;
             }

@@ -71,7 +71,7 @@ return new class extends Migration
             $table->unsignedBigInteger('trade_satoshis')->nullable();
             $table->boolean('asked_for_cancel')->default(false);
             $table->integer('chat_last_index')->default(0);
-            $table->integer('job_last_status')->default(0);
+            $table->integer('job_last_status')->nullable();
 
             $table->timestamp('auto_accept_at')->nullable();
             $table->timestamp('auto_confirm_at')->nullable();

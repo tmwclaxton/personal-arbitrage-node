@@ -39,4 +39,5 @@ class UpdateTransactions implements ShouldQueue
             $robosats = new Robosats();
             $response = $robosats->updateTransactionStatus($offer);
         }    }
+
 }

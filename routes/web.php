@@ -200,12 +200,13 @@ Route::post('collaborative-cancel', function () {
 Route::get('/testing', function () {
 
     $robosats = new Robosats();
+    $providers = ['satstralia', 'temple', 'lake', 'veneto'];
     $response = $robosats->createSellOffer(
         "EUR",
         20,
-        'satstralia',
+        $providers[array_rand($providers)],
         false,
-        20,
+        14,
         "Revolut",
         3,
         null

@@ -60,7 +60,15 @@ class AutoJobs extends Command
         $adminDashboard = AdminDashboard::all()->first();
         $offers = Offer::where([['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14]])->get();
         foreach ($offers as $offer) {
+            // if status is 0 and robosatsIdStorage is not null then continue
+            $continue = false;
             if ($offer->job_last_status >= $offer->status) {
+                $continue = true;
+            }
+            if ($offer->status == 0 && $offer->robosatsIdStorage !== null) {
+                $continue = false;
+            }
+            if ($continue) {
                 continue;
             }
             // don't run the job again from auto job

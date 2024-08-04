@@ -26,6 +26,7 @@ class OfferController extends Controller
         $offers = Offer::where([['accepted', '=', true], ['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14]])
             ->orWhere([['accepted', '=', false],['premium', '>=', $sellPremium], ['type', 'sell']])
             ->orWhere([['accepted', '=', false],['premium', '<=', $buyPremium], ['type', 'buy']])
+            ->orWhere([['accepted', '=', false],['robotTokenBackup', '!=', null], ['robosatsIdStorage', '=', null]])
             ->orderBy('accepted', 'desc')
             ->orderBy('max_satoshi_amount_profit', 'desc')
             ->orderBy('satoshi_amount_profit', 'desc')
@@ -98,7 +99,7 @@ class OfferController extends Controller
             $offer->payment_methods = implode(', ', $offer->payment_methods);
 
             // if offer is accepted find the transaction
-            if ($offer->accepted) {
+            if ($offer->accepted || ($offer->robosatsIdStorage == null && $offer->robotTokenBackup != null)) {
                 $transaction = Transaction::where('offer_id', $offer->id)->first();
                 $offer->transaction = $transaction;
             }
@@ -152,7 +153,7 @@ class OfferController extends Controller
         ]);
     }
 
-    public function insertOffer($offer, $provider): void
+    public function insertOffer($offer, $provider): Offer
     {
 
         $allFiats = BtcFiat::all();
@@ -177,10 +178,10 @@ class OfferController extends Controller
         $offer['provider'] = $provider;
 
         // buy is 1 and sell is 2 // if we are the taker
-        if ($offer['is_taker']) {
-            $offer['type'] = $offer['type'] == 1 ? 'buy' : 'sell';
-        } else {
+        if ($offer['is_maker'] = 0) {
             $offer['type'] = $offer['type'] == 1 ? 'sell' : 'buy';
+        } else {
+            $offer['type'] = $offer['type'] == 1 ? 'buy' : 'sell';
         }
 
         // convert the expires_at i.e. "2024-06-28T06:24:07.984166Z" to correct format
@@ -230,6 +231,12 @@ class OfferController extends Controller
         // convert the payment_methods to a json array without a key
         $offer['payment_methods'] = json_encode(array_values($offer['payment_methods']));
 
+        if (array_key_exists('price_now', $offer)) {
+            $offer['price'] = $offer['price_now'];
+            unset($offer['price_now']);
+        }
+
+
         if ($allFiats && $allFiats->count() > 0 && isset($offer['price']) && $offer['price'] > 0) {
             // grab currency from offer and find the price in btc using allFiats
             $btcPrice = $allFiats->where('currency', $offer['currency'])->first();
@@ -259,10 +266,12 @@ class OfferController extends Controller
 
         }
 
-        $bond_invoice = $offer['bond_invoice'];
-        // remove the bond_invoice from the offer
-        unset($offer['bond_invoice']);
-        unset($offer['bond_satoshis']);
+        if (array_key_exists('bond_invoice', $offer)) {
+            $bond_invoice = $offer['bond_invoice'];
+            // remove the bond_invoice from the offer
+            unset($offer['bond_invoice']);
+            unset($offer['bond_satoshis']);
+        }
 
         // iterate through each key in the offer and set corresponding attributes
         $newOffer = new Offer();
@@ -278,20 +287,9 @@ class OfferController extends Controller
             $newOffer->save();
         }
 
-        // so we can grab the id of the new offer
-        $newOffer = Offer::where('robosatsId', $offer['robosatsId'])->first();
-        if ($bond_invoice) {
-            // create a transaction as we have the bond invoice in the response
-            $transaction = new Transaction();
-            $transaction->offer_id = $newOffer->id;
-            $transaction->bond_invoice = $bond_invoice;
-            // check if the transaction exists
-            if (Transaction::where('offer_id', $newOffer->id)->exists()) {
-                Transaction::where('offer_id', $newOffer->id)->update($transaction->toArray());
-            } else {
-                $transaction->save();
-            }
-        }
+        $offer = Offer::where('robosatsId', $offer['robosatsId'])->first();
+
+        return $offer;
     }
 
     public function calculateLargestAmount($offer, $channelBalances) {

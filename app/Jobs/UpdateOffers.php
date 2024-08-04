@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Http\Controllers\OfferController;
 use App\Models\AdminDashboard;
 use App\Models\Offer;
+use App\Models\Transaction;
 use App\WorkerClasses\Robosats;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -37,7 +38,17 @@ class UpdateOffers implements ShouldQueue
 
         // or if they are expired
         // Offer::where('expires_at', '<', now())->delete(); and the transaction also was not accepted
-        Offer::where('expires_at', '<', now())->where('accepted', false)->delete();
+        // Offer::where('expires_at', '<', now())
+        //     ->where('accepted', false)
+        //     ->delete();
+
+        // grab transactions
+        $transactions = Transaction::all();
+        // grab ids by plucking the id from the transactions
+        $ids = $transactions->pluck('offer_id')->toArray();
+        // grab offers that are not in the transactions
+        Offer::whereNotIn('id', $ids)->where('accepted', false)->where('expires_at', '<', now())->delete();
+
 
         $robosats = new Robosats();
         $response = $robosats->getBookOffers();
@@ -47,12 +58,15 @@ class UpdateOffers implements ShouldQueue
             $adminDashboard = new AdminDashboard();
         }
 
-        $negativeBuyOffers = $robosats->getNegativePremiumBuyOffers($response['buyOffers'],  $adminDashboard->buy_premium);
-        $positiveSellOffers = $robosats->getPositivePremiumSellOffers($response['sellOffers'],  $adminDashboard->sell_premium);
+        // $negativeBuyOffers = $robosats->getNegativePremiumBuyOffers($response['buyOffers'],  $adminDashboard->buy_premium);
+        // $positiveSellOffers = $robosats->getPositivePremiumSellOffers($response['sellOffers'],  $adminDashboard->sell_premium);
+        // $allOffers = $positiveSellOffers;
+
+        $allOffers = $robosats->getAllOffers($response['buyOffers'], $response['sellOffers']);
+
 
         // combine the offers
         // $allOffers = array_merge($negativeBuyOffers, $positiveSellOffers);
-        $allOffers = $positiveSellOffers;
         // grab all the offers from the database and check if they aren't in allOffers and delete them
         $dbOffers = Offer::where('robosatsIdStorage', '=', null)->get();
         foreach ($dbOffers as $dbOffer) {
@@ -70,6 +84,10 @@ class UpdateOffers implements ShouldQueue
             }
             // not found, not accept, last updated is more than 10 minutes ago || past the expiration date and not accepted
             if (!$found && !$dbOffer->accepted && $dbOffer->updated_at->diffInMinutes(now()) > 10 || $dbOffer->expires_at < now() && !$dbOffer->accepted) {
+                // check if there is a transaction associated with the offer
+                if ($dbOffer->transaction) {
+                    continue;
+                }
                 $dbOffer->delete();
             }
         }
