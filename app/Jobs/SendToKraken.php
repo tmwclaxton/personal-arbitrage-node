@@ -33,7 +33,8 @@ class SendToKraken implements ShouldQueue
         }
 
         $revolutService = new RevolutService();
-        $revolutService->sendAllGBPToAccount(env('REVOLUT_RECIPIENT_ACCOUNT_ID_KRAKEN'));
+        $revolutService->sendAllToAccount(env('REVOLUT_RECIPIENT_ACCOUNT_ID_KRAKEN_GBP'), "GBP");
+        $revolutService->sendAllToAccount(env('REVOLUT_RECIPIENT_ACCOUNT_ID_KRAKEN_EUR'), "EUR");
 
     }
 }

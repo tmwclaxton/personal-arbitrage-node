@@ -52,6 +52,12 @@ class RefreshRevolutToken implements ShouldQueue
                 $discordService->sendMessage('RevolutService: ' . $e->getMessage() );
             }
 
+            if ($accessToken == null) {
+                $discordService = new \App\Services\DiscordService();
+                $discordService->sendMessage('RevolutService: The access token returned from the Revolut API is null');
+                return;
+            }
+
             RevolutAccessToken::create([
                 'access_token' => $accessToken->getToken(),
                 'refresh_token' => $accessToken->getRefreshToken(),

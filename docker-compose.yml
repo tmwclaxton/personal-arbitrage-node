@@ -73,6 +73,16 @@ services:
             - '/dev/shm:/dev/shm'
         networks:
             - sail
+#    appium-docker-ios:
+#        image: quamotion/appium-docker-ios
+#        container_name: appium-docker-ios
+#        ports:
+#            - "4723:4723"
+#        volumes:
+#            - /var/run/usbmuxd:/var/run/usbmuxd
+#            - ~/.quamotion/:/etc/quamotion/
+#        environment:
+#            DEVELOPER_PROFILE_PASSWORD: "1" # Note: You might not need this in newer versions
 networks:
     sail:
         driver: bridge

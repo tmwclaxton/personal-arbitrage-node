@@ -198,14 +198,43 @@ Route::post('collaborative-cancel', function () {
 
 
 Route::get('/testing', function () {
+    //
+    $lightningNode = new LightningNode();
+    $kraken = new \App\Services\KrakenService();
 
-    $offer = Offer::find(405);
-    $transaction = $offer->transaction()->first();
-    $payment = Payment::where('transaction_id', $transaction->id)->first();
+    $response = $kraken->getGBPBalance();
+    $discordService = new DiscordService();
+    if ($response->isGreaterThan(BigDecimal::of('10'))) {
+        $discordService->sendMessage('Auto purchasing BTC with GBP from Kraken');
 
-    $platformEntity = json_decode($payment->platform_entity);
-    $reference = $platformEntity->reference;
-    dd(intval($reference));
+        $kraken->buyFullAmt("GBP", $kraken->getGBPBalance());
+        sleep(5);
+    }
+
+    $response = $kraken->getEURBalance();
+    $discordService = new DiscordService();
+    if ($response->isGreaterThan(BigDecimal::of('10'))) {
+        $discordService->sendMessage('Auto purchasing BTC with EUR from Kraken');
+
+        $kraken->buyFullAmt("EUR", $kraken->getEURBalance());
+        sleep(5);
+    }
+
+
+    // kraken get BTC balance
+    $btcBalance = $kraken->getBTCBalance();
+    // if BTC balance greater than 0 send to lightning node
+    if ($btcBalance->isGreaterThan(BigDecimal::of('0'))) {
+        $kraken->sendFullAmtToLightning();
+    }
+
+    sleep(5);
+    $balance = $lightningNode->getLightningWalletBalance();
+    if ($balance['localBalance'] < 600000) {
+        $discordService->sendMessage('Send money to Kraken!');
+    }
+
+    dd("testing");
 
 
 

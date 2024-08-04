@@ -111,20 +111,24 @@ class DiscordCommands implements ShouldQueue
                             Redis::del('revolut_auth_code_request');
                             break;
                         case '!getRevPayToken':
+                            Redis::del('revolut_auth_code_request');
                             $revToken = RevolutAccessToken::where('type', 'PAY')->first();
-                            $revToken->delete();
+                            if ($revToken) {
+                                $revToken->delete();
+                            }
                             $revolutService = new \App\Services\RevolutService();
                             $revArray = $revolutService->getPayToken();
-                            $discordService->sendMessage('Reset RevToken at: ' . $revArray['url']);
 
                             break;
                         case '!getRevReadToken':
+                            Redis::del('revolut_auth_code_request');
                             // delete the read token
                             $revToken = RevolutAccessToken::where('type', 'READ')->first();
-                            $revToken->delete();
+                            if ($revToken) {
+                                $revToken->delete();
+                            }
                             $revolutService = new \App\Services\RevolutService();
                             $revArray = $revolutService->getReadToken();
-                            $discordService->sendMessage('Reset RevToken at: ' . $revArray['url']);
                             break;
                         case '!chat':
                             // grab offer id then message //!chat 6960 hello?

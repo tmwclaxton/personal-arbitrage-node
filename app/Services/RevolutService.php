@@ -79,9 +79,18 @@ class RevolutService
         // check if there are any RevolutAccessToken
         if( RevolutAccessToken::where('type', $type)->count() == 0 ) {
 
-            $accessToken = $this->authProvider->getAccessToken('authorization_code', [
-                'code' => $this->adminDashboard->revolut_code
-            ]);
+            try {
+                $accessToken = $this->authProvider->getAccessToken('authorization_code', [
+                    'code' => $this->adminDashboard->revolut_code
+                ]);
+            } catch (\Exception $e) {
+                // if the code is invalid, then  delete the RevolutAccessToken
+                $this->adminDashboard->revolut_code = null;
+                $this->adminDashboard->save();
+                $discordService = new DiscordService();
+                $discordService->sendMessage('Revolut Authorization Code is invalid');
+                return ['message' => 'Authorization code is invalid'];
+            }
 
             $revolutAccessToken = RevolutAccessToken::create([
                 'type' => $type,
@@ -137,35 +146,38 @@ class RevolutService
     }
 
     public function getReadToken() {
-        return $this->getToken('READ');
+        $revArray = $this->getToken('READ');
+        if (array_key_exists('url', $revArray)) {
+            $discordService = new DiscordService();
+            $discordService->sendMessage('Reset RevToken at: ' . $revArray['url']);
+            return [];
+        }
+        return $revArray;
     }
     public function getPayToken() {
-        return $this->getToken('PAY');
+        $revArray = $this->getToken('PAY');
+        if (array_key_exists('url', $revArray)) {
+            $discordService = new DiscordService();
+            $discordService->sendMessage('Reset RevToken at: ' . $revArray['url']);
+            return [];
+        }
+        return $revArray;
     }
 
     public function currencyExchangeAll($fromCurrency, $toCurrency, $reference = null, $requestId = null, $minAmount = 5) {
         // we need two types of access tokens READ and PAY
-
-        $revArray = $this->getReadToken();
-        if (array_key_exists('url', $revArray)) {
-            $discordService = new DiscordService();
-            $discordService->sendMessage('Reset RevToken at: ' . $revArray['url']);
-            return;
-        } else {
-            $token = $revArray['access_token'];
-        }
-
-        // convert RevolutAccessToken to AccessToken
-        $accessToken = new \League\OAuth2\Client\Token\AccessToken([
-            'access_token' => $token,
-        ]);
+        $discordService = new DiscordService();
 
         try {
+            $accessToken = $this->getAccessToken($this->getReadToken());
+            if ($accessToken == null) {
+                $discordService->sendMessage('Revolut Currency Exchange Failed: Read access token is null');
+                return;
+            }
             $client = new \RevolutPHP\Client($accessToken);
             $accounts = $client->accounts->all();
         } catch (\Exception $e) {
-            $discordService = new DiscordService();
-            $discordService->sendMessage('Revolut Currency Exchange Failed: ' . $e->getMessage());
+            $discordService->sendMessage('Revolut Currency Exchange Failed Getting Accounts: ' . $e->getMessage());
             return;
         }
 
@@ -212,25 +224,17 @@ class RevolutService
         ];
 
         $token = null;
-        $revArray = $this->getPayToken();
-        if (array_key_exists('url', $revArray)) {
-            $discordService = new DiscordService();
-            $discordService->sendMessage('Reset RevToken at: ' . $revArray['url']);
+        $accessToken = $this->getAccessToken($this->getPayToken());
+        if ($accessToken == null) {
+            $discordService->sendMessage('Revolut Currency Exchange Failed: Pay access token is null');
             return;
-        } else {
-            $token = $revArray['access_token'];
         }
-        // convert RevolutAccessToken to AccessToken
-        $accessToken = new \League\OAuth2\Client\Token\AccessToken([
-            'access_token' => $token,
-        ]);
-
         try {
             $client = new \RevolutPHP\Client($accessToken);
             $response = $client->exchanges->exchange($exchange);
         } catch (\Exception $e) {
             $discordService = new DiscordService();
-            $discordService->sendMessage('Revolut Currency Exchange Failed: ' . $e->getMessage());
+            $discordService->sendMessage('Revolut Currency Exchange Failed Exchanging: ' . $e->getMessage());
             return;
         }
 
@@ -309,21 +313,15 @@ class RevolutService
         return $response;
     }
 
-    public function getGBPBalance()
+    public function getAccount($currency)
     {
-        $revArray = $this->getReadToken();
-        if (array_key_exists('url', $revArray)) {
-            $discordService = new DiscordService();
-            $discordService->sendMessage('Reset RevToken at: ' . $revArray['url']);
-            return [];
-        } else {
-            $token = $revArray['access_token'];
-        }
 
-        // convert RevolutAccessToken to AccessToken
-        $accessToken = new \League\OAuth2\Client\Token\AccessToken([
-            'access_token' => $token,
-        ]);
+        $accessToken = $this->getAccessToken($this->getReadToken());
+        if ($accessToken == null) {
+            $discordService = new DiscordService();
+            $discordService->sendMessage("Error getting $currency balance: Read access token is null");
+            return 0;
+        }
 
         $client = new \RevolutPHP\Client($accessToken);
         $accounts = $client->accounts->all();
@@ -332,57 +330,83 @@ class RevolutService
         // iterate through the accounts and grab the GBP and EUR accounts
         foreach ($accounts as $account) {
             // these must be above 0 as revolut has fake accounts or something
-            if ($account->currency == 'GBP' && $account->balance > 0) {
-                return $account->balance;
+            if ($account->currency == $currency && $account->balance > 0) {
+                return $account;
             }
         }
-        return 0;
+        return null;
     }
 
-    public function sendAllGBPToAccount($accountId) {
+    public function sendAllToAccount($counterPartyAccountId, $currency) {
         // revolut send to personal account
-        $payment = null;
-        $accessToken = new \League\OAuth2\Client\Token\AccessToken([
-            'access_token' => $this->getReadToken()['access_token']
-        ]);
+        $discordService = new DiscordService();
+        $account = $this->getAccount($currency);
+        if (!$account) {
+            // $discordService->sendMessage("No $currency account found");
+            return;
+        }
 
-        if ($this->getGBPBalance() >= 20) {
-            $discordService = new DiscordService();
-            $discordService->sendMessage('Sending ' . $this->getGBPBalance() . ' GBP to Kraken account');
+        if ($account->balance >= 20) {
+            $discordService->sendMessage("Sending " . $account->balance . " $currency to Kraken account");
+            $accessToken = $this->getAccessToken($this->getReadToken());
+            if ($accessToken == null) {
+                $discordService->sendMessage("Error sending $currency to Kraken: Read access token is null");
+                return;
+            }
             $client = new \RevolutPHP\Client($accessToken);
             $counterParties = $client->counterparties->all();
             $counterParty = null;
             foreach ($counterParties as $cp) {
-                if ($cp->id === $accountId) {
+                if ($cp->id === $counterPartyAccountId) {
                     $counterParty = $cp;
                     break;
                 }
             }
             if ($counterParty == null) {
-                $discordService->sendMessage('Counterparty not found to send GBP to');
+                $discordService->sendMessage("Counterparty not found to send $currency to");
                 return;
             }
             $payment = array(
                 "request_id" => bin2hex(random_bytes(16)),
-                "account_id" => env('REVOLUT_GBP_ACCOUNT_ID'),
+                "account_id" => $account->id,
                 "receiver" => array(
                     "counterparty_id" => $counterParty->id,
                     "account_id" => $counterParty->accounts[0]->id,
                 ),
-                "amount" => $this->getGBPBalance(),
-                "currency" => "GBP",
-                "reference" => "Store fiat as BTC in Kraken"
+                "amount" => $account->balance,
+                "currency" => $currency,
+                "reference" => "Store fiat as $currency in Kraken"
             );
-            $accessToken = new \League\OAuth2\Client\Token\AccessToken([
-                'access_token' => $this->getPayToken()['access_token']
-            ]);
+            $accessToken = $this->getAccessToken($this->getPayToken());
+            if ($accessToken == null) {
+                $discordService->sendMessage("Error sending $currency to Kraken: Pay access token is null");
+                return;
+            }
             $client = new \RevolutPHP\Client($accessToken);
+
             try {
                 $client->payments->create($payment);
             } catch (\Exception $e) {
-                $discordService->sendMessage('Error sending GBP to Kraken: ' . $e->getMessage());
+                $discordService->sendMessage("Error sending $currency to Kraken: " . $e->getMessage());
             }
 
         }
+    }
+
+    public function getAccessToken(array|string $token): ?\League\OAuth2\Client\Token\AccessToken
+    {
+        if (!is_array($token)) {
+            return null;
+        }
+
+        // if it contains a url return null
+        if (array_key_exists('url', $token)) {
+            return null;
+        }
+
+
+        return new \League\OAuth2\Client\Token\AccessToken([
+            'access_token' => $token['access_token'],
+        ]);
     }
 }

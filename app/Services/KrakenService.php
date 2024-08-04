@@ -48,6 +48,18 @@ class KrakenService
         return $response['ZGBP']->getBalance();
     }
 
+    public function getEURBalance(): BigDecimal
+    {
+        $response = $this->client->getAccountBalance();
+        return $response['ZEUR']->getBalance();
+    }
+
+    public function getUSDBalance(): BigDecimal
+    {
+        $response = $this->client->getAccountBalance();
+        return $response['ZUSD']->getBalance();
+    }
+
     public function getBTCBalance(): BigDecimal
     {
         $response = $this->client->getAccountBalance();
@@ -56,24 +68,24 @@ class KrakenService
 
 
     // convert gbp amt to btc
-    public function convertGBPToBTC($amtInGBP): BigDecimal
+    public function convertCurrencyToBTC($currency, $amtInGBP): BigDecimal
     {
         $httpResponse = Http::get('https://mempool.space/api/v1/prices');
-        $btcPrice = $httpResponse->json()['GBP'];
+        $btcPrice = $httpResponse->json()[$currency];
 
         $btcAmt = $amtInGBP / $btcPrice;
         // convert btcAmt to big decimal
         return BigDecimal::of($btcAmt);
     }
 
-    public function buyFullAmt(): \Butschster\Kraken\Responses\Entities\AddOrder\OrderAdded|\Illuminate\Http\JsonResponse
+
+    public function buyFullAmt($currency, $amount): \Butschster\Kraken\Responses\Entities\AddOrder\OrderAdded|\Illuminate\Http\JsonResponse
     {
-        $response = $this->getGBPBalance();
         // subtract 2 from the amount to account for fees  given its big decimal
-        $response = $response->minus(2);
+        $amount = $amount->minus(2);
         // dd($response);
-        $floatAmt = round($response->toFloat(), 2, PHP_ROUND_HALF_DOWN);
-        return $this->buyBitcoin($floatAmt);
+        $floatAmt = round($amount->toFloat(), 2, PHP_ROUND_HALF_DOWN);
+        return $this->buyBitcoin($floatAmt, $currency);
     }
 
     public function sendFullAmtToLightning() {
@@ -217,22 +229,29 @@ class KrakenService
     }
 
 
-    public function buyBitcoin($amtInGBP): \Butschster\Kraken\Responses\Entities\AddOrder\OrderAdded|\Illuminate\Http\JsonResponse
+    public function buyBitcoin($amount, $currency): \Butschster\Kraken\Responses\Entities\AddOrder\OrderAdded|\Illuminate\Http\JsonResponse
     {
         // if less than £6 return error as it is not enough to buy bitcoin
-        if ($amtInGBP < 6) {
+        if ($amount < 6) {
             return response()->json(['error' => 'Amount is too low to buy bitcoin'], 400);
         }
 
-        $this->discordService->sendMessage('Buying bitcoin with ' . $amtInGBP . ' GBP');
+        $this->discordService->sendMessage('Buying bitcoin with ' . $amount . ' ' . $currency);
+
+        $pairs = [
+            'GBP' => 'XXBTZGBP',
+            'EUR' => 'XXBTZEUR',
+            'USD' => 'XXBTZUSD',
+        ];
+        $selectedPair = $pairs[$currency];
 
         // buy bitcoin
         $order = new \Butschster\Kraken\Requests\AddOrderRequest(
             new \Butschster\Kraken\ValueObjects\OrderType('market'),
             new \Butschster\Kraken\ValueObjects\OrderDirection('buy'),
-            'XXBTZGBP',
+            $selectedPair
         );
-        $order->setVolume($this->convertGBPToBTC($amtInGBP));
+        $order->setVolume($this->convertCurrencyToBTC($currency, $amount));
         $orderCreation = $this->client->addOrder($order);
 
 
