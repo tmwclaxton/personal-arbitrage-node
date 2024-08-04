@@ -188,9 +188,13 @@ const showSidebar = ref(true);
                         <TextInput class="w-16 h-6" v-model="tempAdminDashboard.sell_premium"/>
                     </div>
                     <div class="flex flex-row justify-between items-center"><span
-                        class="font-bold mr-1">Buy Premium: </span>
-                        <TextInput class="w-16 h-6" v-model="tempAdminDashboard.buy_premium"/>
+                        class="font-bold mr-1">Sitting Sell Offers Count: </span>
+                        <TextInput class="w-16 h-6" v-model="tempAdminDashboard.sitting_sell_offers_count"/>
                     </div>
+                    <!--<div class="flex flex-row justify-between items-center"><span-->
+                    <!--    class="font-bold mr-1">Buy Premium: </span>-->
+                    <!--    <TextInput class="w-16 h-6" v-model="tempAdminDashboard.buy_premium"/>-->
+                    <!--</div>-->
                     <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Concurrent Transactions: </span>
                         <TextInput class="w-16 h-6" v-model="tempAdminDashboard.max_concurrent_transactions"/>
                     </div>
