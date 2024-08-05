@@ -7,15 +7,18 @@
     <div class="max-w-md p-4 mx-auto bg-white dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700 dark:shadow-lg
     rounded-xl shadow-md overflow-hidden md:max-w-2xl"  :class="{'col-span-2': showSidebar && (offer.accepted || (offer.robots && offer.robots.length > 0)), 'col-span-3': !showSidebar && (offer.accepted || (offer.robots && offer.robots.length > 0)), 'col-span-1': !offer.accepted}">
 
-        <div v-if="offer.transaction">
-            <p class="mt-2 text-zinc-500 dark:text-zinc-200 font-bold">Transaction Status: {{
-                    offer.transaction.status_message
-                }}</p>
+        <div v-if="offer.status">
+            <p class="my-2 text-zinc-500 dark:text-zinc-200 font-bold break-words">
+                Status: {{offer.status_message}}
+                <span v-if="offer.my_offer" class="text-blue-500 dark:text-blue-300">
+                    · Sitting Offer
+                </span>
+            </p>
         </div>
-        <div v-if="offer.transaction" class="border border-gray-200 dark:border-zinc-700 mt-2 mb-2"></div>
-            <div class="grid grid-cols-3  gap-1">
+        <div v-if="offer.transaction" class="border border-gray-200 dark:border-zinc-700 "></div>
+            <div class="grid grid-cols-3  gap-1 p-1">
 
-                    <danger-button v-on:click="autoRun"
+                    <danger-button v-on:click="autoRun" v-if="!offer.accepted && !offer.my_offer"
                                      :disabled="offer.job_locked || offer.accepted"
                                    class="w-full text-center  h-10 break-words disabled:opacity-50">
                         <p class="text-center w-full">Auto Run</p>
@@ -28,14 +31,14 @@
                     </primary-button>
 
                     <primary-button v-on:click="acceptOffer"
-                                    v-if="!offer.accepted"
+                                    v-if="!offer.accepted && !offer.my_offer"
                                     class="w-full text-center  h-10 break-words ">
                         <p class="text-center w-full">Accept</p>
                     </primary-button>
 
                     <primary-button class="w-full text-center  h-10 break-words "
                                     v-on:click="payBond"
-                                    v-if="offer.accepted && offer.status === 3"
+                                    v-if="offer.accepted && offer.status === 3 && !offer.my_offer">
                     >
                         <p class="text-center w-full">Bond</p>
                     </primary-button>
@@ -72,7 +75,7 @@
                     </danger-button>
                 </div>
 
-            <div class="border-b border-gray-200 dark:border-zinc-700 my-2 "></div>
+            <div class="border-b border-gray-200 dark:border-zinc-700 mb-2 "></div>
             <div class=" flex flew-row gap-4">
 
 

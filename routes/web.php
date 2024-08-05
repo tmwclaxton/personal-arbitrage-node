@@ -199,6 +199,7 @@ Route::post('collaborative-cancel', function () {
 
 Route::get('/testing', function () {
 
+    //!:TODO we need to figure out how to set the accepted amount and other shit inorder for auto accept to work
     $robosats = new Robosats();
     $providers = ['satstralia', 'temple', 'lake', 'veneto'];
     $response = $robosats->createSellOffer(
@@ -208,7 +209,7 @@ Route::get('/testing', function () {
         false,
         14,
         "Revolut",
-        3,
+        0.5,
         null
     );
 

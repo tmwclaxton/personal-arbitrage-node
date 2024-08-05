@@ -142,8 +142,10 @@ class Robosats
             $this->headers["Authorization"] = "Token " . $tokenSha256;
             $this->headers["Priority"] = "u=1";
             if ($offer->status < 3) {
-                $offer->robotTokenBackup = $offer->robots()->first()->token;
-                $offer->save();
+                if ($offer->robots()->first()) {
+                    $offer->robotTokenBackup = $offer->robots()->first()->token;
+                    $offer->save();
+                }
             }
             // remove new lines and \r
         }
@@ -727,10 +729,8 @@ class Robosats
     }
 
 
-    public function updateOfferStatus($offer)
+    public function updateOfferStatus($offer): Offer
     {
-        /// this doesn't work very well
-        //http://192.168.0.18:12596/mainnet/satstralia/api/order/?order_id=10163
         $url = $this->host . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
         $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->get($url);
         $response = json_decode($response->body(), true);
@@ -747,12 +747,17 @@ class Robosats
         // create a transaction as we have the bond invoice in the response
         // check if the transaction exists
 
-        $transaction = new Transaction();
-        $transaction->offer_id = $offer->id;
-        $transaction->bond_invoice = $response['bond_invoice'];
-        $transaction->save();
+        if (array_key_exists('bond_invoice', $response)) {
+            $transaction = $offer->transaction()->first();
+            if ($transaction == null) {
+                $transaction = new Transaction();
+                $transaction->offer_id = $offer->id;
+            }
+            $transaction->bond_invoice = $response['bond_invoice'];
+            $transaction->save();
+        }
 
-        return $response;
+        return $offer;
     }
 
     // update status of transaction
@@ -784,14 +789,6 @@ class Robosats
         }
         if (isset($response['status'])) {
             $offer->status = $response['status'];
-        }
-        if ($response['status'] == 1) {
-            if ($offer->transaction()) {
-                // delete transaction
-                // $transaction->delete();
-                // set accepted to false
-                $offer->accepted = false;
-            }
         }
         if (isset($response['status_message'])) {
             $offer->status_message = $response['status_message'];
@@ -1005,7 +1002,9 @@ class Robosats
         $tempOffer->maker = $response['maker'];
         $tempOffer->save();
 
-        $this->updateOfferStatus($tempOffer);
+        $offer = $this->updateOfferStatus($tempOffer);
+        $offer->my_offer = true;
+        $offer->save();
 
 
 

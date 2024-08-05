@@ -45,8 +45,11 @@ class PayBond implements ShouldQueue
             $transaction = Transaction::where('offer_id', $this->offer->id)->first();
             $invoice = $transaction->bond_invoice;
             $lightningNode = new LightningNode();
-            if ($this->offer->status === 3 || ($this->offer->is_maker && $this->offer->status === 0)) {
+            if ($this->offer->status === 3 && !$this->offer->my_offer || ($this->offer->is_maker && $this->offer->status === 0)) {
                 (new DiscordService)->sendMessage('Paid bond for offer ' . $this->offer->robosatsId);
+                $offer = $this->offer;
+                $offer->accepted = true;
+                $offer->save();
                 $lightningNode->payInvoice($invoice);
             }
         } else {
