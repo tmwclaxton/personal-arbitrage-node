@@ -86,6 +86,12 @@ class UpdateOffers implements ShouldQueue
             if (!$found && !$dbOffer->accepted && $dbOffer->updated_at->diffInMinutes(now()) > 10 || $dbOffer->expires_at < now() && !$dbOffer->accepted) {
                 // check if there is a transaction associated with the offer
                 if ($dbOffer->transaction) {
+                    $dbOffer->status = 5;
+                    $dbOffer->status_message = 'Offer expired but has a transaction';
+                    $dbOffer->save();
+                    $dbOffer->transaction->status = 5;
+                    $dbOffer->transaction->status_message = 'Offer expired but has a transaction';
+                    $dbOffer->transaction->save();
                     continue;
                 }
                 $dbOffer->delete();

@@ -15,7 +15,10 @@
                 </span>
             </p>
         </div>
-        <div v-if="offer.transaction" class="border border-gray-200 dark:border-zinc-700 "></div>
+        <!--0, 6, 7, 9, 10-->
+        <div v-if="offer.transaction && (!offer.my_offer &&
+         (offer.status === 0 || offer.status === 6 || offer.status === 7 || offer.status === 9 || offer.status === 10))"
+             class="border border-gray-200 dark:border-zinc-700 "></div>
             <div class="grid grid-cols-3  gap-1 p-1">
 
                     <danger-button v-on:click="autoRun" v-if="!offer.accepted && !offer.my_offer"
@@ -38,8 +41,7 @@
 
                     <primary-button class="w-full text-center  h-10 break-words "
                                     v-on:click="payBond"
-                                    v-if="offer.accepted && offer.status === 3 && !offer.my_offer">
-                    >
+                                    v-if="offer.accepted && offer.status === 3 || offer.my_offer && offer.status === 0">
                         <p class="text-center w-full">Bond</p>
                     </primary-button>
 

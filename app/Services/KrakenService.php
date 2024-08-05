@@ -98,7 +98,7 @@ class KrakenService
         // make btc balance a big decimal
         $btc = $btcBalance->jsonSerialize();
         // ensure satoshis is an integer
-        $satoshis = intval($btc * 100000000);
+        $satoshis = intval($btc * 100000000) - 2000; // possible fees?
         $lightningNode = new LightningNode();
         $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Withdrawal of ' . $btcBalance . ' BTC at ' . Carbon::now()->toDateTimeString());
 

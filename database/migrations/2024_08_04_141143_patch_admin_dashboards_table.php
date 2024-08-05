@@ -19,6 +19,8 @@ return new class extends Migration
             $table->integer('sitting_sell_offers_count')->default(0);
             $table->float('sitting_sell_offers_min_premium')->nullable(0);
             $table->float('sitting_sell_offers_max_premium')->nullable(0);
+            $table->float('sitting_sell_offers_set_aside')->nullable(0);
+            $table->boolean('autoCreate')->default(false);
         });
     }
 

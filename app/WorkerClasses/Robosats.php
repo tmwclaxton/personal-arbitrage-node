@@ -992,6 +992,12 @@ class Robosats
 
         // if the response is null or failed
         if ($response == null || !array_key_exists('id', $response)) {
+            // delete the temp offer
+            $tempOffer->delete();
+            // delete the robots
+            foreach ($robots as $robot) {
+                $robot->delete();
+            }
             return $response;
         }
 

@@ -124,3 +124,8 @@ Schedule::command('get:robosats-messages')
 Schedule::command('auto:confirm-final')
     ->description('auto confirm final')
     ->everyMinute()->withoutOverlapping(1);
+
+// sitting offer detailer
+Schedule::command('app:sitting-offer-detailer')
+    ->description('sitting offer detailer')
+    ->everyMinute()->withoutOverlapping(1);

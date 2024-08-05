@@ -201,15 +201,15 @@ Route::get('/testing', function () {
 
     //!:TODO we need to figure out how to set the accepted amount and other shit inorder for auto accept to work
     $robosats = new Robosats();
-    $providers = ['satstralia', 'temple', 'lake', 'veneto'];
+    $providers = ['satstralia','lake']; //veneto  'temple',
     $response = $robosats->createSellOffer(
         "EUR",
         20,
         $providers[array_rand($providers)],
         false,
-        14,
+        20,
         "Revolut",
-        0.5,
+        2,
         null
     );
 
