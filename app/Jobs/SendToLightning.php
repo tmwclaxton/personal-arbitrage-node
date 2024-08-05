@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\AdminDashboard;
 use Brick\Math\BigDecimal;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -26,6 +27,13 @@ class SendToLightning implements ShouldQueue
      */
     public function handle(): void
     {
+
+        $adminDashboard = AdminDashboard::all()->first();
+        // check if autoTopUp is enabled
+        if (!$adminDashboard->autoTopup || $adminDashboard->panicButton) {
+            return;
+        }
+
         $lightningNode = new \App\WorkerClasses\LightningNode();
         $kraken = new \App\Services\KrakenService();
         // kraken get BTC balance

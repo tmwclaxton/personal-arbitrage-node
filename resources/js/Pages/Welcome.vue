@@ -79,7 +79,7 @@ const clicked = () => {
 }
 
 const panicButtonToggle = () => {
-    tempAdminDashboard.panicButton = !tempAdminDashboard.panicButton;
+    tempAdminDashboard.value.panicButton = !tempAdminDashboard.value.panicButton;
     console.log('panic button toggled');
     clicked();
     setTimeout(() => {

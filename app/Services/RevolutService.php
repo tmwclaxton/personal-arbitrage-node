@@ -337,7 +337,7 @@ class RevolutService
         return null;
     }
 
-    public function sendAllToAccount($counterPartyAccountId, $currency) {
+    public function sendAllToAccount($counterPartyAccountId, $currency, $reference = "Store fiat as BTC in Kraken" ) {
         // revolut send to personal account
         $discordService = new DiscordService();
         $account = $this->getAccount($currency);
@@ -375,7 +375,7 @@ class RevolutService
                 ),
                 "amount" => $account->balance,
                 "currency" => $currency,
-                "reference" => "Store fiat as BTC in Kraken"
+                "reference" => $reference,
             );
             $accessToken = $this->getAccessToken($this->getPayToken());
             if ($accessToken == null) {
