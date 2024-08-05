@@ -550,6 +550,7 @@ class Robosats
         }
         if ($response == null || $response->failed()) {
             $transaction->delete();
+            $offer->accepted = false;
             (new DiscordService)->sendMessage('Failed to accept offer' . $response->body());
             // {"bad_request":"You are not a participant in this order"}
             if ($response->json('bad_request') == 'You are not a participant in this order') {
