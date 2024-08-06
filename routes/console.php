@@ -105,7 +105,7 @@ Schedule::command('kraken:auto-purchaser')
 // kraken auto sender
 Schedule::command('kraken:send-money')
     ->description('Kraken send money from Revolut and Wise')
-    ->everyTenMinutes()->withoutOverlapping(1);
+    ->everyThirtyMinutes()->withoutOverlapping(1);
 
 Schedule::command('btc:purchase-detailer')
     ->description('btc purchase detailer')
