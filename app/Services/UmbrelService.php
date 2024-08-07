@@ -18,6 +18,11 @@ class UmbrelService
         $hostname = env('UMBREL_URL');
         $this->ip = gethostbyname($hostname);
 
+        // if ip is not found i.e contains letters
+        if (filter_var($this->ip, FILTER_VALIDATE_IP) === false) {
+            $this->ip = env('UMBREL_IP');
+        }
+
     }
 
     // ping the umbrel server
