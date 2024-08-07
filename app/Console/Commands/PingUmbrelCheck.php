@@ -12,14 +12,14 @@ class PingUmbrelCheck extends Command
      *
      * @var string
      */
-    protected $signature = 'app:ping-umbrel-check';
+    protected $signature = 'app:umbrel-token-reset';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Check if proxy token is still valid';
+    protected $description = 'Reset the umbrel token';
 
     /**
      * Execute the console command.
@@ -27,6 +27,6 @@ class PingUmbrelCheck extends Command
     public function handle()
     {
         $umbrelService = new UmbrelService();
-        $umbrelService->ping();
+        $umbrelService->resetProxyToken();
     }
 }

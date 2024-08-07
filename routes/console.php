@@ -122,6 +122,6 @@ Schedule::command('auto:confirm-final')
     ->everyMinute()->withoutOverlapping(1);
 
 // ping umbrel check
-Schedule::command('app:ping-umbrel-check')
-    ->description('ping umbrel check')
-    ->everyTenMinutes()->withoutOverlapping(1);
+Schedule::command('app:umbrel-token-reset')
+    ->description('reset umbrel token')
+    ->everyThirtyMinutes()->withoutOverlapping(1);

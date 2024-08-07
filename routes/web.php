@@ -201,7 +201,7 @@ Route::get('/testing', function () {
     //
 
     $umbrelService = new \App\Services\UmbrelService();
-    $response = $umbrelService->ping();
+    $response = $umbrelService->resetProxyToken();
     dd($response);
 
     dd("testing");
