@@ -204,13 +204,25 @@ class SeleniumService
         return [$buttons, $buttonValues];
     }
 
-    public function clickButtonsWithText(mixed $buttons, mixed $buttonValues, array $texts): int
+    public function clickButtonsWithText(mixed $buttons, mixed $buttonValues, array $texts, bool $subString = false): int
     {
         $clicks = 0;
         // try {
             foreach ($texts as $text) {
                 // $indexes = array_search($text, array_column($buttonValues, 'text'));
-                $indexes = array_keys(array_column($buttonValues, 'text'), $text);
+                if ($subString) {
+                    // if substring is true, iterate through all buttons and check if the text is in the button text
+                    $indexes = [];
+                    foreach ($buttonValues as $index => $buttonValue) {
+                        if (str_contains($buttonValue['text'], $text)) {
+                            $indexes[] = $index;
+                        }
+                    }
+                } else {
+                    $indexes = array_keys(array_column($buttonValues, 'text'), $text);
+                }
+
+
                 foreach ($indexes as $index) {
                     $webDriverBy = WebDriverBy::id($buttons[$index]->getAttribute('id'));
                     // check if button is clickable
@@ -304,7 +316,16 @@ class SeleniumService
             $this->driver->executeScript("window.scrollTo(0," . rand(0, 20) . ")");
 
             $buttons = $this->getButtons();
+            // click confirm code button
+            $this->clickButtonsWithText($buttons[0], $buttons[1], ["Confirm code"]);
+
+            sleep(5);
+
+            $buttons = $this->getButtons();
+            $this->clickButtonsWithText($buttons[0], $buttons[1], ["GBP account ending in 8210"], true);
+
             dd($buttons);
+
 
             $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(".BalanceDetailsCard_balanceCard:nth-child(1) .np-text-body-default"))->click();
             $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(".css-rz0j7z:nth-child(3) .btn"))->click();
@@ -332,5 +353,7 @@ class SeleniumService
         // $builder = new \Facebook\WebDriver\Interactions\Actions($this->driver);
         // $builder->moveToElement($element, 0, 0)->perform();
     }
+
+
 
 }
