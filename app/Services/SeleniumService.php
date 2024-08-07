@@ -11,6 +11,7 @@ use Facebook\WebDriver\WebDriverExpectedCondition;
 use Facebook\WebDriver\WebDriverKeys;
 use Facebook\WebDriver\WebDriverPlatform;
 use Illuminate\Support\Carbon;
+use OTPHP\TOTP;
 
 class SeleniumService
 {
@@ -41,7 +42,7 @@ class SeleniumService
         return $this->driver;
     }
 
-    public function signin($krakenService, $url = 'https://www.kraken.com/sign-in'): void
+    public function signinKraken($krakenService, $url = 'https://www.kraken.com/sign-in'): void
     {
         try {
 
@@ -115,7 +116,7 @@ class SeleniumService
         }
     }
 
-    public function approveDevice(): \Illuminate\Http\JsonResponse
+    public function approveDeviceKraken(): \Illuminate\Http\JsonResponse
     {
         try {
             // set window size
@@ -179,20 +180,6 @@ class SeleniumService
         $this->linkUsed = $link;
 
         return $link;
-    }
-
-    // get cookies
-    public function getCookies(): array
-    {
-        return $this->driver->manage()->getCookies();
-    }
-
-    // set cookies
-    public function setCookies($cookies): void
-    {
-        foreach ($cookies as $cookie) {
-            $this->driver->manage()->addCookie($cookie);
-        }
     }
 
     public function getButtons()
@@ -274,6 +261,76 @@ class SeleniumService
             }
         }
 
+    }
+
+    public function sendGBPWiseToRevolut($amt, $reference) {
+        $wiseService = new WiseService();
+        $gbpBal = $wiseService->getGBPBalance();
+        if ($gbpBal < $amt || $gbpBal < 1) {
+            $discordService = new DiscordService();
+            $discordService->sendMessage('Not enough GBP in Wise account to send to Revolut.');
+            return;
+        }
+        try {
+            // set window size
+            $this->driver->manage()->window()->setSize(new WebDriverDimension(1920, 1080));
+            $this->driver->get("https://wise.com/send#/contact-beta/existing?balanceCurrency=GBP&balanceId=93380830");
+
+            $this->driver->executeScript("window.scrollTo(0," . rand(0, 20) . ")");
+            $buttons = $this->getButtons();
+            // click the accept button
+            sleep(1);
+            $this->clickButtonsWithText($buttons[0], $buttons[1], ["Accept"]);
+            sleep(1);
+
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::id("email"))->click();
+            sleep(1);
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::id("email"))->sendKeys(env('WISE_EMAIL'));
+
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::id("password"))->click();
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::id("password"))->click();
+            sleep(1);
+            $this->driver->executeScript("window.scrollTo(0," . rand(0, 20) . ")");
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::id("password"))->sendKeys(env('WISE_PASSWORD'));
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(".btn-block"))->click();
+            sleep(8);
+            $otp = TOTP::createFromSecret(env("WISE_OTP_KEY"));
+            // id changes every time so grab input by classes "form-control" & "plain-code-input"
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(".form-control"))->click();
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(".form-control"))->sendKeys($otp->now());
+            sleep(5);
+
+
+            $this->driver->executeScript("window.scrollTo(0," . rand(0, 20) . ")");
+
+            $buttons = $this->getButtons();
+            dd($buttons);
+
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(".BalanceDetailsCard_balanceCard:nth-child(1) .np-text-body-default"))->click();
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(".css-rz0j7z:nth-child(3) .btn"))->click();
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(".np-option:nth-child(3) .np-text-body-default"))->click();
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector("#source > #source"))->click();
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector("#source > #source"))->sendKeys("1");
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(".btn-block"))->click();
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::id("paymentReference"))->click();
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::id("paymentReference"))->sendKeys("reference");
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(".btn"))->click();
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::id("password"))->click();
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::id("password"))->sendKeys("vpQ:cw?8bD8Gn}H");
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(".btn-block"))->click();
+        } catch (\Exception $e) {
+            $this->driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
+            $source = $this->driver->getPageSource();
+            $this->driver->quit();
+            dd($source, $e);
+        }
+
+        // $element = $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(".btn-block"));
+        // $builder = new \Facebook\WebDriver\Interactions\Actions($this->driver);
+        // $builder->moveToElement($element)->perform();
+        // $element = $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::tagName("body"));
+        // $builder = new \Facebook\WebDriver\Interactions\Actions($this->driver);
+        // $builder->moveToElement($element, 0, 0)->perform();
     }
 
 }

@@ -58,17 +58,22 @@ class WiseService
         $this->client = new \TransferWise\Client(
             [
                 "token" => env('WISE_API_KEY'),
-                "profile_id" => "55698621",
+                "profile_id" => env('WISE_PROFILE_ID'),
             ]
         );
 
-        $profiles = $this->client->profiles->all();
-        $profileID = $profiles[0]['id'];
-        $this->profileID = $profileID;
+        // $profiles = $this->client->profiles->all();
+        // $profileID = $profiles[0]['id'];
+        $this->profileID = env('WISE_PROFILE_ID');
     }
 
     public function getClient() {
         return $this->client;
+    }
+
+    public function getProfile($profileId) {
+        // GET /v2/profiles/{{profileId}}
+        return $this->_makeRequest('GET', "/v1/me");
     }
 
     /**

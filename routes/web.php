@@ -198,91 +198,9 @@ Route::post('collaborative-cancel', function () {
 
 
 Route::get('/testing', function () {
-    //
 
-    $umbrelService = new \App\Services\UmbrelService();
-    $response = $umbrelService->resetProxyToken();
-    dd($response);
-
-    dd("testing");
-
-
-
-    // $seleniumService = new \App\Services\SeleniumService();
-    // dd($seleniumService->getLinkFromLastEmail());
-
-    // $response = $krakenService->getClient()->getAccountBalance();
-    // dd($response);
-    $wiseService = new WiseService();
-
-    $profiles = $wiseService->getClient()->profiles->all();
-
-    $wiseService = new \App\Services\WiseService();
-    $response = $wiseService->getActivities($profiles[0]['id']);
-    $activities = $response['activities'];
-    dd($activities);
-    $kraken = new \App\Services\KrakenService();
-    $response = $kraken->getGBPBalance();
-    dd($response);
-
-
-    dd("testing");
-
-
-
-
-
-
-
-
-
-
-    // $revolutService = new RevolutService();
-    // $revolutService->currencyExchangeAll("EUR", "GBP");
-    // dd($revolutService->getGBPBalance());
-    // wise send to personal revolut account
-    $payment = null;
-    $wiseService = new \App\Services\WiseService();
-
-    // $gbpAccount = $wiseService->getGBPAccount();
-    // dd($gbpAccount);
-
-    // grab accounts
-    $accounts = $wiseService->getBalances();
-    $gbpAccount = null;
-    foreach ($accounts as $account) {
-        if ($account['currency'] == 'GBP') {
-            $gbpAccount = $account;
-        }
-    }
-
-    //wise delete all transfers
-    $transfers = $wiseService->getClient()->transfers->list(['offset' => 0, 'limit' => 100]);
-
-    foreach ($transfers as $transfer) {
-        if ($transfer['reference'] == "Send to Revolut" && $transfer['status'] != "cancelled") {
-            $wiseService->getClient()->transfers->cancel($transfer['id']);
-        }
-    }
-    // dd($transfers);
-
-
-    $recipients = $wiseService->getRecipientAccounts("GBP");
-
-    foreach ($recipients['content'] as $account) {
-        if ($account['id'] == env('WISE_RECIPIENT_ID_FOR_REVOLUT')) {
-
-            // $quote = $wiseService->createQuote("GBP", $wiseService->getGBPBalance(), $gbpAccount['id'], "GBP", $account['id'], "MOVING_MONEY_BETWEEN_OWN_ACCOUNTS");
-            $quote = $wiseService->createQuote("GBP", 4, $gbpAccount['id'], "GBP", $account['id'], "", "BANK_TRANSFER");
-            $transfer = $wiseService->transferToRecipient($quote['id'], $account['id'], "Send to Revolut");
-            $fundTransfer = $wiseService->fundTransfer($transfer['id']);
-            dd($fundTransfer);
-        }
-    }
-
-
-
-
+    $seleniumService = new \App\Services\SeleniumService();
+    $seleniumService->sendGBPWiseToRevolut(1, 'Send to Revolut Account');
 
 })->name('testing');
 

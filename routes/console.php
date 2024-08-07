@@ -68,14 +68,14 @@ Schedule::command('app:warning-system')
     ->everyMinute()->withoutOverlapping(1);
 
 // refresh revolut token
-Schedule::command('refresh:revolut-token')
-    ->description('refresh revolut token')
-    ->everyThreeMinutes()->withoutOverlapping(1);
+// Schedule::command('refresh:revolut-token')
+//     ->description('refresh revolut token')
+//     ->everyThreeMinutes()->withoutOverlapping(1);
 
 // every minute trigger a revolut payment listener job
-Schedule::command('revolut:payment-listener')
-    ->description('revolut payment listener')
-    ->everyMinute()->withoutOverlapping(1);
+// Schedule::command('revolut:payment-listener')
+//     ->description('revolut payment listener')
+//     ->everyMinute()->withoutOverlapping(1);
 
 // every minute trigger a revolut payment listener job
 Schedule::command('wise:payment-listener')
