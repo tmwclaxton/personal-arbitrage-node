@@ -324,21 +324,77 @@ class SeleniumService
             $buttons = $this->getButtons();
             $this->clickButtonsWithText($buttons[0], $buttons[1], ["GBP account ending in 8210"], true);
 
-            dd($buttons);
+            sleep(5);
+
+            // grab all inputs on the page
+            $inputs = $this->driver->findElements(WebDriverBy::tagName('input'));
+            // iterate through inputs for one with an id of "source"
+            $sourceInput = null;
+            $targetInput = null;
+            foreach ($inputs as $input) {
+                if ($input->getAttribute('id') === 'source') {
+                    $sourceInput = $input;
+                }
+                if ($input->getAttribute('id') === 'target') {
+                    $targetInput = $input;
+                }
+            }
+
+            // click the source input
+            $sourceInput->click();
+            // send the amount to the source input
+            $sourceInput->sendKeys($amt);
+
+            sleep(2);
+
+            // click the target input
+            // $targetInput->click();
+            // // send the reference to the target input
+            // $targetInput->sendKeys($reference);
+
+            // list all buttons
+            $buttons = $this->getButtons();
+            // click the Continue button
+            $this->clickButtonsWithText($buttons[0], $buttons[1], ["Continue"]);
+
+            sleep(3);
+
+            // grab input by id paymentReference
+            $paymentReference = $this->driver->findElement(WebDriverBy::id('paymentReference'));
+            // click the payment reference input
+            $paymentReference->click();
+            // send the reference to the payment reference input
+            $paymentReference->sendKeys($reference);
+
+            sleep(1);
+
+            // scroll to the bottom of the page
+            $this->driver->executeScript("window.scrollTo(0,document.body.scrollHeight)");
+
+            sleep(2);
+
+            //list all buttons
+            $buttons = $this->getButtons();
+            // click the Confirm and send button
+            $this->clickButtonsWithText($buttons[0], $buttons[1], ["Confirm and send"]);
+
+            sleep(3);
+
+            // grab input by id password
+            $password = $this->driver->findElement(WebDriverBy::id('password'));
+            // click the password input
+            $password->click();
+            // send the password to the password input
+            $password->sendKeys(env('WISE_PASSWORD'));
+
+            sleep(2);
+
+            // list all buttons
+            $buttons = $this->getButtons();
+            // click the Done button
+            $this->clickButtonsWithText($buttons[0], $buttons[1], ["Done"]);
 
 
-            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(".BalanceDetailsCard_balanceCard:nth-child(1) .np-text-body-default"))->click();
-            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(".css-rz0j7z:nth-child(3) .btn"))->click();
-            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(".np-option:nth-child(3) .np-text-body-default"))->click();
-            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector("#source > #source"))->click();
-            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector("#source > #source"))->sendKeys("1");
-            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(".btn-block"))->click();
-            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::id("paymentReference"))->click();
-            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::id("paymentReference"))->sendKeys("reference");
-            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(".btn"))->click();
-            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::id("password"))->click();
-            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::id("password"))->sendKeys("vpQ:cw?8bD8Gn}H");
-            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(".btn-block"))->click();
         } catch (\Exception $e) {
             $this->driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
             $source = $this->driver->getPageSource();
