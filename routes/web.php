@@ -200,7 +200,7 @@ Route::post('collaborative-cancel', function () {
 Route::get('/testing', function () {
 
     $seleniumService = new \App\Services\SeleniumService();
-    $seleniumService->sendGBPWiseToRevolut(1, 'Send to Revolut Account');
+    $seleniumService->sendGBPWiseToRevolut(5, 'WiseTransfer');
 
 })->name('testing');
 

@@ -363,7 +363,8 @@ class SeleniumService
             $paymentReference = $this->driver->findElement(WebDriverBy::id('paymentReference'));
             // click the payment reference input
             $paymentReference->click();
-            // send the reference to the payment reference input
+            // send the reference to the payment reference input str limit 18
+            $reference = substr($reference, 0, 18);
             $paymentReference->sendKeys($reference);
 
             sleep(1);
