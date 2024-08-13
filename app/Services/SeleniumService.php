@@ -15,6 +15,15 @@ use OTPHP\TOTP;
 
 class SeleniumService
 {
+
+    /**
+     *   ***DEPRECATION NOTICE***
+     *
+     *   This class will be deprecated in favour of using the suave container
+     *
+     **/
+
+
     private RemoteWebDriver $driver;
     public string $linkUsed;
     public function __construct()
