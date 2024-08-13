@@ -11,9 +11,19 @@ use Facebook\WebDriver\WebDriverExpectedCondition;
 use Facebook\WebDriver\WebDriverKeys;
 use Facebook\WebDriver\WebDriverPlatform;
 use Illuminate\Support\Carbon;
+use OTPHP\TOTP;
 
 class SeleniumService
 {
+
+    /**
+     *   ***DEPRECATION NOTICE***
+     *
+     *   This class will be deprecated in favour of using the suave container
+     *
+     **/
+
+
     private RemoteWebDriver $driver;
     public string $linkUsed;
     public function __construct()
@@ -31,6 +41,191 @@ class SeleniumService
         // $this->driver->get('https://www.kraken.com/sign-in');
     }
 
+
+    public function sendGBPWiseToRevolut($amt, $reference) {
+
+        try {
+            // set window size
+            $this->driver->manage()->window()->setSize(new WebDriverDimension(1920, 1080));
+            $this->driver->get("https://wise.com/send#/contact-beta/existing?balanceCurrency=GBP&balanceId=93380830");
+
+            $this->driver->executeScript("window.scrollTo(0," . rand(0, 20) . ")");
+            $buttons = $this->getButtons();
+            // click the accept button
+            sleep(1);
+            $this->clickButtonsWithText($buttons[0], $buttons[1], ["Accept"]);
+            sleep(1);
+
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::id("email"))->click();
+            sleep(1);
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::id("email"))->sendKeys(env('WISE_EMAIL'));
+
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::id("password"))->click();
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::id("password"))->click();
+            sleep(1);
+            $this->driver->executeScript("window.scrollTo(0," . rand(0, 20) . ")");
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::id("password"))->sendKeys(env('WISE_PASSWORD'));
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(".btn-block"))->click();
+            sleep(8);
+            $otp = TOTP::createFromSecret(env("WISE_OTP_KEY"));
+            // id changes every time so grab input by classes "form-control" & "plain-code-input"
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(".form-control"))->click();
+            $this->driver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(".form-control"))->sendKeys($otp->now());
+            sleep(5);
+
+
+            $this->driver->executeScript("window.scrollTo(0," . rand(0, 20) . ")");
+
+            $buttons = $this->getButtons();
+            // click confirm code button
+            $this->clickButtonsWithText($buttons[0], $buttons[1], ["Confirm code"]);
+
+            sleep(5);
+
+            $buttons = $this->getButtons();
+            $this->clickButtonsWithText($buttons[0], $buttons[1], ["GBP account ending in 8210"], true);
+
+            sleep(5);
+
+            // grab all inputs on the page
+            $inputs = $this->driver->findElements(WebDriverBy::tagName('input'));
+            // iterate through inputs for one with an id of "source"
+            $sourceInput = null;
+            $targetInput = null;
+            foreach ($inputs as $input) {
+                if ($input->getAttribute('id') === 'source') {
+                    $sourceInput = $input;
+                }
+                if ($input->getAttribute('id') === 'target') {
+                    $targetInput = $input;
+                }
+            }
+
+            // click the source input
+            $sourceInput->click();
+            // send the amount to the source input
+            $sourceInput->sendKeys($amt);
+
+            sleep(2);
+
+            // click the target input
+            // $targetInput->click();
+            // // send the reference to the target input
+            // $targetInput->sendKeys($reference);
+
+            // list all buttons
+            $buttons = $this->getButtons();
+            // click the Continue button
+            $this->clickButtonsWithText($buttons[0], $buttons[1], ["Continue"]);
+
+            sleep(3);
+
+            // grab input by id paymentReference
+            $paymentReference = $this->driver->findElement(WebDriverBy::id('paymentReference'));
+            // click the payment reference input
+            $paymentReference->click();
+            // send the reference to the payment reference input str limit 18
+            $reference = substr($reference, 0, 18);
+            $paymentReference->sendKeys($reference);
+
+            sleep(1);
+
+            // scroll to the bottom of the page
+            $this->driver->executeScript("window.scrollTo(0,document.body.scrollHeight)");
+
+            sleep(2);
+
+            //list all buttons
+            $buttons = $this->getButtons();
+            // click the Confirm and send button
+            $this->clickButtonsWithText($buttons[0], $buttons[1], ["Confirm and send"]);
+
+            sleep(3);
+
+            // grab input by id password
+            $password = $this->driver->findElement(WebDriverBy::id('password'));
+            // click the password input
+            $password->click();
+            // send the password to the password input
+            $password->sendKeys(env('WISE_PASSWORD'));
+
+            sleep(2);
+
+            // list all buttons
+            $buttons = $this->getButtons();
+            // click the Done button
+            $this->clickButtonsWithText($buttons[0], $buttons[1], ["Done"]);
+
+
+        } catch (\Exception $e) {
+            $this->driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
+            $source = $this->driver->getPageSource();
+            $this->driver->quit();
+            dd($source, $e);
+        }
+
+    }
+
+    public function getButtons()
+    {
+        // dump all buttons
+        $buttons = $this->driver->findElements(WebDriverBy::tagName('button'));
+        // foreach button grab the text inside it
+        $buttonValues = [];
+        foreach ($buttons as $button) {
+            $saveSpans = [];
+            $text = $button->getText();
+            // check if the button has any spans inside it
+            if (count($button->findElements(WebDriverBy::tagName('span'))) > 0) {
+                $spans = $button->findElements(WebDriverBy::tagName('span'));
+                foreach ($spans as $span) {
+                    $saveSpans[] = $span->getText();
+                }
+            }
+            $buttonValues[] = ['text' => $text, 'spans' => $saveSpans];
+        }
+
+        return [$buttons, $buttonValues];
+    }
+
+    public function clickButtonsWithText(mixed $buttons, mixed $buttonValues, array $texts, bool $subString = false): int
+    {
+        $clicks = 0;
+        // try {
+        foreach ($texts as $text) {
+            // $indexes = array_search($text, array_column($buttonValues, 'text'));
+            if ($subString) {
+                // if substring is true, iterate through all buttons and check if the text is in the button text
+                $indexes = [];
+                foreach ($buttonValues as $index => $buttonValue) {
+                    if (str_contains($buttonValue['text'], $text)) {
+                        $indexes[] = $index;
+                    }
+                }
+            } else {
+                $indexes = array_keys(array_column($buttonValues, 'text'), $text);
+            }
+
+
+            foreach ($indexes as $index) {
+                $webDriverBy = WebDriverBy::id($buttons[$index]->getAttribute('id'));
+                // check if button is clickable
+                if ($buttons[$index]->isEnabled() && $buttons[$index]->isDisplayed()
+                    // && WebDriverExpectedCondition::elementToBeClickable($webDriverBy)
+                    && WebDriverExpectedCondition::visibilityOfElementLocated($webDriverBy)
+                ) {
+                    $buttons[$index]->click();
+                    $clicks++;
+                    sleep(1);
+                    break;
+                }
+
+            }
+        }
+
+        return $clicks;
+    }
+
     public function __destruct()
     {
         $this->driver->quit();
@@ -41,7 +236,7 @@ class SeleniumService
         return $this->driver;
     }
 
-    public function signin($krakenService, $url = 'https://www.kraken.com/sign-in'): void
+    public function signinKraken($krakenService, $url = 'https://www.kraken.com/sign-in'): void
     {
         try {
 
@@ -115,7 +310,7 @@ class SeleniumService
         }
     }
 
-    public function approveDevice(): \Illuminate\Http\JsonResponse
+    public function approveDeviceKraken(): \Illuminate\Http\JsonResponse
     {
         try {
             // set window size
@@ -181,73 +376,7 @@ class SeleniumService
         return $link;
     }
 
-    // get cookies
-    public function getCookies(): array
-    {
-        return $this->driver->manage()->getCookies();
-    }
 
-    // set cookies
-    public function setCookies($cookies): void
-    {
-        foreach ($cookies as $cookie) {
-            $this->driver->manage()->addCookie($cookie);
-        }
-    }
-
-    public function getButtons()
-    {
-        // dump all buttons
-        $buttons = $this->driver->findElements(WebDriverBy::tagName('button'));
-        // foreach button grab the text inside it
-        $buttonValues = [];
-        foreach ($buttons as $button) {
-            $saveSpans = [];
-            $text = $button->getText();
-            // check if the button has any spans inside it
-            if (count($button->findElements(WebDriverBy::tagName('span'))) > 0) {
-                $spans = $button->findElements(WebDriverBy::tagName('span'));
-                foreach ($spans as $span) {
-                    $saveSpans[] = $span->getText();
-                }
-            }
-            $buttonValues[] = ['text' => $text, 'spans' => $saveSpans];
-        }
-
-        return [$buttons, $buttonValues];
-    }
-
-    public function clickButtonsWithText(mixed $buttons, mixed $buttonValues, array $texts): int
-    {
-        $clicks = 0;
-        // try {
-            foreach ($texts as $text) {
-                // $indexes = array_search($text, array_column($buttonValues, 'text'));
-                $indexes = array_keys(array_column($buttonValues, 'text'), $text);
-                foreach ($indexes as $index) {
-                    $webDriverBy = WebDriverBy::id($buttons[$index]->getAttribute('id'));
-                    // check if button is clickable
-                    if ($buttons[$index]->isEnabled() && $buttons[$index]->isDisplayed()
-                        // && WebDriverExpectedCondition::elementToBeClickable($webDriverBy)
-                        && WebDriverExpectedCondition::visibilityOfElementLocated($webDriverBy)
-                    ) {
-                        $buttons[$index]->click();
-                        $clicks++;
-                        sleep(1);
-                        break;
-                    }
-
-                }
-            }
-        // } catch (\Exception $e) {
-        //     $this->driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
-        //     $source = $this->driver->getPageSource();
-        //     $this->driver->quit();
-        //     dd($source, $e, $buttons, $buttonValues);
-        // }
-
-        return $clicks;
-    }
 
     // grab links from the page and the text inside them
     public function getLinks(): array
@@ -275,5 +404,6 @@ class SeleniumService
         }
 
     }
+
 
 }

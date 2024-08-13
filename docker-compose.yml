@@ -73,16 +73,34 @@ services:
             - '/dev/shm:/dev/shm'
         networks:
             - sail
-#    appium-docker-ios:
-#        image: quamotion/appium-docker-ios
-#        container_name: appium-docker-ios
-#        ports:
-#            - "4723:4723"
-#        volumes:
-#            - /var/run/usbmuxd:/var/run/usbmuxd
-#            - ~/.quamotion/:/etc/quamotion/
-#        environment:
-#            DEVELOPER_PROFILE_PASSWORD: "1" # Note: You might not need this in newer versions
+    mitmproxy:
+        image: mitmproxy/mitmproxy:latest
+        command: mitmweb --web-host 0.0.0.0
+        ports:
+            - "8080:8080"
+            - "8081:8081"
+        volumes:
+            - ./mitm_certs:/home/mitmproxy/.mitmproxy  # Volume for CA certificates
+        stdin_open: true   # Equivalent to -it (interactive mode)
+        tty: true          # Equivalent to -it (pseudo-TTY)
+        restart: always    # Optionally, you can include this to always restart the container if it stops
+        networks:
+            - sail
+    sauve-py:
+        image: suave-py:latest
+        ports:
+            - "8000:8000"
+        depends_on:
+            - mitmproxy
+        environment:
+            #      - http_proxy=http://mitmproxy:8080
+            #      - https_proxy=http://mitmproxy:8080
+            - SSLKEYLOGFILE=/sslkeylog/sslkeylogfile.log
+        volumes:
+            - ./mitm_certs:/certs
+            - /dev/bus/usb:/dev/bus/usb
+        networks:
+            - sail
 networks:
     sail:
         driver: bridge
@@ -91,3 +109,4 @@ volumes:
         driver: local
     sail-redis:
         driver: local
+    sslkeylog:

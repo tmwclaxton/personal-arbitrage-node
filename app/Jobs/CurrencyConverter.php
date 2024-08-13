@@ -41,8 +41,8 @@ class CurrencyConverter implements ShouldQueue
         // $revolutService->currencyExchangeAll("EUR", "GBP");
         // $revolutService->currencyExchangeAll("USD", "GBP");
         $wiseService = new WiseService();
-        // $wiseService->currencyExchangeAll("EUR", "GBP");
-        // $wiseService->currencyExchangeAll("USD", "GBP");
+        $wiseService->currencyExchangeAll("EUR", "GBP");
+        $wiseService->currencyExchangeAll("USD", "GBP");
 
 
     }

@@ -68,14 +68,14 @@ Schedule::command('app:warning-system')
     ->everyMinute()->withoutOverlapping(1);
 
 // refresh revolut token
-Schedule::command('refresh:revolut-token')
-    ->description('refresh revolut token')
-    ->everyThreeMinutes()->withoutOverlapping(1);
+// Schedule::command('refresh:revolut-token')
+//     ->description('refresh revolut token')
+//     ->everyThreeMinutes()->withoutOverlapping(1);
 
 // every minute trigger a revolut payment listener job
-Schedule::command('revolut:payment-listener')
-    ->description('revolut payment listener')
-    ->everyMinute()->withoutOverlapping(1);
+// Schedule::command('revolut:payment-listener')
+//     ->description('revolut payment listener')
+//     ->everyMinute()->withoutOverlapping(1);
 
 // every minute trigger a revolut payment listener job
 Schedule::command('wise:payment-listener')
@@ -95,7 +95,7 @@ Schedule::command('currency:converter')
 // kraken auto purchaser
 Schedule::command('kraken:auto-purchaser')
     ->description('kraken auto purchaser')
-    ->everyTenMinutes()->withoutOverlapping(1);
+    ->everyThirtyMinutes()->withoutOverlapping(1);
 
 Schedule::command('app:send-to-lightning')
     ->description('Send btc from kraken to lightning node')
@@ -109,7 +109,7 @@ Schedule::command('app:send-to-lightning')
 // kraken auto sender
 Schedule::command('kraken:send-money')
     ->description('Kraken send money from Revolut and Wise')
-    ->everyTenMinutes()->withoutOverlapping(1);
+    ->everyThirtyMinutes()->withoutOverlapping(1);
 
 Schedule::command('btc:purchase-detailer')
     ->description('btc purchase detailer')
@@ -129,3 +129,8 @@ Schedule::command('auto:confirm-final')
 Schedule::command('app:sitting-offer-detailer')
     ->description('sitting offer detailer')
     ->everyMinute()->withoutOverlapping(1);
+
+// ping umbrel check
+Schedule::command('app:umbrel-token-reset')
+    ->description('reset umbrel token')
+    ->everyThirtyMinutes()->withoutOverlapping(1);

@@ -199,67 +199,67 @@ Route::post('collaborative-cancel', function () {
 
 Route::get('/testing', function () {
 
-    //!:TODO we need to figure out how to set the accepted amount and other shit inorder for auto accept to work
-    $robosats = new Robosats();
-    $providers = ['satstralia','lake']; //veneto  'temple',
-    $response = $robosats->createSellOffer(
-        "EUR",
-        20,
-        $providers[array_rand($providers)],
-        false,
-        20,
-        "Revolut",
-        2,
-        null
-    );
+    $mitmService = new \App\Services\MitmService();
+    $flows = $mitmService->grabAll();
+    return response()->json($flows);
 
-    dd($response);
-
-
-
-    dd('testing');
-    $payment = null;
-    $wiseService = new \App\Services\WiseService();
-
-    // $gbpAccount = $wiseService->getGBPAccount();
-    // dd($gbpAccount);
-
-    // grab accounts
-    $accounts = $wiseService->getBalances();
-    $gbpAccount = null;
-    foreach ($accounts as $account) {
-        if ($account['currency'] == 'GBP') {
-            $gbpAccount = $account;
-        }
-    }
-
-    //wise delete all transfers
-    $transfers = $wiseService->getClient()->transfers->list(['offset' => 0, 'limit' => 100]);
-
-    foreach ($transfers as $transfer) {
-        if ($transfer['reference'] == "Send to Revolut" && $transfer['status'] != "cancelled") {
-            $wiseService->getClient()->transfers->cancel($transfer['id']);
-        }
-    }
-    // dd($transfers);
-
-
-    $recipients = $wiseService->getRecipientAccounts("GBP");
-
-    foreach ($recipients['content'] as $account) {
-        if ($account['id'] == env('WISE_RECIPIENT_ID_FOR_REVOLUT')) {
-
-            // $quote = $wiseService->createQuote("GBP", $wiseService->getGBPBalance(), $gbpAccount['id'], "GBP", $account['id'], "MOVING_MONEY_BETWEEN_OWN_ACCOUNTS");
-            $quote = $wiseService->createQuote("GBP", 4, $gbpAccount['id'], "GBP", $account['id'], "", "BANK_TRANSFER");
-            $transfer = $wiseService->transferToRecipient($quote['id'], $account['id'], "Send to Revolut");
-            $fundTransfer = $wiseService->fundTransfer($transfer['id']);
-            dd($fundTransfer);
-        }
-    }
-
-
-
-
+//      //!:TODO we need to figure out how to set the accepted amount and other shit inorder for auto accept to work
+    //     $robosats = new Robosats();
+    //     $providers = ['satstralia','lake']; //veneto  'temple',
+    //     $response = $robosats->createSellOffer(
+    //         "EUR",
+    //         20,
+    //         $providers[array_rand($providers)],
+    //         false,
+    //         20,
+    //         "Revolut",
+    //         2,
+    //         null
+    //     );
+    //
+    //     dd($response);
+    //
+    //
+    //
+    //     dd('testing');
+    //     $payment = null;
+    //     $wiseService = new \App\Services\WiseService();
+    //
+    //     // $gbpAccount = $wiseService->getGBPAccount();
+    //     // dd($gbpAccount);
+    //
+    //     // grab accounts
+    //     $accounts = $wiseService->getBalances();
+    //     $gbpAccount = null;
+    //     foreach ($accounts as $account) {
+    //         if ($account['currency'] == 'GBP') {
+    //             $gbpAccount = $account;
+    //         }
+    //     }
+    //
+    //     //wise delete all transfers
+    //     $transfers = $wiseService->getClient()->transfers->list(['offset' => 0, 'limit' => 100]);
+    //
+    //     foreach ($transfers as $transfer) {
+    //         if ($transfer['reference'] == "Send to Revolut" && $transfer['status'] != "cancelled") {
+    //             $wiseService->getClient()->transfers->cancel($transfer['id']);
+    //         }
+    //     }
+    //     // dd($transfers);
+    //
+    //
+    //     $recipients = $wiseService->getRecipientAccounts("GBP");
+    //
+    //     foreach ($recipients['content'] as $account) {
+    //         if ($account['id'] == env('WISE_RECIPIENT_ID_FOR_REVOLUT')) {
+    //
+    //             // $quote = $wiseService->createQuote("GBP", $wiseService->getGBPBalance(), $gbpAccount['id'], "GBP", $account['id'], "MOVING_MONEY_BETWEEN_OWN_ACCOUNTS");
+    //             $quote = $wiseService->createQuote("GBP", 4, $gbpAccount['id'], "GBP", $account['id'], "", "BANK_TRANSFER");
+    //             $transfer = $wiseService->transferToRecipient($quote['id'], $account['id'], "Send to Revolut");
+    //             $fundTransfer = $wiseService->fundTransfer($transfer['id']);
+    //             dd($fundTransfer);
+    //         }
+    //     }
 
 })->name('testing');
 
