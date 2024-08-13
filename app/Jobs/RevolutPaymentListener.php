@@ -34,8 +34,10 @@ class RevolutPaymentListener implements ShouldQueue
             return;
         }
 
-        $revolutService = new RevolutService();
-        $transactions = $revolutService->getTransactions();
+        // $revolutService = new RevolutService();
+        // $transactions = $revolutService->getTransactions();
+
+
 
 
         // convert transactions to an array

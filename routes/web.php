@@ -199,8 +199,9 @@ Route::post('collaborative-cancel', function () {
 
 Route::get('/testing', function () {
 
-    $seleniumService = new \App\Services\SeleniumService();
-    $seleniumService->sendGBPWiseToRevolut(5, 'WiseTransfer');
+    $mitmService = new \App\Services\MitmService();
+    $flows = $mitmService->grabAll();
+    return response()->json($flows);
 
 })->name('testing');
 
