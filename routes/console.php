@@ -51,8 +51,6 @@ Schedule::command('refresh:fiats')
     ->description('refresh fiats')
     ->everyMinute()->withoutOverlapping(1);
 
-//     \Illuminate\Support\Facades\Artisan::call('auto:accept');
-
 Schedule::command('auto:accept')
     ->description('auto accept')
     ->everyThreeMinutes()->withoutOverlapping(1);
