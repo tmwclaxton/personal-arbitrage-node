@@ -200,8 +200,44 @@ Route::post('collaborative-cancel', function () {
 Route::get('/testing', function () {
 
     $mitmService = new \App\Services\MitmService();
-    $flows = $mitmService->grabAll();
-    return response()->json($flows);
+    $transactions = $mitmService->grabTransactions();
+
+    // iterate through the transactions and create a payment object for each
+    foreach ($transactions as $transaction) {
+        if ($transaction['state'] !== 'COMPLETED'
+            || Carbon::createFromTimestamp($transaction['completedDate'])->lt(Carbon::now()->subHour(1))
+            || $transaction['amount'] < 0) {
+            continue;
+        }
+        // check if transfer / topup
+        if (!in_array($transaction['type'], ['TRANSFER', 'TOPUP'])) {
+            continue;
+        }
+
+        $payment = new \App\Models\Payment();
+        $payment->payment_method = 'Revolut';
+        $payment->platform_transaction_id = $transaction['id'];
+        $payment->payment_reference = $transaction['comment'];
+
+        if (Payment::where('platform_transaction_id', $payment->platform_transaction_id)->exists()) {
+            continue;
+        }
+
+        $payment->payment_currency = $transaction['currency'];
+        $payment->payment_amount = $transaction['amount'] / 100;
+        $payment->platform_account_id = $transaction['account']['id'];
+        $payment->platform_description = $transaction['description'];
+        $payment->platform_entity = json_encode($transaction);
+
+
+        $payment->save();
+
+        $discordService = new DiscordService();
+        $discordService->sendMessage('Payment received: ' . $payment->payment_amount . ' ' . $payment->payment_currency . ' on Revolut');
+
+
+        return response()->json(['message' => 'Payments created']);
+    }
 
 //      //!:TODO we need to figure out how to set the accepted amount and other shit inorder for auto accept to work
     //     $robosats = new Robosats();

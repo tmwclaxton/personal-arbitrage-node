@@ -54,9 +54,56 @@ class MitmService
             $editedFlows[] = $flow;
         }
 
-
-
         return $editedFlows;
+    }
 
+    public function getBalances(): array
+    {
+        global $gbp_balance, $euro_balance, $usd_balance;
+
+        $editedFlows = $this->grabAll();
+        foreach ($editedFlows as $flow) {
+            if ($flow['request']['path'] == '/api/retail/user/current/wallet') {
+                $pockets = $flow['actual_response']['pockets'];
+                // filter pockets for where the type is 'CURRENT'
+                $pockets = array_filter($pockets, function($pocket) {
+                    return $pocket['type'] === 'CURRENT';
+                });
+
+                foreach ($pockets as $pocket) {
+                    switch ($pocket['currency']) {
+                        case 'GBP':
+                            $gbp_balance = $pocket['balance'] / 100;
+                            break;
+                        case 'EUR':
+                            $euro_balance = $pocket['balance'] / 100;
+                            break;
+                        case 'USD':
+                            $usd_balance = $pocket['balance'] / 100;
+                            break;
+                    }
+                }
+            }
+        }
+
+        // Round them though to 2 decimal places (.00)
+        $gbp_balance = floor($gbp_balance);
+        $euro_balance = floor($euro_balance);
+        $usd_balance = floor($usd_balance);
+
+        return ["GBP" => $gbp_balance, "EUR" => $euro_balance, "USD" => $usd_balance];
+    }
+
+    public function grabTransactions(): array
+    {
+        $editedFlows = $this->grabAll();
+        $transactions = [];
+        foreach ($editedFlows as $flow) {
+            if ($flow['request']['path'] == '/api/retail/user/current/transactions/last?count=20') {
+                $transactions = $flow['actual_response'];
+            }
+        }
+
+        return $transactions;
     }
 }

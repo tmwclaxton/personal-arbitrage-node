@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignIdFor(Transaction::class)->nullable();
             $table->string('payment_method');
             $table->string('payment_currency');
+            $table->string('payment_reference')->nullable();
             $table->decimal('payment_amount', 16, 2);
             $table->string('platform_transaction_id')->unique();
             $table->string('platform_account_id');
