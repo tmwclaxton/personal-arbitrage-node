@@ -27,7 +27,7 @@ class RevolutLogin implements ShouldQueue
     public function handle(): void
     {
         # hit POST suave-container:8000/revolut-login
-        Http::post('http://suave-container:8000/revolut-login', [
+        Http::post('http://sauve-py:8000/revolut-login', [
             'auto_bal_flag' => true,
         ]);
 
