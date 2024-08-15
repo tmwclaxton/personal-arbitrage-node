@@ -65,6 +65,12 @@ Schedule::command('app:warning-system')
     ->description('app warning system')
     ->everyMinute()->withoutOverlapping(1);
 
+// !! DO NOT REMOVE THIS JOB || NOR CHANGE THE FREQUENCY
+Schedule::command('app:revolut-login')
+    ->description('app revolut login')
+    ->everyFiveMinutes()->withoutOverlapping(1);
+// !! with mitmproxy we now need to trigger the revolut login job whenever we are waiting for a payment
+
 // every minute trigger a revolut payment listener job
 Schedule::command('revolut:payment-listener')
     ->description('revolut payment listener')
@@ -75,7 +81,6 @@ Schedule::command('wise:payment-listener')
     ->description('wise payment listener')
     ->everyMinute()->withoutOverlapping(1);
 
-// !! with mitmproxy we now need to trigger the revolut login job whenever we are waiting for a payment
 
 // payment matcher
 Schedule::command('payment:matcher')
@@ -96,15 +101,9 @@ Schedule::command('app:send-to-lightning')
     ->description('Send btc from kraken to lightning node')
     ->everyThirtyMinutes()->withoutOverlapping(1);
 
-// Schedule::call(function () {
-//     $revolutService = new \App\Services\RevolutService();
-//     $revolutService->sendAllToPersonal();
-// })->everyMinute();
 
-// kraken auto sender
-Schedule::command('kraken:send-money')
-    ->description('Kraken send money from Revolut and Wise')
-    ->everyThirtyMinutes()->withoutOverlapping(1);
+
+
 
 Schedule::command('btc:purchase-detailer')
     ->description('btc purchase detailer')

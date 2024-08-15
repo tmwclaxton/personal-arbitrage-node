@@ -18,7 +18,7 @@ class CurrencyConverter extends Command
      *
      * @var string
      */
-    protected $description = 'Convert currency from EUR to GBP and USD to GBP in both Revolut and Wise';
+    protected $description = 'Convert currency from EUR to GBP and USD to GBP in both Wise';
 
     /**
      * Execute the console command.
