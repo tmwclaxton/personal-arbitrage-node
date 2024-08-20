@@ -83,7 +83,6 @@ services:
             - ./mitm_certs:/home/mitmproxy/.mitmproxy  # Volume for CA certificates
         stdin_open: true   # Equivalent to -it (interactive mode)
         tty: true          # Equivalent to -it (pseudo-TTY)
-        restart: always    # Optionally, you can include this to always restart the container if it stops
         networks:
             - sail
     sauve-py:
