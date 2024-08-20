@@ -142,8 +142,10 @@ class Robosats
             $this->headers["Authorization"] = "Token " . $tokenSha256;
             $this->headers["Priority"] = "u=1";
             if ($offer->status < 3) {
-                $offer->robotTokenBackup = $offer->robots()->first()->token;
-                $offer->save();
+                if ($offer->robots()->first()) {
+                    $offer->robotTokenBackup = $offer->robots()->first()->token;
+                    $offer->save();
+                }
             }
             // remove new lines and \r
         }
@@ -339,6 +341,21 @@ class Robosats
 
     }
 
+    public function getAllOffers($buyOffers, $sellOffers) {
+        $allOffers = [];
+        foreach ($buyOffers as $provider => $offers) {
+            $allOffers[$provider] = $offers;
+        }
+        foreach ($sellOffers as $provider => $offers) {
+            if (!array_key_exists($provider, $allOffers)) {
+                $allOffers[$provider] = [];
+            }
+            $allOffers[$provider] = array_merge($allOffers[$provider], $offers);
+        }
+
+        return $allOffers;
+    }
+
     public function getNegativePremiumBuyOffers($buyOffers, $minNegativePremium = -1) {
 
         // for buys the more negative the premium the better
@@ -356,7 +373,7 @@ class Robosats
         // $negativePremiumBuyOffers = $this->removePaymentMethods($negativePremiumBuyOffers);
 
         // only accept revolut
-        $negativePremiumBuyOffers = $this->onlyPaymentMethods($negativePremiumBuyOffers, ['Revolut', 'Paypal Friends & Family']);
+        // $negativePremiumBuyOffers = $this->onlyPaymentMethods($negativePremiumBuyOffers, ['Revolut', 'Paypal Friends & Family']);
 
         return $negativePremiumBuyOffers;
     }
@@ -611,7 +628,8 @@ class Robosats
                     return;
                 }
 
-                $message = 'Hey! My ' . $pseudonym . ' is ' . $tag . ' - If possible, please put the order ID in the payment reference (' . $offer->robosatsId . ').  Cheers!';
+                $message = 'Hey! My ' . $pseudonym . ' is ' . $tag . ' - If possible, please put the order ID in the payment reference (' . $offer->robosatsId . '). ' .
+                    'Cheers! (btw I am a bot!)';
                 break;
             }
         }
@@ -713,10 +731,8 @@ class Robosats
     }
 
 
-    public function updateOfferStatus($offer)
+    public function updateOfferStatus($offer): Offer
     {
-        /// this doesn't work very well
-        //http://192.168.0.18:12596/mainnet/satstralia/api/order/?order_id=10163
         $url = $this->host . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
         $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->get($url);
         $response = json_decode($response->body(), true);
@@ -726,9 +742,24 @@ class Robosats
         }
 
 
-        (new OfferController())->insertOffer($response, $offer->provider);
+        $offer = (new OfferController())->insertOffer($response, $offer->provider);
+        $offer->job_last_status = null;
+        $offer->save();
 
-        return $response;
+        // create a transaction as we have the bond invoice in the response
+        // check if the transaction exists
+
+        if (array_key_exists('bond_invoice', $response)) {
+            $transaction = $offer->transaction()->first();
+            if ($transaction == null) {
+                $transaction = new Transaction();
+                $transaction->offer_id = $offer->id;
+            }
+            $transaction->bond_invoice = $response['bond_invoice'];
+            $transaction->save();
+        }
+
+        return $offer;
     }
 
     // update status of transaction
@@ -760,14 +791,6 @@ class Robosats
         }
         if (isset($response['status'])) {
             $offer->status = $response['status'];
-        }
-        if ($response['status'] == 1) {
-            if ($offer->transaction()) {
-                // delete transaction
-                $transaction->delete();
-                // set accepted to false
-                $offer->accepted = false;
-            }
         }
         if (isset($response['status_message'])) {
             $offer->status_message = $response['status_message'];
@@ -887,5 +910,128 @@ class Robosats
         return $response;
     }
 
+    public function createSellOffer(
+        $currency,
+        $premium,
+        $provider,
+        $isRange,
+        $minAmount,
+        $paymentMethod = 'Revolut',
+        $bondSize = 3,
+        $maxAmount = null
+    ) {
+
+        // create temp offer, create robots, create offer, pay bond.
+        $tempOffer = new Offer([
+            'robosatsId' => rand(111111111, 999999999),
+            'provider' => $provider,
+            'type' => 'sell',
+            'currency' => 0,
+            'amount' => 0,
+            'has_range' => $isRange,
+            'payment_methods' => json_encode([$paymentMethod]),
+            'is_explicit' => false,
+            'premium' => $premium,
+            'escrow_duration' => 0,
+            'bond_size' => 0,
+            'latitude' => null,
+            'longitude' => null,
+            'maker_nick' => '',
+            'maker_hash_id' => '',
+            'satoshis_now' => 0,
+            'price' => 0,
+            'maker_status' => '',
+            'expires_at' => Carbon::now()->addMinutes(5),
+            'maker' => 0,
+        ]);
+
+        $tempOffer->save();
+
+        $robots = $this->createRobot($tempOffer);
+
+        // convert currency to int
+        $currency = $this->currencyToInt($currency);
+        // POST
+        // 	http://192.168.0.18:12596/mainnet/satstralia/api/make/
+        // {"type":1,"currency":2,"amount":"14","has_range":false,"min_amount":null,
+        //"max_amount":null,"payment_method":"Revolut","is_explicit":false,"premium":20,
+        //"satoshis":null,"public_duration":14400,"escrow_duration":14400,"bond_size":3,"latitude":null,
+        //"longitude":null}
+
+        $url = $this->host . '/mainnet/' . $provider . '/api/make/';
+        $array = [
+            'type' => 1,
+            'currency' => $currency,
+            'has_range' => $isRange,
+            'max_amount' => $maxAmount,
+            'payment_method' => $paymentMethod,
+            'is_explicit' => false,
+            'premium' => $premium,
+            'satoshis' => null,
+            'public_duration' => 28800,
+            'escrow_duration' => 28800,
+            'bond_size' => $bondSize,
+            'latitude' => null,
+            'longitude' => null
+        ];
+        // add min amount if it is a range
+        if ($isRange) {
+            $array['min_amount'] = $minAmount;
+        } else {
+            $array['amount'] = $minAmount;
+        }
+
+        $response = Http::withHeaders($this->getHeaders($tempOffer))->timeout(30)->post($url, $array);
+        $response = json_decode($response->body(), true);
+        // dd($response);
+
+        // response
+        // {"id":13521,"status":0,"created_at":"2024-08-04T16:18:09.308342Z",
+        //"expires_at":"2024-08-04T16:23:09.308303Z","type":1,"currency":2,"amount":"14.00000000",
+        //"has_range":false,"min_amount":null,"max_amount":null,"payment_method":"Revolut",
+        //"is_explicit":false,"premium":"20.00","satoshis":null,"maker":89404,"taker":null,
+        //"escrow_duration":14400,"bond_size":"3.00","latitude":null,"longitude":null}
+
+        // if the response is null or failed
+        if ($response == null || !array_key_exists('id', $response)) {
+            // delete the temp offer
+            $tempOffer->delete();
+            // delete the robots
+            foreach ($robots as $robot) {
+                $robot->delete();
+            }
+            return $response;
+        }
+
+        // update robosatsId
+        $tempOffer->robosatsId = $response['id'];
+        $tempOffer->expires_at = date('Y-m-d H:i:s', strtotime($response['expires_at']));
+        $tempOffer->created_at = date('Y-m-d H:i:s', strtotime($response['created_at']));
+        $tempOffer->maker = $response['maker'];
+        $tempOffer->save();
+
+        $offer = $this->updateOfferStatus($tempOffer);
+        $offer->my_offer = true;
+        $offer->save();
+
+
+
+
+
+        return $response;
+
+    }
+
+    private function currencyToInt($currency)
+    {
+        // change the likes of GBP to 2 using CURRENCIES
+        $currency = strtoupper($currency);
+        foreach ($this::CURRENCIES as $key => $value) {
+            if ($value == $currency) {
+                return $key;
+            }
+        }
+        return null;
+    }
 
 }

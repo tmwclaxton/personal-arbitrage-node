@@ -98,7 +98,7 @@ class KrakenService
         // make btc balance a big decimal
         $btc = $btcBalance->jsonSerialize();
         // ensure satoshis is an integer
-        $satoshis = intval($btc * 100000000);
+        $satoshis = intval($btc * 100000000) - 2000; // possible fees?
         $lightningNode = new LightningNode();
         $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Withdrawal of ' . $btcBalance . ' BTC at ' . Carbon::now()->toDateTimeString());
 
@@ -111,16 +111,16 @@ class KrakenService
         //
 
         // sign in // possibly with otp
-        $seleniumService->signin($krakenService);
+        $seleniumService->signinKraken($krakenService);
 
         // approve device
-        $seleniumService->approveDevice();
+        $seleniumService->approveDeviceKraken();
 
         // set session key lightning-network-shown-in-current-session to true
         $driver->executeScript("window.localStorage.setItem('lightning-network-shown-in-current-session', 'true')");
 
         // sign in again
-        $seleniumService->signin($krakenService, 'https://www.kraken.com/sign-in?redirect=%2Fc%2Ffunding%2Fwithdraw%3Fasset%3DBTC%26assetType%3Dcrypto%26network%3DLightning%26method%3DBitcoin%2520Lightning');
+        $seleniumService->signinKraken($krakenService, 'https://www.kraken.com/sign-in?redirect=%2Fc%2Ffunding%2Fwithdraw%3Fasset%3DBTC%26assetType%3Dcrypto%26network%3DLightning%26method%3DBitcoin%2520Lightning');
         // sleep(rand(1,2));
         // $links = $seleniumService->getLinks();
         // $seleniumService->clickLinksWithText($links, ["Transfer crypto"]);

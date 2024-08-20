@@ -65,33 +65,14 @@ class PaymentMatcher implements ShouldQueue
 
                 // default confirm at 10 minutes in the future timestamp
                 $autoConfirmAt = Carbon::now()->addMinutes(10);
-                $reference = "";
-                switch ($payment->payment_method) {
-                    case 'Revolut':
-                        $platformEntity = json_decode($payment->platform_entity);
-                        if (isset($platformEntity->reference)) {
-                            $reference = $platformEntity->reference;
-                        }
-                        break;
-                    case 'Wise':
-                        //{"id": "TU9ORVRBUllfQUNUSVZJVFk6OjU1Njk4NjIxOjpUUkFOU0ZFUjo6MTE2NDEyNzU5Mw==", "type": "TRANSFER", "title": "<strong>Toby Claxton</strong>", "amount": "20", "sender": "Toby Claxton", "status": "COMPLETED", "currency": "GBP", "resource": {"id": "1164127593", "type": "TRANSFER"}, "createdOn": "2024-07-31T18:50:58.783Z", "updatedOn": "2024-07-31T18:51:05.186Z", "description": "", "primaryAmount": "<positive>+ 20 GBP</positive>", "formattedAmount": "20 GBP", "secondaryAmount": ""}
-                        // $platformEntity = json_decode($payment->platform_entity);
-                        // $reference = $platformEntity->resource->id;
-                        //!TODO: Wise doesn't give us the reference in the main object!
-                        $discordService->sendMessage('Wise method not implemented yet');
-                        return;
-                    default:
-                        $discordService->sendMessage('Unknown payment method: ' . $payment->payment_method);
-                        return;
-                }
 
 
                 $message = "Found a matching order for the payment of " . $payment->payment_amount . " " . $payment->payment_currency .
                     ", see robosats ID: " . $offer->robosatsId . " and transaction ID: " . $offer->transaction()->first()->id;
 
-                if ($reference !== null && $reference !== "") {
+                if ($payment->payment_reference !== null && $payment->payment_reference !== "") {
                     // remove any non-numeric characters
-                    $reference = preg_replace('/[^0-9]/', '', $reference);
+                    $reference = preg_replace('/[^0-9]/', '', $payment->payment_reference);
                     if ($reference !== "") {
                         // if the reference is equal to robosatsID, then we can auto confirm in 2 minutes
                         if (intval($reference) === intval($offer->robosatsId)) {

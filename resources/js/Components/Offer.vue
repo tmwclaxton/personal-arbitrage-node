@@ -7,15 +7,21 @@
     <div class="max-w-md p-4 mx-auto bg-white dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700 dark:shadow-lg
     rounded-xl shadow-md overflow-hidden md:max-w-2xl"  :class="{'col-span-2': showSidebar && (offer.accepted || (offer.robots && offer.robots.length > 0)), 'col-span-3': !showSidebar && (offer.accepted || (offer.robots && offer.robots.length > 0)), 'col-span-1': !offer.accepted}">
 
-        <div v-if="offer.transaction">
-            <p class="mt-2 text-zinc-500 dark:text-zinc-200 font-bold">Transaction Status: {{
-                    offer.transaction.status_message
-                }}</p>
+        <div v-if="offer.status">
+            <p class="my-2 text-zinc-500 dark:text-zinc-200 font-bold break-words">
+                Status: {{offer.status_message}}
+                <span v-if="offer.my_offer" class="text-blue-500 dark:text-blue-300">
+                    · Sitting Offer
+                </span>
+            </p>
         </div>
-        <div v-if="offer.transaction" class="border border-gray-200 dark:border-zinc-700 mt-2 mb-2"></div>
-            <div class="grid grid-cols-3  gap-1">
+        <!--0, 6, 7, 9, 10-->
+        <div v-if="offer.transaction && (!offer.my_offer &&
+         (offer.status === 0 || offer.status === 6 || offer.status === 7 || offer.status === 9 || offer.status === 10))"
+             class="border border-gray-200 dark:border-zinc-700 "></div>
+            <div class="grid grid-cols-3  gap-1 p-1">
 
-                    <danger-button v-on:click="autoRun"
+                    <danger-button v-on:click="autoRun" v-if="!offer.accepted && !offer.my_offer"
                                      :disabled="offer.job_locked || offer.accepted"
                                    class="w-full text-center  h-10 break-words disabled:opacity-50">
                         <p class="text-center w-full">Auto Run</p>
@@ -28,15 +34,14 @@
                     </primary-button>
 
                     <primary-button v-on:click="acceptOffer"
-                                    v-if="!offer.accepted"
+                                    v-if="!offer.accepted && !offer.my_offer"
                                     class="w-full text-center  h-10 break-words ">
                         <p class="text-center w-full">Accept</p>
                     </primary-button>
 
                     <primary-button class="w-full text-center  h-10 break-words "
                                     v-on:click="payBond"
-                                    v-if="offer.accepted && offer.status === 3"
-                    >
+                                    v-if="offer.accepted && offer.status === 3 || offer.my_offer && offer.status === 0">
                         <p class="text-center w-full">Bond</p>
                     </primary-button>
 
@@ -72,7 +77,7 @@
                     </danger-button>
                 </div>
 
-            <div class="border-b border-gray-200 dark:border-zinc-700 my-2 "></div>
+            <div class="border-b border-gray-200 dark:border-zinc-700 mb-2 "></div>
             <div class=" flex flew-row gap-4">
 
 
@@ -82,7 +87,7 @@
                     <div class="mt-0.5 uppercase tracking-wide text-sm text-indigo-500 font-semibold">
                         <span v-text="offer.provider"></span>
                         <!--<span class="text-zinc-500 dark:text-zinc-200 mx-1">·</span>-->
-                        <span class="mt-2 text-zinc-500 dark:text-zinc-200 font-bold">{{ offer.accepted ? ' · Accepted' : '' }}</span>
+                        <span class="mt-2 text-zinc-500 dark:text-zinc-200 font-bold">{{ offer.accepted && offer.taker ? ' · Accepted' : '' }}</span>
 
                     </div>
                     <p class="block mt-1  leading-tight font-bold underline dark:text-zinc-200">
@@ -91,13 +96,13 @@
                     <!--<p class="mt-2 text-zinc-500 dark:text-zinc-200 font-bold">Currency: {{ offer.currency }}</p>-->
                     <p class="text-zinc-500 dark:text-zinc-200 font-bold">Price: {{ offer.price }} {{ offer.currency }}</p>
                     <p class="text-zinc-500 dark:text-zinc-200 font-bold">Type: {{ offer.type }} BTC</p>
-                    <div v-if="!offer.accepted" class="flex flex-col">
-                        <p v-if="!offer.has_range"  class="mt-2 text-zinc-500 dark:text-zinc-200">Amount: {{ offer.amount ?? 'N/A' }}</p>
-                        <p v-if="!offer.has_range"  class="text-zinc-500 dark:text-zinc-200 text-xs">Sats: {{ offer.satoshis_now ?? 'N/A' }}</p>
-                        <p v-if="!offer.has_range"  class="text-zinc-500 dark:text-zinc-200 text-xs">Sats Profit: {{ offer.satoshi_amount_profit ?? 'N/A' }}</p>
+                    <div v-if="!offer.accepted || !offer.taker && !offer.has_range" class="flex flex-col">
+                        <p class="mt-2 text-zinc-500 dark:text-zinc-200">Amount: {{ offer.amount ?? 'N/A' }}</p>
+                        <p class="text-zinc-500 dark:text-zinc-200 text-xs">Sats: {{ offer.satoshis_now ?? 'N/A' }}</p>
+                        <p class="text-zinc-500 dark:text-zinc-200 text-xs">Sats Profit: {{ offer.satoshi_amount_profit ?? 'N/A' }}</p>
                     </div>
                     <!-- if accepted offer amount is select hide below!!!-->
-                    <div v-if="!offer.accepted && offer.has_range" class="flex flex-col">
+                    <div v-if="(!offer.accepted || !offer.taker) && offer.has_range" class="flex flex-col">
                         <p class="mt-2 text-zinc-500 dark:text-zinc-200">Min Amount: {{ offer.min_amount ?? 'N/A' }}</p>
                         <p class="text-zinc-500 dark:text-zinc-200 text-xs">Sats: {{ offer.min_satoshi_amount ?? 'N/A' }}</p>
                         <p class="text-zinc-500 dark:text-zinc-200 text-xs">Profit: {{ offer.min_satoshi_amount_profit ?? 'N/A' }}</p>
@@ -105,7 +110,7 @@
                         <p class="text-zinc-500 dark:text-zinc-200 text-xs">Sats: {{ offer.max_satoshi_amount ?? 'N/A' }}</p>
                         <p class="text-zinc-500 dark:text-zinc-200 text-xs">Profit: {{ offer.max_satoshi_amount_profit ?? 'N/A' }}</p>
                     </div>
-                    <div v-if="offer.accepted">
+                    <div v-if="offer.accepted && offer.taker">
                     <!--    accepted_offer_amount, accepted_offer_amount_sat, accepted_offer_profit_sat-->
                         <p class="mt-2 text-zinc-500 dark:text-zinc-200">Accepted Amount: {{ offer.accepted_offer_amount ?? 'N/A' }}</p>
                         <p class="text-zinc-500 dark:text-zinc-200 text-xs">Sats: {{ offer.accepted_offer_amount_sat ?? 'N/A' }}</p>

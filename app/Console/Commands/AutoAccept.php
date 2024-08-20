@@ -47,7 +47,20 @@ class AutoAccept extends Command
         }
         // calculate difference
         $difference = $maxConcurrentTransactions - $transactionsCount;
-        $offers = (new \App\Http\Controllers\OfferController)->getOffersInternal($adminDashboard);
+        // $offers = (new \App\Http\Controllers\OfferController)->getOffersInternal($adminDashboard);
+
+        $sellPremium = $adminDashboard->sell_premium;
+
+        // where status != 14, 12, 17, 18, 99, 4, 5, 2
+        $offers = Offer::where([['accepted', '=', false],['premium', '>=', $sellPremium], ['type', 'sell'], ['expires_at', '>', now()]])
+            ->orderBy('accepted', 'desc')
+            ->orderBy('max_satoshi_amount_profit', 'desc')
+            ->orderBy('satoshi_amount_profit', 'desc')
+            ->orderBy('premium', 'desc')
+            ->get();
+
+
+
         $paymentMethods = json_decode($adminDashboard->payment_methods);
 
         foreach ($offers as $offer) {

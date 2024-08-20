@@ -34,45 +34,41 @@ class RevolutPaymentListener implements ShouldQueue
             return;
         }
 
-        $revolutService = new RevolutService();
-        $transactions = $revolutService->getTransactions();
-
-
-        // convert transactions to an array
-        $transactions = json_decode(json_encode($transactions), true);
+        $mitmService = new \App\Services\MitmService();
+        $transactions = $mitmService->grabTransactions();
 
         // iterate through the transactions and create a payment object for each
         foreach ($transactions as $transaction) {
-            if ($transaction['state'] !== 'completed'
-                || $transaction['completed_at'] < Carbon::now()->subHour(1) || $transaction['legs'][0]['amount'] < 0) {
+            if ($transaction['state'] !== 'COMPLETED'
+                || Carbon::createFromTimestamp($transaction['completedDate'])->lt(Carbon::now()->subHour(1))
+                || $transaction['amount'] < 0) {
                 continue;
             }
             // check if transfer / topup
-            if (!in_array($transaction['type'], ['transfer', 'topup'])) {
+            if (!in_array($transaction['type'], ['TRANSFER', 'TOPUP'])) {
                 continue;
             }
 
             $payment = new \App\Models\Payment();
             $payment->payment_method = 'Revolut';
             $payment->platform_transaction_id = $transaction['id'];
+            $payment->payment_reference = $transaction['comment'];
 
             if (Payment::where('platform_transaction_id', $payment->platform_transaction_id)->exists()) {
                 continue;
             }
 
-            $payment->payment_currency = $transaction['legs'][0]['currency'];
-            $payment->payment_amount = $transaction['legs'][0]['amount'];
-            $payment->platform_account_id = $transaction['legs'][0]['account_id'];
-            $payment->platform_description = $transaction['legs'][0]['description'];
+            $payment->payment_currency = $transaction['currency'];
+            $payment->payment_amount = $transaction['amount'] / 100;
+            $payment->platform_account_id = $transaction['account']['id'];
+            $payment->platform_description = $transaction['description'];
             $payment->platform_entity = json_encode($transaction);
+
 
             $payment->save();
 
             $discordService = new DiscordService();
             $discordService->sendMessage('Payment received: ' . $payment->payment_amount . ' ' . $payment->payment_currency . ' on Revolut');
-
-
-
 
         }
 

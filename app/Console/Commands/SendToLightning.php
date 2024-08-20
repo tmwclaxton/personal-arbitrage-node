@@ -4,29 +4,28 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 
-class CurrencyConverter extends Command
+class SendToLightning extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'currency:converter';
+    protected $signature = 'app:send-to-lightning';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Convert currency from EUR to GBP and USD to GBP in both Wise';
+    protected $description = 'Send btc from kraken to lightning node';
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        // currency conversion job
-        $job = new \App\Jobs\CurrencyConverter();
+        $job = new \App\Jobs\SendToLightning();
         $job->handle();
     }
 }

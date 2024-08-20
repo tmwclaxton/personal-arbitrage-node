@@ -20,3 +20,4 @@ yarn-error.log
 /.vscode
 /app/RevolutCerts/
 /prod.env
+/piScripts/prod.env
