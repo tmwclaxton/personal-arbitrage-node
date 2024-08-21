@@ -716,6 +716,7 @@ class Robosats
         if ($transaction->offer->my_offer) {
             $multiplier = 0.025;
         }
+        $multiplier = $multiplier / 100;
 
         $fees = $lightningNode->getPaymentFees($transaction->bond_invoice) + $lightningNode->getPaymentFees($transaction->escrow_invoice)
             + $transaction->offer->accepted_offer_amount_sat * $multiplier;
