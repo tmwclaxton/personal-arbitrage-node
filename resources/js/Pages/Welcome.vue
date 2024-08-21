@@ -127,6 +127,11 @@ const showSidebar = ref(true);
                     Config
                 </secondary-button>
             </Link>
+            <Link :href="route('offers.completed')" >
+                <secondary-button class="h-12">
+                    Completed Offers
+                </secondary-button>
+            </Link>
             <Link :href="route('transactions.index')" >
                 <secondary-button class="h-12">
                     Transactions

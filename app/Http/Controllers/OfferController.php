@@ -491,4 +491,23 @@ class OfferController extends Controller
         $response = $robosats->collaborativeCancel($offer);
         return $response;
     }
+
+    public function completedOffers()
+    {
+        $offers = Offer::where('status', '=' , 14);
+        return Inertia::render('CompletedOffers', [
+            'offers' => $offers->paginate(25)->setPath(route('offers.completed'))->through(fn($offer)=>[
+                "Token Backup" => $offer->robotTokenBackup,
+                "Accepted Offer Amount" => $offer->accepted_offer_amount,
+                "Accepted Offer Amount Satoshis" => $offer->accepted_offer_amount_satoshis,
+                "Accepted Offer Amount Profit" => $offer->accepted_offer_amount_profit,
+                "Accepted Offer Amount Profit Satoshis" => $offer->accepted_offer_amount_profit_satoshis,
+                "Currency" => $offer->currency,
+                "Btc Price" => $offer->price,
+                "My Offer" => $offer->my_offer,
+                "Type" => $offer->type,
+                "Created At" => $offer->created_at,
+            ])->withQueryString(),
+        ]);
+    }
 }

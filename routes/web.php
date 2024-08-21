@@ -75,6 +75,7 @@ Route::post('/updateAdminDashboard', function () {
 
 Route::get('/', [\App\Http\Controllers\OfferController::class, 'index'])->name('welcome');
 Route::get('/offers', [\App\Http\Controllers\OfferController::class, 'getOffers'])->name('offers.index');
+Route::get('/completed-offers', [\App\Http\Controllers\OfferController::class, 'completedOffers'])->name('offers.completed');
 // Route::get('/offer/{offer_id}/chat', [\App\Http\Controllers\OfferController::class, 'chatRoom'])->name('offers.chat');
 // Route::post('/offer/{offer_id}/chat', [\App\Http\Controllers\OfferController::class, 'sendMessage'])->name('offers.chat');
 Route::post('/create-robot', [OfferController::class, 'createRobot'])->name('create-robot');

@@ -14,7 +14,13 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
             <div class="w-full flex flex-row flex-wrap gap-3 mt-2 mx-auto justify-center">
                 <Link :href="route('welcome')" >
                     <secondary-button class="h-12">
-                       View Offers
+                        Live Offers
+                    </secondary-button>
+                </Link>
+
+                <Link :href="route('offers.completed')" >
+                    <secondary-button class="h-12">
+                        Completed Offers
                     </secondary-button>
                 </Link>
 
