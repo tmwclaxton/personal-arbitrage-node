@@ -1,18 +1,49 @@
 <script setup>
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import { Link } from '@inertiajs/vue3';
+import DangerButton from "@/Components/DangerButton.vue";
+import SecondaryButton from "@/Components/SecondaryButton.vue";
+import PrimaryButton from "@/Components/PrimaryButton.vue";
 </script>
 
 <template>
-    <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
+    <div class="min-h-screen flex flex-col   pt-6 sm:pt-0 ">
         <div>
-            <Link href="/">
-                <ApplicationLogo class="w-20 h-20 fill-current text-gray-500" />
-            </Link>
+            <p class="font-bold text-2xl mx-auto text-center py-5">Lightning Arbitrage Solutions</p>
+
+            <div class="w-full flex flex-row flex-wrap gap-3 mt-2 mx-auto justify-center">
+                <Link :href="route('welcome')" >
+                    <secondary-button class="h-12">
+                       View Offers
+                    </secondary-button>
+                </Link>
+
+                <Link :href="route('dashboard.index')">
+                    <secondary-button  class="h-12">
+                        Config
+                    </secondary-button>
+                </Link>
+                <Link :href="route('transactions.index')" >
+                    <secondary-button class="h-12">
+                        Transaction History
+                    </secondary-button>
+                </Link>
+                <Link :href="route('purchases.index')" >
+                    <secondary-button class="h-12">
+                        Bitcoin Purchases
+                    </secondary-button>
+                </Link>
+                <Link :href="route('graphs.index')" >
+                    <secondary-button class="h-12">
+                        Graphs
+                    </secondary-button>
+                </Link>
+            </div>
+            <div class="my-5 border-b-2 border-gray-300 dark:border-zinc-700"></div>
         </div>
 
         <div
-            class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg"
+            class=""
         >
             <slot />
         </div>

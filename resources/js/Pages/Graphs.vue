@@ -8,7 +8,7 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 </script>
 
 <template>
-    <Head title="Transactions" />
+    <Head title="Graphs" />
 
     <GuestLayout>
 
