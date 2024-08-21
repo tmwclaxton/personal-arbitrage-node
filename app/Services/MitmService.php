@@ -100,6 +100,9 @@ class MitmService
         $transactions = [];
         foreach ($editedFlows as $flow) {
             if ($flow['request']['path'] == '/api/retail/user/current/transactions/last?count=20') {
+
+                // if t
+
                 $transactions = $flow['actual_response'];
             }
         }

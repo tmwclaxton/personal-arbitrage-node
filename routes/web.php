@@ -77,124 +77,35 @@ Route::get('/', [\App\Http\Controllers\OfferController::class, 'index'])->name('
 Route::get('/offers', [\App\Http\Controllers\OfferController::class, 'getOffers'])->name('offers.index');
 // Route::get('/offer/{offer_id}/chat', [\App\Http\Controllers\OfferController::class, 'chatRoom'])->name('offers.chat');
 // Route::post('/offer/{offer_id}/chat', [\App\Http\Controllers\OfferController::class, 'sendMessage'])->name('offers.chat');
+Route::post('/create-robot', [OfferController::class, 'createRobot'])->name('create-robot');
+Route::post('/accept-offer', [OfferController::class, 'acceptOffer'])->name('accept-offer');
+Route::post('/pay-bond', [OfferController::class, 'payBond'])->name('pay-bond');
+Route::post('/pay-escrow', [OfferController::class, 'payEscrow'])->name('pay-escrow');
+Route::post('/confirm-payment', [OfferController::class, 'confirmPayment'])->name('confirm-payment');
+Route::get('/claim-rewards', [OfferController::class, 'claimRewards'])->name('claim-rewards');
+Route::post('/send-payment-handle', [OfferController::class, 'sendPaymentHandle'])->name('send-payment-handle');
+Route::post('auto-accept', [OfferController::class, 'autoAccept'])->name('auto-accept');
+Route::post('collaborative-cancel', [OfferController::class, 'collaborativeCancel'])->name('collaborative-cancel');
+
+
+
+
 Route::get('/transactions', [\App\Http\Controllers\TransactionController::class, 'index'])->name('transactions.index');
 Route::get('/payments', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payments.index');
 Route::get('/config', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('dashboard.index');
 
 
-Route::post('/create-robot', function () {
-    $offerId = request('offer_id');
-    $offer = Offer::find($offerId);
-
-    $robosats = new Robosats();
-    $response = $robosats->createRobot($offer);
-    return $response;
-})->name('create-robot');
-
-
-Route::post('/accept-offer', function () {
-    $robosats = new Robosats();
-    $offerId = request('offer_id');
-    $offer = Offer::find($offerId);
-    $response = $robosats->acceptOffer($offer->robosatsId);
-    return $response;
-})->name('accept-offer');
-
-Route::post('/pay-bond', function () {
-    $offerId = request('offer_id');
-    $transaction = Transaction::where('offer_id', $offerId)->first();
-    $invoice = $transaction->bond_invoice;
-    $lightningNode = new LightningNode();
-    $response = $lightningNode->payInvoice($invoice);
-    return $response;
-})->name('pay-bond');
-
-Route::post('/pay-escrow', function () {
-    // grab offer_id and transaction_id
-    $offerId = request('offer_id');
-    $transaction = Transaction::where('offer_id', $offerId)->first();
-    $escrowInvoice = $transaction->escrow_invoice;
-    // dd($escrowInvoice);
-    $lightningNode = new LightningNode();
-    $response = $lightningNode->payInvoice($escrowInvoice);
-    return $response;
-})->name('pay-escrow');
-
-
-Route::post('/confirm-payment', function () {
-    $offerId = request('offer_id');
-    $offer = Offer::find($offerId);
-    $transaction = Transaction::where('offer_id', $offerId)->first();
-    $robosats = new Robosats();
-    $response = $robosats->confirmReceipt($offer, $transaction);
-    return $response;
-})->name('confirm-payment');
-
-Route::get('/claim-rewards', function () {
-    $robosats = new Robosats();
-    $robots = Robot::where('earned_rewards', '>', 0)->get();
-    foreach ($robots as $robot) {
-        $response = $robosats->claimCompensation($robot);
-    }
-    return response()->json(
-        ['message' => 'Rewards claimed for' . count($robots) . ' robots',
-        'robots' => $robots]
-    );
-})->name('claim-rewards');
 
 
 
-// send-payment-handle
-Route::post('/send-payment-handle', function () {
-    $offerId = request('offer_id');
-    $offer = Offer::find($offerId);
-    $robosats = new Robosats();
-    $robosats->sendHandle($offer);
-})->name('send-payment-handle');
-
-
-// auto-accept
-Route::post('auto-accept', function () {
-    $adminDashboard = AdminDashboard::all()->first();
-    $offerId = request('offer_id');
-    $offer = Offer::where('id', $offerId)->first();
-    Bus::chain([
-        new \App\Jobs\CreateRobots($offer, $adminDashboard),
-        new \App\Jobs\AcceptSellOffer($offer, $adminDashboard)
-    ])->dispatch();
-})->name('auto-accept');
-
-
-// collaborative cancel
-Route::post('collaborative-cancel', function () {
-    $offerId = request('offer_id');
-    $offer = Offer::find($offerId);
-    $robosats = new Robosats();
-    $response = $robosats->collaborativeCancel($offer);
-    return $response;
-})->name('collaborative-cancel');
 
 
 
-// Route::get('monzo-redirect', function () {
-//     $monzoService = new MonzoService();
-//     $redirect = $monzoService->redirectUserToMonzo();
-//     return response()->json(['redirect' => $redirect]);
-// })->name('monzoRedirect');
-//
-// Route::get('monzo-exchange', function () {
-//     $monzoService = new MonzoService();
-//     $code = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJlYiI6InhYL2pmTXpwUm54VFBZYzR3dzZKIiwianRpIjoiYXV0aHpjb2RlXzAwMDBBa0ZvZDBOakY3WndQdFY1aGgiLCJ0eXAiOiJhemMiLCJ2IjoiNiJ9.Cj7uispLSPHalEIYzjmC7IY-EsvBkEtPJBXfsed2o5pIz3IWOTqzLXwwckOHUwiCLmHxZUMCIrr6a_MZHYJFcw';
-//     $exchange = $monzoService->exchangeCode($code);
-//     return response()->json(['exchange' => $exchange]);
-// })->name('monzoExchange');
-//
-// Route::get('monzo-refresh', function () {
-//     $monzoService = new MonzoService();
-//     $monzoAccessToken = MonzoAccessToken::all()->first();
-//     $refreshedToken = $monzoService->refreshAccessToken($monzoAccessToken);
-//     return response()->json(['refreshedToken' => $refreshedToken]);
-// })->name('monzoRefresh');
+
+
+
+
+
 
 
 Route::get('/testing', function () {
@@ -299,7 +210,6 @@ Route::get('/testing', function () {
 
 })->name('testing');
 
-// private function to convert bigDecimal to decimal(16, 8)
 
 
 require __DIR__.'/auth.php';

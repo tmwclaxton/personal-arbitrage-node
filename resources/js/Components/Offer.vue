@@ -96,13 +96,13 @@
                     <!--<p class="mt-2 text-zinc-500 dark:text-zinc-200 font-bold">Currency: {{ offer.currency }}</p>-->
                     <p class="text-zinc-500 dark:text-zinc-200 font-bold">Price: {{ offer.price }} {{ offer.currency }}</p>
                     <p class="text-zinc-500 dark:text-zinc-200 font-bold">Type: {{ offer.type }} BTC</p>
-                    <div v-if="!offer.accepted || !offer.taker && !offer.has_range" class="flex flex-col">
+                    <div v-if="(!offer.accepted && !offer.has_range)" class="flex flex-col">
                         <p class="mt-2 text-zinc-500 dark:text-zinc-200">Amount: {{ offer.amount ?? 'N/A' }}</p>
                         <p class="text-zinc-500 dark:text-zinc-200 text-xs">Sats: {{ offer.satoshis_now ?? 'N/A' }}</p>
                         <p class="text-zinc-500 dark:text-zinc-200 text-xs">Sats Profit: {{ offer.satoshi_amount_profit ?? 'N/A' }}</p>
                     </div>
                     <!-- if accepted offer amount is select hide below!!!-->
-                    <div v-if="(!offer.accepted || !offer.taker) && offer.has_range" class="flex flex-col">
+                    <div v-if="(!offer.accepted && offer.has_range)" class="flex flex-col">
                         <p class="mt-2 text-zinc-500 dark:text-zinc-200">Min Amount: {{ offer.min_amount ?? 'N/A' }}</p>
                         <p class="text-zinc-500 dark:text-zinc-200 text-xs">Sats: {{ offer.min_satoshi_amount ?? 'N/A' }}</p>
                         <p class="text-zinc-500 dark:text-zinc-200 text-xs">Profit: {{ offer.min_satoshi_amount_profit ?? 'N/A' }}</p>
@@ -110,12 +110,11 @@
                         <p class="text-zinc-500 dark:text-zinc-200 text-xs">Sats: {{ offer.max_satoshi_amount ?? 'N/A' }}</p>
                         <p class="text-zinc-500 dark:text-zinc-200 text-xs">Profit: {{ offer.max_satoshi_amount_profit ?? 'N/A' }}</p>
                     </div>
-                    <div v-if="offer.accepted && offer.taker">
+                    <div v-if="offer.accepted">
                     <!--    accepted_offer_amount, accepted_offer_amount_sat, accepted_offer_profit_sat-->
                         <p class="mt-2 text-zinc-500 dark:text-zinc-200">Accepted Amount: {{ offer.accepted_offer_amount ?? 'N/A' }}</p>
                         <p class="text-zinc-500 dark:text-zinc-200 text-xs">Sats: {{ offer.accepted_offer_amount_sat ?? 'N/A' }}</p>
                         <p class="text-zinc-500 dark:text-zinc-200 text-xs">Profit: {{ offer.accepted_offer_profit_sat ?? 'N/A' }}</p>
-
                     </div>
 
 
@@ -132,8 +131,8 @@
                     <!--<p class="mt-2 text-zinc-500 dark:text-zinc-200">Explicit: {{ offer.is_explicit ? 'Yes' : 'No' }}</p>-->
                     <!--<p class="mt-2 text-zinc-500 dark:text-zinc-200">Satoshis: {{ offer.satoshis ?? 'N/A' }}</p>-->
                     <!--<p class="mt-2 text-zinc-500 dark:text-zinc-200">Maker: {{ offer.maker }}</p>-->
-                    <!--<p class="mt-2 text-zinc-500 dark:text-zinc-200">Escrow Duration: {{ offer.escrow_duration }}</p>-->
-                    <!--<p class="mt-2 text-zinc-500 dark:text-zinc-200">Bond Size: {{ offer.bond_size }}</p>-->
+                    <p class=" text-zinc-500 dark:text-zinc-200">Escrow Duration: {{ offer.escrow_duration }}</p>
+                    <p class="text-zinc-500 dark:text-zinc-200">Bond Size: {{ offer.bond_size }}</p>
                     <p class="text-zinc-500 dark:text-zinc-200">Premium: {{ offer.premium }}</p>
                     <p class="text-zinc-500 dark:text-zinc-200 font-medium ">Payment Methods: <br><span class="break-words font-bold">{{ offer.payment_methods }}</span></p>
 
