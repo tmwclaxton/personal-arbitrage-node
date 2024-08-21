@@ -92,7 +92,7 @@ Route::post('collaborative-cancel', [OfferController::class, 'collaborativeCance
 
 Route::get('/transactions', [\App\Http\Controllers\TransactionController::class, 'index'])->name('transactions.index');
 Route::get('/purchases', [\App\Http\Controllers\BtcPurchaseController::class, 'index'])->name('purchases.index');
-// Route::get('/payments', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payments.index');
+Route::get('/payments', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payments.index');
 Route::get('/config', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('dashboard.index');
 Route::get('/graphs', [\App\Http\Controllers\GraphController::class, 'index'])->name('graphs.index');
 

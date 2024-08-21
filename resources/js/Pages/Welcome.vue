@@ -129,7 +129,12 @@ const showSidebar = ref(true);
             </Link>
             <Link :href="route('transactions.index')" >
                 <secondary-button class="h-12">
-                    Transaction History
+                    Transactions
+                </secondary-button>
+            </Link>
+            <Link :href="route('payments.index')" >
+                <secondary-button class="h-12">
+                    Payments
                 </secondary-button>
             </Link>
             <Link :href="route('purchases.index')" >

@@ -1,5 +1,5 @@
 <template>
-    <div class="w-full overflow-x-scroll containe table-auto border-zinc-700 border-2  rounded-lg rounded shadow-lg shadow-sky-700/50 overflow-hidden ">
+    <div class="w-full overflow-x-scroll containe table-auto border-zinc-700 border-2  rounded-lg rounded shadow-lg   overflow-hidden ">
         <table class="p-6 overflow-hidden w-full">
             <thead>
             <tr>
@@ -10,25 +10,25 @@
             <tr v-for="row in rows" :key="row.id">
                 <td v-for="(value, key) in row" :key="key" class="border px-4 py-2 border-slate-800" >
                     <!-- if the key is "id", render a link to the endpoint -->
-                    <template v-if="['id', 'paper id'].includes(key.toLowerCase())">
-                        <BlueLink class="font-mono" v-if="value" :href="`${endpoint}/${value}`">{{ value }}</BlueLink>
-                    </template>
+                    <!--<template v-if="['id', 'paper id'].includes(key.toLowerCase())">-->
+                    <!--    <BlueLink class="font-mono" v-if="value" :href="`${endpoint}/${value}`">{{ value }}</BlueLink>-->
+                    <!--</template>-->
 
                     <!-- if the key is "value" or "status", render a colored dot -->
-                    <template v-else-if="value != null && ['value', 'status', 'ft value', 't&a value', 'h t&a', 'h ft'].includes(key.toLowerCase()) ">
+                    <template v-if="value != null && ['value', 'status', 'ft value', 't&a value', 'h t&a', 'h ft'].includes(key.toLowerCase()) ">
 <!--                        check if not array-->
                         <div v-if="!Array.isArray(value)">
                             <div v-if="['no', 'never ran'].includes(value.toLowerCase())" class="flex items-center justify-between space-x-2">
                                 <p>{{ value }}</p>
-                                <div class="bg-red-600 w-4 h-4 rounded-full"></div>
+                                <!--<div class="bg-red-600 w-4 h-4 rounded-full"></div>-->
                             </div>
                             <div v-else-if="['yes', 'complete'].includes(value.toLowerCase())" class="flex items-center justify-between space-x-2">
                                 <p>{{ value }}</p>
-                                <div class="bg-green-500 w-4 h-4 rounded-full"></div>
+                                <!--<div class="bg-green-500 w-4 h-4 rounded-full"></div>-->
                             </div>
                             <div v-else class="flex items-center justify-between space-x-2">
                                 <p>{{ value }}</p>
-                                <div class="bg-amber-500 w-4 h-4 rounded-full"></div>
+                                <!--<div class="bg-amber-500 w-4 h-4 rounded-full"></div>-->
                             </div>
                         </div>
                         <div v-else>
@@ -47,8 +47,8 @@
                         </div>
                     </template>
                     <!-- otherwise, render the value as plain text -->
-                    <template v-else>
-                        {{ value }}
+                    <template v-else class="">
+                        <p class="max-w-64 break-words text-center mx-auto">{{ value }}</p>
                     </template>
                 </td>
             </tr>
