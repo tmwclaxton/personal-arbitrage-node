@@ -11,8 +11,10 @@ use App\Services\DiscordService;
 use App\WorkerClasses\HelperFunctions;
 use App\WorkerClasses\LightningNode;
 use App\WorkerClasses\Robosats;
+use Carbon\CarbonInterval;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Bus;
 use Inertia\Inertia;
 
 class OfferController extends Controller
@@ -77,6 +79,7 @@ class OfferController extends Controller
             // add a percentage to the premium
             $offer->premium = $offer->premium . '%';
             $offer->payment_methods = json_decode($offer->payment_methods);
+            $offer->escrow_duration = CarbonInterval::seconds($offer->escrow_duration)->cascade()->forHumans();
 
 
 
@@ -404,5 +407,107 @@ class OfferController extends Controller
         $robosats = new Robosats();
         $robosats->webSocketCommunicate($offer, $robot, $message);
         return response()->json(['message' => 'Message sent']);
+    }
+
+    public function createRobot(Request $request) {
+        $offerId = request('offer_id');
+        $offer = Offer::find($offerId);
+
+        $robosats = new Robosats();
+        $response = $robosats->createRobot($offer);
+        return $response;
+    }
+
+    public function acceptOffer(Request $request) {
+        $robosats = new Robosats();
+        $offerId = request('offer_id');
+        $offer = Offer::find($offerId);
+        $response = $robosats->acceptOffer($offer->robosatsId);
+        return $response;
+    }
+
+    public function payBond(Request $request) {
+        $offerId = request('offer_id');
+        $transaction = Transaction::where('offer_id', $offerId)->first();
+        $invoice = $transaction->bond_invoice;
+        $lightningNode = new LightningNode();
+        $response = $lightningNode->payInvoice($invoice);
+        return $response;
+    }
+
+    public function payEscrow(Request $request) {
+        // grab offer_id and transaction_id
+        $offerId = request('offer_id');
+        $transaction = Transaction::where('offer_id', $offerId)->first();
+        $escrowInvoice = $transaction->escrow_invoice;
+        // dd($escrowInvoice);
+        $lightningNode = new LightningNode();
+        $response = $lightningNode->payInvoice($escrowInvoice);
+        return $response;
+    }
+
+    public function confirmPayment(Request $request) {
+        $offerId = request('offer_id');
+        $offer = Offer::find($offerId);
+        $transaction = Transaction::where('offer_id', $offerId)->first();
+        $robosats = new Robosats();
+        $response = $robosats->confirmReceipt($offer, $transaction);
+        return $response;
+    }
+
+    public function claimRewards() {
+        $robosats = new Robosats();
+        $robots = Robot::where('earned_rewards', '>', 0)->get();
+        foreach ($robots as $robot) {
+            $response = $robosats->claimCompensation($robot);
+        }
+        return response()->json(
+            ['message' => 'Rewards claimed for' . count($robots) . ' robots',
+                'robots' => $robots]
+        );
+    }
+
+    public function sendPaymentHandle(Request $request) {
+        $offerId = request('offer_id');
+        $offer = Offer::find($offerId);
+        $robosats = new Robosats();
+        $robosats->sendHandle($offer);
+    }
+
+    public function autoAccept(Request $request) {
+        $adminDashboard = AdminDashboard::all()->first();
+        $offerId = request('offer_id');
+        $offer = Offer::where('id', $offerId)->first();
+        Bus::chain([
+            new \App\Jobs\CreateRobots($offer, $adminDashboard),
+            new \App\Jobs\AcceptSellOffer($offer, $adminDashboard)
+        ])->dispatch();
+    }
+
+    public function collaborativeCancel(Request $request) {
+        $offerId = request('offer_id');
+        $offer = Offer::find($offerId);
+        $robosats = new Robosats();
+        $response = $robosats->collaborativeCancel($offer);
+        return $response;
+    }
+
+    public function completedOffers()
+    {
+        $offers = Offer::where('status', '=' , 14);
+        return Inertia::render('CompletedOffers', [
+            'offers' => $offers->paginate(25)->setPath(route('offers.completed'))->through(fn($offer)=>[
+                "Token Backup" => $offer->robotTokenBackup,
+                "Accepted Offer Amount" => $offer->accepted_offer_amount,
+                "Accepted Offer Amount Satoshis" => $offer->accepted_offer_amount_satoshis,
+                "Accepted Offer Amount Profit" => $offer->accepted_offer_amount_profit,
+                "Accepted Offer Amount Profit Satoshis" => $offer->accepted_offer_amount_profit_satoshis,
+                "Currency" => $offer->currency,
+                "Btc Price" => $offer->price,
+                "My Offer" => $offer->my_offer,
+                "Type" => $offer->type,
+                "Created At" => $offer->created_at,
+            ])->withQueryString(),
+        ]);
     }
 }

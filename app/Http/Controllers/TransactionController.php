@@ -10,8 +10,17 @@ class TransactionController extends Controller
 {
     public function index()
     {
+        $transactions = Transaction::query();
+
         return Inertia::render('TransactionsIndex', [
-            'transactions' => Transaction::all()
+            'transactions' => $transactions->paginate(25)->setPath(route('transactions.index'))->through(fn($transaction)=>[
+                "Offer ID" => $transaction->offer_id,
+                "Bond Invoice" => $transaction->bond_invoice,
+                "Escrow Invoice" => $transaction->escrow_invoice,
+                "Status" => $transaction->status_message,
+                "Satoshi Fees (inc Coordinator)" => $transaction->fees,
+                "Created At" => $transaction->created_at,
+            ])->withQueryString(),
         ]);
     }
 }

@@ -77,6 +77,7 @@ return new class extends Migration
             $table->timestamp('auto_confirm_at')->nullable();
 
             $table->string('discord_channel_id')->nullable();
+            $table->boolean('my_offer')->default(false);
             $table->timestamps();
         });
     }

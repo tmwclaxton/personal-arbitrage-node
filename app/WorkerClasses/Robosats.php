@@ -711,8 +711,15 @@ class Robosats
         // TODO: then we need to calculate 0.025% of the trade volume and add that to the fees
         // grab the lightning node
         $lightningNode = new LightningNode();
+        // the fee is 0.025 if you are the maker of the offer and 0.175 if you are the taker
+        $multiplier = 0.175;
+        if ($transaction->offer->my_offer) {
+            $multiplier = 0.025;
+        }
+        $multiplier = $multiplier / 100;
+
         $fees = $lightningNode->getPaymentFees($transaction->bond_invoice) + $lightningNode->getPaymentFees($transaction->escrow_invoice)
-            + $transaction->offer->accepted_offer_amount_sat * 0.00025;
+            + $transaction->offer->accepted_offer_amount_sat * $multiplier;
         $transaction->fees = $fees;
         $transaction->save();
 

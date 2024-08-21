@@ -72,5 +72,8 @@ class RevolutPaymentListener implements ShouldQueue
 
         }
 
+        $transactions = $mitmService->getBalances();
+        $adminDashboard->revolut_balance = json_encode($transactions);
+
     }
 }

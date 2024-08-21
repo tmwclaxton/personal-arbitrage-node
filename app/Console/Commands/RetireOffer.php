@@ -27,7 +27,7 @@ class RetireOffer extends Command
     public function handle()
     {
         // retire all offers that have passed their expiration date and their robosatsId is less than 20000
-        $offers = Offer::where([['expires_at', '<', now()], ['robosatsId', '<', 50000]])->orWhere('status', 14)->get();
+        $offers = Offer::where([['expires_at', '<', now()], ['robosatsId', '<', 50000]])->orWhere([['status', '=', 14], ['robosatsId', '<', 50000]])->get();
         foreach ($offers as $offer) {
             $randomNumber = rand(1, 1000000000);
             $offer->robosatsIdStorage = $offer->robosatsId;

@@ -127,12 +127,27 @@ const showSidebar = ref(true);
                     Config
                 </secondary-button>
             </Link>
-            <Link :href="route('dashboard.index')" >
+            <Link :href="route('offers.completed')" >
                 <secondary-button class="h-12">
-                    Transaction History
+                    Completed Offers
                 </secondary-button>
             </Link>
-            <Link :href="route('dashboard.index')" >
+            <Link :href="route('transactions.index')" >
+                <secondary-button class="h-12">
+                    Transactions
+                </secondary-button>
+            </Link>
+            <Link :href="route('payments.index')" >
+                <secondary-button class="h-12">
+                    Payments
+                </secondary-button>
+            </Link>
+            <Link :href="route('purchases.index')" >
+                <secondary-button class="h-12">
+                    Bitcoin Purchases
+                </secondary-button>
+            </Link>
+            <Link :href="route('graphs.index')" >
                 <secondary-button class="h-12">
                     Graphs
                 </secondary-button>
@@ -224,9 +239,9 @@ const showSidebar = ref(true);
                             <p class=""><span class="font-bold text-xl mb-2">Wallet:</span></p>
 
                             <p class=""><span class="font-bold">Lighting Wallet Balance:</span> {{ tempAdminDashboard.localBalance }} </p>
-                            <p class=""><span class="font-bold">Revolut Balance:</span></p>
-                            <p class=""><span class="font-bold">Wise Balance:</span></p>
-                            <p class=""><span class="font-bold">Kraken Balance:</span></p>
+                            <!--<p class=""><span class="font-bold">Revolut Balance:</span></p>-->
+                            <!--<p class=""><span class="font-bold">Wise Balance:</span></p>-->
+                            <!--<p class=""><span class="font-bold">Kraken Balance:</span></p>-->
                             <p class=""><span class="font-bold">Remote Balance:</span> {{ tempAdminDashboard.remoteBalance }} </p>
                             <div class="border-b border-zinc-300 dark:border-zinc-700"></div>
                             <div class="flex flex-col gap-y-1 text-xs pt-2">

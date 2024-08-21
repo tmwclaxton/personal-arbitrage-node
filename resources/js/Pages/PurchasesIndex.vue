@@ -9,23 +9,23 @@ import Pagination from "@/Components/Pagination.vue";
 import Table from "@/Components/Table.vue";
 
 const props = defineProps({
-    transactions: Object,
+    purchases: Object,
 });
 </script>
 
 <template>
-    <Head title="Transactions" />
+    <Head title="BTC Purchases" />
 
     <GuestLayout>
 
         <div class="py-12">
-            <div class="w mx-auto sm:px-6 lg:px-8">
+            <div class=" mx-auto sm:px-6 lg:px-8">
                 <div class=" overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="flex flex-col items-center">
-                        <Table class="" endpoint="/transactions" :rows="transactions.data" />
+                        <Table class="" endpoint="/purchases" :rows="purchases.data" />
                     </div>
                     <div class="flex flex-col items-center mt-6">
-                        <Pagination :links="transactions.links"/>
+                        <Pagination :links="purchases.links"/>
                     </div>
                 </div>
             </div>

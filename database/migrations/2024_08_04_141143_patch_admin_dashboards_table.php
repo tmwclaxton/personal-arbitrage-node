@@ -13,9 +13,9 @@ return new class extends Migration
     {
         // add the new column
         Schema::table('admin_dashboards', function (Blueprint $table) {
-            $table->float('revolut_balance')->nullable();
-            $table->float('wise_balance')->nullable();
-            $table->float('kraken_balance')->nullable();
+            $table->json('revolut_balance')->nullable();
+            $table->json('wise_balance')->nullable();
+            $table->json('kraken_balance')->nullable();
             $table->integer('sitting_sell_offers_count')->default(0);
             $table->float('sitting_sell_offers_min_premium')->nullable(0);
             $table->float('sitting_sell_offers_max_premium')->nullable(0);
@@ -36,6 +36,8 @@ return new class extends Migration
             $table->dropColumn('kraken_balance');
             $table->dropColumn('sitting_sell_offers_count');
             $table->dropColumn('sitting_sell_offers_premium');
+            $table->dropColumn('sitting_sell_offers_set_aside');
+            $table->dropColumn('autoCreate');
         });
     }
 };

@@ -9,12 +9,12 @@ import Pagination from "@/Components/Pagination.vue";
 import Table from "@/Components/Table.vue";
 
 const props = defineProps({
-    transactions: Object,
+    offers: Object,
 });
 </script>
 
 <template>
-    <Head title="Transactions" />
+    <Head title="Offers" />
 
     <GuestLayout>
 
@@ -22,10 +22,10 @@ const props = defineProps({
             <div class="w mx-auto sm:px-6 lg:px-8">
                 <div class=" overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="flex flex-col items-center">
-                        <Table class="" endpoint="/transactions" :rows="transactions.data" />
+                        <Table class="" endpoint="/offers" :rows="offers.data" />
                     </div>
                     <div class="flex flex-col items-center mt-6">
-                        <Pagination :links="transactions.links"/>
+                        <Pagination :links="offers.links"/>
                     </div>
                 </div>
             </div>
