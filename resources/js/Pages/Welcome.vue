@@ -127,17 +127,17 @@ const showSidebar = ref(true);
                     Config
                 </secondary-button>
             </Link>
-            <Link :href="route('dashboard.index')" >
+            <Link :href="route('transactions.index')" >
                 <secondary-button class="h-12">
                     Transaction History
                 </secondary-button>
             </Link>
-            <Link :href="route('dashboard.index')" >
+            <Link :href="route('purchases.index')" >
                 <secondary-button class="h-12">
                     Bitcoin Purchases
                 </secondary-button>
             </Link>
-            <Link :href="route('dashboard.index')" >
+            <Link :href="route('graphs.index')" >
                 <secondary-button class="h-12">
                     Graphs
                 </secondary-button>
