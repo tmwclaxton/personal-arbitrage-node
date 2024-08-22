@@ -113,6 +113,22 @@ Route::get('/graphs', [\App\Http\Controllers\GraphController::class, 'index'])->
 
 Route::get('/testing', function () {
 
+    //!:TODO we need to figure out how to set the accepted amount and other shit inorder for auto accept to work
+    $robosats = new Robosats();
+    $providers = ['satstralia','lake']; //veneto  'temple',
+    $response = $robosats->createSellOffer(
+        "EUR",
+        20,
+        $providers[array_rand($providers)],
+        false,
+        20,
+        "Revolut",
+        2,
+        null
+    );
+
+    dd($response);
+
     $mitmService = new \App\Services\MitmService();
     $transactions = $mitmService->grabTransactions();
 
