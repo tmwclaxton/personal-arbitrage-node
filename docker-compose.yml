@@ -92,8 +92,6 @@ services:
         depends_on:
             - mitmproxy
         environment:
-            #      - http_proxy=http://mitmproxy:8080
-            #      - https_proxy=http://mitmproxy:8080
             - SSLKEYLOGFILE=/sslkeylog/sslkeylogfile.log
         volumes:
             - ./mitm_certs:/certs

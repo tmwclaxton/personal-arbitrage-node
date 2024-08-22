@@ -64,10 +64,10 @@ const panicButtonToggle = () => {
                             class="font-bold mr-1">Umbrel Token: </span>
                             <TextInput v-model="tempAdminDashboard.umbrel_token"/>
                         </div>
-                        <div class="flex flex-row justify-between items-center"><span
-                            class="font-bold mr-1">Rev Token: </span>
-                            <TextInput v-model="tempAdminDashboard.revolut_code"/>
-                        </div>
+                        <!--<div class="flex flex-row justify-between items-center"><span-->
+                        <!--    class="font-bold mr-1">Rev Token: </span>-->
+                        <!--    <TextInput v-model="tempAdminDashboard.revolut_code"/>-->
+                        <!--</div>-->
                         <div class="flex flex-row justify-between items-center"><span
                             class="font-bold mr-1">Revolut Tag: </span>
                             <TextInput v-model="tempAdminDashboard.revolut_handle"/>
