@@ -510,4 +510,9 @@ class OfferController extends Controller
             ])->withQueryString(),
         ]);
     }
+
+    public function postingPage()
+    {
+        return Inertia::render('PostingOffers');
+    }
 }
