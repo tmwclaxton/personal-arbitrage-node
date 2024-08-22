@@ -134,7 +134,7 @@ const showSidebar = ref(true);
             </Link>
             <Link :href="route('offers.posting.index')" >
                 <secondary-button class="h-12">
-                    Maker Offers
+                    Post an Offer
                 </secondary-button>
             </Link>
             <Link :href="route('transactions.index')" >

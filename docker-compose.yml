@@ -87,12 +87,24 @@ services:
             - sail
     sauve-py:
         image: suave-py:latest
+        privileged: true
         ports:
-            - "8000:8000"
+            - "8083:8000"
         depends_on:
             - mitmproxy
         environment:
-            - SSLKEYLOGFILE=/sslkeylog/sslkeylogfile.log
+            PROXY_ENDPOINT: '${PROXY_ENDPOINT}'
+            HOST_IP: '${HOST_IP}'
+            TWO_CAPTCHA_API_KEY: '${TWO_CAPTCHA_API_KEY}'
+            REVOLUT_PHONE_NUMBER: '${REVOLUT_PHONE_NUMBER}'
+            REVOLUT_PASSCODE: '${REVOLUT_PASSCODE}'
+            KRAKEN_EUR_REFERENCE: '${KRAKEN_EUR_REFERENCE}'
+            REVOLUT_EUR_THRESHOLD: '${REVOLUT_EUR_THRESHOLD}'
+            REVOLUT_GBP_THRESHOLD: '${REVOLUT_GBP_THRESHOLD}'
+            DISCORD_API_BOT_TOKEN: '${DISCORD_API_BOT_TOKEN}'
+            DISCORD_APPLICATION_ID: '${DISCORD_APPLICATION_ID}'
+            DISCORD_PUBLIC_KEY: '${DISCORD_PUBLIC_KEY}'
+            DISCORD_CHANNEL_ID: '${DISCORD_CHANNEL_ID}'
         volumes:
             - ./mitm_certs:/certs
             - /dev/bus/usb:/dev/bus/usb

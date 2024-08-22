@@ -26,7 +26,7 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 
                 <Link :href="route('offers.posting.index')" >
                     <secondary-button class="h-12">
-                        Maker Offers
+                        Post an Offers
                     </secondary-button>
                 </Link>
 
