@@ -111,7 +111,7 @@ Route::get('test-revolut-payment-listener', function () {
     $job->handle();
 });
 
-Route:get('grab-transactions', function () {
+Route::get('grab-transactions', function () {
     $mitmService = new \App\Services\MitmService();
     $transactions = $mitmService->grabTransactions();
     return $transactions;
