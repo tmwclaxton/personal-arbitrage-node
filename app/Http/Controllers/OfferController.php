@@ -494,7 +494,7 @@ class OfferController extends Controller
 
     public function completedOffers()
     {
-        $offers = Offer::where('status', '=' , 14);
+        $offers = Offer::where('status', '=' , 14)->orderByDesc('created_at');
         return Inertia::render('CompletedOffers', [
             'offers' => $offers->paginate(25)->setPath(route('offers.completed'))->through(fn($offer)=>[
                 "Token Backup" => $offer->robotTokenBackup,
@@ -509,5 +509,10 @@ class OfferController extends Controller
                 "Created At" => $offer->created_at,
             ])->withQueryString(),
         ]);
+    }
+
+    public function postingPage()
+    {
+        return Inertia::render('PostingOffers');
     }
 }

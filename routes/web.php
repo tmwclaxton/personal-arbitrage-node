@@ -48,60 +48,73 @@ use WebSocket\Connection;
 use WebSocket\Middleware\CloseHandler;
 use WebSocket\Middleware\PingResponder;
 
+Route::middleware('auth')->group(function () {
+    Route::post('/updateAdminDashboard', function () {
+        $adminDashboard = AdminDashboard::all()->first();
 
-Route::post('/updateAdminDashboard', function () {
-    $adminDashboard = AdminDashboard::all()->first();
-
-    foreach (request()->adminDashboard as $key => $value) {
-        // check if key does exist
-        if (key_exists($key, $adminDashboard->getAttributes())) {
-            if ($key !== "payment_methods") {
-                $adminDashboard->$key = $value;
-            } else {
-                $adminDashboard->$key = json_encode($value);
+        foreach (request()->adminDashboard as $key => $value) {
+            // check if key does exist
+            if (key_exists($key, $adminDashboard->getAttributes())) {
+                if ($key !== "payment_methods") {
+                    $adminDashboard->$key = $value;
+                } else {
+                    $adminDashboard->$key = json_encode($value);
+                }
             }
         }
-    }
-    // set the payment methods separately
-    $adminDashboard->payment_methods = json_encode(request()->adminDashboard["payment_methods"]);
-    $adminDashboard->save();
-    // set payment currencies separately
-    $adminDashboard->payment_currencies = json_encode(request()->adminDashboard["payment_currencies"]);
-    $adminDashboard->save();
-    return $adminDashboard;
-})->name('updateAdminDashboard');
+        // set the payment methods separately
+        $adminDashboard->payment_methods = json_encode(request()->adminDashboard["payment_methods"]);
+        $adminDashboard->save();
+        // set payment currencies separately
+        $adminDashboard->payment_currencies = json_encode(request()->adminDashboard["payment_currencies"]);
+        $adminDashboard->save();
+        return $adminDashboard;
+    })->name('updateAdminDashboard');
+
+
+    Route::get('/', [\App\Http\Controllers\OfferController::class, 'index'])->name('welcome');
+    Route::get('/offers', [\App\Http\Controllers\OfferController::class, 'getOffers'])->name('offers.index');
+    Route::get('/completed-offers', [\App\Http\Controllers\OfferController::class, 'completedOffers'])->name('offers.completed');
+    // Route::get('/offer/{offer_id}/chat', [\App\Http\Controllers\OfferController::class, 'chatRoom'])->name('offers.chat');
+    // Route::post('/offer/{offer_id}/chat', [\App\Http\Controllers\OfferController::class, 'sendMessage'])->name('offers.chat');
+    Route::post('/create-robot', [OfferController::class, 'createRobot'])->name('create-robot');
+    Route::post('/accept-offer', [OfferController::class, 'acceptOffer'])->name('accept-offer');
+    Route::post('/pay-bond', [OfferController::class, 'payBond'])->name('pay-bond');
+    Route::post('/pay-escrow', [OfferController::class, 'payEscrow'])->name('pay-escrow');
+    Route::post('/confirm-payment', [OfferController::class, 'confirmPayment'])->name('confirm-payment');
+    Route::get('/claim-rewards', [OfferController::class, 'claimRewards'])->name('claim-rewards');
+    Route::post('/send-payment-handle', [OfferController::class, 'sendPaymentHandle'])->name('send-payment-handle');
+    Route::post('auto-accept', [OfferController::class, 'autoAccept'])->name('auto-accept');
+    Route::post('collaborative-cancel', [OfferController::class, 'collaborativeCancel'])->name('collaborative-cancel');
+
+
+    Route::get('/transactions', [\App\Http\Controllers\TransactionController::class, 'index'])->name('transactions.index');
+    Route::get('/purchases', [\App\Http\Controllers\BtcPurchaseController::class, 'index'])->name('purchases.index');
+    Route::get('/payments', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payments.index');
+    Route::get('/config', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('dashboard.index');
+    Route::get('/graphs', [\App\Http\Controllers\GraphController::class, 'index'])->name('graphs.index');
+    Route::get('/posting-offers', [\App\Http\Controllers\OfferController::class, 'postingPage'])->name('offers.posting.index');
+
+});
 
 
 
-Route::get('/', [\App\Http\Controllers\OfferController::class, 'index'])->name('welcome');
-Route::get('/offers', [\App\Http\Controllers\OfferController::class, 'getOffers'])->name('offers.index');
-Route::get('/completed-offers', [\App\Http\Controllers\OfferController::class, 'completedOffers'])->name('offers.completed');
-// Route::get('/offer/{offer_id}/chat', [\App\Http\Controllers\OfferController::class, 'chatRoom'])->name('offers.chat');
-// Route::post('/offer/{offer_id}/chat', [\App\Http\Controllers\OfferController::class, 'sendMessage'])->name('offers.chat');
-Route::post('/create-robot', [OfferController::class, 'createRobot'])->name('create-robot');
-Route::post('/accept-offer', [OfferController::class, 'acceptOffer'])->name('accept-offer');
-Route::post('/pay-bond', [OfferController::class, 'payBond'])->name('pay-bond');
-Route::post('/pay-escrow', [OfferController::class, 'payEscrow'])->name('pay-escrow');
-Route::post('/confirm-payment', [OfferController::class, 'confirmPayment'])->name('confirm-payment');
-Route::get('/claim-rewards', [OfferController::class, 'claimRewards'])->name('claim-rewards');
-Route::post('/send-payment-handle', [OfferController::class, 'sendPaymentHandle'])->name('send-payment-handle');
-Route::post('auto-accept', [OfferController::class, 'autoAccept'])->name('auto-accept');
-Route::post('collaborative-cancel', [OfferController::class, 'collaborativeCancel'])->name('collaborative-cancel');
+Route::get('/test-revolut-login', function () {
+    $url = 'http://suave-py:' . env('SUAVE_PORT', 8000) . '/revolut-login?' . http_build_query(['auto_bal_flag' => true]);
+    // dd($url);
+    Http::post($url);
+});
 
+Route::get('test-revolut-payment-listener', function () {
+    // trigger job
+    $job = new \App\Jobs\RevolutPaymentListener();
+    $job->handle();
+});
 
+Route::get('pgp-test', function () {
+    $pgpService = new PgpService();
 
-
-Route::get('/transactions', [\App\Http\Controllers\TransactionController::class, 'index'])->name('transactions.index');
-Route::get('/purchases', [\App\Http\Controllers\BtcPurchaseController::class, 'index'])->name('purchases.index');
-Route::get('/payments', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payments.index');
-Route::get('/config', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('dashboard.index');
-Route::get('/graphs', [\App\Http\Controllers\GraphController::class, 'index'])->name('graphs.index');
-
-
-
-
-
-
+});
 
 
 

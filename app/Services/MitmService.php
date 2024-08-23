@@ -11,7 +11,7 @@ class MitmService
 
     public function __construct()
     {
-        // $this->endpoint = env('MITM_ENDPOINT');
+        $this->endpoint = env('HOST_IP') . ':8081';
     }
 
     public function grabAll()

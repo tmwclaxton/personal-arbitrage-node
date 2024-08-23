@@ -85,19 +85,29 @@ services:
         tty: true          # Equivalent to -it (pseudo-TTY)
         networks:
             - sail
-    sauve-py:
+    suave-py:
         image: suave-py:latest
+        privileged: true
         ports:
-            - "8000:8000"
+            - "8083:8000"
         depends_on:
             - mitmproxy
         environment:
-            #      - http_proxy=http://mitmproxy:8080
-            #      - https_proxy=http://mitmproxy:8080
-            - SSLKEYLOGFILE=/sslkeylog/sslkeylogfile.log
+            PROXY_ENDPOINT: '${PROXY_ENDPOINT}'
+            PROXY_RESULTS_ENDPOINT: '${PROXY_RESULTS_ENDPOINT}'
+            TWO_CAPTCHA_API_KEY: '${TWO_CAPTCHA_API_KEY}'
+            REVOLUT_PHONE_NUMBER: '${REVOLUT_PHONE_NUMBER}'
+            REVOLUT_PASSCODE: '${REVOLUT_PASSCODE}'
+            KRAKEN_EUR_REFERENCE: '${KRAKEN_EUR_REFERENCE}'
+            REVOLUT_EUR_THRESHOLD: '${REVOLUT_EUR_THRESHOLD}'
+            REVOLUT_GBP_THRESHOLD: '${REVOLUT_GBP_THRESHOLD}'
+            DISCORD_API_BOT_TOKEN: '${DISCORD_API_BOT_TOKEN}'
+            DISCORD_APPLICATION_ID: '${DISCORD_APPLICATION_ID}'
+            DISCORD_PUBLIC_KEY: '${DISCORD_PUBLIC_KEY}'
+            DISCORD_CHANNEL_ID: '${DISCORD_CHANNEL_ID}'
         volumes:
             - ./mitm_certs:/certs
-            - /dev/bus/usb:/dev/bus/usb
+            - /dev:/dev
         networks:
             - sail
 networks:

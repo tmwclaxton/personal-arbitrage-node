@@ -52,8 +52,9 @@ class RevolutPaymentListener implements ShouldQueue
             $payment = new \App\Models\Payment();
             $payment->payment_method = 'Revolut';
             $payment->platform_transaction_id = $transaction['id'];
-            $payment->payment_reference = $transaction['comment'];
-
+            if (isset($transaction['comment'])) {
+                $payment->payment_reference = $transaction['comment'];
+            }
             if (Payment::where('platform_transaction_id', $payment->platform_transaction_id)->exists()) {
                 continue;
             }
@@ -62,13 +63,25 @@ class RevolutPaymentListener implements ShouldQueue
             $payment->payment_amount = $transaction['amount'] / 100;
             $payment->platform_account_id = $transaction['account']['id'];
             $payment->platform_description = $transaction['description'];
+            # grab the unix completedDate and convert it to a Carbon instance and set it as the payment_date
+            $payment->payment_date = Carbon::createFromTimestamp($transaction['completedDate'] / 1000);
             $payment->platform_entity = json_encode($transaction);
+
 
 
             $payment->save();
 
             $discordService = new DiscordService();
-            $discordService->sendMessage('Payment received: ' . $payment->payment_amount . ' ' . $payment->payment_currency . ' on Revolut');
+            $message = 'Payment received: ' . $payment->payment_amount . ' ' . $payment->payment_currency . ' on Revolut';
+            # if there is a description, append it to the message
+            if ($payment->platform_description) {
+                $message .= ' with description: ' . $payment->platform_description;
+            }
+            # if there is a payment reference, append it to the message
+            if ($payment->payment_reference) {
+                $message .= ' with reference: ' . $payment->payment_reference;
+            }
+            $discordService->sendMessage($message);
 
         }
 

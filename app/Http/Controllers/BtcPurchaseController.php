@@ -9,7 +9,7 @@ class BtcPurchaseController extends Controller
 {
     public function index()
     {
-        $purchase = BtcPurchase::query();
+        $purchase = BtcPurchase::query()->orderByDesc('created_at');
         return inertia('PurchasesIndex', [
             'purchases' => $purchase->paginate(25)->setPath(route('purchases.index'))->through(fn($purchase)=>[
                 "TXID" => $purchase->tx_id,

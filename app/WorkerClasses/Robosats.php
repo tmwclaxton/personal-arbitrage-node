@@ -629,7 +629,7 @@ class Robosats
                 }
 
                 $message = 'Hey! My ' . $pseudonym . ' is ' . $tag . ' - If possible, please put the order ID in the payment reference (' . $offer->robosatsId . '). ' .
-                    'Cheers! (btw I am a bot!)';
+                    'Cheers!';
                 break;
             }
         }

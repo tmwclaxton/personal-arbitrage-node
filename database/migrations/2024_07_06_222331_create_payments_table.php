@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('platform_description');
             $table->json('platform_entity');
             $table->timestamps();
+            $table->timestamp('payment_date')->nullable();
         });
     }
 

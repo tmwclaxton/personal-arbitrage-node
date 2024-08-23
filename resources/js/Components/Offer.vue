@@ -19,9 +19,9 @@
         <div v-else class="mt-4">   </div>
         <!--0, 6, 7, 9, 10-->
         <div class="p-4 pt-0">
-            <div v-if="offer.transaction && (!offer.my_offer &&
-         (offer.status === 0 || offer.status === 6 || offer.status === 7 || offer.status === 9 || offer.status === 10))"
-                 class="border border-gray-200 dark:border-zinc-700 "></div>
+         <!--   <div v-if="offer.transaction && (!offer.my_offer &&-->
+         <!--(offer.status === 0 || offer.status === 6 || offer.status === 7 || offer.status === 9 || offer.status === 10))"-->
+         <!--        class="border border-gray-200 dark:border-zinc-700 "></div>-->
             <div class="grid grid-cols-3  gap-1 p-1">
 
                 <danger-button v-on:click="autoRun" v-if="!offer.accepted && !offer.my_offer"
