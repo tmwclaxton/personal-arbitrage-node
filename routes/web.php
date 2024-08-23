@@ -111,6 +111,11 @@ Route::get('test-revolut-payment-listener', function () {
     $job->handle();
 });
 
+Route::get('pgp-test', function () {
+    $pgpService = new PgpService();
+
+});
+
 
 
 
