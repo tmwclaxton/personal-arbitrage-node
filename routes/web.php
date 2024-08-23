@@ -99,7 +99,18 @@ Route::middleware('auth')->group(function () {
 
 
 
+Route::get('/test-revolut-login', function () {
+    $url = 'http://sauve-py:' . env('SUAVE_PORT', 8000) . '/revolut-login';
+    Http::post($url, [
+        'auto_bal_flag' => true,
+    ]);
+});
 
+Route::get('test-revolut-payment-listener', function () {
+    // trigger job
+    $job = new \App\Jobs\RevolutPaymentListener();
+    $job->handle();
+});
 
 
 
