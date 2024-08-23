@@ -107,7 +107,7 @@ services:
             DISCORD_CHANNEL_ID: '${DISCORD_CHANNEL_ID}'
         volumes:
             - ./mitm_certs:/certs
-            - /dev/bus/usb:/dev/bus/usb
+            - /dev:/dev
         networks:
             - sail
 networks:

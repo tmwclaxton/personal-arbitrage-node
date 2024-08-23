@@ -10,7 +10,7 @@ class PaymentController extends Controller
 {
     public function index()
     {
-        $payment = Payment::query();
+        $payment = Payment::query()->orderByDesc('created_at');
         return Inertia::render('PaymentsIndex', [
             'payments' => $payment->paginate(25)->setPath(route('payments.index'))->through(fn($purchase)=>[
                 "Payment ID" => $purchase->platform_transaction_id,

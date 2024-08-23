@@ -10,7 +10,7 @@ class TransactionController extends Controller
 {
     public function index()
     {
-        $transactions = Transaction::query();
+        $transactions = Transaction::query()->orderByDesc('created_at');
 
         return Inertia::render('TransactionsIndex', [
             'transactions' => $transactions->paginate(25)->setPath(route('transactions.index'))->through(fn($transaction)=>[
