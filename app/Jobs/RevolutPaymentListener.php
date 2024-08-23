@@ -64,7 +64,7 @@ class RevolutPaymentListener implements ShouldQueue
             $payment->platform_account_id = $transaction['account']['id'];
             $payment->platform_description = $transaction['description'];
             # grab the unix completedDate and convert it to a Carbon instance and set it as the payment_date
-            $payment->payment_date = Carbon::createFromTimestamp($transaction['completedDate']);
+            $payment->payment_date = Carbon::createFromTimestamp($transaction['completedDate'] / 1000);
             $payment->platform_entity = json_encode($transaction);
 
 

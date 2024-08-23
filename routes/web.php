@@ -100,10 +100,9 @@ Route::middleware('auth')->group(function () {
 
 
 Route::get('/test-revolut-login', function () {
-    $url = 'http://sauve-py:' . env('SUAVE_PORT', 8000) . '/revolut-login';
-    Http::post($url, [
-        'auto_bal_flag' => true,
-    ]);
+    $url = 'http://suave-py:' . env('SUAVE_PORT', 8000) . '/revolut-login?' . http_build_query(['auto_bal_flag' => true]);
+    // dd($url);
+    Http::post($url);
 });
 
 Route::get('test-revolut-payment-listener', function () {

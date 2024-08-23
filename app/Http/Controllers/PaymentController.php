@@ -19,7 +19,8 @@ class PaymentController extends Controller
                 "Currency" => $purchase->payment_currency,
                 "Amount" => $purchase->payment_amount,
                 "Description" => $purchase->platform_description,
-                "Created At" => $purchase->created_at,
+                "Paid At" => $purchase->payment_date,
+                "Record Creation" => $purchase->created_at,
             ])->withQueryString(),
         ]);
     }

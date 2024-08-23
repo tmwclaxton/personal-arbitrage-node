@@ -85,7 +85,7 @@ services:
         tty: true          # Equivalent to -it (pseudo-TTY)
         networks:
             - sail
-    sauve-py:
+    suave-py:
         image: suave-py:latest
         privileged: true
         ports:
