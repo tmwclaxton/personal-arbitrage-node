@@ -100,7 +100,7 @@ Route::middleware('auth')->group(function () {
 
 
 Route::get('/test-revolut-login', function () {
-    $url = 'http://suave-py:' . env('SUAVE_PORT', 8000) . '/revolut-login?' . http_build_query(['auto_bal_flag' => true]);
+    $url = 'http://'  . env('SUAVE_HOST', 'suave-py') .':' .  env('SUAVE_PORT', 8000) . '/revolut-login?' . http_build_query(['auto_bal_flag' => true]);
     Http::post($url);
 });
 
