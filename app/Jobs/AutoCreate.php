@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\AdminDashboard;
 use App\Models\Offer;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -26,6 +27,10 @@ class AutoCreate implements ShouldQueue
      */
     public function handle(): void
     {
+        $adminDashboard = AdminDashboard::all()->first();
+        if (!$adminDashboard->autoCreate || $adminDashboard->panicButton) {
+            return;
+        }
         # grab all templates
         $templates = \App\Models\PostedOfferTemplate::all();
         foreach ($templates as $template) {
