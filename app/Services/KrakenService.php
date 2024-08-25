@@ -91,6 +91,8 @@ class KrakenService
     public function sendFullAmtToLightning() {
 
 
+        $discordService = new DiscordService();
+        $discordService->sendMessage('Sending BTC to lightning node');
 
         $krakenService = new \App\Services\KrakenService();
         $btcBalance = $krakenService->getBTCBalance();
@@ -159,21 +161,21 @@ class KrakenService
         // $driver->findElement(WebDriverBy::className(".TextButton_root__fIpnJ"))->click();
         // document.querySelector('.TextButton_root__fIpnJ').click()
 
-        // run script to click button
-        $driver->executeScript("document.querySelector('.TextButton_root__fIpnJ').click()");
+        // run script to click button // if this is null it breaks
+        // $driver->executeScript("document.querySelector('.TextButton_root__fIpnJ').click()");
 
-        sleep(5);
+        // sleep(5);
 
         list($buttons, $buttonValues) = $seleniumService->getButtons();
         $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Add withdrawal request"]);
 
         try {
             // find an input with id label and send keys to it
-            $driver->findElement(WebDriverBy::id("label"))->click();
+            $driver->findElement(WebDriverBy::name("label"))->click();
             $invoiceId = "ag_lightning_invoice_" . Carbon::now()->toDateTimeString();
-            $driver->findElement(WebDriverBy::id("label"))->sendKeys($invoiceId);
-            $driver->findElement(WebDriverBy::id("address"))->click();
-            $driver->findElement(WebDriverBy::id("address"))->sendKeys($invoice);
+            $driver->findElement(WebDriverBy::name("label"))->sendKeys($invoiceId);
+            $driver->findElement(WebDriverBy::name("address"))->click();
+            $driver->findElement(WebDriverBy::name("address"))->sendKeys($invoice);
         } catch (\Exception $e) {
             $driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
             $source = $driver->getPageSource();

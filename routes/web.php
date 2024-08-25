@@ -124,7 +124,10 @@ Route::get('pgp-test', function () {
 
 });
 
-
+Route::get('test-kraken', function () {
+    $kraken = new \App\Services\KrakenService();
+    $kraken->sendFullAmtToLightning();
+});
 
 
 
