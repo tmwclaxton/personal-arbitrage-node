@@ -119,48 +119,55 @@ Route::get('grab-transactions', function () {
     return $transactions;
 });
 
-Route::get('pgp-test', function () {
-    $pgpService = new PgpService();
-
-});
+// Route::get('pgp-test', function () {
+//     $pgpService = new PgpService();
+//
+// });
 
 Route::get('test-kraken', function () {
     $kraken = new \App\Services\KrakenService();
     $kraken->sendFullAmtToLightning();
 });
 
-Route::get('autoCreate', function () {
-    # grab all templates
-    $templates = \App\Models\PostedOfferTemplate::all();
-    foreach ($templates as $template) {
-        # check if the template is active
-        if ($template->auto_create) {
-            # check if the template quantity is less than matching offers
-            $count = Offer::where([['status', '<=', 1], ['posted_offer_template_id', $template->id]])->get()->count();
-            if ($template->quantity > $count) {
+// Route::get('autoCreate', function () {
+//     # grab all templates
+//     $templates = \App\Models\PostedOfferTemplate::all();
+//     foreach ($templates as $template) {
+//         # check if the template is active
+//         if ($template->auto_create) {
+//             # check if the template quantity is less than matching offers
+//             $count = Offer::where([['status', '<=', 1], ['posted_offer_template_id', $template->id]])->get()->count();
+//             if ($template->quantity > $count) {
+//
+//                 for ($i = 0; $i < $template->quantity - $count; $i++) {
+//                     $robosats = new \App\WorkerClasses\Robosats();
+//                     $response = $robosats->createSellOffer(
+//                         $template->currency,
+//                         $template->premium,
+//                         $template->provider,
+//                         $template->min_amount,
+//                         json_decode($template->payment_methods)[0],
+//                         $template->bond_size,
+//                         $template->id,
+//                         $template->max_amount == 0 ? null : $template->max_amount,
+//                     );
+//
+//                 }
+//
+//             }
+//         }
+//
+//     }
+// });
 
-                for ($i = 0; $i < $template->quantity - $count; $i++) {
-                    $robosats = new \App\WorkerClasses\Robosats();
-                    $response = $robosats->createSellOffer(
-                        $template->currency,
-                        $template->premium,
-                        $template->provider,
-                        $template->min_amount,
-                        json_decode($template->payment_methods)[0],
-                        $template->bond_size,
-                        $template->id,
-                        $template->max_amount == 0 ? null : $template->max_amount,
-                    );
+Route::get('/wise-alternative', function() {
+    $wiseService = new \App\Services\WiseService();
+    $balanaces = $wiseService->getBalances();
+    // dd($balanaces);
+    $balStatement = $wiseService->getBalanceStatement('93380830');
 
-                }
-
-            }
-        }
-
-    }
+    dd($balStatement);
 });
-
-
 
 
 
