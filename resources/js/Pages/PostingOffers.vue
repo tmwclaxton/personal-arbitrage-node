@@ -16,11 +16,11 @@ const props = defineProps({
 
 
 const create = () => {
-    router.push('/create');
+
 }
 
 const autocreate = () => {
-    router.push('/autocreate');
+
 }
 
 const offerTemplate = ref({
