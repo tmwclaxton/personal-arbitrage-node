@@ -9,21 +9,23 @@ import PaymentsInput from "@/Components/PaymentsInput.vue";
 import CurrenciesInput from "@/Components/CurrenciesInput.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import GuestLayout from "@/Layouts/GuestLayout.vue";
+import ProvidersInput from "@/Components/ProvidersInput.vue";
 
 const props = defineProps({
-    postedOffers: Object,
+    templates: Object,
 });
 
 
 const create = () => {
     axios.post(route('create-template'), {
-        min: offerTemplate.value.min,
-        max: offerTemplate.value.max,
-        premium: offerTemplate.value.premium,
+        min_amount	: parseInt(offerTemplate.value.min),
+        max_amount: parseInt(offerTemplate.value.max),
+        premium: parseInt(offerTemplate.value.premium),
         currency: offerTemplate.value.currency,
-        paymentMethods: offerTemplate.value.paymentMethods,
-        bondSize: offerTemplate.value.bondSize,
-        autoCreate: offerTemplate.value.autoCreate
+        payment_methods: offerTemplate.value.paymentMethods,
+        provider: offerTemplate.value.provider,
+        bond_size: parseInt(offerTemplate.value.bondSize),
+        auto_create: offerTemplate.value.autoCreate,
     }).then(response => {
         console.log(response.data);
     }).catch(error => {
@@ -44,13 +46,14 @@ const autoCreate = () => {
 }
 
 const offerTemplate = ref({
-    min: 0,
+    min: 20,
     max: 0,
-    premium: 0,
-    currency: '',
-    paymentMethods: '',
-    bondSize: 0,
-    autoCreate: false
+    premium: 99,
+    currency: 'GBP',
+    paymentMethods: ['Revolut'],
+    provider: ['satstralia'],
+    bondSize: 3,
+    autoCreate: true
 });
 
 
@@ -76,6 +79,7 @@ const offerTemplate = ref({
                         <label class="text-sm text-gray-500">Currency (GBP, USD, EUR)</label>
                         <text-input v-model="offerTemplate.currency" label="Currency" />
                         <payments-input class="mx-16" v-model="offerTemplate.paymentMethods" label="Payment Methods" />
+                        <providers-input class="mx-16" v-model="offerTemplate.provider" label="Provider" />
                         <label class="text-sm text-gray-500 mt-5">Auto Create</label>
                         <toggle-button v-model="offerTemplate.autoCreate" label="Auto Create" />
 
@@ -87,6 +91,59 @@ const offerTemplate = ref({
                 </div>
             </div>
 
+            <div class="w-3/4">
+                <div class="flex flex-col items-center">
+                    <h1 class="text-2xl font-bold underline mb-1">Posted Offers</h1>
+                    <div class="w-3/4 flex flex-col items-center">
+                        <div v-for="template in templates" :key="template.id"
+                             class="rounded-lg border border-gray-200 w-full my-2 p-2 bg-white dark:bg-zinc-900">
+                            <p class="font-bold" v-text="'Template ID: ' + template.id"></p>
+                            <div class="grid grid-cols-4 border-t border-gray-200 p-2">
+                                <p>
+                                    <span class="font-bold" v-text="template.max_amount && template.max_amount > 0 ? 'Min: ' + template.min_amount + ' - ' : 'Amount: '"></span>
+                                    {{template.min_amount }}
+                                </p>
+                                <p v-if="template.max_amount && template.max_amount > 0">
+                                    <span class="font-bold">Max: </span>
+                                    {{template.max_amount }}
+                                </p>
+
+                                <p>
+                                    <span class="font-bold">Premium: </span>
+                                    {{template.premium }}
+                                </p>
+
+                                <p>
+                                    <span class="font-bold">Bond Size: </span>
+                                    {{template.bond_size }}
+                                </p>
+
+                                <p>
+                                    <span class="font-bold">Currency: </span>
+                                    {{template.currency }}
+                                </p>
+
+                                <p>
+                                    <span class="font-bold">Auto Create: </span>
+                                    {{template.auto_create }}
+                                </p>
+
+                                <p class="col-span-4 my-1">
+                                    <span class="font-bold">Payment Methods: </span>
+                                    {{template.payment_methods }}
+                                </p>
+
+                                <p class="col-span-4">
+                                    <span class="font-bold">Provider: </span>
+                                    {{template.provider }}
+                                </p>
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
 
         </div>

@@ -12,7 +12,7 @@ class OfferTemplatesController extends Controller
     public function postingPage()
     {
         return Inertia::render('PostingOffers', [
-            'postedOffers' => PostedOfferTemplate::all(),
+            'templates' => PostedOfferTemplate::all(),
         ]);
     }
 
@@ -27,7 +27,7 @@ class OfferTemplatesController extends Controller
         $template = PostedOfferTemplate::find($id);
         $template->delete();
 
-        return redirect()->route('offer-templates.posting-page');
+        return redirect()->route('offers.posting.index');
     }
 
     public function editTemplate(Request $request): \Illuminate\Http\RedirectResponse
@@ -49,28 +49,27 @@ class OfferTemplatesController extends Controller
     {
         // validate the request (i.e. bond size must be 3 or greater)
         $request->validate([
-            'provider' => 'required|string',
+            'provider' => 'required|array|max:1',
             'currency' => 'required|size:3|alpha',
             'premium' => 'required|numeric|min:0',
-            'min_amount' => 'required|numeric',
-            // max amount is not required
-            'max_amount' => 'nullable|numeric',
-            'payment_methods' => 'required|array',
-            'bond_size' => 'required|min:3',
+            'min_amount' => 'required|numeric|min:0|gt:0',
+            'max_amount' => 'nullable|numeric|min:0|gte:0',
+            'payment_methods' => 'required|array|min:1',
+            'bond_size' => 'required|numeric|min:1|gte:3',
             'auto_create' => 'required|boolean',
         ]);
 
 
-        $template->provider = $request->provider;
+        $template->provider = $request->provider[0];
         $template->currency = $request->currency;
         $template->premium = $request->premium;
         $template->min_amount = $request->min_amount;
         $template->max_amount = $request->max_amount;
-        $template->payment_methods = $request->payment_methods;
+        $template->payment_methods = json_encode($request->payment_methods);
         $template->bond_size = $request->bond_size;
         $template->auto_create = $request->auto_create;
         $template->save();
 
-        return redirect()->route('offer-templates.posting-page');
+        return redirect()->route('offers.posting.index');
     }
 }
