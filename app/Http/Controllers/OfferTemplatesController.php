@@ -19,7 +19,9 @@ class OfferTemplatesController extends Controller
     public function createTemplate(Request $request): \Illuminate\Http\RedirectResponse
     {
         $template = new PostedOfferTemplate();
-        return $this->offerUpdate($request, $template);
+        $this->offerUpdate($request, $template);
+
+        return redirect()->route('offers.posting.index');
     }
 
     public function deleteTemplate($id): \Illuminate\Http\RedirectResponse
@@ -30,7 +32,7 @@ class OfferTemplatesController extends Controller
         return redirect()->route('offers.posting.index');
     }
 
-    public function editTemplate(Request $request): \Illuminate\Http\RedirectResponse
+    public function editTemplate(Request $request): array
     {
         $template = PostedOfferTemplate::find($request->id);
         return $this->offerUpdate($request, $template);
@@ -43,9 +45,9 @@ class OfferTemplatesController extends Controller
     /**
      * @param Request $request
      * @param $template
-     * @return \Illuminate\Http\RedirectResponse
+     * @return array
      */
-    public function offerUpdate(Request $request, $template): \Illuminate\Http\RedirectResponse
+    public function offerUpdate(Request $request, $template): array
     {
         // validate the request (i.e. bond size must be 3 or greater)
         $request->validate([
@@ -57,6 +59,7 @@ class OfferTemplatesController extends Controller
             'payment_methods' => 'required|array|min:1',
             'bond_size' => 'required|numeric|min:1|gte:3',
             'auto_create' => 'required|boolean',
+            'quantity' => 'required|numeric|min:1',
         ]);
 
 
@@ -68,8 +71,11 @@ class OfferTemplatesController extends Controller
         $template->payment_methods = json_encode($request->payment_methods);
         $template->bond_size = $request->bond_size;
         $template->auto_create = $request->auto_create;
+        $template->quantity = $request->quantity;
         $template->save();
 
-        return redirect()->route('offers.posting.index');
+        return [
+            'template' => $template,
+        ];
     }
 }

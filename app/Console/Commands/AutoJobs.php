@@ -61,14 +61,14 @@ class AutoJobs extends Command
         $offers = Offer::where([['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14]])->get();
         foreach ($offers as $offer) {
             // if status is 0 and robosatsIdStorage is not null then continue
-            $continue = false;
-            if ($offer->job_last_status >= $offer->status) {
-                $continue = true;
+            $stop = false;
+            if ($offer->job_last_status != null && ($offer->job_last_status >= $offer->status)) {
+                $stop = true;
             }
-            if ($offer->status == 0 && $offer->robosatsIdStorage !== null) {
-                $continue = false;
+            if ($offer->status == 0 && $offer->my_offer === false) {
+                $stop = true;
             }
-            if ($continue) {
+            if ($stop) {
                 continue;
             }
             // don't run the job again from auto job
@@ -76,9 +76,13 @@ class AutoJobs extends Command
             $offer->save();
 
             // if status is 3 then dispatch a bond job
-            if (($offer->status == 3 || ($offer->is_maker && $offer->status == 0))
+            if (($offer->status == 3 || ($offer->my_offer && $offer->status == 0))
                 && $adminDashboard->autoBond) {
                 PayBond::dispatch($offer, $adminDashboard);
+            }
+            if ($offer->status == 3) {
+                $offer->accepted = true;
+                $offer->save();
             }
             if (($offer->status == 6 || $offer->status == 7) && $adminDashboard->autoEscrow) {
                 PayEscrow::dispatch($offer, $adminDashboard);
@@ -87,13 +91,13 @@ class AutoJobs extends Command
                 SendPaymentHandle::dispatch($offer, $adminDashboard);
             }
             if ($offer->status == 10 && $adminDashboard->autoMessage) {
-                $robot = $offer->robots()->first();
-                $robosats = new \App\WorkerClasses\Robosats();
-                $robosats->webSocketCommunicate($offer, $robot,
-                    "There may be a ~10-15 minute wait for your payment to be detected" .
-                    " due to some Bank's API limitations.  If it is not detected after 15 minutes, do say something".
-                    " in the chat :P"
-                );
+                // $robot = $offer->robots()->first();
+                // $robosats = new \App\WorkerClasses\Robosats();
+                // $robosats->webSocketCommunicate($offer, $robot,
+                //     "There may be a ~10-15 minute wait for your payment to be detected" .
+                //     " due to some Bank's API limitations.  If it is not detected after 15 minutes, do say something".
+                //     " in the chat :P"
+                // );
             }
             if ($offer->status == 11 || $offer->status == 16) {
                 // send discord message or check programatically

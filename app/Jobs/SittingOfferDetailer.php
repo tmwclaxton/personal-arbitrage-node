@@ -48,7 +48,7 @@ class SittingOfferDetailer implements ShouldQueue
                     $sittingOffer->accepted_offer_profit_sat = round($sittingOffer->accepted_offer_profit_sat, 0);
                     $sittingOffer->accepted_offer_amount_sat = round($sittingOffer->accepted_offer_amount_sat, 0);
                 }
-                $sittingOffer->accepted = true;
+                // $sittingOffer->accepted = true;
                 $sittingOffer->save();
             }
         }
