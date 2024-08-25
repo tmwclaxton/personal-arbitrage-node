@@ -164,7 +164,7 @@ class KrakenService
         // run script to click button // if this is null it breaks
         // $driver->executeScript("document.querySelector('.TextButton_root__fIpnJ').click()");
 
-        // sleep(5);
+        sleep(5);
 
         list($buttons, $buttonValues) = $seleniumService->getButtons();
         $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Add withdrawal request"]);
