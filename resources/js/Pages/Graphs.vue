@@ -31,7 +31,8 @@ ChartJS.register(
 
 const props = defineProps({
     dates: Object,
-    volumes: Object
+    volumes: Object,
+    profits: Object
 });
 
 // const data = {
@@ -52,6 +53,11 @@ const data = {
             label: 'Daily Volume',
             backgroundColor: '#f87979',
             data: props.volumes
+        },
+        {
+            label: 'Daily Profit',
+            backgroundColor: '#79f879',
+            data: props.profits
         }
     ]
 }
