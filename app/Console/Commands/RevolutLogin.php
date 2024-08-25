@@ -26,11 +26,11 @@ class RevolutLogin extends Command
     {
         # check if there are any offers in status 9 or 10
         $offers = \App\Models\Offer::where('status', 9)->orWhere('status', 10)->get();
-        if ($offers->count() == 0) {
-            return;
+        if ($offers->count() > 0) {
+            $job = new \App\Jobs\RevolutLogin();
+            $job->handle();
         }
 
-        $job = new \App\Jobs\RevolutLogin();
-        $job->handle();
+
     }
 }

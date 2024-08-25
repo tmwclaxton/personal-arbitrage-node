@@ -90,6 +90,7 @@ services:
         privileged: true
         ports:
             - "8083:8000"
+            - "3389:3389"
         depends_on:
             - mitmproxy
         environment:
