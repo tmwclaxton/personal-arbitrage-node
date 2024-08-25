@@ -93,7 +93,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/payments', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payments.index');
     Route::get('/config', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('dashboard.index');
     Route::get('/graphs', [\App\Http\Controllers\GraphController::class, 'index'])->name('graphs.index');
-    Route::get('/posting-offers', [\App\Http\Controllers\OfferController::class, 'postingPage'])->name('offers.posting.index');
+    Route::get('/posting-offers', [\App\Http\Controllers\OfferTemplatesController::class, 'postingPage'])->name('offers.posting.index');
 
 });
 
