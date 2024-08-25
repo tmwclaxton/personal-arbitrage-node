@@ -44,7 +44,7 @@
 
                 <primary-button class="w-full text-center  h-10 break-words "
                                 v-on:click="payBond"
-                                v-if="offer.accepted && offer.status === 3 || offer.my_offer && offer.status === 0">
+                                v-if="!offer.my_offer && offer.status === 3 && offer.accepted || offer.my_offer && offer.status === 0">
                     <p class="text-center w-full">Bond</p>
                 </primary-button>
 
