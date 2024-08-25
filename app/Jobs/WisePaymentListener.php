@@ -43,7 +43,6 @@ class WisePaymentListener implements ShouldQueue
         $wiseService = new \App\Services\WiseService();
         $response = $wiseService->getActivities($profiles[0]['id']);
         $activities = $response['activities'];
-        // dd($activities);
         foreach ($activities as $activity) {
             if (
                 $activity['type'] === "TRANSFER" &&
@@ -83,14 +82,25 @@ class WisePaymentListener implements ShouldQueue
                 $payment->payment_currency = $activity['currency'];
                 $payment->payment_amount = $activity['amount'];
                 $payment->platform_account_id = $activity['sender'];
-                $payment->platform_description = $activity['description'];
+                $payment->platform_description = $activity['description'] != "" ? $activity['description'] : $activity['sender'];
                 $payment->platform_entity = json_encode($activity);
+                //'2024-08-25T23:20:30.084Z'
+                $parsedDate = Carbon::parse($activity['createdOn']);
+                $payment->payment_date = $parsedDate->toDateTimeString();
 
                 $payment->save();
 
                 $discordService = new DiscordService();
-                $discordService->sendMessage('Payment received: ' . $payment->payment_amount . ' ' . $payment->payment_currency . ' on Wise');
-
+                $message = 'Payment received: ' . $payment->payment_amount . ' ' . $payment->payment_currency . ' on Wise';
+                # if there is a description, append it to the message
+                if ($payment->platform_description) {
+                    $message .= ' with description: ' . $payment->platform_description;
+                }
+                # if there is a payment reference, append it to the message
+                if ($payment->payment_reference) {
+                    $message .= ' with reference: ' . $payment->payment_reference;
+                }
+                $discordService->sendMessage($message);
 
 
             }
