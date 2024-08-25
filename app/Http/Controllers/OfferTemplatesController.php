@@ -53,7 +53,7 @@ class OfferTemplatesController extends Controller
         $request->validate([
             'provider' => 'required|array|max:1',
             'currency' => 'required|size:3|alpha',
-            'premium' => 'required|numeric|min:0',
+            'premium' => 'required',
             'min_amount' => 'required|numeric|min:0|gt:0',
             'max_amount' => 'nullable|numeric|min:0|gte:0',
             'payment_methods' => 'required|array|min:1',
@@ -63,9 +63,10 @@ class OfferTemplatesController extends Controller
         ]);
 
 
+
         $template->provider = $request->provider[0];
         $template->currency = $request->currency;
-        $template->premium = $request->premium;
+        $template->premium = (float) $request->premium;
         $template->min_amount = $request->min_amount;
         $template->max_amount = $request->max_amount;
         $template->payment_methods = json_encode($request->payment_methods);

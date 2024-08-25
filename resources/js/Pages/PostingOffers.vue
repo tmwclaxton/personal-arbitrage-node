@@ -21,7 +21,7 @@ const create = () => {
     axios.post(route('create-template'), {
         min_amount	: parseInt(offerTemplate.value.min),
         max_amount: parseInt(offerTemplate.value.max),
-        premium: parseInt(offerTemplate.value.premium),
+        premium: offerTemplate.value.premium,
         currency: offerTemplate.value.currency,
         payment_methods: offerTemplate.value.paymentMethods,
         provider: offerTemplate.value.provider,
