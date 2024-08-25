@@ -498,13 +498,12 @@ class OfferController extends Controller
         return Inertia::render('CompletedOffers', [
             'offers' => $offers->paginate(25)->setPath(route('offers.completed'))->through(fn($offer)=>[
                 "Token Backup" => $offer->robotTokenBackup,
-                "Accepted Offer Amount" => $offer->accepted_offer_amount,
-                "Accepted Offer Amount Satoshis" => $offer->accepted_offer_amount_satoshis,
-                "Accepted Offer Amount Profit" => $offer->accepted_offer_amount_profit,
-                "Accepted Offer Amount Profit Satoshis" => $offer->accepted_offer_amount_profit_satoshis,
+                "Accepted Offer Amount" => round($offer->accepted_offer_amount, 2),
+                "Accepted Offer Amount Satoshis" => $offer->accepted_offer_amount_sat,
+                "Accepted Offer Amount Profit Satoshis" => $offer->accepted_offer_profit_sat,
                 "Currency" => $offer->currency,
                 "Btc Price" => $offer->price,
-                "My Offer" => $offer->my_offer,
+                "My Offer" => boolval($offer->my_offer),
                 "Type" => $offer->type,
                 "Created At" => $offer->created_at,
             ])->withQueryString(),

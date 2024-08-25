@@ -25,7 +25,7 @@ class RevolutLogin extends Command
     public function handle()
     {
         # check if there are any offers in status 9 or 10
-        $offers = \App\Models\Offer::where('status', 9)->orWhere('status', 10)->get();
+        $offers = \App\Models\Offer::where([['status', '=', 9], ['auto_confirm_at' , '!=', null]])->orWhere([['status', '=', 10], ['auto_confirm_at' , '=', null]])->get();
         if ($offers->count() > 0) {
             $job = new \App\Jobs\RevolutLogin();
             $job->handle();
