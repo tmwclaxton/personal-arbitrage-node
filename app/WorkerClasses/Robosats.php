@@ -921,12 +921,16 @@ class Robosats
         $currency,
         $premium,
         $provider,
-        $isRange,
         $minAmount,
         $paymentMethod = 'Revolut',
         $bondSize = 3,
-        $maxAmount = null
+        $templateId = null,
+        $maxAmount = null,
     ) {
+        $isRange = $maxAmount != null;
+
+        $discordService = new DiscordService();
+        $discordService->sendMessage('Creating sell offer for ' . $minAmount . ' ' . $currency . ' with a premium of ' . $premium . '%');
 
         // create temp offer, create robots, create offer, pay bond.
         $tempOffer = new Offer([
@@ -950,6 +954,7 @@ class Robosats
             'maker_status' => '',
             'expires_at' => Carbon::now()->addMinutes(5),
             'maker' => 0,
+            'posted_offer_template_id' => $templateId,
         ]);
 
         $tempOffer->save();

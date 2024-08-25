@@ -69,6 +69,10 @@ Schedule::command('app:warning-system')
 Schedule::command('app:revolut-login')
     ->description('app revolut login')
     ->everyFiveMinutes()->withoutOverlapping(1);
+
+Schedule::command('app:update-apps')
+    ->description('app update apps')
+    ->everyThirtyMinutes()->withoutOverlapping(1);
 // !! with mitmproxy we now need to trigger the revolut login job whenever we are waiting for a payment
 
 // every minute trigger a revolut payment listener job
@@ -128,3 +132,8 @@ Schedule::command('app:sitting-offer-detailer')
 Schedule::command('app:umbrel-token-reset')
     ->description('reset umbrel token')
     ->everyThirtyMinutes()->withoutOverlapping(1);
+
+// auto:create
+Schedule::command('auto:create')
+    ->description('auto create')
+    ->everyFiveMinutes()->withoutOverlapping(1);

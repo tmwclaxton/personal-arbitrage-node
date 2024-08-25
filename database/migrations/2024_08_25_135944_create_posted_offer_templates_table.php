@@ -21,6 +21,7 @@ return new class extends Migration
             $table->json('payment_methods');
             $table->integer('bond_size');
             $table->boolean('auto_create');
+            $table->integer('quantity')->default(1);
             $table->timestamps();
         });
     }

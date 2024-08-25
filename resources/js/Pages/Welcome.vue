@@ -199,6 +199,11 @@ const showSidebar = ref(true);
                         <ToggleButton v-model="tempAdminDashboard.autoTopup" size="sm" activeColor="bg-green-500"
                                       inactiveColor="bg-red-500"/>
                     </div>
+                    <div class="flex flex-row justify-between items-center"><span
+                        class="font-bold mr-1">Auto Create:</span>
+                        <ToggleButton v-model="tempAdminDashboard.autoCreate" size="sm" activeColor="bg-green-500"
+                                      inactiveColor="bg-red-500"/>
+                    </div>
 
                     <div class="flex flex-row justify-between items-center"><span class="font-bold text-xl mt-2">Offer Selection:</span>
                     </div>

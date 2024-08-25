@@ -150,8 +150,8 @@ class KrakenService
         sleep(5);
 
 
-        list($buttons, $buttonValues) = $seleniumService->getButtons();
-        $counts = 0;
+        // list($buttons, $buttonValues) = $seleniumService->getButtons();
+        // $counts = 0;
         // $counts += $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Manage withdrawal requests"]);
         // $counts += $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Manage requests"]);
 
@@ -164,12 +164,11 @@ class KrakenService
         // run script to click button // if this is null it breaks
         // $driver->executeScript("document.querySelector('.TextButton_root__fIpnJ').click()");
 
-        // sleep(5);
 
-        list($buttons, $buttonValues) = $seleniumService->getButtons();
-        $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Add withdrawal request"]);
 
         try {
+            list($buttons, $buttonValues) = $seleniumService->getButtons();
+            $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Add withdrawal request"]);
             // find an input with id label and send keys to it
             $driver->findElement(WebDriverBy::name("label"))->click();
             $invoiceId = "ag_lightning_invoice_" . Carbon::now()->toDateTimeString();
