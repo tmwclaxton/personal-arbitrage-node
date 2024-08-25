@@ -171,11 +171,11 @@ class KrakenService
 
         try {
             // find an input with id label and send keys to it
-            $driver->findElement(WebDriverBy::id("label"))->click();
+            $driver->findElement(WebDriverBy::name("label"))->click();
             $invoiceId = "ag_lightning_invoice_" . Carbon::now()->toDateTimeString();
-            $driver->findElement(WebDriverBy::id("label"))->sendKeys($invoiceId);
-            $driver->findElement(WebDriverBy::id("address"))->click();
-            $driver->findElement(WebDriverBy::id("address"))->sendKeys($invoice);
+            $driver->findElement(WebDriverBy::name("label"))->sendKeys($invoiceId);
+            $driver->findElement(WebDriverBy::name("address"))->click();
+            $driver->findElement(WebDriverBy::name("address"))->sendKeys($invoice);
         } catch (\Exception $e) {
             $driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
             $source = $driver->getPageSource();
