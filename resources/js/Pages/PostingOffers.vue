@@ -16,10 +16,30 @@ const props = defineProps({
 
 
 const create = () => {
-
+    axios.post(route('create-template'), {
+        min: offerTemplate.value.min,
+        max: offerTemplate.value.max,
+        premium: offerTemplate.value.premium,
+        currency: offerTemplate.value.currency,
+        paymentMethods: offerTemplate.value.paymentMethods,
+        bondSize: offerTemplate.value.bondSize,
+        autoCreate: offerTemplate.value.autoCreate
+    }).then(response => {
+        console.log(response.data);
+    }).catch(error => {
+        console.log(error);
+    });
 }
 
-const autocreate = () => {
+
+const autoCreate = () => {
+    axios.post(route('offer.autocreate'), {
+
+    }).then(response => {
+        console.log(response.data);
+    }).catch(error => {
+        console.log(error);
+    });
 
 }
 
@@ -62,7 +82,7 @@ const offerTemplate = ref({
                         <primary-button class="mt-4" @click="create">Create</primary-button>
 
                     <div class="border-b border-gray-200 w-full my-5"></div>
-                    <primary-button @click="autocreate">Auto Create</primary-button>
+                    <primary-button @click="autoCreate">Auto Create</primary-button>
 
                 </div>
             </div>

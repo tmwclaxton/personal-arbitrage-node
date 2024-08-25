@@ -47,6 +47,20 @@ class OfferTemplatesController extends Controller
      */
     public function offerUpdate(Request $request, $template): \Illuminate\Http\RedirectResponse
     {
+        // validate the request (i.e. bond size must be 3 or greater)
+        $request->validate([
+            'provider' => 'required|string',
+            'currency' => 'required|size:3|alpha',
+            'premium' => 'required|numeric|min:0',
+            'min_amount' => 'required|numeric',
+            // max amount is not required
+            'max_amount' => 'nullable|numeric',
+            'payment_methods' => 'required|array',
+            'bond_size' => 'required|min:3',
+            'auto_create' => 'required|boolean',
+        ]);
+
+
         $template->provider = $request->provider;
         $template->currency = $request->currency;
         $template->premium = $request->premium;
