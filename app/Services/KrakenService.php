@@ -91,6 +91,8 @@ class KrakenService
     public function sendFullAmtToLightning() {
 
 
+        $discordService = new DiscordService();
+        $discordService->sendMessage('Sending BTC to lightning node');
 
         $krakenService = new \App\Services\KrakenService();
         $btcBalance = $krakenService->getBTCBalance();
@@ -159,10 +161,10 @@ class KrakenService
         // $driver->findElement(WebDriverBy::className(".TextButton_root__fIpnJ"))->click();
         // document.querySelector('.TextButton_root__fIpnJ').click()
 
-        // run script to click button
-        $driver->executeScript("document.querySelector('.TextButton_root__fIpnJ').click()");
+        // run script to click button // if this is null it breaks
+        // $driver->executeScript("document.querySelector('.TextButton_root__fIpnJ').click()");
 
-        sleep(5);
+        // sleep(5);
 
         list($buttons, $buttonValues) = $seleniumService->getButtons();
         $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Add withdrawal request"]);
