@@ -93,7 +93,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/payments', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payments.index');
     Route::get('/config', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('dashboard.index');
     Route::get('/graphs', [\App\Http\Controllers\GraphController::class, 'index'])->name('graphs.index');
-    Route::get('/posting-offers', [\App\Http\Controllers\OfferController::class, 'postingPage'])->name('offers.posting.index');
+    Route::get('/posting-offers', [\App\Http\Controllers\OfferTemplatesController::class, 'postingPage'])->name('offers.posting.index');
+    Route::post('/create-template', [\App\Http\Controllers\OfferTemplatesController::class, 'createTemplate'])->name('create-template');
+    Route::post('/edit-template', [\App\Http\Controllers\OfferTemplatesController::class, 'editTemplate'])->name('edit-template');
+    Route::get('/delete-template/{id}', [\App\Http\Controllers\OfferTemplatesController::class, 'deleteTemplate'])->name('delete-template');
 
 });
 
