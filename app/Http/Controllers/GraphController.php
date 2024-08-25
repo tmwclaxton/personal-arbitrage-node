@@ -10,7 +10,7 @@ class GraphController extends Controller
     public function index()
     {
         $dailyVolume = [];
-        $offers = Offer::where('status', '99')->get();
+        $offers = Offer::where('status', '14')->get();
         foreach ($offers as $offer) {
             $dailyVolume[$offer->created_at->format('Y-m-d')][] = round($offer->amount);
         }
