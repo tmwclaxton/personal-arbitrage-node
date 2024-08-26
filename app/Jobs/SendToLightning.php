@@ -39,7 +39,7 @@ class SendToLightning implements ShouldQueue
         // kraken get BTC balance
         $btcBalance = $kraken->getBTCBalance();
         // if BTC balance greater than 0 send to lightning node
-        if ($btcBalance->isGreaterThan(BigDecimal::of('0'))) {
+        if ($btcBalance->isGreaterThan(BigDecimal::of('200'))) {
             $kraken->sendFullAmtToLightning();
         }
 
