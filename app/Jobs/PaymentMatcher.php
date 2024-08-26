@@ -77,7 +77,7 @@ class PaymentMatcher implements ShouldQueue
                         // if the reference is equal to robosatsID, then we can auto confirm in 2 minutes
                         if (intval($reference) === intval($offer->robosatsId)) {
                             $autoConfirmAt = Carbon::now()->addMinutes(5);
-                            $message .= ". Additionally, the reference matches the robosats ID, so auto confirming in 5 minutes rather than 10";
+                            $message .= ". Additionally, the reference matches the robosats ID";
                         }
                     }
                 }
