@@ -75,6 +75,12 @@ class AutoJobs extends Command
             $offer->job_last_status = $offer->status;
             $offer->save();
 
+            // if status is less than 3 then it is not accepted
+            if ($offer->status < 3) {
+                $offer->accepted = false;
+                $offer->save();
+            }
+
             // if status is 3 then dispatch a bond job
             if (($offer->status == 3 || ($offer->my_offer && $offer->status == 0))
                 && $adminDashboard->autoBond) {
@@ -91,18 +97,17 @@ class AutoJobs extends Command
                 SendPaymentHandle::dispatch($offer, $adminDashboard);
             }
             if ($offer->status == 10 && $adminDashboard->autoMessage) {
-                // $robot = $offer->robots()->first();
-                // $robosats = new \App\WorkerClasses\Robosats();
-                // $robosats->webSocketCommunicate($offer, $robot,
-                //     "There may be a ~10-15 minute wait for your payment to be detected" .
-                //     " due to some Bank's API limitations.  If it is not detected after 15 minutes, do say something".
-                //     " in the chat :P"
-                // );
+                $robot = $offer->robots()->first();
+                $robosats = new \App\WorkerClasses\Robosats();
+                $robosats->webSocketCommunicate($offer, $robot,
+                    "There may be a ~10-15 minute wait for your payment to be detected" .
+                    " due to some Bank's API limitations.  If it is not detected after 15 minutes, do say something".
+                    " in the chat :P"
+                );
             }
             if ($offer->status == 11 || $offer->status == 16) {
-                // send discord message or check programatically
+                // send discord message or check programmatically
                 (new \App\Services\DiscordService)->sendMessage('Offer ' . $offer->robosatsId . ' is in dispute');
-
             }
 
             $offer->save();
