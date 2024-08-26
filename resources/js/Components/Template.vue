@@ -34,7 +34,7 @@ const update = () => {
     axios.post(route('edit-template', {id: props.template.id}), {
         min_amount: parseInt(offerEditTemplate.value.min),
         max_amount: parseInt(offerEditTemplate.value.max),
-        premium: parseInt(offerEditTemplate.value.premium),
+        premium: offerEditTemplate.value.premium,
         currency: offerEditTemplate.value.currency,
         payment_methods: offerEditTemplate.value.paymentMethods,
         provider: offerEditTemplate.value.providers,
