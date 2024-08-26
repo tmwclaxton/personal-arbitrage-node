@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\AdminDashboard;
 use Illuminate\Console\Command;
 
 class RevolutLogin extends Command
@@ -26,7 +27,7 @@ class RevolutLogin extends Command
     {
         # check if there are any offers in status 9 or 10
         $offers = \App\Models\Offer::where([['status', '=', 9], ['auto_confirm_at' , '=', null]])->orWhere([['status', '=', 10], ['auto_confirm_at' , '=', null]])->get();
-        if ($offers->count() > 0) {
+        if ($offers->count() > 0 && AdminDashboard::all()->first()->autoConfirm) {
             $job = new \App\Jobs\RevolutLogin();
             $job->handle();
         }
