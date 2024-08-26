@@ -46,7 +46,7 @@ class AutoAccept extends Command
             return 0;
         }
         // calculate difference
-        $difference = $maxConcurrentTransactions - $transactionsCount;
+        $difference = $maxConcurrentTransactions - $count;
         // $offers = (new \App\Http\Controllers\OfferController)->getOffersInternal($adminDashboard);
 
         $sellPremium = $adminDashboard->sell_premium;
