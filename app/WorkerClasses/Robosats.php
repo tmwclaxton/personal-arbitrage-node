@@ -1048,4 +1048,11 @@ class Robosats
         return null;
     }
 
+//    http://robodexarjwtfryec556cjdz3dfa7u47saek6lkftnkgshvgg2kcumqd.onion
+
+    // private function requestWithTor($url, $headers = [], $timeout = 30) {
+    //     $tor = new Tor();
+    //     $tor->setTorAddress('
+    //
+
 }

@@ -39,9 +39,9 @@ class AutoAccept extends Command
             return 0;
         }
         $maxConcurrentTransactions = $adminDashboard->max_concurrent_transactions;
-        $transactions = Transaction::where('status', '<=', 11)->get();
-        $transactionsCount = $transactions->count();
-        if ($transactionsCount >= $maxConcurrentTransactions) {
+        $offers = Offer::where([['status', '<=', 11],['status', '>', 6]])->get();
+        $count = $offers->count();
+        if ($count >= $maxConcurrentTransactions) {
             // (new DiscordService())->sendMessage('Max concurrent transactions reached');
             return 0;
         }
