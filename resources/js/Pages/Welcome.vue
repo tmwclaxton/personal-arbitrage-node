@@ -204,6 +204,20 @@ const showSidebar = ref(true);
                         <ToggleButton v-model="tempAdminDashboard.autoCreate" size="sm" activeColor="bg-green-500"
                                       inactiveColor="bg-red-500"/>
                     </div>
+                    <div class="flex flex-row justify-between items-center"><span
+                        class="font-bold mr-1">Scheduler:</span>
+                        <ToggleButton v-model="tempAdminDashboard.scheduler" size="sm" activeColor="bg-green-500"
+                                      inactiveColor="bg-red-500"/>
+                    </div>
+                    <div class="flex flex-row justify-between items-center"><span
+                        class="font-bold mr-1">Start Time:</span>
+                        <input type="time" v-model="tempAdminDashboard.auto_accept_start_time"/>
+                    </div>
+                    <div class="flex flex-row justify-between items-center"><span
+                        class="font-bold mr-1">End Time:</span>
+                        <input type="time" v-model="tempAdminDashboard.auto_accept_end_time"/>
+
+                    </div>
 
                     <div class="flex flex-row justify-between items-center"><span class="font-bold text-xl mt-2">Offer Selection:</span>
                     </div>

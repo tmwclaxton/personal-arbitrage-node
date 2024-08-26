@@ -137,3 +137,8 @@ Schedule::command('app:umbrel-token-reset')
 Schedule::command('auto:create')
     ->description('auto create')
     ->everyFiveMinutes()->withoutOverlapping(1);
+
+// scheduler
+Schedule::command('app:scheduler')
+    ->description('scheduler')
+    ->everyMinute()->withoutOverlapping(1);
