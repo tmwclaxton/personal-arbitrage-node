@@ -45,7 +45,7 @@ Schedule::command('refresh:discord-commands')
 
 Schedule::command('refresh:offers')
     ->description('refresh robosat offers')
-    ->everyThirtySeconds()->withoutOverlapping(1);
+    ->everyMinute()->withoutOverlapping(1);
 
 Schedule::command('refresh:fiats')
     ->description('refresh fiats')
@@ -53,7 +53,7 @@ Schedule::command('refresh:fiats')
 
 Schedule::command('auto:accept')
     ->description('auto accept')
-    ->everyThreeMinutes()->withoutOverlapping(1);
+    ->everyMinute()->withoutOverlapping(1);
 
 // auto accept final
 Schedule::command('auto:accept-final')
