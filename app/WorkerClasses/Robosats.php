@@ -230,8 +230,19 @@ class Robosats
 
             } catch (\Exception $e) {
                 // Return or log the exception
-                return $e->getMessage();
-                // continue;
+                $discordService = new DiscordService();
+                $discordService->sendMessage('Error creating robot: ' . $e->getMessage());
+                // unlock the offer // this allows it to be retried
+                // if the robot creation failed for the same provider as the offer then return otherwise continue
+                if ($provider == $offer->provider) {
+                    // because we haven't accepted the offer it is acceptable to delete the robots
+                    $offer->robots()->delete();
+                    $offer->locked = false;
+                    $offer->save();
+                    return $e->getMessage();
+                } else {
+                    continue;
+                }
             }
 
             $json = json_decode($response->body(), true);
