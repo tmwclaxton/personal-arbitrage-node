@@ -101,9 +101,9 @@ Schedule::command('kraken:auto-purchaser')
     ->description('kraken auto purchaser')
     ->everyThirtyMinutes()->withoutOverlapping(1);
 
-Schedule::command('app:send-to-lightning')
-    ->description('Send btc from kraken to lightning node')
-    ->everyThirtyMinutes()->withoutOverlapping(1);
+// Schedule::command('app:send-to-lightning')
+//     ->description('Send btc from kraken to lightning node')
+//     ->everyThirtyMinutes()->withoutOverlapping(1);
 
 
 
