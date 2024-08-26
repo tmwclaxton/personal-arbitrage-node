@@ -21,7 +21,7 @@ Schedule::command('refresh:dashboard')
 
 Schedule::command('refresh:transactions')
     ->description('refresh transactions')
-    ->everyTwentySeconds()->withoutOverlapping(1);
+    ->everyMinute()->withoutOverlapping(1);
 
 Schedule::command('refresh:robots')
     ->description('refresh robots')
