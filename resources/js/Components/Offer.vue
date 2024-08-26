@@ -11,8 +11,11 @@
             <p class=" text-zinc-500 dark:text-zinc-200 font-bold break-words p-4"
                :class="{'bg-blue-200 dark:bg-blue-800': offer.my_offer, 'bg-red-200 dark:bg-red-700': !offer.my_offer}">
                 Status: {{offer.status_message}}
-                <span v-if="offer.my_offer" class="text-blue-500 dark:text-blue-300">
-                    · Posted Offer
+                <!--<span v-if="offer.my_offer" class="text-blue-500 dark:text-blue-300">-->
+                <!--    · Maker Offer-->
+                <!--</span>-->
+                <span v-if="offer.posted_offer_template_id" class="text-blue-500 dark:text-blue-300">
+                    · Template {{ offer.posted_offer_template_id }}
                 </span>
             </p>
         </div>
