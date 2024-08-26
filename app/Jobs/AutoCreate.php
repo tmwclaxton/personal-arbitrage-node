@@ -47,7 +47,7 @@ class AutoCreate implements ShouldQueue
                             $template->premium,
                             $template->provider,
                             $template->min_amount,
-                            json_decode($template->payment_methods)[0],
+                            $template->payment_methods,
                             $template->bond_size,
                             $template->id,
                             $template->max_amount == 0 ? null : $template->max_amount,

@@ -36,7 +36,7 @@ class PaymentMatcher implements ShouldQueue
 
         // search for payments with a transaction_id of null and where created_at is less than 1 hour ago
         $payments = Payment::where('transaction_id', null)
-            ->where('created_at', '>', Carbon::now()->subHour(1))
+            ->where('created_at', '>', Carbon::now()->subHour(24))
             ->get();
 
         $discordService = new DiscordService();

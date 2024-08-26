@@ -67,6 +67,12 @@ class RevolutPaymentListener implements ShouldQueue
             $payment->payment_date = Carbon::createFromTimestamp($transaction['completedDate'] / 1000);
             $payment->platform_entity = json_encode($transaction);
 
+            // if payment reference says "my_transfer" then ignore it
+            if ($payment->payment_reference === 'my_transfer') {
+                $discordService = new DiscordService();
+                $discordService->sendMessage('Ignoring payment with reference: my_transfer of ' . $payment->payment_amount . ' ' . $payment->payment_currency . ' on Revolut');
+                continue;
+            }
 
 
             $payment->save();

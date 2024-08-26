@@ -922,7 +922,7 @@ class Robosats
         $premium,
         $provider,
         $minAmount,
-        $paymentMethod = 'Revolut',
+        $paymentMethods = (['Revolut']),
         $bondSize = 3,
         $templateId = null,
         $maxAmount = null,
@@ -932,6 +932,7 @@ class Robosats
         $discordService = new DiscordService();
         $discordService->sendMessage('Creating sell offer for ' . $minAmount . ' ' . $currency . ' with a premium of ' . $premium . '%');
 
+
         // create temp offer, create robots, create offer, pay bond.
         $tempOffer = new Offer([
             'robosatsId' => rand(111111111, 999999999),
@@ -940,7 +941,7 @@ class Robosats
             'currency' => 0,
             'amount' => 0,
             'has_range' => $isRange,
-            'payment_methods' => json_encode([$paymentMethod]),
+            'payment_methods' => $paymentMethods,
             'is_explicit' => false,
             'premium' => $premium,
             'escrow_duration' => 0,
@@ -969,14 +970,15 @@ class Robosats
         //"max_amount":null,"payment_method":"Revolut","is_explicit":false,"premium":20,
         //"satoshis":null,"public_duration":14400,"escrow_duration":14400,"bond_size":3,"latitude":null,
         //"longitude":null}
-
+        // take payment methods json array and convert to space separated string
+        $paymentMethods = implode(' ', $paymentMethods);
         $url = $this->host . '/mainnet/' . $provider . '/api/make/';
         $array = [
             'type' => 1,
             'currency' => $currency,
             'has_range' => $isRange,
             'max_amount' => $maxAmount,
-            'payment_method' => $paymentMethod,
+            'payment_method' => $paymentMethods,
             'is_explicit' => false,
             'premium' => $premium,
             'satoshis' => null,
