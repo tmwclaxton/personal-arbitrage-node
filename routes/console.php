@@ -33,7 +33,7 @@ Schedule::command('refresh:robots')
 
 Schedule::command('retire:offers')
     ->description('retire offers')
-    ->everyFifteenMinutes()->withoutOverlapping(1);
+    ->everyFiveMinutes()->withoutOverlapping(1);
 
 Schedule::command('auto:jobs')
     ->description('auto jobs')
