@@ -611,39 +611,88 @@ class Robosats
         $adminDashboard = AdminDashboard::all()->first();
         $robot = $offer->robots()->first();
 
-        // depending on what payment methods are available change the message, preference order is revolut, wise, paypal friends & family, strike
-        $message = '';
-        $preferredPaymentMethods = ['Revolut', 'Wise', 'Paypal Friends & Family', 'Strike'];
-        foreach ($preferredPaymentMethods as $paymentMethod) {
-            if (in_array($paymentMethod, json_decode($robot->offer->payment_methods))) {
-                if ($paymentMethod == null) {
-                    continue;
-                }
-                switch ($paymentMethod) {
-                    case 'Revolut':
-                        $tag = $adminDashboard->revolut_handle;
-                        $pseudonym = "Revtag";
-                        break;
-                    case 'Wise':
-                        $tag = $adminDashboard->wise_handle;
-                        $pseudonym = "Wise handle";
-                        break;
-                    case 'Paypal Friends & Family':
-                        $tag = $adminDashboard->paypal_handle;
-                        $pseudonym = "Paypal";
-                        break;
-                }
+        if (!$offer->my_offer) {
+            // depending on what payment methods are available change the message, preference order is revolut, wise, paypal friends & family, strike
+            $message = '';
+            $preferredPaymentMethods = ['Revolut', 'Wise', 'Paypal Friends & Family', 'Strike'];
+            foreach ($preferredPaymentMethods as $paymentMethod) {
+                if (in_array($paymentMethod, json_decode($robot->offer->payment_methods))) {
+                    if ($paymentMethod == null) {
+                        continue;
+                    }
+                    switch ($paymentMethod) {
+                        case 'Revolut':
+                            $tag = $adminDashboard->revolut_handle;
+                            $pseudonym = "Revtag";
+                            break;
+                        case 'Wise':
+                            $tag = $adminDashboard->wise_handle;
+                            $pseudonym = "Wise handle";
+                            break;
+                        case 'Paypal Friends & Family':
+                            $tag = $adminDashboard->paypal_handle;
+                            $pseudonym = "Paypal";
+                            break;
+                    }
 
-                if (empty($tag) || empty($pseudonym)) {
-                    (new DiscordService)->sendMessage('Error: No tag / pseudonym found for ' . $paymentMethod);
-                    return;
-                }
+                    if (empty($tag) || empty($pseudonym)) {
+                        (new DiscordService)->sendMessage('Error: No tag / pseudonym found for ' . $paymentMethod);
+                        return;
+                    }
 
-                $message = 'Hey! My ' . $pseudonym . ' is ' . $tag . ' - If possible, please put the order ID in the payment reference (' . $offer->robosatsId . '). ' .
-                    'Cheers!';
-                break;
+                    $message = 'Hey! My ' . $pseudonym . ' is ' . $tag . ' - If possible, please put the order ID in the payment reference (' . $offer->robosatsId . '). ' .
+                        'Cheers!';
+                    break;
+                }
             }
+        } else {
+
+            // if it's our offer then we need to send all the payment methods that the buyer can use
+            $paymentMethods = json_decode($robot->offer->payment_methods);
+
+            // Mapping payment methods to their respective handles
+            $handles = [
+                'Revolut' => $adminDashboard->revolut_handle,
+                'Wise' => $adminDashboard->wise_handle,
+                'Paypal Friends & Family' => $adminDashboard->paypal_handle,
+                'Strike' => $adminDashboard->strike_handle,
+            ];
+
+            $handleParts = [];
+
+            // Building the list of available handles
+            foreach ($handles as $method => $handle) {
+                if (in_array($method, $paymentMethods)) {
+                    $handleParts[$method] = $handle;
+                }
+            }
+
+            if (empty($handleParts)) {
+                // If no payment methods match, we can return or handle the case accordingly
+                $discordService = new DiscordService();
+                $discordService->sendMessage('Error: No matching payment methods found for the offer with ID ' . $offer->robosatsId);
+            } else {
+                // Building the final message
+                $handleCount = count($handleParts);
+                if ($handleCount == 1) {
+                    // Singular case: "My Revolut is..."
+                    $method = key($handleParts);
+                    $message = "Hey! My $method is " . $handleParts[$method];
+                } else {
+                    // Plural case: "My handles are: Revolut: ... - Wise: ..."
+                    $formattedHandles = [];
+                    foreach ($handleParts as $method => $handle) {
+                        $formattedHandles[] = "$method: $handle";
+                    }
+                    $message = "Hey! My handles are: " . implode(' - ', $formattedHandles);
+                }
+
+                // Append the order ID reference
+                $message .= " - If possible, please put the order ID in the payment reference (" . $offer->robosatsId . "). Cheers!";
+            }
+
         }
+
         $this->webSocketCommunicate($offer, $robot, $message);
 
         (new DiscordService)->sendMessage('Expect a payment on ' . $paymentMethod . ' for ' . round($robot->offer->accepted_offer_amount, 2)
@@ -982,7 +1031,7 @@ class Robosats
         //"satoshis":null,"public_duration":14400,"escrow_duration":14400,"bond_size":3,"latitude":null,
         //"longitude":null}
         // take payment methods json array and convert to space separated string
-        $paymentMethods = implode(' ', $paymentMethods);
+        $paymentMethods = implode(' ', json_decode($paymentMethods));
         $url = $this->host . '/mainnet/' . $provider . '/api/make/';
         $array = [
             'type' => 1,
@@ -993,7 +1042,7 @@ class Robosats
             'is_explicit' => false,
             'premium' => $premium,
             'satoshis' => null,
-            'public_duration' => 28800,
+            'public_duration' => 3600,
             'escrow_duration' => 28800,
             'bond_size' => $bondSize,
             'latitude' => null,
@@ -1025,6 +1074,7 @@ class Robosats
             foreach ($robots as $robot) {
                 $robot->delete();
             }
+            $discordService->sendMessage('Failed to create sell offer.  Error: ' . json_encode($response));
             return $response;
         }
 

@@ -86,7 +86,7 @@ class AutoJobs extends Command
                 && $adminDashboard->autoBond) {
                 PayBond::dispatch($offer, $adminDashboard);
             }
-            if ($offer->status == 3) {
+            if ($offer->status > 3) {
                 $offer->accepted = true;
                 $offer->save();
             }
