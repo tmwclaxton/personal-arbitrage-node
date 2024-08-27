@@ -80,6 +80,10 @@ const panicButtonToggle = () => {
                             class="font-bold mr-1">Wise Tag: </span>
                             <TextInput v-model="tempAdminDashboard.wise_handle"/>
                         </div>
+                        <div class="flex flex-row justify-between items-center"><span
+                            class="font-bold mr-1">Strike Tag: </span>
+                            <TextInput v-model="tempAdminDashboard.strike_handle"/>
+                        </div>
                     </div>
                     <div class="flex flex-row gap-x-4 justify-between">
                         <PaymentsInput :payment_methods="tempAdminDashboard.payment_methods"
