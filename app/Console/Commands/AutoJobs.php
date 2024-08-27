@@ -99,11 +99,11 @@ class AutoJobs extends Command
             if ($offer->status == 10 && $adminDashboard->autoMessage) {
                 $robot = $offer->robots()->first();
                 $robosats = new \App\WorkerClasses\Robosats();
-                $robosats->webSocketCommunicate($offer, $robot,
-                    "There may be a ~10-15 minute wait for your payment to be detected" .
-                    " due to some Bank's API limitations.  If it is not detected after 15 minutes, do say something".
-                    " in the chat :P"
-                );
+                // $robosats->webSocketCommunicate($offer, $robot,
+                //     "There may be a ~10-15 minute wait for your payment to be detected" .
+                //     " due to some Bank's API limitations.  If it is not detected after 15 minutes, do say something".
+                //     " in the chat :P"
+                // );
             }
             if ($offer->status == 11 || $offer->status == 16) {
                 // send discord message or check programmatically

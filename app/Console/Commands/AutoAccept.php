@@ -179,12 +179,12 @@ class AutoAccept extends Command
                 continue;
             }
             $discordService = new DiscordService();
-            $discordService->sendMessage('Auto accepting offer ' . $offer->robosatsId . ' in 2 minutes for ' . $offer->estimated_offer_amount . ' ' . $offer->currency . ' at ' . $offer->premium . '% premium');
+            $discordService->sendMessage('Auto accepting offer ' . $offer->robosatsId . ' in 1 minutes for ' . $offer->estimated_offer_amount . ' ' . $offer->currency . ' at ' . $offer->premium . '% premium');
             // reset offer
             $offer = Offer::find($offer->id);
             $offer->job_locked = true;
             // 2 minutes from now
-            $offer->auto_accept_at = Carbon::now()->addMinutes(2);
+            $offer->auto_accept_at = Carbon::now()->addMinutes(1);
             $offer->save();
 
 

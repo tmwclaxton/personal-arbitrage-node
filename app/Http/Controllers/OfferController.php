@@ -28,7 +28,7 @@ class OfferController extends Controller
         $offers = Offer::where([['accepted', '=', true], ['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14]])
             ->orWhere([['accepted', '=', false],['premium', '>=', $sellPremium], ['type', 'sell']])
             ->orWhere([['accepted', '=', false],['premium', '<=', $buyPremium], ['type', 'buy']])
-            ->orWhere([['my_offer', '=', true], ['expires_at', '>', Carbon::now()]])
+            ->orWhere([['my_offer', '=', true], ['expires_at', '>', Carbon::now()->addHour()]])
             ->orderBy('accepted', 'desc')
             ->orderBy('my_offer', 'desc')
             ->orderBy('max_satoshi_amount_profit', 'desc')
