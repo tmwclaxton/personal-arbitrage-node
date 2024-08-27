@@ -1042,7 +1042,7 @@ class Robosats
             'is_explicit' => false,
             'premium' => $premium,
             'satoshis' => null,
-            'public_duration' => 3600,
+            'public_duration' => 7200,
             'escrow_duration' => 28800,
             'bond_size' => $bondSize,
             'latitude' => null,
