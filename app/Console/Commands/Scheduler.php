@@ -41,29 +41,29 @@ class Scheduler extends Command
             $discord_service = new \App\Services\DiscordService();
             if ($current_time >= $start_time && $current_time <= $end_time) {
                 // turn on the auto accept
-                if (!$admin_dashboard->auto_accept) {
+                if (!$admin_dashboard->autoAccept) {
                     $discord_service->sendMessage('Scheduler is turning on auto accept');
-                    $admin_dashboard->auto_accept = true;
+                    $admin_dashboard->autoAccept = true;
                     $admin_dashboard->save();
                 }
                 // turn on the auto create
-                if (!$admin_dashboard->auto_create) {
+                if (!$admin_dashboard->autoCreate) {
                     $discord_service->sendMessage('Scheduler is turning on auto create');
-                    $admin_dashboard->auto_create = true;
+                    $admin_dashboard->autoCreate = true;
                     $admin_dashboard->save();
                 }
             } else {
                 // turn off the auto accept
-                if ($admin_dashboard->auto_accept) {
+                if ($admin_dashboard->autoAccept) {
                     $discord_service->sendMessage('Scheduler is turning off auto accept');
-                    $admin_dashboard->auto_accept = false;
+                    $admin_dashboard->autoAccept = false;
                     $admin_dashboard->save();
                 }
 
                 // turn off the auto create
-                if ($admin_dashboard->auto_create) {
+                if ($admin_dashboard->autoCreate) {
                     $discord_service->sendMessage('Scheduler is turning off auto create');
-                    $admin_dashboard->auto_create = false;
+                    $admin_dashboard->autoCreate = false;
                     $admin_dashboard->save();
                 }
             }
