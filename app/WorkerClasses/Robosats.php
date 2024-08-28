@@ -695,12 +695,8 @@ class Robosats
         }
 
         $this->webSocketCommunicate($offer, $robot, $message);
-        // if payment method is not found, set it to json decode of the payment methods
-        if (empty($paymentMethod)) {
-            $paymentMethod = json_decode($robot->offer->payment_methods);
-        }
 
-        (new DiscordService)->sendMessage('Expect a payment on ' . $paymentMethod . ' for ' . round($robot->offer->accepted_offer_amount, 2)
+        (new DiscordService)->sendMessage('Expect a payment for ' . round($robot->offer->accepted_offer_amount, 2)
             . ' ' . $robot->offer->currency . ' soon! Once received, confirm the payment by typing !confirm ' . $offer->robosatsId . ' in the chat.');
 
 
