@@ -51,6 +51,8 @@ class DiscordCommands implements ShouldQueue
             '!toggleAutoChat',
             '!toggleAutoTopup',
             '!toggleAutoConfirm',
+            '!autoSchedule',
+            '!autoCreate',
             '!setSellPremium',
             '!setBuyPremium',
             '!setConcurrentTransactions',
@@ -107,6 +109,16 @@ class DiscordCommands implements ShouldQueue
                             $secondWord = explode(' ', $message['content'])[1];
                             $offer = Offer::where('robosatsId', $secondWord)->first();
                             ConfirmPayment::dispatch($offer, $adminDashboard);
+                            break;
+                        case '!autoSchedule':
+                            $adminDashboard->autoSchedule = !$adminDashboard->autoSchedule;
+                            $adminDashboard->save();
+                            $discordService->sendMessage('Auto schedule is now ' . ($adminDashboard->autoSchedule ? 'on' : 'off'));
+                            break;
+                        case '!autoCreate':
+                            $adminDashboard->autoCreate = !$adminDashboard->autoCreate;
+                            $adminDashboard->save();
+                            $discordService->sendMessage('Auto create is now ' . ($adminDashboard->autoCreate ? 'on' : 'off'));
                             break;
                         case '!resetRevolut':
                             // unset revolut_auth_code_request in Redis

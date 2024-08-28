@@ -38,25 +38,35 @@ class Scheduler extends Command
             $end_time = $admin_dashboard->auto_accept_end_time;
 
             // check if the current time is within the start and end time
+            $discord_service = new \App\Services\DiscordService();
             if ($current_time >= $start_time && $current_time <= $end_time) {
-                Log::info('Turning on the auto accept and auto create');
                 // turn on the auto accept
-                $admin_dashboard->autoAccept = true;
-                $admin_dashboard->autoCreate = true;
-                $admin_dashboard->save();
+                if (!$admin_dashboard->auto_accept) {
+                    $discord_service->sendMessage('Scheduler is turning on auto accept');
+                    $admin_dashboard->auto_accept = true;
+                    $admin_dashboard->save();
+                }
+                // turn on the auto create
+                if (!$admin_dashboard->auto_create) {
+                    $discord_service->sendMessage('Scheduler is turning on auto create');
+                    $admin_dashboard->auto_create = true;
+                    $admin_dashboard->save();
+                }
             } else {
-                Log::info('Turning off the auto accept and auto create');
                 // turn off the auto accept
-                $admin_dashboard->autoAccept = false;
-                $admin_dashboard->autoCreate = false;
-                $admin_dashboard->save();
+                if ($admin_dashboard->auto_accept) {
+                    $discord_service->sendMessage('Scheduler is turning off auto accept');
+                    $admin_dashboard->auto_accept = false;
+                    $admin_dashboard->save();
+                }
+
+                // turn off the auto create
+                if ($admin_dashboard->auto_create) {
+                    $discord_service->sendMessage('Scheduler is turning off auto create');
+                    $admin_dashboard->auto_create = false;
+                    $admin_dashboard->save();
+                }
             }
-        } else {
-            Log::info('Scheduler is off or panic button is on, turning off the auto accept and auto create');
-            // turn off the auto accept
-            $admin_dashboard->auto_accept = false;
-            $admin_dashboard->auto_create = false;
-            $admin_dashboard->save();
         }
 
 
