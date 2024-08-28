@@ -111,9 +111,9 @@ class DiscordCommands implements ShouldQueue
                             ConfirmPayment::dispatch($offer, $adminDashboard);
                             break;
                         case '!autoSchedule':
-                            $adminDashboard->autoSchedule = !$adminDashboard->autoSchedule;
+                            $adminDashboard->scheduler = !$adminDashboard->scheduler;
                             $adminDashboard->save();
-                            $discordService->sendMessage('Auto schedule is now ' . ($adminDashboard->autoSchedule ? 'on' : 'off'));
+                            $discordService->sendMessage('Auto schedule is now ' . ($adminDashboard->scheduler ? 'on' : 'off'));
                             break;
                         case '!autoCreate':
                             $adminDashboard->autoCreate = !$adminDashboard->autoCreate;
