@@ -8,6 +8,7 @@ use App\Models\Offer;
 use App\Models\RevolutAccessToken;
 use App\Models\RobosatsChatMessage;
 use App\Services\DiscordService;
+use App\WorkerClasses\LightningNode;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -50,11 +51,14 @@ class DiscordCommands implements ShouldQueue
             '!toggleAutoChat',
             '!toggleAutoTopup',
             '!toggleAutoConfirm',
+            '!autoSchedule',
+            '!autoCreate',
             '!setSellPremium',
             '!setBuyPremium',
             '!setConcurrentTransactions',
             '!setMinSatProfit',
             '!setMaxSatAmount',
+            '!generateDepositAddress',
         ];
         $discordService = new DiscordService();
         $latestMessages = $discordService->getLatestMessages();
@@ -105,6 +109,16 @@ class DiscordCommands implements ShouldQueue
                             $secondWord = explode(' ', $message['content'])[1];
                             $offer = Offer::where('robosatsId', $secondWord)->first();
                             ConfirmPayment::dispatch($offer, $adminDashboard);
+                            break;
+                        case '!autoSchedule':
+                            $adminDashboard->scheduler = !$adminDashboard->scheduler;
+                            $adminDashboard->save();
+                            $discordService->sendMessage('Auto schedule is now ' . ($adminDashboard->scheduler ? 'on' : 'off'));
+                            break;
+                        case '!autoCreate':
+                            $adminDashboard->autoCreate = !$adminDashboard->autoCreate;
+                            $adminDashboard->save();
+                            $discordService->sendMessage('Auto create is now ' . ($adminDashboard->autoCreate ? 'on' : 'off'));
                             break;
                         case '!resetRevolut':
                             // unset revolut_auth_code_request in Redis
@@ -236,6 +250,16 @@ class DiscordCommands implements ShouldQueue
                             }
                             $adminDashboard->save();
                             $discordService->sendMessage('Maximum satoshi amount set to ' . $adminDashboard->max_satoshi_amount);
+                            break;
+                        case '!generateDepositAddress':
+                            $krakenService = new \App\Services\KrakenService();
+                            $btcBalance = $krakenService->getBTCBalance();
+                            $btc = $btcBalance->jsonSerialize();
+                            // ensure satoshis is an integer
+                            $satoshis = intval($btc * 100000000) - 2000; // possible fees?
+                            $lightningNode = new LightningNode();
+                            $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Withdrawal of ' . $btcBalance . ' BTC at ' . Carbon::now()->toDateTimeString());
+                            $discordService->sendMessage('Invoice created: ' . $invoice);
                             break;
 
 

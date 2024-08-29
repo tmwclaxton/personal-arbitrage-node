@@ -610,10 +610,11 @@ class Robosats
 
         $adminDashboard = AdminDashboard::all()->first();
         $robot = $offer->robots()->first();
+        $message = '';
+        $paymentMethod = '';
 
         if (!$offer->my_offer) {
             // depending on what payment methods are available change the message, preference order is revolut, wise, paypal friends & family, strike
-            $message = '';
             $preferredPaymentMethods = ['Revolut', 'Wise', 'Paypal Friends & Family', 'Strike'];
             foreach ($preferredPaymentMethods as $paymentMethod) {
                 if (in_array($paymentMethod, json_decode($robot->offer->payment_methods))) {
@@ -695,7 +696,7 @@ class Robosats
 
         $this->webSocketCommunicate($offer, $robot, $message);
 
-        (new DiscordService)->sendMessage('Expect a payment on ' . $paymentMethod . ' for ' . round($robot->offer->accepted_offer_amount, 2)
+        (new DiscordService)->sendMessage('Expect a payment for ' . round($robot->offer->accepted_offer_amount, 2)
             . ' ' . $robot->offer->currency . ' soon! Once received, confirm the payment by typing !confirm ' . $offer->robosatsId . ' in the chat.');
 
 
