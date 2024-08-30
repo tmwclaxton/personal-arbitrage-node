@@ -19,6 +19,10 @@ Schedule::command('refresh:dashboard')
     ->description('refresh dashboard')
     ->everyMinute()->withoutOverlapping(1);
 
+Schedule::command('update:providers')
+    ->description('refresh providers')
+    ->everyFiveMinutes()->withoutOverlapping(1);
+
 Schedule::command('refresh:transactions')
     ->description('refresh transactions')
     ->everyMinute()->withoutOverlapping(1);

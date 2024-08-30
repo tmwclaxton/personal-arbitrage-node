@@ -85,12 +85,12 @@ const panicButtonToggle = () => {
                             <TextInput v-model="tempAdminDashboard.strike_handle"/>
                         </div>
                         <div class="flex flex-row justify-between items-center"><span
-                            class="font-bold mr-1">Instant Sepa Info: </span>
-                            <TextInput v-model="tempAdminDashboard.instant_sepa"/>
+                            class="font-bold mr-1 flex-shrink-0">Instant Sepa Info: </span>
+                            <TextInput class="w-full text-right"  v-model="tempAdminDashboard.instant_sepa"/>
                         </div>
                         <div class="flex flex-row justify-between items-center"><span
-                            class="font-bold mr-1">Faster Payments Info: </span>
-                            <TextInput v-model="tempAdminDashboard.faster_payments"/>
+                            class="font-bold mr-1 flex-shrink-0">Faster Payments Info: </span>
+                            <TextInput class="w-full text-right" v-model="tempAdminDashboard.faster_payments"/>
                         </div>
                     </div>
                     <div class="flex flex-row gap-x-4 justify-between">

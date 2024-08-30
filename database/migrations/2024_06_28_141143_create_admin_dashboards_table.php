@@ -49,11 +49,11 @@ return new class extends Migration
             $table->string('revolut_handle')->nullable()->default('@tobyclaxton');
             $table->string('paypal_handle')->nullable()->default('@tobyclaxton');
             $table->string('wise_handle')->nullable()->default('@tobymatthewwilliamc');
+            $table->string('instant_sepa')->nullable();
+            $table->string('faster_payments')->nullable();
             $table->string('strike_handle')->nullable();
             $table->string('cashapp_handle')->nullable();
             $table->string('zelle_handle')->nullable();
-            $table->json('instant_sepa')->nullable();
-            $table->json('faster_payments')->nullable();
 
             $table->integer('kraken_btc_balance')->nullable();
 

@@ -46,11 +46,19 @@ class UmbrelService
 
     public function resetProxyToken()
     {
-        $otp = TOTP::createFromSecret(env("UMBREL_TOTP_KEY"));
-        $response = Http::post($this->ip . ':80/trpc/user.login', [
+        $params = [
             'password' => env("UMBREL_PASSWORD"),
-            'totpToken' => $otp->now(),
-        ]);
+        ];
+        if (env("UMBREL_TOTP_KEY") !== null) {
+            $otp = TOTP::createFromSecret(env("UMBREL_TOTP_KEY"));
+        }
+        if (isset($otp)) {
+            $params['totpToken'] = $otp->now();
+        }
+
+        $response = Http::post($this->ip . ':80/trpc/user.login', $params);
+
+
 
         $proxyToken = $response->cookies()->getCookieByName('UMBREL_PROXY_TOKEN')->getValue();
 

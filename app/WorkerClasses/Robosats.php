@@ -34,8 +34,16 @@ class Robosats
         'veneto' => 'veneto',
         'exp' => 'exp'
     ];
-    protected string $host = 'http://192.168.0.18:12596';
-    protected string $wsHost = 'ws://192.168.0.18:12596';
+
+    public function getWsHost() {
+        return 'ws://' . env('UMBREL_IP') . ':12596';
+    }
+
+    public function getHost() {
+        return 'http://' . env('UMBREL_IP') . ':12596';
+    }
+
+
 
     public const CURRENCIES = [
         '1' => 'USD',
@@ -157,11 +165,11 @@ class Robosats
         $acceptLanguages = ['en-US', 'en'];
         $this->headers["Accept-Language"] = $acceptLanguages[array_rand($acceptLanguages)] . ';q=0.9,en;q=0.8';
         $referredLocations = [
-            $this->host . '/offers/',
-            $this->host . 'order/satstralia/' . rand(1000, 9999),
-            $this->host . 'order/temple/' . rand(1000, 9999),
-            $this->host . 'order/lake/' . rand(1000, 9999),
-            $this->host . 'order/veneto/' . rand(1000, 9999)
+            $this->getHost() . '/offers/',
+            $this->getHost() . 'order/satstralia/' . rand(1000, 9999),
+            $this->getHost() . 'order/temple/' . rand(1000, 9999),
+            $this->getHost() . 'order/lake/' . rand(1000, 9999),
+            $this->getHost() . 'order/veneto/' . rand(1000, 9999)
         ];
         $this->headers['Referer'] = $referredLocations[array_rand($referredLocations)];
 
@@ -214,10 +222,10 @@ class Robosats
 
 
         foreach ($this->providers as $provider) {
-            $url = $this->host . '/mainnet/' . $provider . '/api/robot/';
+            $url = $this->getHost() . '/mainnet/' . $provider . '/api/robot/';
             $headers = $this->getHeaders();
             $headers['Authorization'] = $authentication;
-            $headers['Referer'] = $this->host . '/robot/';
+            $headers['Referer'] = $this->getHost() . '/robot/';
             $headers['Priority'] = 'u=1';
 
             try {
@@ -310,7 +318,7 @@ class Robosats
         // $provider = array_rand($this->providers);
         // choose a provider that isn't temple
         $provider = array_rand(array_diff($this->providers, ['temple']));
-        $url = $this->host . '/mainnet/' . $this->providers[$provider] . '/api/limits/';
+        $url = $this->getHost() . '/mainnet/' . $this->providers[$provider] . '/api/limits/';
 
         $response = Http::withHeaders($this->getHeaders())->timeout(30)->get($url);
 
@@ -567,7 +575,7 @@ class Robosats
         }
 
         // post request
-        $url = $this->host . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $robosatsId;
+        $url = $this->getHost() . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $robosatsId;
         // (new DiscordService)->sendMessage($offer->accepted_offer_amount . ' ' . $offer->currency . '.  RoboSats ID: ' . $robosatsId);
         Log::info($offer->accepted_offer_amount . ' ' . $offer->currency . '.  RoboSats ID: ' . $robosatsId);
 
@@ -706,7 +714,7 @@ class Robosats
         $b91 = new \Katoga\Allyourbase\Base91();
         $decoded = $b91->decode($robot->sha256);
         $hex = bin2hex($decoded);
-        $url = $this->wsHost . '/mainnet/' . $offer->provider . '/ws/chat/' . $offer->robosatsId . '/?token_sha256_hex=' . $hex;
+        $url = $this->getWsHost() . '/mainnet/' . $offer->provider . '/ws/chat/' . $offer->robosatsId . '/?token_sha256_hex=' . $hex;
 
         // create a new client
         $client = new Client($url);
@@ -747,7 +755,7 @@ class Robosats
     }
 
     public function confirmReceipt(Offer $offer, Transaction $transaction) {
-        $url = $this->host . '/mainnet/' . $transaction->offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
+        $url = $this->getHost() . '/mainnet/' . $transaction->offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
 
         // last chance to back out
         if (AdminDashboard::all()->first()->panicButton) {
@@ -801,7 +809,7 @@ class Robosats
 
     public function updateOfferStatus($offer): Offer
     {
-        $url = $this->host . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
+        $url = $this->getHost() . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
         $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->get($url);
         $response = json_decode($response->body(), true);
 
@@ -836,7 +844,7 @@ class Robosats
         // $this->updateOfferStatus($offer);
 
         $transaction = $offer->transaction()->first();
-        $url = $this->host . '/mainnet/' . $transaction->offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
+        $url = $this->getHost() . '/mainnet/' . $transaction->offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
 
         $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->get($url);
 
@@ -924,7 +932,7 @@ class Robosats
 
     public function updateRobot(Robot $robot) {
         $offer = $robot->offer;
-        $url = $this->host . '/mainnet/' . $robot->provider . '/api/robot/';
+        $url = $this->getHost() . '/mainnet/' . $robot->provider . '/api/robot/';
         // post request
         $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->get($url);
         $response = json_decode($response->body(), true);
@@ -948,7 +956,7 @@ class Robosats
     }
 
     public function claimCompensation($robot) {
-        $url = $this->host . '/mainnet/' . $robot->provider . '/api/reward/';
+        $url = $this->getHost() . '/mainnet/' . $robot->provider . '/api/reward/';
 
         $earnedRewards = $robot->earned_rewards;
         $lightningNode = new LightningNode();
@@ -968,7 +976,7 @@ class Robosats
 
     public function collaborativeCancel($offer)
     {
-        $url = $this->host . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
+        $url = $this->getHost() . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
         $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'cancel']);
         $response = json_decode($response->body(), true);
 
@@ -1033,7 +1041,7 @@ class Robosats
         //"longitude":null}
         // take payment methods json array and convert to space separated string
         $paymentMethods = implode(' ', json_decode($paymentMethods));
-        $url = $this->host . '/mainnet/' . $provider . '/api/make/';
+        $url = $this->getHost() . '/mainnet/' . $provider . '/api/make/';
         $array = [
             'type' => 1,
             'currency' => $currency,

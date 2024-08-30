@@ -62,6 +62,7 @@ let tempAdminDashboard = ref(JSON.parse(JSON.stringify(props.adminDashboard)));
 // convert tempAdminDashboard.payment_methods to array from json string
 tempAdminDashboard.value.payment_methods = JSON.parse(tempAdminDashboard.value.payment_methods);
 tempAdminDashboard.value.payment_currencies = JSON.parse(tempAdminDashboard.value.payment_currencies);
+tempAdminDashboard.value.provider_statuses = JSON.parse(tempAdminDashboard.value.provider_statuses);
 
 
 const clicked = () => {
@@ -295,6 +296,30 @@ const showSidebar = ref(true);
                             <div class="flex flex-row justify-between items-center"><span
                                 class="font-bold mr-1">Trade Volume: </span><span
                                 v-text="tempAdminDashboard.trade_volume_satoshis"/></div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-y-3 border-t-2 border-zinc-300 dark:border-white/70 mt-4 pt-1">
+                        <div class="text-left flex flex-col gap-y-1 ">
+                                <span class="font-bold text-xl mb-2">Provider Statuses:</span>
+                                <div class="flex flex-col gap-y-2">
+                                    <div v-for="(value, key) in tempAdminDashboard.provider_statuses"
+                                         class="flex flex-col gap-y-2">
+                                        <div class="flex flex-row gap-x-2 font-bold">
+                                            <span class=""> {{ key }}: </span>
+                                            <!--if value is false then show a red dot-->
+                                            <div v-if="value === false" class="flex flex-row gap-x-2">
+                                                <p>Offline</p>
+                                                <div class="bg-red-500 w-4 h-4 rounded-full my-auto"></div>
+                                            </div>
+                                            <div v-if="value !== false" class="flex flex-row gap-x-2">
+                                                <p>Online</p>
+                                                <div class="bg-green-500 w-4 h-4 rounded-full my-auto"></div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
                         </div>
                     </div>
                 </div>
