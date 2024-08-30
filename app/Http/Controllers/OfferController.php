@@ -208,6 +208,14 @@ class OfferController extends Controller
             $offer['payment_methods'][] = 'Instant SEPA';
         }
 
+        // if the items Faster and Payments are in the payment_methods, remove them and replace them with 'Faster Payments'
+        if (in_array('Faster', $offer['payment_methods']) && in_array('Payments', $offer['payment_methods'])) {
+            // remove the Faster and Payments from the payment_methods
+            $offer['payment_methods'] = array_diff($offer['payment_methods'], ['Faster', 'Payments']);
+            // add 'Faster Payments' to the payment_methods
+            $offer['payment_methods'][] = 'Faster Payments';
+        }
+
         // if the items Paypal Friends & Family (all separate) are in the payment_methods, remove them and replace them with 'Paypal Friends & Family'
         if (in_array('Paypal', $offer['payment_methods']) && in_array('Friends', $offer['payment_methods']) && in_array('Family', $offer['payment_methods'])) {
             // remove the Paypal Friends & Family from the payment_methods

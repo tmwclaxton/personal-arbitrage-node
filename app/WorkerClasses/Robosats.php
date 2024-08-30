@@ -286,7 +286,7 @@ class Robosats
 
     public function request($endpoint, $offer = null) {
         $providers = $this->providers;
-        $urlStart = 'http://192.168.0.18:12596/mainnet/';
+        $urlStart = $this->getHost() . '/mainnet/';
         $headers = $this->getHeaders($offer);
 
         $responses = [];
