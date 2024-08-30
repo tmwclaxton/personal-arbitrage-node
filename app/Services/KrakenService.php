@@ -103,97 +103,23 @@ class KrakenService
         $satoshis = intval($btc * 100000000) - 2000; // possible fees?
         $lightningNode = new LightningNode();
         $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Withdrawal of ' . $btcBalance . ' BTC at ' . Carbon::now()->toDateTimeString());
-        $discordService->sendMessage('Invoice created: ' . $invoice);
-
-        return "Invoice created: " . $invoice;
+        // $discordService->sendMessage('Invoice created: ' . $invoice);
 
 
         // THIS IS TO SET REDIS KEYS plz dont delete
         $gmailService = new GmailService();
         $code = $gmailService->getLinkFromLastEmail();
 
-        $seleniumService = new SeleniumService();
-        // sign in // possibly with otp
-        $seleniumService->signinKraken($krakenService);
-
-        // approve device
-        $seleniumService->approveDeviceKraken();
-
-        // set session key lightning-network-shown-in-current-session to true
-        $driver->executeScript("window.localStorage.setItem('lightning-network-shown-in-current-session', 'true')");
-
-        // sign in again
-        $seleniumService->signinKraken($krakenService, 'https://www.kraken.com/sign-in?redirect=%2Fc%2Ffunding%2Fwithdraw%3Fasset%3DBTC%26assetType%3Dcrypto%26network%3DLightning%26method%3DBitcoin%2520Lightning');
-
-        sleep(rand(10, 15));
-
-        list($buttons, $buttonValues) = $seleniumService->getButtons();
-
-        $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Okay", "Agree and continue"]);
-
-        // scroll down slightly
-        $driver->executeScript("window.scrollTo(0," . rand(650, 720) . ")");
-
-        sleep(5);
+        $invoiceId = "ag_lightning_invoice_" . Carbon::now()->toDateTimeString();
 
 
-        // list($buttons, $buttonValues) = $seleniumService->getButtons();
-        // $counts = 0;
-        // $counts += $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Manage withdrawal requests"]);
-        // $counts += $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Manage requests"]);
+        # hit suave container
+        $response = Http::post('http://suave:' . env('SUAVE_PORT') .
+            '/kraken-withdraw', [
+            'lightning_invoice' => $invoice,
+            'invoice_id' => $invoiceId
+        ]);
 
-        // if clicks === 0 then click button with class TextButton_root__fIpnJ
-
-        // if ($counts === 0) {
-        // $driver->findElement(WebDriverBy::className(".TextButton_root__fIpnJ"))->click();
-        // document.querySelector('.TextButton_root__fIpnJ').click()
-
-        // run script to click button // if this is null it breaks
-        // $driver->executeScript("document.querySelector('.TextButton_root__fIpnJ').click()");
-
-
-
-        try {
-            list($buttons, $buttonValues) = $seleniumService->getButtons();
-            $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Add withdrawal request"]);
-            // find an input with id label and send keys to it
-            $driver->findElement(WebDriverBy::name("label"))->click();
-            $invoiceId = "ag_lightning_invoice_" . Carbon::now()->toDateTimeString();
-            $driver->findElement(WebDriverBy::name("label"))->sendKeys($invoiceId);
-            $driver->findElement(WebDriverBy::name("address"))->click();
-            $driver->findElement(WebDriverBy::name("address"))->sendKeys($invoice);
-        } catch (\Exception $e) {
-            $driver->takeScreenshot('temp-' . Carbon::now()->toDateTimeString() . '.png');
-            $source = $driver->getPageSource();
-            $driver->quit();
-
-            $discordService = new DiscordService();
-            $discordService->sendMessage('Error sending invoice for Kraken BTC withdrawal');
-            dd($source, $e, $buttons, $buttonValues);
-
-        }
-
-        sleep(2);
-
-        list($buttons, $buttonValues) = $seleniumService->getButtons();
-        $seleniumService->clickButtonsWithText($buttons, $buttonValues, ["Add withdrawal request"]);
-
-
-        // grab email
-        $iterations = 0;
-        $code = null;
-        while ($code === null) {
-            sleep(5);
-            $code = $gmailService->getLinkFromLastEmail('https://www.kraken.com/withdrawal-approve?code=');
-            $iterations++;
-            if ($iterations > 5) {
-                $discordService = new DiscordService();
-                $discordService->sendMessage('No link found in most recent email from Kraken.');
-                return response()->json(['error' => 'No link found in most recent email from Kraken.']);
-            }
-        }
-
-        $driver->get($code);
 
         sleep(5);
 
@@ -203,8 +129,6 @@ class KrakenService
             $btc
         );
 
-        // Close the driver
-        $driver->quit();
 
         $discordService = new DiscordService();
         $discordService->sendMessage('Withdrawal Complete: ' . $btc . ' BTC');

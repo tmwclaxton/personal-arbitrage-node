@@ -137,7 +137,14 @@ Route::get('grab-transactions', function () {
 
 Route::get('test-kraken', function () {
     $kraken = new \App\Services\KrakenService();
-    $kraken->sendFullAmtToLightning();
+    // kraken get BTC balance
+    $btcBalance = $kraken->getBTCBalance();
+    // return $btcBalance;
+    // if BTC balance greater than 0 send to lightning node
+    if ($btcBalance->isGreaterThan(BigDecimal::of('0.02'))) {
+        return "greater than 0.01";
+    }
+    return "less than 0.01";
 });
 
 // Route::get('autoCreate', function () {
