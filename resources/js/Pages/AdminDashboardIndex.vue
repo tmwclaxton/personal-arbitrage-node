@@ -84,6 +84,14 @@ const panicButtonToggle = () => {
                             class="font-bold mr-1">Strike Tag: </span>
                             <TextInput v-model="tempAdminDashboard.strike_handle"/>
                         </div>
+                        <div class="flex flex-row justify-between items-center"><span
+                            class="font-bold mr-1">Instant Sepa Info: </span>
+                            <TextInput v-model="tempAdminDashboard.instant_sepa"/>
+                        </div>
+                        <div class="flex flex-row justify-between items-center"><span
+                            class="font-bold mr-1">Faster Payments Info: </span>
+                            <TextInput v-model="tempAdminDashboard.faster_payments"/>
+                        </div>
                     </div>
                     <div class="flex flex-row gap-x-4 justify-between">
                         <PaymentsInput :payment_methods="tempAdminDashboard.payment_methods"

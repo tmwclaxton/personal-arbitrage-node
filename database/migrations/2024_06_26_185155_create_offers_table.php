@@ -78,6 +78,8 @@ return new class extends Migration
 
             $table->string('discord_channel_id')->nullable();
             $table->boolean('my_offer')->default(false);
+            $table->foreignIdFor(\App\Models\PostedOfferTemplate::class)->nullable();
+
             $table->timestamps();
         });
     }

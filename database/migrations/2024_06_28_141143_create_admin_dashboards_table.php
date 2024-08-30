@@ -25,6 +25,11 @@ return new class extends Migration
             $table->boolean('autoEscrow')->default(true);
             $table->boolean('autoMessage')->default(true);
             $table->boolean('autoConfirm')->default(false);
+            $table->boolean('autoCreate')->default(false);
+            $table->time('auto_accept_start_time')->default('09:00:00');
+            $table->time('auto_accept_end_time')->default('22:00:00');
+            $table->boolean('scheduler')->default(false);
+
             $table->decimal('sell_premium', 5, 2)->default(2);
             $table->decimal('buy_premium', 5, 2)->default(-1);
             $table->integer('min_satoshi_profit')->default(5000);
@@ -46,7 +51,13 @@ return new class extends Migration
             $table->string('wise_handle')->nullable()->default('@tobymatthewwilliamc');
             $table->string('strike_handle')->nullable();
             $table->string('cashapp_handle')->nullable();
-            $table->string('instant_sepa_handle')->nullable();
+            $table->string('zelle_handle')->nullable();
+            $table->json('instant_sepa')->nullable();
+            $table->json('faster_payments')->nullable();
+
+            $table->integer('kraken_btc_balance')->nullable();
+
+            $table->json('provider_statuses')->nullable();
             $table->timestamps();
         });
     }

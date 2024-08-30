@@ -53,6 +53,14 @@ watch(payment_methodsLocal, () => {
                     <span class="font-semibold text-sm">EUR</span>
                 </label>
             </div>
+            <div class="flex flex-row gap-2 items-center">
+                <input type="checkbox" id="BRL" value="BRL" v-model="payment_methodsLocal"
+                       :checked="payment_methodsLocal.includes('BRL')"
+                       class="w-4 h-4 text-blue-600 bg-zinc-100 border-zinc-300 without-ring dark:bg-zinc-700 dark:border-zinc-600 hover:dark:bg-zinc-700 focus:dark:bg-zinc-700">
+                <label for="EUR" class="flex flex-row gap-x-2 align-middle items-center">
+                    <span class="font-semibold text-sm">BRL</span>
+                </label>
+            </div>
         </div>
     </div>
 

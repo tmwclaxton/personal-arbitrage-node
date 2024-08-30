@@ -25,7 +25,6 @@ class SeleniumService
 
 
     private RemoteWebDriver $driver;
-    public string $linkUsed;
     public function __construct()
     {
 
@@ -335,7 +334,8 @@ class SeleniumService
             $code = null;
             while ($code === null) {
                 sleep(5);
-                $code = $this->getLinkFromLastEmail();
+                $gmailService = new GmailService();
+                $code = $gmailService->getLinkFromLastEmail();
                 $iterations++;
                 if ($iterations > 5) {
                     $discordService = new DiscordService();
@@ -359,22 +359,7 @@ class SeleniumService
         }
     }
 
-    public function getLinkFromLastEmail($start = 'https://www.kraken.com/new-device-sign-in/web?code=')
-    {
 
-        // grab email
-        $gmailService = new \App\Services\GmailService();
-        $text = $gmailService->getLastEmail();
-
-        $link = $gmailService->grabLink($text, $start);
-        if ($link === null) {
-            return null;
-        }
-
-        $this->linkUsed = $link;
-
-        return $link;
-    }
 
 
 

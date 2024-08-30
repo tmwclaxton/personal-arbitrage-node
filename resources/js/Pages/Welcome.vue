@@ -157,6 +157,11 @@ const showSidebar = ref(true);
                     Graphs
                 </secondary-button>
             </Link>
+            <Link :href="route('graphs.index')" >
+                <secondary-button class="h-12">
+                    Tabulated Data
+                </secondary-button>
+            </Link>
         </div>
         <div class="my-5 border-b-2 border-gray-300 dark:border-zinc-700"></div>
 
@@ -211,11 +216,11 @@ const showSidebar = ref(true);
                     </div>
                     <div class="flex flex-row justify-between items-center"><span
                         class="font-bold mr-1">Start Time:</span>
-                        <input type="time" v-model="tempAdminDashboard.auto_accept_start_time"/>
+                        <input type="time" v-model="tempAdminDashboard.auto_accept_start_time" class="bg-zinc-100 dark:bg-zinc-700 text-black dark:text-white"/>
                     </div>
                     <div class="flex flex-row justify-between items-center"><span
                         class="font-bold mr-1">End Time:</span>
-                        <input type="time" v-model="tempAdminDashboard.auto_accept_end_time"/>
+                        <input type="time" v-model="tempAdminDashboard.auto_accept_end_time" class="bg-zinc-100 dark:bg-zinc-700 text-black dark:text-white"/>
 
                     </div>
 
@@ -226,22 +231,22 @@ const showSidebar = ref(true);
                         class="font-bold mr-1">Sell Premium: </span>
                         <TextInput class="w-16 h-6" v-model="tempAdminDashboard.sell_premium"/>
                     </div>
-                    <div class="flex flex-row justify-between items-center"><span
-                        class="font-bold mr-1">Sitting Sell Offers Count: </span>
-                        <TextInput class="w-16 h-6" v-model="tempAdminDashboard.sitting_sell_offers_count"/>
-                    </div>
-                    <div class="flex flex-row justify-between items-center"><span
-                        class="font-bold mr-1">Sitting Sell Offers Min Premium: </span>
-                        <TextInput class="w-16 h-6" v-model="tempAdminDashboard.sitting_sell_offers_min_premium"/>
-                    </div>
-                    <div class="flex flex-row justify-between items-center"><span
-                        class="font-bold mr-1">Sitting Sell Offers Max Premium: </span>
-                        <TextInput class="w-16 h-6" v-model="tempAdminDashboard.sitting_sell_offers_max_premium"/>
-                    </div>
                     <!--<div class="flex flex-row justify-between items-center"><span-->
-                    <!--    class="font-bold mr-1">Buy Premium: </span>-->
-                    <!--    <TextInput class="w-16 h-6" v-model="tempAdminDashboard.buy_premium"/>-->
+                    <!--    class="font-bold mr-1">Sitting Sell Offers Count: </span>-->
+                    <!--    <TextInput class="w-16 h-6" v-model="tempAdminDashboard.sitting_sell_offers_count"/>-->
                     <!--</div>-->
+                    <!--<div class="flex flex-row justify-between items-center"><span-->
+                    <!--    class="font-bold mr-1">Sitting Sell Offers Min Premium: </span>-->
+                    <!--    <TextInput class="w-16 h-6" v-model="tempAdminDashboard.sitting_sell_offers_min_premium"/>-->
+                    <!--</div>-->
+                    <!--<div class="flex flex-row justify-between items-center"><span-->
+                    <!--    class="font-bold mr-1">Sitting Sell Offers Max Premium: </span>-->
+                    <!--    <TextInput class="w-16 h-6" v-model="tempAdminDashboard.sitting_sell_offers_max_premium"/>-->
+                    <!--</div>-->
+                    <div class="flex flex-row justify-between items-center"><span
+                        class="font-bold mr-1">Buy Premium: </span>
+                        <TextInput class="w-16 h-6" v-model="tempAdminDashboard.buy_premium"/>
+                    </div>
                     <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Concurrent Transactions: </span>
                         <TextInput class="w-16 h-6" v-model="tempAdminDashboard.max_concurrent_transactions"/>
                     </div>

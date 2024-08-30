@@ -100,6 +100,17 @@ Route::middleware('auth')->group(function () {
 
 });
 
+// route to get code from gmail for suave container
+Route::get('/get-gmail-code/', function () {
+    // grab start
+    if (isset(request()->start)) {
+        $start = request()->start;
+    } else {
+        $start = 'https://www.kraken.com/new-device-sign-in/web?code=';
+    }
+    $gmailService = new \App\Services\GmailService();
+    return $gmailService->getLinkFromLastEmail($start);
+});
 
 
 Route::get('/test-revolut-login', function () {

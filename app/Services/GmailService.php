@@ -74,4 +74,21 @@ class GmailService
 
         return $link;
     }
+
+    public function getLinkFromLastEmail($start = 'https://www.kraken.com/new-device-sign-in/web?code='): ?string
+    {
+
+        // grab email
+        $gmailService = new \App\Services\GmailService();
+        $text = $gmailService->getLastEmail();
+
+        $link = $gmailService->grabLink($text, $start);
+        if ($link === null) {
+            $discordService = new \App\Services\DiscordService();
+            $discordService->sendMessage("Link not found in email");
+            return json_encode(['error' => 'Link not found']);
+        }
+
+        return json_encode(['link' => $link]);
+    }
 }
