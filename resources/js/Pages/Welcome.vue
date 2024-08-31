@@ -63,7 +63,10 @@ let tempAdminDashboard = ref(JSON.parse(JSON.stringify(props.adminDashboard)));
 tempAdminDashboard.value.payment_methods = JSON.parse(tempAdminDashboard.value.payment_methods);
 tempAdminDashboard.value.payment_currencies = JSON.parse(tempAdminDashboard.value.payment_currencies);
 tempAdminDashboard.value.provider_statuses = JSON.parse(tempAdminDashboard.value.provider_statuses);
-
+// reverse provider statuses
+if (tempAdminDashboard.value.provider_statuses !== null) {
+    tempAdminDashboard.value.provider_statuses = Object.fromEntries(Object.entries(tempAdminDashboard.value.provider_statuses).reverse());
+}
 
 const clicked = () => {
     axios.post(route('updateAdminDashboard'), {
@@ -271,16 +274,20 @@ const showSidebar = ref(true);
                             <p class=""><span class="font-bold">Lighting Wallet Balance:</span> {{ tempAdminDashboard.localBalance }} </p>
                             <!--<p class=""><span class="font-bold">Revolut Balance:</span></p>-->
                             <!--<p class=""><span class="font-bold">Wise Balance:</span></p>-->
-                            <!--<p class=""><span class="font-bold">Kraken Balance:</span></p>-->
+                            <p class=""><span class="font-bold">Kraken Balance:</span> {{ tempAdminDashboard.kraken_btc_balance }} </p>
                             <p class=""><span class="font-bold">Remote Balance:</span> {{ tempAdminDashboard.remoteBalance }} </p>
                             <div class="border-b border-zinc-300 dark:border-zinc-700"></div>
-                            <div class="flex flex-col gap-y-1 text-xs pt-2">
+                            <div v-if="channelBalances.length > 0"
+                                class="flex flex-col gap-y-1 text-xs pt-2">
                                 <div v-for="channelBalance in channelBalances"
                                      class="flex flex-row gap-x-2">
                                     <span class="font-bold"> {{ channelBalance.channelName }}: </span>
                                     <span class="font-bold text-green-500"> {{ channelBalance.localBalance }} </span>
                                     <span class="font-bold text-red-500"> {{ channelBalance.remoteBalance }} </span>
                                 </div>
+                            </div>
+                            <div v-else class="mt-3 text-xs ">
+                                <p class="text-center mx-2">No channel balances available</p>
                             </div>
                         </div>
                     </div>

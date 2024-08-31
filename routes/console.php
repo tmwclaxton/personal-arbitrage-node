@@ -23,6 +23,10 @@ Schedule::command('update:providers')
     ->description('refresh providers')
     ->everyFiveMinutes()->withoutOverlapping(1);
 
+Schedule::command('update:kraken-btc-balance')
+    ->description('refresh kraken btc balance')
+    ->everyFiveMinutes()->withoutOverlapping(1);
+
 Schedule::command('refresh:transactions')
     ->description('refresh transactions')
     ->everyMinute()->withoutOverlapping(1);
@@ -105,9 +109,9 @@ Schedule::command('kraken:auto-purchaser')
     ->description('kraken auto purchaser')
     ->everyTenMinutes()->withoutOverlapping(1);
 
-Schedule::command('app:send-to-lightning')
-    ->description('Send btc from kraken to lightning node')
-    ->everyThreeHours()->withoutOverlapping(1);
+// Schedule::command('app:send-to-lightning')
+//     ->description('Send btc from kraken to lightning node')
+//     ->everyThreeHours()->withoutOverlapping(1);
 
 
 

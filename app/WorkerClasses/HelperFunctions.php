@@ -32,4 +32,14 @@ class HelperFunctions
         $exchangeRate = $toBtcPrice / $fromBtcPrice;
         return $amount * $exchangeRate;
     }
+
+    // btc to satoshi
+    public function btcToSatoshi($btc) {
+        return $btc * 100000000;
+    }
+
+    // satoshi to btc
+    public function satoshiToBtc($satoshi) {
+        return $satoshi / 100000000;
+    }
 }

@@ -49,13 +49,13 @@ return new class extends Migration
             $table->string('revolut_handle')->nullable()->default('@tobyclaxton');
             $table->string('paypal_handle')->nullable()->default('@tobyclaxton');
             $table->string('wise_handle')->nullable()->default('@tobymatthewwilliamc');
-            $table->string('instant_sepa')->nullable();
-            $table->string('faster_payments')->nullable();
-            $table->string('strike_handle')->nullable();
+            $table->string('instant_sepa')->nullable()->default('IBAN: GB97 REVO 0099 7039 8431 17, BIC: REVOGB21, Beneficiary: Toby Claxton');
+            $table->string('faster_payments')->nullable()->default('Account Number: 46088210, Sort Code: 04-00-75, Beneficiary: Toby Claxton');
+            $table->string('strike_handle')->nullable()->default('@tmwclaxton');
             $table->string('cashapp_handle')->nullable();
             $table->string('zelle_handle')->nullable();
 
-            $table->integer('kraken_btc_balance')->nullable();
+            $table->integer('kraken_btc_balance')->default(0);
 
             $table->json('provider_statuses')->nullable();
             $table->timestamps();
