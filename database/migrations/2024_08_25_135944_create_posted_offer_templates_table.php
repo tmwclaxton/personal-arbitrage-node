@@ -24,6 +24,7 @@ return new class extends Migration
             $table->boolean('auto_create');
             $table->integer('quantity')->default(1);
             $table->integer('cooldown')->default(0);
+            $table->integer('ttl')->default(86400);
             $table->timestamp('last_completed')->nullable();
             $table->timestamps();
         });
