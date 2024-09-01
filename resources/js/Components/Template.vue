@@ -26,6 +26,7 @@ const offerEditTemplate = ref({
     autoCreate: props.template.auto_create,
     providers: [],
     quantity: props.template.quantity,
+    cooldown: props.template.cooldown,
 });
 
 const update = () => {
@@ -41,6 +42,7 @@ const update = () => {
         bond_size: parseInt(offerEditTemplate.value.bondSize),
         auto_create: offerEditTemplate.value.autoCreate,
         quantity: offerEditTemplate.value.quantity,
+        cooldown: offerEditTemplate.value.cooldown,
     }).then(response => {
         console.log(response.data);
         // reload the page
@@ -107,6 +109,11 @@ offerEditTemplate.value.providers = offerEditTemplate.value.provider.split(' ');
             </p>
 
             <p>
+                <span class="font-bold">Cooldown: </span>
+                {{template.cooldown }}
+            </p>
+
+            <p>
                 <span class="font-bold">Auto Create: </span>
                 <span v-text="template.auto_create ? 'True' : 'False'"></span>
             </p>
@@ -148,6 +155,10 @@ offerEditTemplate.value.providers = offerEditTemplate.value.provider.split(' ');
             <div class="flex flex-row gap-x-2">
                 <p class="font-bold my-auto">Currency:</p>
                 <text-input v-model="offerEditTemplate.currency" label="Currency" class="w-full"/>
+            </div>
+            <div class="flex flex-row gap-x-2">
+                <p class="font-bold my-auto">Cooldown:</p>
+                <text-input v-model="offerEditTemplate.cooldown" label="Cooldown" class="w-full"/>
             </div>
             <div class="flex flex-row gap-x-2 col-span-2 mt-2">
                 <p class="font-bold my-auto ">Auto Create:</p>

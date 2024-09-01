@@ -623,7 +623,7 @@ class Robosats
 
         if (!$offer->my_offer) {
             // depending on what payment methods are available change the message, preference order is revolut, wise, paypal friends & family, strike
-            $preferredPaymentMethods = ['Revolut', 'Wise', 'Paypal Friends & Family', 'Strike'];
+            $preferredPaymentMethods = ['Revolut', 'Wise', 'Paypal Friends & Family', 'Strike', 'Faster Payments', 'Instant SEPA'];
             foreach ($preferredPaymentMethods as $paymentMethod) {
                 if (in_array($paymentMethod, json_decode($robot->offer->payment_methods))) {
                     if ($paymentMethod == null) {
@@ -642,6 +642,19 @@ class Robosats
                             $tag = $adminDashboard->paypal_handle;
                             $pseudonym = "Paypal";
                             break;
+                        case 'Strike':
+                            $tag = $adminDashboard->strike_handle;
+                            $pseudonym = "Strike";
+                            break;
+                        case 'Faster Payments':
+                            $tag = $adminDashboard->faster_payments;
+                            $pseudonym = "Faster Payments";
+                            break;
+                        case 'Instant SEPA':
+                            $tag = $adminDashboard->instant_sepa;
+                            $pseudonym = "Instant SEPA";
+                            break;
+
                     }
 
                     if (empty($tag) || empty($pseudonym)) {
@@ -665,6 +678,8 @@ class Robosats
                 'Wise' => $adminDashboard->wise_handle,
                 'Paypal Friends & Family' => $adminDashboard->paypal_handle,
                 'Strike' => $adminDashboard->strike_handle,
+                'Faster Payments' => $adminDashboard->faster_payments,
+                'Instant SEPA' => $adminDashboard->instant_sepa
             ];
 
             $handleParts = [];
@@ -999,7 +1014,13 @@ class Robosats
         $isRange = $maxAmount != null;
 
         $discordService = new DiscordService();
-        $discordService->sendMessage('Creating sell offer for ' . $minAmount . ' ' . $currency . ' with a premium of ' . $premium . '%');
+        $message = 'Creating sell offer for ';
+        if ($isRange) {
+            $message .= 'between ' . $minAmount . ' and ' . $maxAmount . ' ' . $currency . ' with a premium of ' . $premium . '%';
+        } else {
+            $message .= $minAmount . ' ' . $currency . ' with a premium of ' . $premium . '%';
+        }
+        $discordService->sendMessage($message);
 
 
         // create temp offer, create robots, create offer, pay bond.

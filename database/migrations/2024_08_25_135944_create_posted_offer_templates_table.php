@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('posted_offer_templates', function (Blueprint $table) {
             $table->id();
+            $table->enum('type', ['buy', 'sell'])->default('sell');
             $table->string('provider');
             $table->string('currency');
             $table->decimal('premium', 10, 2);
@@ -22,6 +23,8 @@ return new class extends Migration
             $table->integer('bond_size');
             $table->boolean('auto_create');
             $table->integer('quantity')->default(1);
+            $table->integer('cooldown')->default(0);
+            $table->timestamp('last_completed')->nullable();
             $table->timestamps();
         });
     }

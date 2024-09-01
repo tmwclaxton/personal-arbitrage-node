@@ -60,6 +60,7 @@ class OfferTemplatesController extends Controller
             'bond_size' => 'required|numeric|min:1|gte:3',
             'auto_create' => 'required|boolean',
             'quantity' => 'required|numeric|min:1',
+            'cooldown' => 'required|numeric|min:0',
         ]);
 
 

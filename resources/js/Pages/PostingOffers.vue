@@ -28,6 +28,7 @@ const create = () => {
         bond_size: parseInt(offerTemplate.value.bondSize),
         auto_create: offerTemplate.value.autoCreate,
         quantity: offerTemplate.value.quantity,
+        cooldown: 0,
     }).then(response => {
         console.log(response.data);
         location.reload();
@@ -60,6 +61,7 @@ const offerTemplate = ref({
     bondSize: 3,
     autoCreate: true,
     quantity: 1,
+    cooldown: 600,
 });
 
 
@@ -88,6 +90,8 @@ const offerTemplate = ref({
                         <text-input v-model="offerTemplate.quantity" label="Quantity" />
                         <payments-input class="mx-16" v-model="offerTemplate.paymentMethods" label="Payment Methods" />
                         <providers-input class="mx-16" v-model="offerTemplate.provider" label="Provider" />
+                        <label class="text-sm text-gray-500">Cooldown</label>
+                        <text-input v-model="offerTemplate.cooldown" label="Cooldown" />
                         <label class="text-sm text-gray-500 mt-5">Auto Create</label>
                         <toggle-button v-model="offerTemplate.autoCreate" label="Auto Create" />
 

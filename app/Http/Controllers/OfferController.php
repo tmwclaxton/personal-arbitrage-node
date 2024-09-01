@@ -11,6 +11,7 @@ use App\Services\DiscordService;
 use App\WorkerClasses\HelperFunctions;
 use App\WorkerClasses\LightningNode;
 use App\WorkerClasses\Robosats;
+use App\WorkerClasses\RobosatsStatus;
 use Carbon\CarbonInterval;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -81,7 +82,8 @@ class OfferController extends Controller
             $offer->payment_methods = json_decode($offer->payment_methods);
             $offer->escrow_duration = CarbonInterval::seconds($offer->escrow_duration)->cascade()->forHumans();
 
-
+            // status message isn't always correct so we will use status and RobosatsStatuses
+            $offer->status_message = (RobosatsStatus::getStatusTexts()[$offer['status']]);
 
             // check if any of the payment methods are in the admin dashboard payment methods, if not remove the offer
             $found = false;
@@ -275,8 +277,10 @@ class OfferController extends Controller
                 $offer['max_satoshi_amount_profit'] = $actualMaxSatoshiAmount - $offer['max_satoshi_amount'];
 
             }
-
         }
+
+
+
 
         if (array_key_exists('bond_invoice', $offer)) {
             $bond_invoice = $offer['bond_invoice'];
@@ -294,7 +298,13 @@ class OfferController extends Controller
 
         // save or update the offer
         if (Offer::where('robosatsId', $offer['robosatsId'])->exists()) {
-            Offer::where('robosatsId', $offer['robosatsId'])->update($offer);
+            // if the offer has expired if the old offer's status is over 10, then give the offer 20 minutes before updating
+            // so that we don't update a completed offer before it has been retired
+            if ($newOffer->status == 5 && $offer['status'] > 8 && $newOffer->updated_at->diffInMinutes(now()) > 20) {
+
+            } else {
+                Offer::where('robosatsId', $offer['robosatsId'])->update($offer);
+            }
         } else {
             $newOffer->save();
         }
@@ -345,6 +355,7 @@ class OfferController extends Controller
         $variationAmounts = array_reverse($variationAmounts);
         foreach ($variationAmounts as $variationAmount) {
             $openChannels = 0;
+
             foreach ($channelBalances as $channelBalance) {
                 // set variation amount to an integer i.e. no decimal places
                 $variationAmount = (int) $variationAmount;

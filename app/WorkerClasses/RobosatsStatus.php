@@ -5,7 +5,7 @@ namespace App\WorkerClasses;
 class RobosatsStatus
 
 {
-    public static $status = [
+    public static array $status = [
         'WFB' => 0,
         'PUB' => 1,
         'PAU' => 2,
@@ -27,7 +27,7 @@ class RobosatsStatus
         'TLD' => 18,
     ];
 
-    public static $statusText = [
+    public static array $statusText = [
         0 => 'Waiting for maker bond',
         1 => 'Public',
         2 => 'Paused',

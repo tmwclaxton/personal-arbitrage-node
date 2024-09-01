@@ -8,14 +8,15 @@ use Illuminate\Support\Facades\Http;
 class LightningNode
 {
 
-    public string $endpoint = 'http://192.168.0.18:2101';
+    public string $endpoint = '';
+
     public array $headers = [
-        "Host" => "192.168.0.18:2101",
+        // "Host" => "192.168.0.18:2101",
         "User-Agent" => "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:127.0) Gecko/20100101 Firefox/127.0",
         "Accept" => "*/*",
         "Accept-Language" => "en-GB,en;q=0.5",
         "Accept-Encoding" => "gzip, deflate",
-        "Referer" => "http://192.168.0.18:2101/",
+        // "Referer" => "http://192.168.0.18:2101/",
         "Content-Type" => "application/json",
         "Connection" => "keep-alive",
         "Priority" => "u=4",
@@ -28,12 +29,16 @@ class LightningNode
         $currentHeaders = $this->headers;
         $adminDash = AdminDashboard::all()->first();
         $currentHeaders['Cookie'] = 'UMBREL_PROXY_TOKEN=' . $adminDash->umbrel_token;
+        $currentHeaders['Host'] = env('UMBREL_IP');
+        $currentHeaders['Referer'] = env('UMBREL_IP') . ':2101';
         return $currentHeaders;
     }
 
     public function __construct($endpoint = null, $headers = null)
     {
         // set endpoint and headers maybe?
+        $this->endpoint = env('UMBREL_IP') . ':2101';
+
     }
 
     public function requestUrl($url)
