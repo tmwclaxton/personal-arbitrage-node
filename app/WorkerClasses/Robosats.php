@@ -865,7 +865,9 @@ class Robosats
 
         $response = json_decode($response->body(), true);
 
-        if (isset($response['bad_request'])) {
+        if (isset($response['bad_request']) && $offer->status < 14) {
+            $discordService = new DiscordService();
+            $discordService->sendMessage('Error: ' . json_encode($response));
             $offer->status_message = $response['bad_request'];
             $offer->status = 99;
             // set expires at to now

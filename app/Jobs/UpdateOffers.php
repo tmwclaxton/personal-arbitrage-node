@@ -47,7 +47,9 @@ class UpdateOffers implements ShouldQueue
         // grab ids by plucking the id from the transactions
         $ids = $transactions->pluck('offer_id')->toArray();
         // grab offers that are not in the transactions
-        Offer::whereNotIn('id', $ids)->where([['accepted', '=', false], ['my_offer', '=', false]])->where('expires_at', '<', now())->delete();
+        Offer::whereNotIn('id', $ids)
+            ->where([['accepted', '=', false], ['my_offer', '=', false]])
+            ->where('expires_at', '<', now())->delete();
 
 
         $robosats = new Robosats();
