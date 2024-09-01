@@ -40,7 +40,7 @@
                 </primary-button>
 
                 <primary-button v-on:click="acceptOffer"
-                                v-if="(!offer.accepted && !offer.my_offer) || offer.status === 1"
+                                v-if="(!offer.accepted && !offer.my_offer) || (offer.status === 1 && !offer.my_offer)"
                                 class="w-full text-center  h-10 break-words ">
                     <p class="text-center w-full">Accept</p>
                 </primary-button>
