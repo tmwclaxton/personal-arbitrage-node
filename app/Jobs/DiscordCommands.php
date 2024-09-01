@@ -257,6 +257,12 @@ class DiscordCommands implements ShouldQueue
                             $btc = $btcBalance->jsonSerialize();
                             // ensure satoshis is an integer
                             $satoshis = intval($btc * 100000000) - 2000; // possible fees?
+
+                            $adminDashboard = AdminDashboard::all()->first();
+                            $remoteBalance = $adminDashboard->remoteBalance;
+                            if ($satoshis > $remoteBalance) {
+                                $satoshis = $remoteBalance - 20000;
+                            }
                             $lightningNode = new LightningNode();
                             $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Withdrawal of ' . $btcBalance . ' BTC at ' . Carbon::now()->toDateTimeString());
                             $discordService->sendMessage('Invoice created: ' . $invoice);

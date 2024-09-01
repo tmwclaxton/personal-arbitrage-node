@@ -7,6 +7,7 @@ use App\Http\Controllers\OfferController;
 use App\Models\AdminDashboard;
 use App\Models\BtcFiat;
 use App\Models\Offer;
+use App\Models\PostedOfferTemplate;
 use App\Models\Robot;
 use App\Models\Transaction;
 use App\Services\DiscordService;
@@ -796,8 +797,7 @@ class Robosats
         $adminDashboard->satoshi_profit += $transaction->offer->accepted_offer_profit_sat;
 
 
-        // TODO: we need to grab the bond and escrow invoice and find out fees from there
-        // TODO: then we need to calculate 0.025% of the trade volume and add that to the fees
+
         // grab the lightning node
         $lightningNode = new LightningNode();
         // the fee is 0.025 if you are the maker of the offer and 0.175 if you are the taker
@@ -820,8 +820,6 @@ class Robosats
             round($transaction->offer->accepted_offer_amount,2) . ' ' .
             $transaction->offer->currency . ' for ' .
             round($transaction->offer->accepted_offer_profit_sat,0) - $transaction->fees . ' sats profit.');
-
-
 
         return $response;
     }
@@ -1017,6 +1015,7 @@ class Robosats
         $paymentMethods = (['Revolut']),
         $bondSize = 3,
         $templateId = null,
+        $ttl = 7200,
         $maxAmount = null,
     ) {
         $isRange = $maxAmount != null;
@@ -1080,7 +1079,7 @@ class Robosats
             'is_explicit' => false,
             'premium' => $premium,
             'satoshis' => null,
-            'public_duration' => 7200,
+            'public_duration' => $ttl,
             'escrow_duration' => 28800,
             'bond_size' => $bondSize,
             'latitude' => null,

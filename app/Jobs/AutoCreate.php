@@ -34,6 +34,11 @@ class AutoCreate implements ShouldQueue
         # grab all templates
         $templates = \App\Models\PostedOfferTemplate::all();
         foreach ($templates as $template) {
+            // check if last_created is set and cooldown is set and if the cooldown has passed
+            if ($template->last_created && $template->cooldown && $template->last_created->addSeconds($template->cooldown) > now()) {
+                continue;
+            }
+
             # check if the template is active
             if ($template->auto_create) {
                 # check if the template quantity is less than matching offers
@@ -50,10 +55,13 @@ class AutoCreate implements ShouldQueue
                             $template->payment_methods,
                             $template->bond_size,
                             $template->id,
+                            $template->ttl,
                             $template->max_amount == 0 ? null : $template->max_amount,
                         );
 
                     }
+                    $template->last_created = now();
+                    $template->save();
 
                 }
             }

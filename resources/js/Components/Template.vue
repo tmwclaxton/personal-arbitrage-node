@@ -27,6 +27,7 @@ const offerEditTemplate = ref({
     providers: [],
     quantity: props.template.quantity,
     cooldown: props.template.cooldown,
+    ttl: props.template.ttl,
 });
 
 const update = () => {
@@ -43,6 +44,7 @@ const update = () => {
         auto_create: offerEditTemplate.value.autoCreate,
         quantity: offerEditTemplate.value.quantity,
         cooldown: offerEditTemplate.value.cooldown,
+        ttl: offerEditTemplate.value.ttl,
     }).then(response => {
         console.log(response.data);
         // reload the page
@@ -114,6 +116,11 @@ offerEditTemplate.value.providers = offerEditTemplate.value.provider.split(' ');
             </p>
 
             <p>
+                <span class="font-bold">TTL: </span>
+                {{template.ttl }}
+            </p>
+
+            <p>
                 <span class="font-bold">Auto Create: </span>
                 <span v-text="template.auto_create ? 'True' : 'False'"></span>
             </p>
@@ -159,6 +166,10 @@ offerEditTemplate.value.providers = offerEditTemplate.value.provider.split(' ');
             <div class="flex flex-row gap-x-2">
                 <p class="font-bold my-auto">Cooldown:</p>
                 <text-input v-model="offerEditTemplate.cooldown" label="Cooldown" class="w-full"/>
+            </div>
+            <div class="flex flex-row gap-x-2">
+                <p class="font-bold my-auto">TTL:</p>
+                <text-input v-model="offerEditTemplate.ttl" label="TTL" class="w-full"/>
             </div>
             <div class="flex flex-row gap-x-2 col-span-2 mt-2">
                 <p class="font-bold my-auto ">Auto Create:</p>

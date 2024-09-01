@@ -61,6 +61,7 @@ class OfferTemplatesController extends Controller
             'auto_create' => 'required|boolean',
             'quantity' => 'required|numeric|min:1',
             'cooldown' => 'required|numeric|min:0',
+            'ttl' => 'required|numeric|min:0',
         ]);
 
 
@@ -74,6 +75,8 @@ class OfferTemplatesController extends Controller
         $template->bond_size = $request->bond_size;
         $template->auto_create = $request->auto_create;
         $template->quantity = $request->quantity;
+        $template->cooldown = $request->cooldown;
+        $template->ttl = $request->ttl;
         $template->save();
 
         return [

@@ -28,7 +28,8 @@ const create = () => {
         bond_size: parseInt(offerTemplate.value.bondSize),
         auto_create: offerTemplate.value.autoCreate,
         quantity: offerTemplate.value.quantity,
-        cooldown: 0,
+        cooldown: offerTemplate.value.cooldown,
+        ttl: offerTemplate.value.ttl,
     }).then(response => {
         console.log(response.data);
         location.reload();
@@ -52,9 +53,9 @@ const autoCreate = () => {
 }
 
 const offerTemplate = ref({
-    min: 20,
-    max: 0,
-    premium: 99,
+    min: 30,
+    max: 100,
+    premium: 20,
     currency: 'GBP',
     paymentMethods: ['Revolut'],
     provider: ['satstralia'],
@@ -62,6 +63,7 @@ const offerTemplate = ref({
     autoCreate: true,
     quantity: 1,
     cooldown: 600,
+    ttl: 3600,
 });
 
 
@@ -92,6 +94,8 @@ const offerTemplate = ref({
                         <providers-input class="mx-16" v-model="offerTemplate.provider" label="Provider" />
                         <label class="text-sm text-gray-500">Cooldown</label>
                         <text-input v-model="offerTemplate.cooldown" label="Cooldown" />
+                        <label class="text-sm text-gray-500">TTL</label>
+                        <text-input v-model="offerTemplate.ttl" label="TTL" />
                         <label class="text-sm text-gray-500 mt-5">Auto Create</label>
                         <toggle-button v-model="offerTemplate.autoCreate" label="Auto Create" />
 
