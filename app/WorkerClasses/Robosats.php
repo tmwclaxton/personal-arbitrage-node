@@ -508,15 +508,20 @@ class Robosats
         $offer->accepted = true;
 
 
-        $transaction = new Transaction();
+        // $transaction = new Transaction();
+        if (Transaction::where('offer_id', $offer->id)->first()) {
+            $transaction = Transaction::where('offer_id', $offer->id)->first();
+        } else {
+            $transaction = new Transaction();
+        }
         $transaction->offer_id = $offer->id;
 
 
         // round to 0 decimal places
-        if ($offer->accepted_offer_profit_sat < 0) {
-            (new DiscordService)->sendMessage('Error: trying to accept offer with a negative profit');
-            return 'Offer has a negative profit';
-        }
+        // if ($offer->accepted_offer_profit_sat < 0) {
+        //     (new DiscordService)->sendMessage('Error: trying to accept offer with a negative profit');
+        //     return 'Offer has a negative profit';
+        // }
         // round to 0 decimal places
         if ($offer->accepted_offer_profit_sat < $adminDashboard->min_satoshi_profit) {
             (new DiscordService)->sendMessage('Error: trying to accept offer with less than ' . $adminDashboard->min_satoshi_profit . ' sats profit');
@@ -864,18 +869,19 @@ class Robosats
         $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->get($url);
 
         $response = json_decode($response->body(), true);
-
-        if (isset($response['bad_request']) && $offer->status < 14) {
+        if (isset($response['bad_request']) ) {
             $discordService = new DiscordService();
             $discordService->sendMessage('Error: ' . json_encode($response));
-            $offer->status_message = $response['bad_request'];
-            $offer->status = 99;
-            // set expires at to now
-            $offer->expires_at = date('Y-m-d H:i:s');
-            $offer->save();
-            $transaction->status_message = $response['bad_request'];
-            $transaction->status = 99;
-            $transaction->save();
+            if ($offer->status < 14) {
+                $offer->status_message = $response['bad_request'];
+                $offer->status = 99;
+                // set expires at to now
+                $offer->expires_at = date('Y-m-d H:i:s');
+                $offer->save();
+                $transaction->status_message = $response['bad_request'];
+                $transaction->status = 99;
+                $transaction->save();
+            }
             return $response;
         }
 
