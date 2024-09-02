@@ -9,6 +9,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Carbon;
 
 class AutoCreate implements ShouldQueue
 {
@@ -35,7 +36,7 @@ class AutoCreate implements ShouldQueue
         $templates = \App\Models\PostedOfferTemplate::all();
         foreach ($templates as $template) {
             // check if last_created is set and cooldown is set and if the cooldown has passed
-            if ($template->last_created && $template->cooldown && $template->last_created->addSeconds($template->cooldown) > now()) {
+            if ($template->last_created && $template->cooldown && Carbon::parse($template->last_created)->addSeconds($template->cooldown)->isFuture()) {
                 continue;
             }
 
