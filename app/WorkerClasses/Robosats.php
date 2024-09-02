@@ -630,6 +630,8 @@ class Robosats
         if (!$offer->my_offer) {
             // depending on what payment methods are available change the message, preference order is revolut, wise, paypal friends & family, strike
             $preferredPaymentMethods = ['Revolut', 'Wise', 'Paypal Friends & Family', 'Strike', 'Faster Payments', 'Instant SEPA'];
+            // shuffle the preferred payment methods
+            shuffle($preferredPaymentMethods);
             foreach ($preferredPaymentMethods as $paymentMethod) {
                 if (in_array($paymentMethod, json_decode($robot->offer->payment_methods))) {
                     if ($paymentMethod == null) {
@@ -668,8 +670,8 @@ class Robosats
                         return;
                     }
 
-                    $message = 'Hey! My ' . $pseudonym . ' is ' . $tag . ' - If possible, please put the order ID in the payment reference (' . $offer->robosatsId . '). ' .
-                        'Cheers!';
+                    $message = 'Hey! My ' . $pseudonym . ' is ' . $tag . ' - If possible, please put this number somewhere in the payment reference (' . $offer->id . '). '.
+                        'This is just to help me to match your payment to your order, but is totally optionally. Cheers!';
                     break;
                 }
             }
@@ -712,13 +714,14 @@ class Robosats
                     // Plural case: "My handles are: Revolut: ... - Wise: ..."
                     $formattedHandles = [];
                     foreach ($handleParts as $method => $handle) {
-                        $formattedHandles[] = "$method: $handle";
+                        $formattedHandles[] = "$method: $handle \n";
                     }
-                    $message = "Hey! My handles are: " . implode(' - ', $formattedHandles);
+                    $message = "Hey! My handles are: \n\n" . implode("\n", $formattedHandles);
                 }
 
                 // Append the order ID reference
-                $message .= " - If possible, please put the order ID in the payment reference (" . $offer->robosatsId . "). Cheers!";
+                $message .= "\nIf possible, please put this number somewhere in the payment reference (" . $offer->id . "). " .
+                    "This is just to help me match your payment to your order, but is totally optional. Cheers!";
             }
 
         }
@@ -889,6 +892,13 @@ class Robosats
         if (isset($response['status'])) {
             $offer->status = $response['status'];
         }
+        // if status is > 3 then we can add accepted_offer_amount_sat and accepted_offer_amount_profit_sat
+        if (isset($response['status']) && $response['status'] > 3) {
+            $offer->accepted_offer_amount = $response['amount'];
+            $offer->accepted_offer_amount_sat = $response['satoshis_now'];
+            $offer->accepted_offer_profit_sat = round($response['satoshis_now'] * ($response['premium'] / 100), 0);
+
+        }
         if (isset($response['status_message'])) {
             $offer->status_message = $response['status_message'];
         }
@@ -924,11 +934,13 @@ class Robosats
         if (isset($response['asked_for_cancel'])) {
             $offer->asked_for_cancel = $response['asked_for_cancel'];
         }
+        if (isset($response['pending_cancel'])) {
+            $offer->pending_cancel = $response['pending_cancel'];
+        }
         if (isset($response['chat_last_index'])) {
             $offer->chat_last_index = $response['chat_last_index'];
         }
         $offer->save();
-
 
         if (isset($response['escrow_invoice'])) {
             $transaction->escrow_invoice = $response['escrow_invoice'];
@@ -1053,6 +1065,7 @@ class Robosats
             'expires_at' => Carbon::now()->addMinutes(5),
             'maker' => 0,
             'posted_offer_template_id' => $templateId,
+            'my_offer' => true
         ]);
 
         $tempOffer->save();

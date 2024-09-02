@@ -17,6 +17,13 @@
                 <span v-if="offer.posted_offer_template_id" class="text-blue-500 dark:text-blue-300">
                     · Template {{ offer.posted_offer_template_id }}
                 </span>
+            <!--    asked_for_cancel-->
+                <span v-if="offer.pending_cancel" class="text-red-500 dark:text-red-300">
+                    · Counterparty asked for cancel!
+                </span>
+                <span v-if="offer.asked_for_cancel" class="text-red-500 dark:text-red-300">
+                    · We asked for cancel!
+                </span>
             </p>
         </div>
         <div v-else class="mt-4">   </div>
@@ -169,7 +176,7 @@
                         <p class="  text-zinc-500 dark:text-zinc-200 "><span class="font-bold">Nickname</span>: <br>{{
                                 offer.robots[0].nickname
                             }}</p>
-                        <p class="mt-2 text-zinc-500 dark:text-zinc-200 "><span class="font-bold">Token</span>:
+                        <p class="mt-2 text-zinc-500 dark:text-zinc-200 break-all"><span class="font-bold">Token</span>:
                             <br>{{ offer.robots[0].token }}</p>
                         <div v-for="robot in offer.robots" :key="robot.id">
                             <p class="mt-2 text-zinc-500 dark:text-zinc-200">Provider: {{ robot.provider }}</p>

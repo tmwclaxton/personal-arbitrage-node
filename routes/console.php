@@ -132,9 +132,9 @@ Schedule::command('auto:confirm-final')
     ->everyMinute()->withoutOverlapping(1);
 
 // sitting offer detailer
-Schedule::command('app:sitting-offer-detailer')
-    ->description('sitting offer detailer')
-    ->everyMinute()->withoutOverlapping(1);
+// Schedule::command('app:sitting-offer-detailer')
+//     ->description('sitting offer detailer')
+//     ->everyMinute()->withoutOverlapping(1);
 
 // ping umbrel check
 Schedule::command('app:umbrel-token-reset')
