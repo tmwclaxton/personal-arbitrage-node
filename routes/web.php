@@ -92,6 +92,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/purchases', [\App\Http\Controllers\BtcPurchaseController::class, 'index'])->name('purchases.index');
     Route::get('/payments', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payments.index');
     Route::get('/config', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('dashboard.index');
+    // add payment method
+    Route::post('/add-payment-method', [\App\Http\Controllers\AdminDashboardController::class, 'addPaymentMethod'])->name('add-payment-method');
+    Route::post('/update-payment-method/{id}', [\App\Http\Controllers\AdminDashboardController::class, 'updatePaymentMethod'])->name('update-payment-method');
+    Route::get('/delete-payment-method/{id}', [\App\Http\Controllers\AdminDashboardController::class, 'deletePaymentMethod'])->name('delete-payment-method');
+
     Route::get('/graphs', [\App\Http\Controllers\GraphController::class, 'index'])->name('graphs.index');
     Route::get('/posting-offers', [\App\Http\Controllers\OfferTemplatesController::class, 'postingPage'])->name('offers.posting.index');
     Route::post('/create-template', [\App\Http\Controllers\OfferTemplatesController::class, 'createTemplate'])->name('create-template');

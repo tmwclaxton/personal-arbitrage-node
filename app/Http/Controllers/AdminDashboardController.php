@@ -20,4 +20,43 @@ class AdminDashboardController extends Controller
             'currencies' => $btcFiats->pluck('currency'),
         ]);
     }
+
+    public function addPaymentMethod(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|unique:payment_methods',
+            'handle' => 'required',
+            'logo_url' => 'nullable',
+            'specific_buy_premium' => 'nullable',
+            'specific_sell_premium' => 'nullable',
+        ]);
+
+        PaymentMethod::create($request->all());
+
+        return redirect()->route('dashboard.index');
+    }
+
+    public function updatePaymentMethod(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required',
+            'handle' => 'required',
+            'logo_url' => 'nullable',
+            'specific_buy_premium' => 'nullable',
+            'specific_sell_premium' => 'nullable',
+        ]);
+
+        $paymentMethod = PaymentMethod::find($id);
+        $paymentMethod->update($request->all());
+
+        return redirect()->route('dashboard.index');
+    }
+
+    public function deletePaymentMethod($id)
+    {
+        $paymentMethod = PaymentMethod::find($id);
+        $paymentMethod->delete();
+
+        return redirect()->route('dashboard.index');
+    }
 }
