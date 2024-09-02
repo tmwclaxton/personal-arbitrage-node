@@ -83,7 +83,7 @@ class UpdateOffers implements ShouldQueue
                 }
             }
             // not found, not accept, last updated is more than 10 minutes ago || past the expiration date and not accepted
-            if (!$found && !$dbOffer->accepted && !$dbOffer->my_offer && $dbOffer->updated_at->diffInMinutes(now()) > 10 ||
+            if (!$found && !$dbOffer->accepted && !$dbOffer->my_offer && $dbOffer->updated_at->diffInMinutes(now()) > 5 ||
                 !$found &&  !$dbOffer->accepted && !$dbOffer->my_offer && $dbOffer->expires_at < now() ) {
                 // check if there is a transaction associated with the offer
                 if ($dbOffer->transaction) {
