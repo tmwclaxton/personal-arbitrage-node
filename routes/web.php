@@ -98,6 +98,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/edit-template', [\App\Http\Controllers\OfferTemplatesController::class, 'editTemplate'])->name('edit-template');
     Route::get('/delete-template/{id}', [\App\Http\Controllers\OfferTemplatesController::class, 'deleteTemplate'])->name('delete-template');
 
+    Route::get('/simple', function () {
+        return Inertia::render('Simple');
+    })->name('simple');
+
 });
 
 // route to get code from gmail for suave container
