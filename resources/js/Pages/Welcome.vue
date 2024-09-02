@@ -99,21 +99,36 @@ const showSidebar = ref(true);
     <Head title="Offers" />
     <div class="min-h-screen">
 
-        <p class="font-bold text-2xl mx-auto text-center py-5">Lightning Arbitrage Solutions</p>
-
-        <div class="w-full flex flex-row gap-x-8 mx-auto  justify-center ">
-            <div v-if="btcPrices.length > 0" v-for="btcPrice in btcPrices" :key="btcPrice.id">
-                <div class="text-center">
-                    <span class="text-md font-bold">{{ btcPrice.currency }}</span>
+        <div class="flex flex-col ">
+            <p class="font-bold text-2xl mx-auto text-center py-5">Lightning Arbitrage Solutions</p>
+            <div class="w-full flex flex-row gap-x-8 mx-auto  justify-center ">
+                <div v-if="btcPrices.length > 0" v-for="btcPrice in btcPrices" :key="btcPrice.id">
+                    <div class="text-center">
+                        <span class="text-md font-bold">{{ btcPrice.currency }}</span>
+                    </div>
+                    <div class="text-center">
+                        <span class="text-md font-bold">{{ btcPrice.price }}</span>
+                    </div>
                 </div>
-                <div class="text-center">
-                    <span class="text-md font-bold">{{ btcPrice.price }}</span>
+                <div v-else>
+                    <p>Loading BTC prices...</p>
                 </div>
-            </div>
-            <div v-else>
-                <p>Loading BTC prices...</p>
             </div>
         </div>
+        <div class="flex flex-row gap-x-2 absolute top-0 w-full">
+            <div class="flex flex-col flex-grow opacity-0 h-20">
+            </div>
+
+            <div class="flex-shrink-0 my-auto mx-10">
+                <Link :href="route('simple')">
+                    <secondary-button class="h-10 my-auto">
+                        Simple
+                    </secondary-button>
+                </Link>
+            </div>
+        </div>
+
+
         <div class="w-full flex flex-row flex-wrap gap-3 mt-2 mx-auto justify-center">
             <primary-button class="h-12" @click="showSidebar = !showSidebar" v-text="showSidebar ? 'Hide Sidebar' : 'Show Sidebar'"></primary-button>
 

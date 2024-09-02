@@ -36,7 +36,7 @@ const speed = ref('Normal');
             <div class="flex-shrink-0 my-auto mx-10">
                 <Link :href="route('welcome')">
                     <secondary-button class="h-10 my-auto">
-                        Advanced View
+                        Advanced
                     </secondary-button>
                 </Link>
             </div>
