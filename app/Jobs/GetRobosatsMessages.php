@@ -42,7 +42,8 @@ class GetRobosatsMessages implements ShouldQueue
             $b91 = new \Katoga\Allyourbase\Base91();
             $decoded = $b91->decode($robot->sha256);
             $hex = bin2hex($decoded);
-            $url = 'ws://192.168.0.18:12596' . '/mainnet/' . $offer->provider . '/ws/chat/' . $offer->robosatsId . '/?token_sha256_hex=' . $hex;
+            $robosats = new \App\WorkerClasses\Robosats();
+            $url = $robosats->getWsHost(). '/mainnet/' . $offer->provider . '/ws/chat/' . $offer->robosatsId . '/?token_sha256_hex=' . $hex;
 
             // create a new client
             $client = new \WebSocket\Client($url);
@@ -61,7 +62,7 @@ class GetRobosatsMessages implements ShouldQueue
             ]));
 
             $startTime = time();
-            $duration = 30; // Duration in seconds
+            $duration = 15; // Duration in seconds
 
             try {
                 while (true) {
