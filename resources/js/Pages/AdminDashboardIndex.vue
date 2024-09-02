@@ -11,8 +11,8 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import GuestLayout from "@/Layouts/GuestLayout.vue";
 
 const props = defineProps({
-    btcPrices: Object,
     adminDashboard: Object,
+    currencies: Array,
 });
 
 const channelBalances = ref(JSON.parse(props.adminDashboard.channelBalances));
@@ -93,14 +93,16 @@ const panicButtonToggle = () => {
                             <TextInput class="w-full text-right" v-model="tempAdminDashboard.faster_payments"/>
                         </div>
                     </div>
-                    <div class="flex flex-row gap-x-4 justify-between">
                         <PaymentsInput :payment_methods="tempAdminDashboard.payment_methods"
                                        @update:model-value="tempAdminDashboard.payment_methods = $event"/>
-                        <primary-button class="h-12 mt-5" @click="clicked">Save Changes</primary-button>
 
+                    <div class="flex flex-row gap-x-4 justify-between">
+                    <CurrenciesInput class=""
+                        :payment_methods="tempAdminDashboard.payment_currencies"
+                                     @update:model-value="tempAdminDashboard.payment_currencies = $event"
+                                        :currencies="currencies"/>
+                        <primary-button class="h-12 mt-5" @click="clicked">Save Changes</primary-button>
                     </div>
-                    <CurrenciesInput :payment_methods="tempAdminDashboard.payment_currencies"
-                                     @update:model-value="tempAdminDashboard.payment_currencies = $event"/>
 
                 </div>
             </div>

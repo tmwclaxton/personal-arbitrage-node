@@ -8,6 +8,10 @@ const props = defineProps({
         type: Array,
         default: ''
     },
+    currencies: {
+        type: Array,
+        default: ['USD', 'GBP', 'EUR', 'BRL']
+    }
 });
 
 const emits = defineEmits(['update:modelValue']);
@@ -28,37 +32,13 @@ watch(payment_methodsLocal, () => {
 <template>
     <div class="flex flex-col gap-y-2 ">
         <p class="my-1 mt-2 text-md font-bold">Accepted Currencies</p>
-        <div class=" select-none flex flex-row gap-x-5 flex-wrap ">
-            <div class="flex flex-row gap-2 items-center">
-                <input type="checkbox" id="USD" value="USD" v-model="payment_methodsLocal"
-                       :checked="payment_methodsLocal.includes('USD')"
+        <div class=" select-none flex flex-row gap-x-5 flex-wrap max-w-3xl">
+            <div v-for="currency in currencies" :key="currency" class="flex flex-row gap-2 items-center">
+                <input type="checkbox" :id="currency" :value="currency" v-model="payment_methodsLocal"
+                       :checked="payment_methodsLocal.includes(currency)"
                        class="w-4 h-4 text-blue-600 bg-zinc-100 border-zinc-300 without-ring dark:bg-zinc-700 dark:border-zinc-600 hover:dark:bg-zinc-700 focus:dark:bg-zinc-700">
-                <label for="USD" class="flex flex-row gap-x-2 align-middle items-center">
-                    <span class="font-semibold text-sm">USD</span>
-                </label>
-            </div>
-            <div class="flex flex-row gap-2 items-center">
-                <input type="checkbox" id="GBP" value="GBP" v-model="payment_methodsLocal"
-                       :checked="payment_methodsLocal.includes('GBP')"
-                       class="w-4 h-4 text-blue-600 bg-zinc-100 border-zinc-300 without-ring dark:bg-zinc-700 dark:border-zinc-600 hover:dark:bg-zinc-700 focus:dark:bg-zinc-700">
-                <label for="GBP" class="flex flex-row gap-x-2  align-middle items-center">
-                    <span class="font-semibold text-sm">GBP</span>
-                </label>
-            </div>
-            <div class="flex flex-row gap-2 items-center">
-                <input type="checkbox" id="EUR" value="EUR" v-model="payment_methodsLocal"
-                       :checked="payment_methodsLocal.includes('EUR')"
-                       class="w-4 h-4 text-blue-600 bg-zinc-100 border-zinc-300 without-ring dark:bg-zinc-700 dark:border-zinc-600 hover:dark:bg-zinc-700 focus:dark:bg-zinc-700">
-                <label for="EUR" class="flex flex-row gap-x-2 align-middle items-center">
-                    <span class="font-semibold text-sm">EUR</span>
-                </label>
-            </div>
-            <div class="flex flex-row gap-2 items-center">
-                <input type="checkbox" id="BRL" value="BRL" v-model="payment_methodsLocal"
-                       :checked="payment_methodsLocal.includes('BRL')"
-                       class="w-4 h-4 text-blue-600 bg-zinc-100 border-zinc-300 without-ring dark:bg-zinc-700 dark:border-zinc-600 hover:dark:bg-zinc-700 focus:dark:bg-zinc-700">
-                <label for="EUR" class="flex flex-row gap-x-2 align-middle items-center">
-                    <span class="font-semibold text-sm">BRL</span>
+                <label :for="currency" class="flex flex-row gap-x-2 align-middle items-center">
+                    <span class="font-semibold text-sm">{{currency}}</span>
                 </label>
             </div>
         </div>

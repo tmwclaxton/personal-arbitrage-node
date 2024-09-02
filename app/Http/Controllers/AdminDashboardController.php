@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AdminDashboard;
+use App\Models\BtcFiat;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -10,12 +11,12 @@ class AdminDashboardController extends Controller
 {
     public function index()
     {
-        $offerController = new OfferController();
-        $getInfo = $offerController->getInfo();
-        $btcFiats = $getInfo['btcFiats'];
+        $btcFiats = BtcFiat::all();
         return Inertia::render('AdminDashboardIndex', [
             'adminDashboard' => AdminDashboard::all()->first(),
-            'btcFiats' => $btcFiats
+            'btcFiats' => $btcFiats,
+            // just pluck 'currency' from btcFiats
+            'currencies' => $btcFiats->pluck('currency'),
         ]);
     }
 }
