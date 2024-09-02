@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(\App\Models\Offer::class)->constrained()->cascadeOnDelete();
             $table->integer('index');
-            $table->string('message');
+            $table->text('message');
             $table->string('user_nick');
             $table->timestamp('sent_at');
             $table->boolean('sent_to_discord')->default(false);
