@@ -40,7 +40,7 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
                         Transactions
                     </secondary-button>
                 </Link>
-                <Link :href="route('payments.index')" >
+                <Link :href="route('payments.index')" class="opacity-50 pointer-events-none">
                     <secondary-button class="h-12">
                         Payments
                     </secondary-button>
@@ -53,6 +53,11 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
                 <Link :href="route('graphs.index')" >
                     <secondary-button class="h-12">
                         Graphs
+                    </secondary-button>
+                </Link>
+                <Link :href="route('graphs.index')" >
+                    <secondary-button class="h-12">
+                        Tabulated Data
                     </secondary-button>
                 </Link>
             </div>

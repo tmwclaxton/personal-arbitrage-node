@@ -161,7 +161,7 @@ const showSidebar = ref(true);
                     Transactions
                 </secondary-button>
             </Link>
-            <Link :href="route('payments.index')" >
+            <Link :href="route('payments.index')" class="opacity-50 pointer-events-none">
                 <secondary-button class="h-12">
                     Payments
                 </secondary-button>
