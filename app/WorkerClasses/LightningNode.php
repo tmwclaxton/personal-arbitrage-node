@@ -4,6 +4,7 @@ namespace App\WorkerClasses;
 
 use App\Models\AdminDashboard;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class LightningNode
 {
@@ -113,6 +114,7 @@ class LightningNode
             'amt' => 0,
         ]);
         $response = json_decode($response->body(), true);
+        Log::info('payInvoice response: ' . json_encode($response));
         return "done";
     }
 

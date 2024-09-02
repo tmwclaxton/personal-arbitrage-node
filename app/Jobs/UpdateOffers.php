@@ -48,8 +48,8 @@ class UpdateOffers implements ShouldQueue
         $ids = $transactions->pluck('offer_id')->toArray();
         // grab offers that are not in the transactions
         Offer::whereNotIn('id', $ids)
-            ->where([['accepted', '=', false], ['my_offer', '=', false]])
-            ->where('expires_at', '<', now())->delete();
+            ->where([['accepted', '=', false], ['my_offer', '=', false], ['expires_at', '<', now()], ['status', '<', 6]])
+            ->delete();
 
 
         $robosats = new Robosats();
@@ -67,8 +67,6 @@ class UpdateOffers implements ShouldQueue
         $allOffers = $robosats->getAllOffers($response['buyOffers'], $response['sellOffers']);
 
 
-        // combine the offers
-        // $allOffers = array_merge($negativeBuyOffers, $positiveSellOffers);
         // grab all the offers from the database and check if they aren't in allOffers and delete them
         $dbOffers = Offer::where('robosatsIdStorage', '=', null)->get();
         foreach ($dbOffers as $dbOffer) {
@@ -86,7 +84,7 @@ class UpdateOffers implements ShouldQueue
             }
             // not found, not accept, last updated is more than 10 minutes ago || past the expiration date and not accepted
             if (!$found && !$dbOffer->accepted && !$dbOffer->my_offer && $dbOffer->updated_at->diffInMinutes(now()) > 10 ||
-                $dbOffer->expires_at < now() && !$dbOffer->accepted && !$dbOffer->my_offer) {
+                !$found &&  !$dbOffer->accepted && !$dbOffer->my_offer && $dbOffer->expires_at < now() ) {
                 // check if there is a transaction associated with the offer
                 if ($dbOffer->transaction) {
                     $dbOffer->status = 5;

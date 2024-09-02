@@ -68,16 +68,16 @@ class PaymentMatcher implements ShouldQueue
 
 
                 $message = "Found a matching order for the payment of " . $payment->payment_amount . " " . $payment->payment_currency .
-                    ", see robosats ID: " . $offer->robosatsId . " and transaction ID: " . $offer->transaction()->first()->id;
+                    ", see ID: " . $offer->id . " and transaction ID: " . $offer->transaction()->first()->id;
 
                 if ($payment->payment_reference !== null && $payment->payment_reference !== "") {
                     // remove any non-numeric characters
                     $reference = preg_replace('/[^0-9]/', '', $payment->payment_reference);
                     if ($reference !== "") {
                         // if the reference is equal to robosatsID, then we can auto confirm in 2 minutes
-                        if (intval($reference) === intval($offer->robosatsId)) {
+                        if (intval($reference) === intval($offer->id)) {
                             $autoConfirmAt = Carbon::now()->addMinutes(5);
-                            $message .= ". Additionally, the reference matches the robosats ID";
+                            $message .= ". Additionally, the reference matches the internal offer ID";
                         }
                     }
                 }

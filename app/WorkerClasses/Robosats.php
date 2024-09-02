@@ -871,8 +871,6 @@ class Robosats
 
         $response = json_decode($response->body(), true);
         if (isset($response['bad_request']) ) {
-            $discordService = new DiscordService();
-            $discordService->sendMessage('Error: ' . json_encode($response));
             if ($offer->status < 14) {
                 $offer->status_message = $response['bad_request'];
                 $offer->status = 99;
@@ -882,6 +880,10 @@ class Robosats
                 $transaction->status_message = $response['bad_request'];
                 $transaction->status = 99;
                 $transaction->save();
+            } else {
+                $discordService = new DiscordService();
+                $discordService->sendMessage('Error on an offer that is already completed: ' . $response['bad_request'] . ' - ' . $offer->robosatsId . ' - ' .
+                    ' - This is likely due to the offer not being retired yet, but the transaction is still being checked.');
             }
             return $response;
         }
@@ -1063,6 +1065,9 @@ class Robosats
             'price' => 0,
             'maker_status' => '',
             'expires_at' => Carbon::now()->addMinutes(5),
+            'max_satoshi_amount_profit' => 0,
+            'satoshi_amount_profit' => 0,
+            'accepted' => false,
             'maker' => 0,
             'posted_offer_template_id' => $templateId,
             'my_offer' => true

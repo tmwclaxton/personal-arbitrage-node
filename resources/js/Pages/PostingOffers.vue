@@ -101,8 +101,6 @@ const offerTemplate = ref({
 
                         <primary-button class="mt-4" @click="create">Create</primary-button>
 
-                    <div class="border-b border-gray-200 w-full my-5"></div>
-                    <primary-button @click="autoCreate">Auto Create</primary-button>
 
                 </div>
             </div>
