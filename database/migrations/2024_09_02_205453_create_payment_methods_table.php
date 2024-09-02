@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('name');
             $table->text('handle');
             $table->string('logo_url')->nullable();
+            $table->decimal('specific_buy_premium', 5, 2)->nullable();
+            $table->decimal('specific_sell_premium', 5, 2)->nullable();
             $table->timestamps();
         });
     }
