@@ -251,7 +251,7 @@ const showSidebar = ref(true);
                         class="font-bold mr-1">Buy Premium: </span>
                         <TextInput class="w-16 h-6" v-model="tempAdminDashboard.buy_premium"/>
                     </div>
-                    <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Concurrent Transactions: </span>
+                    <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Active Accepting Offers Limit: </span>
                         <TextInput class="w-16 h-6" v-model="tempAdminDashboard.max_concurrent_transactions"/>
                     </div>
                     <div class="flex flex-row justify-between items-center"><span
@@ -292,19 +292,19 @@ const showSidebar = ref(true);
                         </div>
                     </div>
 
-                    <div class="flex flex-col gap-y-3 border-t-2 border-zinc-300 dark:border-white/70 mt-4 pt-1">
-                        <div class="text-left flex flex-col gap-y-1 ">
-                            <div class="flex flex-row justify-between items-center"><span class="font-bold text-xl mb-2">Statistics (satoshies):</span>
-                            </div>
-                            <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Profit: </span><span
-                                v-text="tempAdminDashboard.satoshi_profit"/></div>
-                            <div class="flex flex-row justify-between items-center"><span
-                                class="font-bold mr-1">Fees: </span><span v-text="tempAdminDashboard.satoshi_fees"/></div>
-                            <div class="flex flex-row justify-between items-center"><span
-                                class="font-bold mr-1">Trade Volume: </span><span
-                                v-text="tempAdminDashboard.trade_volume_satoshis"/></div>
-                        </div>
-                    </div>
+                    <!--<div class="flex flex-col gap-y-3 border-t-2 border-zinc-300 dark:border-white/70 mt-4 pt-1">-->
+                    <!--    <div class="text-left flex flex-col gap-y-1 ">-->
+                    <!--        <div class="flex flex-row justify-between items-center"><span class="font-bold text-xl mb-2">Statistics (satoshies):</span>-->
+                    <!--        </div>-->
+                    <!--        <div class="flex flex-row justify-between items-center"><span class="font-bold mr-1">Profit: </span><span-->
+                    <!--            v-text="tempAdminDashboard.satoshi_profit"/></div>-->
+                    <!--        <div class="flex flex-row justify-between items-center"><span-->
+                    <!--            class="font-bold mr-1">Fees: </span><span v-text="tempAdminDashboard.satoshi_fees"/></div>-->
+                    <!--        <div class="flex flex-row justify-between items-center"><span-->
+                    <!--            class="font-bold mr-1">Trade Volume: </span><span-->
+                    <!--            v-text="tempAdminDashboard.trade_volume_satoshis"/></div>-->
+                    <!--    </div>-->
+                    <!--</div>-->
 
                     <div class="flex flex-col gap-y-3 border-t-2 border-zinc-300 dark:border-white/70 mt-4 pt-1">
                         <div class="text-left flex flex-col gap-y-1 ">
