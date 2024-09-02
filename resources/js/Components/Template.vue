@@ -82,6 +82,10 @@ offerEditTemplate.value.providers = offerEditTemplate.value.provider.split(' ');
         <div class="border-t border-gray-200 my-2"/>
         <div v-if="!editMode" class="grid grid-cols-4  p-2">
             <p>
+                <span class="font-bold">Type: </span>
+                {{template.type }}
+            </p>
+            <p>
                 <span class="font-bold" v-text="template.max_amount && template.max_amount > 0 ? 'Min: ' : 'Amount: '"></span>
                 {{template.min_amount }}
             </p>

@@ -19,6 +19,7 @@ const props = defineProps({
 
 const create = () => {
     axios.post(route('create-template'), {
+        type: offerTemplate.value.type,
         min_amount	: parseInt(offerTemplate.value.min),
         max_amount: parseInt(offerTemplate.value.max),
         premium: offerTemplate.value.premium,
@@ -53,6 +54,7 @@ const autoCreate = () => {
 }
 
 const offerTemplate = ref({
+    type: 'sell',
     min: 30,
     max: 100,
     premium: 20,
@@ -78,6 +80,11 @@ const offerTemplate = ref({
             <div class="border-r border-gray-200 w-1/4">
                 <div class="flex flex-col items-center">
                         <h1 class="text-2xl font-bold underline mb-1">Create an offer template</h1>
+                        <label class="text-sm text-gray-500">Offer Type</label>
+                        <select v-model="offerTemplate.type" class="w-36 block mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            <option value="buy">Buy</option>
+                            <option value="sell">Sell</option>
+                        </select>
                         <label class="text-sm text-gray-500">Min amount</label>
                         <text-input v-model="offerTemplate.min" label="Min" />
                         <label class="text-sm text-gray-500">Max amount (optional i.e. put 0)</label>
