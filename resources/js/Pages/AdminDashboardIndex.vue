@@ -75,6 +75,14 @@ const addPaymentMethod = () => {
 
 const showAddPaymentMethod = ref(false);
 
+const showAllPaymentMethods = ref(false);
+const paymentMethodsSlice = ref(props.paymentMethods.slice(0, 6));
+
+const toggleShowAllPaymentMethods = () => {
+    showAllPaymentMethods.value = !showAllPaymentMethods.value;
+    paymentMethodsSlice.value = showAllPaymentMethods.value ? props.paymentMethods : props.paymentMethods.slice(0, 6);
+}
+
 </script>
 
 
@@ -110,11 +118,15 @@ const showAddPaymentMethod = ref(false);
                         <p class="text-2xl font-bold mt-4 text-center mx-auto">Set up Payment Handles / Messages:</p>
                         <div class="border-b border-gray-300 dark:border-zinc-700 mb-4"/>
 
-                        <PaymentMethod  v-for="paymentMethod in props.paymentMethods"
+                        <PaymentMethod  v-for="paymentMethod in paymentMethodsSlice"
                                         :paymentMethod="paymentMethod"
                                         @update:model-value="paymentMethod = $event"
                                         :currencies="tempAdminDashboard.payment_currencies"
                                         :key="paymentMethod.id"/>
+
+                        <primary-button class="font-bold  flex-shrink-0 w-max mx-auto" @click="toggleShowAllPaymentMethods"
+                                        v-text="showAllPaymentMethods ? 'Hide' : 'View all'">
+                        </primary-button>
 
                         <!--- add new payment methods here -->
                         <div class="flex flex-col justify-between border-t border-b border-gray-300 dark:border-zinc-700 p-2">

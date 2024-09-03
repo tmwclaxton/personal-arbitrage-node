@@ -54,21 +54,35 @@ const editPaymentMethod = () => {
 
 <template>
     <div :key="paymentMethod.id"
-         class="flex flex-col gap-y-2">
+         class="flex flex-col gap-y-2  border-2 rounded-xl border-gray-300 dark:border-zinc-700 p-1">
         <div class="justify-between flex flex-row gap-x-2">
-            <div class="flex flex-row gap-x-2">
+            <div class="flex flex-row gap-x-2 flex-shrink-0">
                 <img v-if="paymentMethod.logo_url"
-                    :src="paymentMethod.logo_url" class="w-10 h-10"/>
-                <span class="font-bold mr-1 my-auto">{{ paymentMethod.name }}</span></div>
-            <p v-if="paymentMethod.specific_buy_premium"
-               class="mr-1"><span class="font-bold">Buy Premium:</span> {{ paymentMethod.specific_buy_premium }}</p>
-            <p v-if="paymentMethod.specific_sell_premium"
-               class="mr-1"><span class="font-bold">Sell Premium:</span> {{ paymentMethod.specific_sell_premium }}</p>
-            <div class="flex flex-row gap-x-2 ">
+                    :src="paymentMethod.logo_url" class="w-10 h-10 my-auto"/>
+                <span class="font-bold mr-1 my-auto">{{ paymentMethod.name }}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-y-2 flex-grow mx-5">
+                <p v-if="paymentMethod.specific_buy_premium"
+                  class="mr-1"><span class="font-bold">Buy Premium:</span> {{ paymentMethod.specific_buy_premium }}</p>
+                <p v-if="paymentMethod.specific_sell_premium"
+                   class="mr-1"><span class="font-bold">Sell Premium:</span> {{ paymentMethod.specific_sell_premium }}
+                </p>
                 <p class="mr-1 my-auto" v-if="paymentMethod.handle">
                     <span class="font-bold">Handle:</span> {{ paymentMethod.handle }}</p>
-                <p v-else class="mr-1 my-auto">
-                    <span class="font-bold">Handle:</span> Not Set. <br><span class="text-red-500">(You shouldn't use this payment method till it has a handle!)</span>
+                <p class="mr-1 my-auto" v-if="paymentMethod.custom_message">
+                    <span class="font-bold">Message:</span> {{ paymentMethod.custom_message }}</p>
+
+                <div class="col-span-2 flex flex-row gap-x-2" v-if="paymentMethod.allowed_currencies && paymentMethod.allowed_currencies.length > 0">
+                    <span class="font-bold">Currencies:</span>
+                    <span v-for="currency in tempPaymentMethod.allowed_currencies" :key="currency" class="font-semibold ">
+                        {{ currency }}</span>
+                </div>
+
+            </div>
+            <div class="flex flex-row gap-x-2 ">
+                <p v-if="!paymentMethod.handle && !paymentMethod.custom_message"
+                   class="mr-1 my-auto">
+                    <span class="font-bold"><span class="text-red-500">(You shouldn't use this payment method till it has a handle or message!)</span></span>
                 </p>
                 <primary-button class="font-bold mr-1 flex-shrink-0 w-max"
                                 @click="paymentMethod.edit = !paymentMethod.edit"
@@ -77,7 +91,7 @@ const editPaymentMethod = () => {
             </div>
         </div>
 
-        <div v-if="paymentMethod.edit"  class="grid grid-cols-2 gap-y-2 border-y border-gray-300 dark:border-zinc-700 p-2">
+        <div v-if="paymentMethod.edit"  class="grid grid-cols-2 gap-y-2 p-2">
             <label for="name">Name</label>
             <TextInput class="w-full text-left" v-model="tempPaymentMethod.name"/>
             <label for="handle">Handle</label>
@@ -88,7 +102,7 @@ const editPaymentMethod = () => {
             <TextInput class="w-full text-left" v-model="tempPaymentMethod.specific_sell_premium"/>
             <label for="logo_url">Logo URL</label>
             <TextInput class="w-full text-left" v-model="tempPaymentMethod.logo_url"/>
-            <label for="message">Alternative Message</label>
+            <label for="message">Alternative Message (Not required ; takes precedence over handle)</label>
             <TextInput class="w-full text-left" v-model="tempPaymentMethod.message"/>
             <!--<label for="ask_for_reference">Ask for Reference</label>-->
             <!--<toggle-button v-model="tempPaymentMethod.ask_for_reference"/>-->
