@@ -88,45 +88,43 @@ const showAddPaymentMethod = ref(false);
                             class="font-bold mr-1">Umbrel Token: </span>
                             <TextInput v-model="tempAdminDashboard.umbrel_token"/>
                         </div>
-                        <!--<div class="flex flex-row justify-between items-center"><span-->
-                        <!--    class="font-bold mr-1">Rev Token: </span>-->
-                        <!--    <TextInput v-model="tempAdminDashboard.revolut_code"/>-->
-                        <!--</div>-->
-                        <!--<div class="flex flex-row justify-between items-center"><span-->
-                        <!--    class="font-bold mr-1">Revolut Tag: </span>-->
-                        <!--    <TextInput v-model="tempAdminDashboard.revolut_handle"/>-->
-                        <!--</div>-->
-                        <!--<div class="flex flex-row justify-between items-center"><span-->
-                        <!--    class="font-bold mr-1">Paypal Tag: </span>-->
-                        <!--    <TextInput v-model="tempAdminDashboard.paypal_handle"/>-->
-                        <!--</div>-->
-                        <!--<div class="flex flex-row justify-between items-center"><span-->
-                        <!--    class="font-bold mr-1">Wise Tag: </span>-->
-                        <!--    <TextInput v-model="tempAdminDashboard.wise_handle"/>-->
-                        <!--</div>-->
-                        <!--<div class="flex flex-row justify-between items-center"><span-->
-                        <!--    class="font-bold mr-1">Strike Tag: </span>-->
-                        <!--    <TextInput v-model="tempAdminDashboard.strike_handle"/>-->
-                        <!--</div>-->
-                        <!--<div class="flex flex-row justify-between items-center"><span-->
-                        <!--    class="font-bold mr-1 flex-shrink-0">Instant Sepa Info: </span>-->
-                        <!--    <TextInput class="w-full text-right"  v-model="tempAdminDashboard.instant_sepa"/>-->
-                        <!--</div>-->
-                        <!--<div class="flex flex-row justify-between items-center"><span-->
-                        <!--    class="font-bold mr-1 flex-shrink-0">Faster Payments Info: </span>-->
-                        <!--    <TextInput class="w-full text-right" v-model="tempAdminDashboard.faster_payments"/>-->
-                        <!--</div>-->
+                        <div class="flex flex-row justify-between items-center"><span
+                            class="font-bold mr-1">Revolut Tag: </span>
+                            <TextInput v-model="tempAdminDashboard.revolut_handle"/>
+                        </div>
+                        <div class="flex flex-row justify-between items-center"><span
+                            class="font-bold mr-1">Paypal Tag: </span>
+                            <TextInput v-model="tempAdminDashboard.paypal_handle"/>
+                        </div>
+                        <div class="flex flex-row justify-between items-center"><span
+                            class="font-bold mr-1">Wise Tag: </span>
+                            <TextInput v-model="tempAdminDashboard.wise_handle"/>
+                        </div>
+                        <div class="flex flex-row justify-between items-center"><span
+                            class="font-bold mr-1">Strike Tag: </span>
+                            <TextInput v-model="tempAdminDashboard.strike_handle"/>
+                        </div>
+                        <div class="flex flex-row justify-between items-center"><span
+                            class="font-bold mr-1 flex-shrink-0">Instant Sepa Info: </span>
+                            <TextInput class="w-full text-right"  v-model="tempAdminDashboard.instant_sepa"/>
+                        </div>
+                        <div class="flex flex-row justify-between items-center"><span
+                            class="font-bold mr-1 flex-shrink-0">Faster Payments Info: </span>
+                            <TextInput class="w-full text-right" v-model="tempAdminDashboard.faster_payments"/>
+                        </div>
 
                         <div v-for="paymentMethod in props.paymentMethods" :key="paymentMethod.id"
                              class="flex flex-row justify-between items-center">
                             <div class="flex flex-row gap-x-2"><img :src="paymentMethod.logo_url" class="w-10 h-10"/>
-                                <span class="font-bold mr-1 my-auto">{{ paymentMethod.name }}: </span></div>
+                                <span class="font-bold mr-1 my-auto">{{ paymentMethod.name }}</span></div>
                             <p v-if="paymentMethod.specific_buy_premium"
                                 class="mr-1"><span class="font-bold">Buy Premium:</span> {{paymentMethod.specific_buy_premium}}</p>
                             <p v-if="paymentMethod.specific_sell_premium"
                                 class="mr-1"><span class="font-bold">Sell Premium:</span> {{paymentMethod.specific_sell_premium}}</p>
                             <div class="flex flex-row gap-x-2 ">
-                                <p class="mr-1 my-auto"><span class="font-bold">Handle:</span> {{ paymentMethod.handle }}</p>
+                                <p class="mr-1 my-auto" v-if="paymentMethod.handle">
+                                    <span class="font-bold">Handle:</span> {{ paymentMethod.handle }}</p>
+                                <p v-else class="mr-1 my-auto"><span class="font-bold">Handle:</span> Not Set. <br><span class="text-red-500">(Payment method won't be used!)</span></p>
                                 <primary-button class="font-bold mr-1 flex-shrink-0 w-max"
                                                 @click="paymentMethod.show = !paymentMethod.show"
                                                 v-text="paymentMethod.show ? 'Cancel' : 'Edit'">
@@ -141,7 +139,7 @@ const showAddPaymentMethod = ref(false);
                             class="font-bold mr-1 flex-shrink-0 w-max" v-text="showAddPaymentMethod ? 'Hide' : 'Add New Payment Method:'">
                             </primary-button>
                             <div class="flex flex-col gap-y-2 my-3" v-if="showAddPaymentMethod">
-                                <label for="name">Name</label>
+                                    <label for="name">Name</label>
                                 <TextInput class="w-full text-left" v-model="paymentMethodNew.name"/>
                                 <label for="handle">Handle</label>
                                 <TextInput class="w-full text-left" v-model="paymentMethodNew.handle"/>

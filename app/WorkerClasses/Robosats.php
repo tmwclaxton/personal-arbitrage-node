@@ -671,7 +671,7 @@ class Robosats
                     }
 
                     $message = 'Hey! My ' . $pseudonym . ' is ' . $tag . ' - If possible, please put this number somewhere in the payment reference (' . $offer->id . '). '.
-                        'This is just to help me to match your payment to your order, but is totally optionally. Cheers!';
+                        'This is just to help me to match your payment to your order, but is totally optional. Cheers!';
                     break;
                 }
             }

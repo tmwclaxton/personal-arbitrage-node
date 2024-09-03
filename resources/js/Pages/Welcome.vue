@@ -213,7 +213,7 @@ const showSidebar = ref(true);
                         <ToggleButton v-model="tempAdminDashboard.autoMessage" size="sm" activeColor="bg-green-500"
                                       inactiveColor="bg-red-500"/>
                     </div>
-                    <div class="flex flex-row justify-between items-center"><span
+                    <div class="flex flex-row justify-between items-center opacity-50 pointer-events-none"><span
                         class="font-bold mr-1">Auto Confirm</span>
                         <ToggleButton v-model="tempAdminDashboard.autoConfirm" size="sm" activeColor="bg-green-500"
                                       inactiveColor="bg-red-500"/>
