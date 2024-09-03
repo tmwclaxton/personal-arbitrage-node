@@ -16,6 +16,8 @@ return new class extends Migration
             $table->unsignedBigInteger('robosatsId')->unique();
             $table->unsignedBigInteger('robosatsIdStorage')->nullable();
             $table->string('robotTokenBackup')->nullable();
+            $table->integer('status')->default(0);
+            $table->text('status_message')->nullable();
             $table->boolean('job_locked')->default(false);
             $table->boolean('robots_created')->default(false);
             $table->string('provider');
@@ -25,8 +27,6 @@ return new class extends Migration
             $table->bigInteger('accepted_offer_profit_sat')->nullable();
             $table->timestamp('expires_at');
             $table->string('type');
-            $table->integer('status')->default(0);
-            $table->text('status_message')->nullable();
             $table->string('currency');
             $table->decimal('amount', 20, 8)->nullable();
             $table->bigInteger('satoshi_amount_profit')->nullable();
@@ -77,7 +77,7 @@ return new class extends Migration
             $table->timestamp('auto_accept_at')->nullable();
             $table->timestamp('auto_confirm_at')->nullable();
 
-            $table->string('discord_channel_id')->nullable();
+//            $table->string('discord_channel_id')->nullable();
             $table->boolean('my_offer')->default(false);
             $table->foreignIdFor(\App\Models\PostedOfferTemplate::class)->nullable();
 

@@ -66,6 +66,27 @@ return new class extends Migration
                 'logo_url' => 'https://logowik.com/content/uploads/images/mercado-pago3162.logowik.com.webp',
             ],
             [
+                'name' => 'PayID',
+                'logo_url' => 'https://www.paymentscardsandmobile.com/wp-content/uploads/2020/06/PayID.jpg',
+            ],
+            [
+                'name' => 'PIX',
+                'logo_url' => 'https://d1muf25xaso8hp.cloudfront.net/https%3A%2F%2Fmeta-l.cdn.bubble.io%2Ff1695911887708x352997315048698900%2Flogo-pix-png-icone-520x520%2520%25281%2529.png?w=64&h=64&auto=compress&dpr=2.25&fit=max',
+            ],
+            [
+                'name' => 'Bancolombia',
+                'logo_url' => 'https://i.pinimg.com/474x/b8/cd/c1/b8cdc1ad498fe080bc21bb5a03c24f83.jpg',
+            ],
+            [
+                'name' => 'Nequi',
+                'logo_url' => 'https://i.pinimg.com/1200x/56/62/57/566257ad4944e5561a708fbdf6222d2e.jpg',
+            ],
+            [
+                'name' => 'USDT',
+                'logo_url' => 'https://cryptologos.cc/logos/tether-usdt-logo.png',
+            ],
+
+            [
                 'name' => 'Monero',
                 'logo_url' => 'https://cryptologos.cc/logos/monero-xmr-logo.png',
                 'reference_message' => false,

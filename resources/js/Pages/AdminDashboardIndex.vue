@@ -85,36 +85,24 @@ const showAddPaymentMethod = ref(false);
                     <div class="flex flex-row justify-between items-center">
                         <span class="font-bold text-xl mb-2">More Config:</span>
                     </div>
-                    <div class="grid-cols-1 grid gap-2 ">
-                        <!--<div class="flex flex-row justify-between items-center"><span-->
-                        <!--    class="font-bold mr-1">Umbrel Token: </span>-->
-                        <!--    <TextInput v-model="tempAdminDashboard.umbrel_token"/>-->
-                        <!--</div>-->
-                        <!--<div class="flex flex-row justify-between items-center"><span-->
-                        <!--    class="font-bold mr-1">Revolut Tag: </span>-->
-                        <!--    <TextInput v-model="tempAdminDashboard.revolut_handle"/>-->
-                        <!--</div>-->
-                        <!--<div class="flex flex-row justify-between items-center"><span-->
-                        <!--    class="font-bold mr-1">Paypal Tag: </span>-->
-                        <!--    <TextInput v-model="tempAdminDashboard.paypal_handle"/>-->
-                        <!--</div>-->
-                        <!--<div class="flex flex-row justify-between items-center"><span-->
-                        <!--    class="font-bold mr-1">Wise Tag: </span>-->
-                        <!--    <TextInput v-model="tempAdminDashboard.wise_handle"/>-->
-                        <!--</div>-->
-                        <!--<div class="flex flex-row justify-between items-center"><span-->
-                        <!--    class="font-bold mr-1">Strike Tag: </span>-->
-                        <!--    <TextInput v-model="tempAdminDashboard.strike_handle"/>-->
-                        <!--</div>-->
-                        <!--<div class="flex flex-row justify-between items-center"><span-->
-                        <!--    class="font-bold mr-1 flex-shrink-0">Instant Sepa Info: </span>-->
-                        <!--    <TextInput class="w-full text-right"  v-model="tempAdminDashboard.instant_sepa"/>-->
-                        <!--</div>-->
-                        <!--<div class="flex flex-row justify-between items-center"><span-->
-                        <!--    class="font-bold mr-1 flex-shrink-0">Faster Payments Info: </span>-->
-                        <!--    <TextInput class="w-full text-right" v-model="tempAdminDashboard.faster_payments"/>-->
-                        <!--</div>-->
+                    <div class="flex flex-row justify-between items-center"><span
+                        class="font-bold mr-1">Umbrel Token: <span class="text-red-500">(Should automatically be set)</span></span>
+                        <TextInput v-model="tempAdminDashboard.umbrel_token"/>
+                    </div>
+                    <PaymentsInput :payment_methods="tempAdminDashboard.payment_methods"
+                                   :options="props.paymentMethodList"
+                                   @update:model-value="tempAdminDashboard.payment_methods = $event"/>
 
+                    <div class="flex flex-row gap-x-4 justify-between">
+                        <CurrenciesInput class=""
+                                         :payment_methods="tempAdminDashboard.payment_currencies"
+                                         @update:model-value="tempAdminDashboard.payment_currencies = $event"
+                                         :currencies="currencies"/>
+                        <primary-button class="h-12 mt-5" @click="clicked">Save Changes</primary-button>
+                    </div>
+                    <div class="grid-cols-1 grid gap-2 ">
+                        <p class="text-2xl font-bold mt-4 text-center mx-auto">Set up Payment Handles / Messages:</p>
+                        <div class="border-b border-gray-300 dark:border-zinc-700 mb-4"/>
 
                         <PaymentMethod  v-for="paymentMethod in props.paymentMethods"
                                         :paymentMethod="paymentMethod"
@@ -140,20 +128,8 @@ const showAddPaymentMethod = ref(false);
                             </div>
                             <PrimaryButton class="mt-2" @click="addPaymentMethod" v-if="showAddPaymentMethod">Add Payment Method</PrimaryButton>
                         </div>
-
-
                     </div>
-                        <PaymentsInput :payment_methods="tempAdminDashboard.payment_methods"
-                                       :options="props.paymentMethodList"
-                                       @update:model-value="tempAdminDashboard.payment_methods = $event"/>
 
-                    <div class="flex flex-row gap-x-4 justify-between">
-                    <CurrenciesInput class=""
-                        :payment_methods="tempAdminDashboard.payment_currencies"
-                                     @update:model-value="tempAdminDashboard.payment_currencies = $event"
-                                        :currencies="currencies"/>
-                        <primary-button class="h-12 mt-5" @click="clicked">Save Changes</primary-button>
-                    </div>
 
                 </div>
             </div>
