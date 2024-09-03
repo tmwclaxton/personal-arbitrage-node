@@ -30,7 +30,12 @@ class AdminDashboardController extends Controller
             'logo_url' => 'nullable',
             'specific_buy_premium' => 'nullable',
             'specific_sell_premium' => 'nullable',
+            'allowed_currencies' => 'array|nullable',
+            'ask_for_reference' => 'boolean|nullable',
+            'custom_message' => 'nullable',
         ]);
+        // convert array to json
+        $request->merge(['allowed_currencies' => json_encode($request->allowed_currencies)]);
 
         PaymentMethod::create($request->all());
 
@@ -45,7 +50,12 @@ class AdminDashboardController extends Controller
             'logo_url' => 'nullable',
             'specific_buy_premium' => 'nullable',
             'specific_sell_premium' => 'nullable',
+            'allowed_currencies' => 'array|nullable',
+            'ask_for_reference' => 'boolean|nullable',
+            'custom_message' => 'nullable',
         ]);
+        // convert array to json
+        $request->merge(['allowed_currencies' => json_encode($request->allowed_currencies)]);
 
         $paymentMethod = PaymentMethod::find($id);
         $paymentMethod->update($request->all());

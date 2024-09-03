@@ -8,6 +8,7 @@ import CurrenciesInput from "@/Components/CurrenciesInput.vue";
 
 const props = defineProps({
     paymentMethod: Object,
+    currencies: Array,
 });
 
 const tempPaymentMethod = ref({
@@ -21,6 +22,7 @@ const tempPaymentMethod = ref({
     allowed_currencies: props.paymentMethod.allowed_currencies,
 });
 
+tempPaymentMethod.value.allowed_currencies = JSON.parse(tempPaymentMethod.value.allowed_currencies);
 
 
 const editPaymentMethod = () => {
@@ -30,6 +32,9 @@ const editPaymentMethod = () => {
         logo_url: tempPaymentMethod.value.logo_url,
         specific_buy_premium: tempPaymentMethod.value.specific_buy_premium,
         specific_sell_premium: tempPaymentMethod.value.specific_sell_premium,
+        custom_message: tempPaymentMethod.value.message,
+        ask_for_reference: tempPaymentMethod.value.ask_for_reference,
+        allowed_currencies: tempPaymentMethod.value.allowed_currencies,
     }).then(response => {
         console.log(response.data);
     }).catch(error => {
@@ -50,9 +55,10 @@ const editPaymentMethod = () => {
 <template>
     <div :key="paymentMethod.id"
          class="flex flex-col gap-y-2">
-        <div v-if="!paymentMethod.edit" class="justify-between flex flex-row gap-x-2">
+        <div class="justify-between flex flex-row gap-x-2">
             <div class="flex flex-row gap-x-2">
-                <img :src="paymentMethod.logo_url" class="w-10 h-10"/>
+                <img v-if="paymentMethod.logo_url"
+                    :src="paymentMethod.logo_url" class="w-10 h-10"/>
                 <span class="font-bold mr-1 my-auto">{{ paymentMethod.name }}</span></div>
             <p v-if="paymentMethod.specific_buy_premium"
                class="mr-1"><span class="font-bold">Buy Premium:</span> {{ paymentMethod.specific_buy_premium }}</p>
@@ -71,7 +77,7 @@ const editPaymentMethod = () => {
             </div>
         </div>
 
-        <div v-else class="flex flex-col gap-y-2">
+        <div v-if="paymentMethod.edit"  class="grid grid-cols-2 gap-y-2 border-y border-gray-300 dark:border-zinc-700 p-2">
             <label for="name">Name</label>
             <TextInput class="w-full text-left" v-model="tempPaymentMethod.name"/>
             <label for="handle">Handle</label>
@@ -84,11 +90,18 @@ const editPaymentMethod = () => {
             <TextInput class="w-full text-left" v-model="tempPaymentMethod.logo_url"/>
             <label for="message">Alternative Message</label>
             <TextInput class="w-full text-left" v-model="tempPaymentMethod.message"/>
-            <label for="ask_for_reference">Ask for Reference</label>
-            <toggle-button v-model="tempPaymentMethod.ask_for_reference"/>
-            <label for="allowed_currencies">Currencies</label>
-            <CurrenciesInput v-model="tempPaymentMethod.allowed_currencies"/>
-            <primary-button class="mt-2" @click="editPaymentMethod">Save Changes</primary-button>
+            <!--<label for="ask_for_reference">Ask for Reference</label>-->
+            <!--<toggle-button v-model="tempPaymentMethod.ask_for_reference"/>-->
+            <label for="allowed_currencies">Currencies (Not required)</label>
+            <CurrenciesInput :payment_methods="tempPaymentMethod.allowed_currencies"
+                             @update:model-value="tempPaymentMethod.allowed_currencies = $event"
+                             :currencies="currencies"
+                             :key="paymentMethod.id"/>
+            <div class="col-span-2 flex ">
+                <primary-button class=" ml-auto w-max mt-2 text-center" @click="editPaymentMethod">
+                    <span class="mx-auto">Save Changes</span>
+                </primary-button>
+            </div>
         </div>
     </div>
 </template>

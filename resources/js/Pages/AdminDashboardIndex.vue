@@ -51,6 +51,9 @@ const paymentMethodNew = ref({
     logo_url: '',
     specific_buy_premium: '',
     specific_sell_premium: '',
+    custom_message: '',
+    ask_for_reference: false,
+    allowed_currencies: [],
 });
 
 const addPaymentMethod = () => {
@@ -60,6 +63,9 @@ const addPaymentMethod = () => {
         logo_url: paymentMethodNew.value.logo_url,
         specific_buy_premium: paymentMethodNew.value.specific_buy_premium,
         specific_sell_premium: paymentMethodNew.value.specific_sell_premium,
+        custom_message: paymentMethodNew.value.custom_message,
+        ask_for_reference: paymentMethodNew.value.ask_for_reference,
+        allowed_currencies: paymentMethodNew.value.allowed_currencies,
     }).then(response => {
         console.log(response.data);
     }).catch(error => {
@@ -94,7 +100,7 @@ const showAddPaymentMethod = ref(false);
                                    @update:model-value="tempAdminDashboard.payment_methods = $event"/>
 
                     <div class="flex flex-row gap-x-4 justify-between">
-                        <CurrenciesInput class=""
+                        <CurrenciesInput :key="'adminDashboard'"
                                          :payment_methods="tempAdminDashboard.payment_currencies"
                                          @update:model-value="tempAdminDashboard.payment_currencies = $event"
                                          :currencies="currencies"/>
@@ -107,6 +113,7 @@ const showAddPaymentMethod = ref(false);
                         <PaymentMethod  v-for="paymentMethod in props.paymentMethods"
                                         :paymentMethod="paymentMethod"
                                         @update:model-value="paymentMethod = $event"
+                                        :currencies="tempAdminDashboard.payment_currencies"
                                         :key="paymentMethod.id"/>
 
                         <!--- add new payment methods here -->
@@ -125,6 +132,13 @@ const showAddPaymentMethod = ref(false);
                                 <TextInput class="w-full text-left" v-model="paymentMethodNew.specific_buy_premium"/>
                                 <label for="specific_sell_premium">Specific Sell Premium (Not required)</label>
                                 <TextInput class="w-full text-left" v-model="paymentMethodNew.specific_sell_premium"/>
+                                <label for="custom_message">Custom Message</label>
+                                <TextInput class="w-full text-left" v-model="paymentMethodNew.custom_message"/>
+                                <label for="ask_for_reference">Ask for Reference</label>
+                                <ToggleButton v-model="paymentMethodNew.ask_for_reference"/>
+                                <label for="allowed_currencies">Currencies (Not required)</label>
+                                <CurrenciesInput v-model="paymentMethodNew.allowed_currencies" :currencies="tempAdminDashboard.payment_currencies"
+                                                 :key="'new'"/>
                             </div>
                             <PrimaryButton class="mt-2" @click="addPaymentMethod" v-if="showAddPaymentMethod">Add Payment Method</PrimaryButton>
                         </div>
