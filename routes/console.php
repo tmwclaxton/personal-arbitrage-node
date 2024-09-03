@@ -139,7 +139,7 @@ Schedule::command('auto:confirm-final')
 // ping umbrel check
 Schedule::command('app:umbrel-token-reset')
     ->description('reset umbrel token')
-    ->everyThirtyMinutes()->withoutOverlapping(1);
+    ->everyFiveMinutes()->withoutOverlapping(1);
 
 // auto:create
 Schedule::command('auto:create')

@@ -285,6 +285,8 @@ const showSidebar = ref(true);
 
                         <div class="text-left  ">
                             <p class=""><span class="font-bold text-xl mb-2">Wallet:</span></p>
+                            <label for="ideal_lightning_node_balance">Ideal Lightning Node Balance:</label>
+                            <TextInput class="w-36 h-6" v-model="tempAdminDashboard.ideal_lightning_node_balance"/>
 
                             <p class=""><span class="font-bold">Lighting Wallet Balance:</span> {{ tempAdminDashboard.localBalance }} </p>
                             <!--<p class=""><span class="font-bold">Revolut Balance:</span></p>-->
