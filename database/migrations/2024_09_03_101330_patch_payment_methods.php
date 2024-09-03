@@ -34,7 +34,7 @@ return new class extends Migration
                 'logo_url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Faster_Payments_logo.svg/202px-Faster_Payments_logo.svg.png?20150403100936',
             ],
             [
-                'name' => 'PayPal',
+                'name' => 'Paypal Friends & Family',
                 'logo_url' => 'https://w7.pngwing.com/pngs/632/1015/png-transparent-paypal-logo-computer-icons-payment-paypal-blue-angle-service-thumbnail.png',
             ],
             [
@@ -49,6 +49,27 @@ return new class extends Migration
                 'name' => 'Venmo',
                 'logo_url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Venmo_logo.png/1200px-Venmo_logo.png?20220919164503',
             ],
+            [
+                'name' => 'Bizum',
+                'logo_url' => 'https://img.freepik.com/premium-photo/bizum-logo-icon-vector-illustration_895118-6998.jpg',
+            ],
+            [
+                'name' => 'Interac e-Transfer',
+                'logo_url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/InteracLogo.svg/1024px-InteracLogo.svg.png?20170521232035',
+            ],
+            [
+                'name' => 'WeChat Pay',
+                'logo_url' => 'https://seeklogo.com/images/W/wechat-pay-logo-F991CDF605-seeklogo.com.png',
+            ],
+            [
+                'name' => 'MercadoPago',
+                'logo_url' => 'https://logowik.com/content/uploads/images/mercado-pago3162.logowik.com.webp',
+            ],
+            [
+                'name' => 'Monero',
+                'logo_url' => 'https://cryptologos.cc/logos/monero-xmr-logo.png',
+                'reference_message' => false,
+            ]
         ]);
 
         $models->each(function ($model) {

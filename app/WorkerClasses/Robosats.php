@@ -7,6 +7,7 @@ use App\Http\Controllers\OfferController;
 use App\Models\AdminDashboard;
 use App\Models\BtcFiat;
 use App\Models\Offer;
+use App\Models\PaymentMethod;
 use App\Models\PostedOfferTemplate;
 use App\Models\Robot;
 use App\Models\Transaction;
@@ -622,53 +623,18 @@ class Robosats
 
     public function sendHandle($offer): void {
 
-        $adminDashboard = AdminDashboard::all()->first();
         $robot = $offer->robots()->first();
         $message = '';
-        $paymentMethod = '';
 
         if (!$offer->my_offer) {
             // depending on what payment methods are available change the message, preference order is revolut, wise, paypal friends & family, strike
-            $preferredPaymentMethods = ['Revolut', 'Wise', 'Paypal Friends & Family', 'Strike', 'Faster Payments', 'Instant SEPA'];
+            $preferredPaymentMethods = PaymentMethod::where([['name', '!=', null], ['handle', '!=', null]])->get();
             // shuffle the preferred payment methods
             shuffle($preferredPaymentMethods);
             foreach ($preferredPaymentMethods as $paymentMethod) {
-                if (in_array($paymentMethod, json_decode($robot->offer->payment_methods))) {
-                    if ($paymentMethod == null) {
-                        continue;
-                    }
-                    switch ($paymentMethod) {
-                        case 'Revolut':
-                            $tag = $adminDashboard->revolut_handle;
-                            $pseudonym = "Revtag";
-                            break;
-                        case 'Wise':
-                            $tag = $adminDashboard->wise_handle;
-                            $pseudonym = "Wise handle";
-                            break;
-                        case 'Paypal Friends & Family':
-                            $tag = $adminDashboard->paypal_handle;
-                            $pseudonym = "Paypal";
-                            break;
-                        case 'Strike':
-                            $tag = $adminDashboard->strike_handle;
-                            $pseudonym = "Strike";
-                            break;
-                        case 'Faster Payments':
-                            $tag = $adminDashboard->faster_payments;
-                            $pseudonym = "Faster Payments";
-                            break;
-                        case 'Instant SEPA':
-                            $tag = $adminDashboard->instant_sepa;
-                            $pseudonym = "Instant SEPA";
-                            break;
-
-                    }
-
-                    if (empty($tag) || empty($pseudonym)) {
-                        (new DiscordService)->sendMessage('Error: No tag / pseudonym found for ' . $paymentMethod);
-                        return;
-                    }
+                if (in_array($paymentMethod->name, json_decode($robot->offer->payment_methods))) {
+                    $pseudonym = $paymentMethod->name;
+                    $tag = $paymentMethod->handle;
 
                     $message = 'Hey! My ' . $pseudonym . ' is ' . $tag . ' - If possible, please put this number somewhere in the payment reference (' . $offer->id . '). '.
                         'This is just to help me to match your payment to your order, but is totally optional. Cheers!';
@@ -680,16 +646,8 @@ class Robosats
             // if it's our offer then we need to send all the payment methods that the buyer can use
             $paymentMethods = json_decode($robot->offer->payment_methods);
 
-            // Mapping payment methods to their respective handles
-            $handles = [
-                'Revolut' => $adminDashboard->revolut_handle,
-                'Wise' => $adminDashboard->wise_handle,
-                'Paypal Friends & Family' => $adminDashboard->paypal_handle,
-                'Strike' => $adminDashboard->strike_handle,
-                'Faster Payments' => $adminDashboard->faster_payments,
-                'Instant SEPA' => $adminDashboard->instant_sepa
-            ];
-
+            // Fetching the available handles for the payment methods
+            $handles = PaymentMethod::whereIn('name', $paymentMethods)->pluck('handle', 'name')->toArray();
             $handleParts = [];
 
             // Building the list of available handles
@@ -937,6 +895,11 @@ class Robosats
             $offer->asked_for_cancel = $response['asked_for_cancel'];
         }
         if (isset($response['pending_cancel'])) {
+            // if this was false and is now true then we need to send a message to discord
+            if (!$offer->pending_cancel && $response['pending_cancel']) {
+                $discordService = new DiscordService();
+                $discordService->sendMessage('**Collaborative cancel initiated by counterparty for order ' . $offer->robosatsId . '**');
+            }
             $offer->pending_cancel = $response['pending_cancel'];
         }
         if (isset($response['chat_last_index'])) {

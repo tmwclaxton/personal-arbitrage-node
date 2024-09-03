@@ -46,14 +46,14 @@ return new class extends Migration
             $table->json('allowed_payment_methods')->nullable(); //->default(json_encode(['Revolut', 'Paypal Friends & Family', 'Wise']));
             $table->json('allowed_providers')->nullable();
             $table->string('umbrel_token')->nullable()->default('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm94eVRva2VuIjp0cnVlLCJpYXQiOjE3MTk0ODU5MTUsImV4cCI6MTcyMDA5MDcxNX0.u6ZEoMfrRykoE1YOLWL08auNwp_4VRuuxU8qu3CT8OQ');
-            $table->string('revolut_handle')->nullable()->default('@tobyclaxton');
-            $table->string('paypal_handle')->nullable()->default('@tobyclaxton');
-            $table->string('wise_handle')->nullable()->default('@tobymatthewwilliamc');
-            $table->string('instant_sepa')->nullable()->default('IBAN: GB97 REVO 0099 7039 8431 17, BIC: REVOGB21, Beneficiary: Toby Claxton');
-            $table->string('faster_payments')->nullable()->default('Account Number: 46088210, Sort Code: 04-00-75, Beneficiary: Toby Claxton');
-            $table->string('strike_handle')->nullable()->default('@tmwclaxton');
-            $table->string('cashapp_handle')->nullable();
-            $table->string('zelle_handle')->nullable();
+//            $table->string('revolut_handle')->nullable()->default('@tobyclaxton');
+//            $table->string('paypal_handle')->nullable()->default('@tobyclaxton');
+//            $table->string('wise_handle')->nullable()->default('@tobymatthewwilliamc');
+//            $table->string('instant_sepa')->nullable()->default('IBAN: GB97 REVO 0099 7039 8431 17, BIC: REVOGB21, Beneficiary: Toby Claxton');
+//            $table->string('faster_payments')->nullable()->default('Account Number: 46088210, Sort Code: 04-00-75, Beneficiary: Toby Claxton');
+//            $table->string('strike_handle')->nullable()->default('@tmwclaxton');
+//            $table->string('cashapp_handle')->nullable();
+//            $table->string('zelle_handle')->nullable();
 
             $table->integer('kraken_btc_balance')->default(0);
 

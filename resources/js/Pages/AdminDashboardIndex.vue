@@ -80,12 +80,12 @@ const showAddPaymentMethod = ref(false);
 
             <div v-if="tempAdminDashboard" class="mx-auto gap-5 gap-x-5  item s-center justify-center">
 
-                <div class="text-left pl-5 flex flex-col gap-y-1 pr-5 mx-auto">
+                <div class="text-left pl-5 flex flex-col gap-y-1 pr-5 mx-auto max-w-6xl">
 
                     <div class="flex flex-row justify-between items-center">
                         <span class="font-bold text-xl mb-2">More Config:</span>
                     </div>
-                    <div class="grid-cols-1 grid gap-2">
+                    <div class="grid-cols-1 grid gap-2 ">
                         <!--<div class="flex flex-row justify-between items-center"><span-->
                         <!--    class="font-bold mr-1">Umbrel Token: </span>-->
                         <!--    <TextInput v-model="tempAdminDashboard.umbrel_token"/>-->

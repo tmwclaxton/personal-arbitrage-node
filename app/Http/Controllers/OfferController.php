@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AdminDashboard;
 use App\Models\BtcFiat;
 use App\Models\Offer;
+use App\Models\PaymentMethod;
 use App\Models\RobosatsChatMessage;
 use App\Models\Transaction;
 use App\Services\DiscordService;
@@ -202,45 +203,32 @@ class OfferController extends Controller
             unset($offer['payment_method']);
         }
 
-        // if the items Instant and Sepa are in the payment_methods, remove them and replace them with 'Instant SEPA'
-        if (in_array('Instant', $offer['payment_methods']) && in_array('SEPA', $offer['payment_methods'])) {
-            // remove the Instant and Sepa from the payment_methods
-            $offer['payment_methods'] = array_diff($offer['payment_methods'], ['Instant', 'SEPA']);
-            // add 'Instant SEPA' to the payment_methods
-            $offer['payment_methods'][] = 'Instant SEPA';
+        // Step 1: Fetch payment methods from the database
+        $paymentMethods = PaymentMethod::all();
+        $paymentMethodsInternal = $paymentMethods->pluck('name')->toArray(); // List of all payment method names
+
+        // Step 2: Combine the input payment methods into a single space-delimited string
+        $paymentMethodsString = implode(' ', $offer['payment_methods']);
+
+        // Step 3: Initialize an array for normalized payment methods
+        $normalizedPaymentMethods = [];
+
+        // Step 4: Check each payment method from the database against the combined string
+        foreach ($paymentMethodsInternal as $paymentMethod) {
+            if (strpos($paymentMethodsString, $paymentMethod) !== false) {
+                $normalizedPaymentMethods[] = $paymentMethod;
+                // Remove the matched payment method from the string to avoid duplicate matches
+                $paymentMethodsString = str_replace($paymentMethod, '', $paymentMethodsString);
+            }
         }
 
-        // if the items Faster and Payments are in the payment_methods, remove them and replace them with 'Faster Payments'
-        if (in_array('Faster', $offer['payment_methods']) && in_array('Payments', $offer['payment_methods'])) {
-            // remove the Faster and Payments from the payment_methods
-            $offer['payment_methods'] = array_diff($offer['payment_methods'], ['Faster', 'Payments']);
-            // add 'Faster Payments' to the payment_methods
-            $offer['payment_methods'][] = 'Faster Payments';
-        }
+        // Step 5: Update the offer with the final payment methods and whatever is left in the string
 
-        // if the items Paypal Friends & Family (all separate) are in the payment_methods, remove them and replace them with 'Paypal Friends & Family'
-        if (in_array('Paypal', $offer['payment_methods']) && in_array('Friends', $offer['payment_methods']) && in_array('Family', $offer['payment_methods'])) {
-            // remove the Paypal Friends & Family from the payment_methods
-            $offer['payment_methods'] = array_diff($offer['payment_methods'], ['Paypal', 'Friends', 'Family', '&']);
-            // add 'Paypal Friends & Family' to the payment_methods
-            $offer['payment_methods'][] = 'Paypal Friends & Family';
-        }
-
-        // if ["Amazon", "IT", "GiftCard"]
-        if (in_array('Amazon', $offer['payment_methods']) && in_array('IT', $offer['payment_methods']) && in_array('GiftCard', $offer['payment_methods'])) {
-            // remove the Amazon IT GiftCard from the payment_methods
-            $offer['payment_methods'] = array_diff($offer['payment_methods'], ['Amazon', 'IT', 'GiftCard']);
-            // add 'Amazon IT GiftCard' to the payment_methods
-            $offer['payment_methods'][] = 'Amazon IT GiftCard';
-        }
-
-        // ["Amazon", "DE", "GiftCard"]
-        if (in_array('Amazon', $offer['payment_methods']) && in_array('DE', $offer['payment_methods']) && in_array('GiftCard', $offer['payment_methods'])) {
-            // remove the Amazon DE GiftCard from the payment_methods
-            $offer['payment_methods'] = array_diff($offer['payment_methods'], ['Amazon', 'DE', 'GiftCard']);
-            // add 'Amazon DE GiftCard' to the payment_methods
-            $offer['payment_methods'][] = 'Amazon DE GiftCard';
-        }
+        $paymentMethodsLeft = explode(' ', $paymentMethodsString);
+        $combinedPaymentMethods = array_merge($normalizedPaymentMethods, $paymentMethodsLeft);
+        // remove any empty strings
+        $combinedPaymentMethods = array_filter($combinedPaymentMethods, function($value) { return $value !== ''; });
+        $offer['payment_methods'] = $combinedPaymentMethods;
 
         // convert the payment_methods to a json array without a key
         $offer['payment_methods'] = json_encode(array_values($offer['payment_methods']));

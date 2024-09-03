@@ -14,6 +14,7 @@ import Template from "@/Components/Template.vue";
 
 const props = defineProps({
     templates: Object,
+    paymentMethods: Array,
 });
 
 
@@ -97,7 +98,7 @@ const offerTemplate = ref({
                         <text-input v-model="offerTemplate.currency" label="Currency" />
                         <label class="text-sm text-gray-500">Quantity</label>
                         <text-input v-model="offerTemplate.quantity" label="Quantity" />
-                        <payments-input class="mx-16" v-model="offerTemplate.paymentMethods" label="Payment Methods" />
+                        <payments-input class="mx-16" v-model="offerTemplate.paymentMethods" label="Payment Methods" :options="paymentMethods" />
                         <providers-input class="mx-16" v-model="offerTemplate.provider" label="Provider" />
                         <label class="text-sm text-gray-500">Cooldown</label>
                         <text-input v-model="offerTemplate.cooldown" label="Cooldown" />
@@ -116,7 +117,7 @@ const offerTemplate = ref({
                 <div class="flex flex-col items-center">
                     <h1 class="text-2xl font-bold underline mb-1">Templates</h1>
                     <div class="w-3/4 flex flex-col items-center">
-                        <Template v-for="template in templates" :template="template" />
+                        <Template v-for="template in templates" :template="template" :options="paymentMethods" :key="template.id" />
 
                     </div>
                 </div>

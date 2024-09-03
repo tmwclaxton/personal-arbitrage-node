@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Offer;
+use App\Models\PaymentMethod;
 use App\Models\PostedOfferTemplate;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,6 +14,7 @@ class OfferTemplatesController extends Controller
     {
         return Inertia::render('PostingOffers', [
             'templates' => PostedOfferTemplate::all(),
+            'paymentMethods' => PaymentMethod::all()->pluck('name'),
         ]);
     }
 

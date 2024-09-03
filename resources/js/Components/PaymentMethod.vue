@@ -57,7 +57,7 @@ const editPaymentMethod = () => {
                 <p class="mr-1 my-auto" v-if="paymentMethod.handle">
                     <span class="font-bold">Handle:</span> {{ paymentMethod.handle }}</p>
                 <p v-else class="mr-1 my-auto">
-                    <span class="font-bold">Handle:</span> Not Set. <br><span class="text-red-500">(Payment method won't be used!)</span>
+                    <span class="font-bold">Handle:</span> Not Set. <br><span class="text-red-500">(You shouldn't use this payment method till it has a handle!)</span>
                 </p>
                 <primary-button class="font-bold mr-1 flex-shrink-0 w-max"
                                 @click="paymentMethod.edit = !paymentMethod.edit"

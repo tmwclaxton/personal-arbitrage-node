@@ -15,9 +15,12 @@ return new class extends Migration
             $table->id();
             $table->string('name')->unique();
             $table->text('handle')->nullable();
+            $table->text('custom_message')->nullable();
             $table->string('logo_url')->nullable();
+            $table->json('allowed_currencies')->nullable();
             $table->decimal('specific_buy_premium', 5, 2)->nullable();
             $table->decimal('specific_sell_premium', 5, 2)->nullable();
+            $table->boolean('ask_for_reference')->default(true);
             $table->timestamps();
         });
     }
