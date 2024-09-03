@@ -17,6 +17,7 @@ class AdminDashboardController extends Controller
             'adminDashboard' => AdminDashboard::all()->first(),
             'btcFiats' => $btcFiats,
             'paymentMethods' => PaymentMethod::all(),
+            'paymentMethodList' => PaymentMethod::all()->pluck('name'),
             'currencies' => $btcFiats->pluck('currency'),
         ]);
     }
@@ -40,7 +41,7 @@ class AdminDashboardController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'handle' => 'required',
+            'handle' => 'nullable',
             'logo_url' => 'nullable',
             'specific_buy_premium' => 'nullable',
             'specific_sell_premium' => 'nullable',
@@ -48,8 +49,7 @@ class AdminDashboardController extends Controller
 
         $paymentMethod = PaymentMethod::find($id);
         $paymentMethod->update($request->all());
-
-        return redirect()->route('dashboard.index');
+        return ['message' => 'Payment method updated'];
     }
 
     public function deletePaymentMethod($id)

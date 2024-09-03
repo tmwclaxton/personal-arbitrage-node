@@ -8,6 +8,10 @@ const props = defineProps({
         type: Array,
         default: ''
     },
+    options: {
+        type: Array,
+        default: ['Revolut', 'Paypal Friends & Family', 'Strike', 'Wise', 'Faster Payments', 'Instant SEPA']
+    }
 });
 
 const emits = defineEmits(['update:modelValue']);
@@ -22,7 +26,6 @@ watch(payment_methodsLocal, () => {
     emits('update:modelValue', payment_methodsLocal.value);
 });
 
-const options = ['Revolut', 'Paypal Friends & Family', 'Strike', 'Wise', 'Faster Payments', 'Instant SEPA'];
 
 </script>
 
