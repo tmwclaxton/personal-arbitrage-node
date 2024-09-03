@@ -166,6 +166,11 @@
                     <p class="text-zinc-500 dark:text-zinc-200 font-medium ">Payment Methods: <br><span
                         class="break-words font-bold">{{ offer.payment_methods }}</span></p>
 
+                    <p v-if="offer.status === 9 || offer.status === 10"
+                        class="text-zinc-500 dark:text-zinc-200 font-medium mt-2">Expected Reference ID: <br><span
+                        class="break-words font-bold">{{ offer.id }}</span></p>
+
+
                 </div>
 
 
