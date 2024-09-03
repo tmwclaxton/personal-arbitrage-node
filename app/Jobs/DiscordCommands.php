@@ -267,7 +267,18 @@ class DiscordCommands implements ShouldQueue
                             $idealLightningNodeBalance = $adminDashboard->ideal_lightning_node_balance;
                             if ($localBalance + $satoshis > $idealLightningNodeBalance) {
                                 $satoshis = $idealLightningNodeBalance - $localBalance;
+                                if ($satoshis <= 0) {
+                                    $discordService->sendMessage('You have already reached the ideal balance');
+                                    break;
+                                }
                             }
+
+                            // if the satoshis is less than 2000, don't create an invoice
+                            if ($satoshis < 2000) {
+                                $discordService->sendMessage('Not enough BTC to create an invoice');
+                                break;
+                            }
+
 
                             $lightningNode = new LightningNode();
                             $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Withdrawal of ' . $btcBalance . ' BTC at ' . Carbon::now()->toDateTimeString());
