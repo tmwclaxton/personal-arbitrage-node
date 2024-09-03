@@ -3,6 +3,8 @@
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import TextInput from "@/Components/TextInput.vue";
 import {ref} from "vue";
+import ToggleButton from "@/Components/ToggleButton.vue";
+import CurrenciesInput from "@/Components/CurrenciesInput.vue";
 
 const props = defineProps({
     paymentMethod: Object,
@@ -14,6 +16,9 @@ const tempPaymentMethod = ref({
     logo_url: props.paymentMethod.logo_url,
     specific_buy_premium: props.paymentMethod.specific_buy_premium,
     specific_sell_premium: props.paymentMethod.specific_sell_premium,
+    message: props.paymentMethod.message,
+    ask_for_reference: props.paymentMethod.ask_for_reference,
+    allowed_currencies: props.paymentMethod.allowed_currencies,
 });
 
 
@@ -77,6 +82,12 @@ const editPaymentMethod = () => {
             <TextInput class="w-full text-left" v-model="tempPaymentMethod.specific_sell_premium"/>
             <label for="logo_url">Logo URL</label>
             <TextInput class="w-full text-left" v-model="tempPaymentMethod.logo_url"/>
+            <label for="message">Alternative Message</label>
+            <TextInput class="w-full text-left" v-model="tempPaymentMethod.message"/>
+            <label for="ask_for_reference">Ask for Reference</label>
+            <toggle-button v-model="tempPaymentMethod.ask_for_reference"/>
+            <label for="allowed_currencies">Currencies</label>
+            <CurrenciesInput v-model="tempPaymentMethod.allowed_currencies"/>
             <primary-button class="mt-2" @click="editPaymentMethod">Save Changes</primary-button>
         </div>
     </div>

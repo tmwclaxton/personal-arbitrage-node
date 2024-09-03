@@ -754,8 +754,8 @@ class Robosats
         $response = json_decode($response->body(), true);
 
         $adminDashboard = AdminDashboard::all()->first();
-        $adminDashboard->trade_volume_satoshis += $transaction->offer->accepted_offer_amount_sat;
-        $adminDashboard->satoshi_profit += $transaction->offer->accepted_offer_profit_sat;
+//        $adminDashboard->trade_volume_satoshis += $transaction->offer->accepted_offer_amount_sat;
+//        $adminDashboard->satoshi_profit += $transaction->offer->accepted_offer_profit_sat;
 
 
 
@@ -773,7 +773,7 @@ class Robosats
         $transaction->fees = $fees;
         $transaction->save();
 
-        $adminDashboard->satoshi_fees += $fees;
+//        $adminDashboard->satoshi_fees += $fees;
 
 
         $adminDashboard->save();

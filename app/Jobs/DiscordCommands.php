@@ -260,8 +260,8 @@ class DiscordCommands implements ShouldQueue
 
                             $adminDashboard = AdminDashboard::all()->first();
                             $remoteBalance = $adminDashboard->remoteBalance;
-                            if ($satoshis > $remoteBalance) {
-                                $satoshis = $remoteBalance - 20000;
+                            if ($satoshis > $remoteBalance - 200000) {
+                                $satoshis = $remoteBalance - 200000;
                             }
                             $lightningNode = new LightningNode();
                             $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Withdrawal of ' . $btcBalance . ' BTC at ' . Carbon::now()->toDateTimeString());
