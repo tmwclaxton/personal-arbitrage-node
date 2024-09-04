@@ -92,7 +92,7 @@ class OfferController extends Controller
                 $paymentMethods = [];
             }
             foreach ($offer->payment_methods as $paymentMethod) {
-                if (in_array($paymentMethod, $paymentMethods)) {
+                if (in_array($paymentMethod, $paymentMethods) || $offer->my_offer) {
                     $found = true;
                 }
             }
