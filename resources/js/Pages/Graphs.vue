@@ -10,18 +10,19 @@ import {
     Chart as ChartJS,
     CategoryScale,
     LinearScale,
+    BarElement,
     PointElement,
     LineElement,
     Title,
     Tooltip,
     Legend
 } from 'chart.js';
-import {Line} from 'vue-chartjs';
-
+import { Bar, Line } from 'vue-chartjs';
 
 ChartJS.register(
     CategoryScale,
     LinearScale,
+    BarElement,
     PointElement,
     LineElement,
     Title,
@@ -31,37 +32,62 @@ ChartJS.register(
 
 const props = defineProps({
     dates: Object,
-    volumes: Object,
-    profits: Object
+    volumesByCurrency: Object,
+    profits: Object,
+    profitsInGBP: Object,
 });
 
-// const data = {
-//     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-//     datasets: [
-//         {
-//             label: 'Data One',
-//             backgroundColor: '#f87979',
-//             data: [40, 39, 10, 40, 39, 80, 40]
-//         }
-//     ]
-// }
+// Define color scheme for the datasets
+const colors = ['#f87979', '#79f879', '#7979f8', '#f8b879', '#b8f879']; // Extend this list as needed
 
+// Prepare the chart data
 const data = {
+    labels: props.dates,
+    datasets: Object.keys(props.volumesByCurrency).map((currency, index) => ({
+        label: currency,
+        backgroundColor: colors[index % colors.length],
+        data: props.volumesByCurrency[currency],
+    }))
+};
+
+const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            position: 'top',
+        },
+        title: {
+            display: true,
+            text: 'Daily Volume by Currency'
+        },
+    },
+    scales: {
+        x: {
+            stacked: true,
+        },
+        y: {
+            stacked: true,
+        },
+    },
+};
+
+const dataLine = {
     labels: props.dates,
     datasets: [
         {
-            label: 'Daily Volume',
-            backgroundColor: '#f87979',
-            data: props.volumes
-        },
-        {
-            label: 'Daily Profit',
+            label: 'Daily Profit in Satoshis',
             backgroundColor: '#79f879',
             data: props.profits
+        },
+        {
+            label: 'Daily Profit in GBP at current exchange rate',
+            backgroundColor: '#7979f8',
+            data: props.profitsInGBP
         }
     ]
 }
-const options = {
+const optionsLine = {
     responsive: true,
     maintainAspectRatio: false
 }
@@ -74,8 +100,11 @@ const options = {
     <GuestLayout>
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div class="overflow-hidden shadow-sm sm:rounded-lg">
+                    <Bar class="!h-64" :data="data" :options="options"/>
+                </div>
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <Line :data="data" :options="options"/>
+                    <Line :data="dataLine" :options="optionsLine"/>
                 </div>
             </div>
         </div>
