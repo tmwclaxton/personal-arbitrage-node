@@ -20,6 +20,7 @@ const props = defineProps({
 });
 
 const offerEditTemplate = ref({
+    type: props.template.type,
     min: props.template.min_amount,
     max: props.template.max_amount,
     premium: props.template.premium,
@@ -38,6 +39,7 @@ const update = () => {
 
 
     axios.post(route('edit-template', {id: props.template.id}), {
+        type: offerEditTemplate.value.type,
         min_amount: parseInt(offerEditTemplate.value.min),
         max_amount: parseInt(offerEditTemplate.value.max),
         premium: offerEditTemplate.value.premium,
@@ -147,6 +149,11 @@ offerEditTemplate.value.providers = offerEditTemplate.value.provider.split(' ');
         </div>
 
         <div v-else class="grid grid-cols-5 gap-2 p-2">
+            <label class="text-sm text-gray-500">Offer Type</label>
+            <select v-model="offerEditTemplate.type" class="w-36 block mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <option value="buy">Buy</option>
+                <option value="sell">Sell</option>
+            </select>
             <div class="flex flex-row gap-x-2">
                 <p class="font-bold my-auto">Min:</p>
                 <text-input v-model="offerEditTemplate.min" label="Min" class="w-full"/>
