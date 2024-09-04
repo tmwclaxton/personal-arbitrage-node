@@ -11,7 +11,7 @@ class GraphController extends Controller
     {
         $dailyVolume = [];
         $dailySatProfit = [];
-        $offers = Offer::where('status', '14')->get();
+        $offers = Offer::where('status', '14')->orWhere('status', '13')->get();
         foreach ($offers as $offer) {
             $dailyVolume[$offer->created_at->format('Y-m-d')][] = round($offer->accepted_offer_amount);
             $dailySatProfit[$offer->created_at->format('Y-m-d')][] = round($offer->accepted_offer_profit_sat);
