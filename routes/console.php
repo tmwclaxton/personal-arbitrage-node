@@ -102,7 +102,7 @@ Schedule::command('payment:matcher')
 // currency converter
 Schedule::command('currency:converter')
     ->description('currency converter')
-    ->everyMinute()->withoutOverlapping(1);
+    ->everyFiveMinutes()->withoutOverlapping(1);
 
 // kraken auto purchaser
 Schedule::command('kraken:auto-purchaser')

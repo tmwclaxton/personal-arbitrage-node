@@ -36,8 +36,6 @@ class CurrencyConverter implements ShouldQueue
 
         //!TODO: Add currency exchange event recording
 
-        // I think we're opting for sending directly to Kraken rather than exchanging currency as there are less fees
-        $revolutService = new RevolutService();
         // $revolutService->currencyExchangeAll("EUR", "GBP");
         // $revolutService->currencyExchangeAll("USD", "GBP");
         $wiseService = new WiseService();
