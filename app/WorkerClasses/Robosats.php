@@ -593,11 +593,11 @@ class Robosats
             $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'take', 'amount' => $offer->accepted_offer_amount]);
         }
         if ($response == null || $response->failed()) {
-            $transaction->delete();
-            $offer->accepted = false;
             (new DiscordService)->sendMessage('Failed to accept offer' . $response->body());
             // {"bad_request":"You are not a participant in this order"}
             if ($response->json('bad_request') == 'You are not a participant in this order') {
+                $offer->accepted = false;
+                $transaction->delete();
                 $offer->delete();
             }
 
@@ -834,6 +834,7 @@ class Robosats
         $url = $this->getHost() . '/mainnet/' . $transaction->offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
 
         $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->get($url);
+
 
         $response = json_decode($response->body(), true);
         if (isset($response['bad_request']) ) {
