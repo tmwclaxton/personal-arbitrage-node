@@ -13,6 +13,7 @@ use App\Models\Robot;
 use App\Models\Transaction;
 use App\Services\DiscordService;
 use App\Services\PgpService;
+use Exception;
 use Faker\Factory;
 use Hackzilla\PasswordGenerator\Generator\ComputerPasswordGenerator;
 use Illuminate\Support\Carbon;
@@ -241,7 +242,7 @@ class Robosats
             } catch (\Exception $e) {
                 // Return or log the exception
                 $discordService = new DiscordService();
-                $discordService->sendMessage('Error creating robot: ' . $e->getMessage());
+                $discordService->sendMessage('Error creating robot: ' . $e->getMessage() . ' on ' . $provider);
                 // unlock the offer // this allows it to be retried
                 // if the robot creation failed for the same provider as the offer then return otherwise continue
                 if ($provider == $offer->provider) {
@@ -1038,7 +1039,13 @@ class Robosats
 
         $tempOffer->save();
 
-        $robots = $this->createRobot($tempOffer);
+        try {
+            $robots = $this->createRobot($tempOffer);
+        } catch (Exception $e) {
+            $tempOffer->delete();
+            $discordService->sendMessage('Failed to create sell offer.  Error: ' . $e->getMessage());
+            return $e->getMessage();
+        }
 
         // convert currency to int
         $currency = $this->currencyToInt($currency);
