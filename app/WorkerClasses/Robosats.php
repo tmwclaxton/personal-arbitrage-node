@@ -599,6 +599,8 @@ class Robosats
                 $offer->accepted = false;
                 $transaction->delete();
                 $offer->delete();
+            } else {
+                (new DiscordService)->sendMessage('For debugging here are the request parameters: Headers: ' . json_encode($this->getHeaders($offer)) . ' URL: ' . $url . ' Data: ' . json_encode(['action' => 'take', 'amount' => $offer->accepted_offer_amount]));
             }
 
             return 'Failed to accept offer';
