@@ -631,7 +631,7 @@ class Robosats
             // depending on what payment methods are available change the message, preference order is revolut, wise, paypal friends & family, strike
             $preferredPaymentMethods = PaymentMethod::where([['name', '!=', null], ['handle', '!=', null]])->get();
             // shuffle the preferred payment methods
-            shuffle($preferredPaymentMethods);
+            $preferredPaymentMethods->shuffle();
             foreach ($preferredPaymentMethods as $paymentMethod) {
                 if (in_array($paymentMethod->name, json_decode($robot->offer->payment_methods))) {
                     $pseudonym = $paymentMethod->name;
