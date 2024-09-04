@@ -686,7 +686,7 @@ class Robosats
 
         $this->webSocketCommunicate($offer, $robot, $message);
 
-        (new DiscordService)->sendMessage('Expect a payment for ' . round($robot->offer->accepted_offer_amount, 2)
+        (new DiscordService)->sendMessage('Expect a payment for ' . round($robot->offer->accepted_offer_amount, 2) . ' from one of the payment methods: ' . $robot->offer->payment_methods
             . ' ' . $robot->offer->currency . ' soon! Once received, confirm the payment by typing !confirm ' . $offer->robosatsId . ' in the chat.');
 
 
