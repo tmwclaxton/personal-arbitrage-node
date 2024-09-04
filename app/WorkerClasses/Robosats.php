@@ -681,11 +681,17 @@ class Robosats
                 // Append the order ID reference
                 $message .= "\nIf possible, please put this number somewhere in the payment reference (" . $offer->id . "). " .
                     "This is just to help me match your payment to your order, but is totally optional. Cheers!";
+
+                $secondaryMessage = "Also kindly state which payment method you will be using. Thanks!";
             }
 
         }
 
         $this->webSocketCommunicate($offer, $robot, $message);
+        if (isset($secondaryMessage)) {
+            sleep(5);
+            $this->webSocketCommunicate($offer, $robot, $secondaryMessage);
+        }
 
         (new DiscordService)->sendMessage('Expect a payment for ' . round($robot->offer->accepted_offer_amount, 2) . ' ' . $robot->offer->currency
             . ' from one of these payment methods: ' . $robot->offer->payment_methods .
