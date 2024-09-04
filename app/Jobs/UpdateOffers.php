@@ -47,7 +47,7 @@ class UpdateOffers implements ShouldQueue
         // grab ids by plucking the id from the transactions
         $ids = $transactions->pluck('offer_id')->toArray();
         // grab offers that are not in the transactions / give expired offer 5 minutes leeway // used to have ['my_offer', '=', false]
-        Offer::whereNotIn('id', $ids)->where([['expires_at', '<', now()->subMinutes(5)], ['accepted', '=', false], ['status', '<', 6]])
+        Offer::whereNotIn('id', $ids)->where([['expires_at', '<', now()->subMinutes(5)], ['accepted', '=', false], ['status', '<', 3]])
             ->delete();
 
         $robosats = new Robosats();
@@ -81,8 +81,8 @@ class UpdateOffers implements ShouldQueue
                 }
             }
             // not found, not accept, last updated is more than 10 minutes ago || past the expiration date and not accepted
-            if (!$found && !$dbOffer->accepted && !$dbOffer->my_offer && $dbOffer->updated_at->diffInMinutes(now()) > 5 ||
-                !$found &&  !$dbOffer->accepted && !$dbOffer->my_offer && $dbOffer->expires_at < now() ) {
+            if (!$found && !$dbOffer->accepted && !$dbOffer->my_offer && $dbOffer->updated_at->diffInMinutes(now()) > 5 && $dbOffer->status < 3 ||
+                !$found &&  !$dbOffer->accepted && !$dbOffer->my_offer && $dbOffer->expires_at < now()  && $dbOffer->status < 3 ) {
                 // check if there is a transaction associated with the offer
                 if ($dbOffer->transaction) {
                     $dbOffer->status = 5;
