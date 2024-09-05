@@ -15,7 +15,7 @@ class GraphController extends Controller
         $dates = [];
 
         // Fetch all offers with status 13 or 14
-        $offers = Offer::whereIn('status', ['14', '13'])->get();
+        $offers = Offer::whereIn('status', ['14', '13','15'])->get();
 
         // Loop through each offer
         foreach ($offers as $offer) {
@@ -61,7 +61,6 @@ class GraphController extends Controller
         }
 
         $dailySatProfit = [];
-        $offers = Offer::where('status', '14')->orWhere('status', '13')->get();
         foreach ($offers as $offer) {
             $dailySatProfit[$offer->created_at->format('Y-m-d')][] = round($offer->accepted_offer_profit_sat);
         }
