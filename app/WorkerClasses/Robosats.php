@@ -689,6 +689,14 @@ class Robosats
 
         }
 
+        $adminDashboard = AdminDashboard::all()->first();
+        // last chance to back out
+        if ($adminDashboard->panicButton) {
+            $message = 'Apologies, but I am unable to proceed with this trade at the moment due to banking issues. ' .
+                'Kindly I request you to cancel the trade. Thank you for your understanding.';
+            $secondaryMessage = null;
+        }
+
         $this->webSocketCommunicate($offer, $robot, $message);
         if (isset($secondaryMessage)) {
             sleep(5);
