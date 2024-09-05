@@ -703,15 +703,9 @@ class Robosats
             $this->webSocketCommunicate($offer, $robot, $secondaryMessage);
         }
 
-        // if panic button is on, collaborativeCancel
-        if ($adminDashboard->panicButton) {
-            $this->collaborativeCancel($offer);
-        } else {
-            (new DiscordService)->sendMessage('Expect a payment for ' . round($robot->offer->accepted_offer_amount, 2) . ' ' . $robot->offer->currency
-                . ' from one of these payment methods: ' . $robot->offer->payment_methods .
-                ' soon! Once received, confirm the payment by typing !confirm ' . $offer->robosatsId . ' in the chat.');
-        }
-
+        (new DiscordService)->sendMessage('Expect a payment for ' . round($robot->offer->accepted_offer_amount, 2) . ' ' . $robot->offer->currency
+            . ' from one of these payment methods: ' . $robot->offer->payment_methods .
+            ' soon! Once received, confirm the payment by typing !confirm ' . $offer->robosatsId . ' in the chat.');
 
 
     }
