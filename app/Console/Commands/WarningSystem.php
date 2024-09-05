@@ -33,6 +33,7 @@ class WarningSystem extends Command
     {
         $offers = Offer::where('status', '>', 2)
             ->where('status', '<', 14)
+            ->whereNotIn('status', [4,5,12])
             ->get();
 
         foreach ($offers as $offer) {
