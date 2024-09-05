@@ -56,6 +56,7 @@ class GraphController extends Controller
 
         // Prepare the data to pass to the frontend
         $volumesByCurrency = [];
+        unset($volumes);
         foreach ($dailyVolumeByCurrency as $currency => $volumes) {
             $volumesByCurrency[$currency] = array_values($volumes); // Convert from associative array to indexed array
         }
