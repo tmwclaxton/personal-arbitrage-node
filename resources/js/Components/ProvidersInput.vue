@@ -1,6 +1,11 @@
 
 <script setup>
-
+//    public array $providers = [
+// 'satstralia' => 'satstralia',
+//     'temple' => 'temple',
+//     'lake' => 'lake',
+//     'veneto' => 'veneto',
+//     'exp' => 'exp'
 import {computed, onMounted, ref, watch} from "vue";
 const name = 'PaymentsInput';
 const props = defineProps({
@@ -8,6 +13,10 @@ const props = defineProps({
         type: Array,
         default: ''
     },
+    options: {
+        type: Array,
+        default: ['satstralia', 'temple', 'lake', 'veneto', 'exp']
+    }
 });
 
 const emits = defineEmits(['update:modelValue']);
@@ -22,7 +31,6 @@ watch(providersLocal, () => {
     emits('update:modelValue', providersLocal.value);
 });
 
-const options = ['satstralia', 'temple', 'lake', 'veneto', 'exp'];
 
 </script>
 

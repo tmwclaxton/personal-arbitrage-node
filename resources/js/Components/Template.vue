@@ -13,9 +13,13 @@ import DangerButton from "@/Components/DangerButton.vue";
 
 const props = defineProps({
     template: Object,
-    options: {
+    payment_methods: {
         type: Array,
         default: ['Revolut', 'Paypal Friends & Family', 'Strike', 'Wise', 'Faster Payments', 'Instant SEPA']
+    },
+    providers: {
+        type: Array,
+        default: ['satstralia', 'temple', 'lake', 'veneto', 'exp']
     }
 });
 
@@ -192,12 +196,14 @@ offerEditTemplate.value.providers = offerEditTemplate.value.provider.split(' ');
             </div>
             <div class="flex flex-row gap-x-2 col-span-5">
                 <p class="font-bold my-auto">Payment Methods:</p>
-                <payments-input :key="template.id + 'payment'"
-                    v-model="offerEditTemplate.paymentMethods" label="Payment Methods" class="w-full" :options="options"/>
+                <payments-input :key="template.id + 'payment'" :payment_methods="offerEditTemplate.paymentMethods"
+                    v-model="offerEditTemplate.paymentMethods" label="Payment Methods" class="w-full" :options="payment_methods"/>
             </div>
             <div class="flex flex-row gap-x-2 col-span-5">
                 <p class="font-bold my-auto">Provider:</p>
                 <providers-input :key="template.id + 'provider'"
+                    :providers="offerEditTemplate.providers"
+                    :options="providers"
                     v-model="offerEditTemplate.providers" label="Provider" class="w-full ml-10"/>
             </div>
 
