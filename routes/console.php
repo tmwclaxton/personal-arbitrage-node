@@ -74,13 +74,13 @@ Schedule::command('app:warning-system')
     ->everyMinute()->withoutOverlapping(1);
 
 // !! DO NOT REMOVE THIS JOB || NOR CHANGE THE FREQUENCY
-Schedule::command('app:revolut-login')
-    ->description('app revolut login')
-    ->everyFiveMinutes()->withoutOverlapping(1);
-
-Schedule::command('app:update-apps')
-    ->description('app update apps')
-    ->everyThirtyMinutes()->withoutOverlapping(1);
+//Schedule::command('app:revolut-login')
+//    ->description('app revolut login')
+//    ->everyFiveMinutes()->withoutOverlapping(1);
+//
+//Schedule::command('app:update-apps')
+//    ->description('app update apps')
+//    ->everyThirtyMinutes()->withoutOverlapping(1);
 // !! with mitmproxy we now need to trigger the revolut login job whenever we are waiting for a payment
 
 // every minute trigger a revolut payment listener job
