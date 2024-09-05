@@ -103,8 +103,8 @@ const optionsLine = {
                 <div class="overflow-hidden shadow-sm sm:rounded-lg">
                     <Bar class="!h-64" :data="data" :options="options"/>
                 </div>
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <Line :data="dataLine" :options="optionsLine"/>
+                <div class="mt-5 overflow-hidden shadow-sm sm:rounded-lg">
+                    <Line class="!h-64"  :data="dataLine" :options="optionsLine"/>
                 </div>
             </div>
         </div>
