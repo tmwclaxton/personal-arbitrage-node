@@ -27,7 +27,7 @@ class OfferController extends Controller
         $buyPremium = $adminDashboard->buy_premium;
 
         // where status != 14, 12, 17, 18, 99, 4, 5, 2, 13, 15
-        $offers = Offer::where([['accepted', '=', true], ['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14],['status', '!=', 13],['status', '!=', 15]])
+        $offers = Offer::where([['accepted', '=', true], ['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14]])
             ->orWhere([['accepted', '=', false],['premium', '>=', $sellPremium], ['type', 'sell']])
             ->orWhere([['accepted', '=', false],['premium', '<=', $buyPremium], ['type', 'buy']])
             ->orWhere([['my_offer', '=', true], ['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14]])
