@@ -28,7 +28,7 @@ class UpdateTransactions implements ShouldQueue
 
 
     // timeout 180 seconds
-    public int $timeout = 180;
+    public int $timeout = 300;
 
     public function handle(): void
     {
@@ -37,7 +37,7 @@ class UpdateTransactions implements ShouldQueue
         foreach ($transactions as $transaction) {
             $offer = $transaction->offer;
             $robosats = new Robosats();
-            $robosats->updateTransactionStatus($offer);
+            $response = $robosats->updateTransactionStatus($offer);
         }
     }
 

@@ -836,37 +836,11 @@ class Robosats
         $transaction = $offer->transaction()->first();
         $url = $this->getHost() . '/mainnet/' . $transaction->offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
 
-        $retryKey = 'update_transaction_retry_' . $offer->id;
-        $attemptData = Redis::get($retryKey);
-        $attemptData = $attemptData ? json_decode($attemptData, true) : ['count' => 0, 'last_attempt' => now()];
-
-        $maxRetries = 10;  // Maximum retry attempts
-        // check if the time since the last attempt is greater than 10 minutes
-        if (now()->diffInMinutes($attemptData['last_attempt']) < 60) {
-            return null;
-        }
-        if ($attemptData['count'] >= $maxRetries) {
-            (new DiscordService)->sendMessage('Failed to update transaction status for offer ' . $offer->robosatsId
-                . ' after ' . $maxRetries . ' attempts. This may indicate an outage with the provider.');
-            return null;
-        }
-
         try {
-            $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->get($url);
-
-            // If successful, reset the retry count and log success
-            if ($attemptData['count'] > 0) {
-                Redis::del($retryKey);
-            }
+            $response = Http::withHeaders($this->getHeaders($offer))->timeout(20)->get($url);
         } catch (\Exception $e) {
-            // Payment failed, update retry data
-            $attemptData['count'] += 1;
-            $attemptData['last_attempt'] = now();
-            Redis::set($retryKey, json_encode($attemptData));
-
-            // Schedule a retry after 10 minutes
-            (new DiscordService)->sendMessage('Failed to update transaction status again for offer ' . $offer->robosatsId
-                . '. Retry attempt ' . $attemptData['count'] . ' of ' . $maxRetries . '. This may indicate an outage with the provider.');
+            //!TODO we need some error handling here
+            return null;
         }
 
         $response = json_decode($response->body(), true);
