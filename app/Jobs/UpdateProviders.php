@@ -39,7 +39,12 @@ class UpdateProviders implements ShouldQueue
             $adminDashboard = AdminDashboard::all()->first();
             $headers["Cookie"] = "UMBREL_PROXY_TOKEN=" . $adminDashboard->umbrel_token;
             // $response = Http::get('http://' . env('UMBREL_IP') .':12596/mainnet/' . $provider . '/api/info/');
-            $response = Http::withHeaders($headers)->get('http://' . env('UMBREL_IP') . ':12596/mainnet/' . $provider . '/api/info/');
+            try {
+                $response = Http::withHeaders($headers)->get('http://' . env('UMBREL_IP') . ':12596/mainnet/' . $provider . '/api/info/');
+            } catch (\Exception $e) {
+                $responses[$provider] = false;
+                continue;
+            }
             $status = $response->status();
 
             // if status is 200
