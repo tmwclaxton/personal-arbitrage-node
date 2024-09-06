@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->boolean('panicButton')->default(false);
             $table->boolean('autoTopup')->default(true);
+            $table->boolean('autoReward')->default(false);
             $table->boolean('autoAccept')->default(false);
             $table->boolean('autoBond')->default(true);
             $table->boolean('autoEscrow')->default(true);
@@ -41,6 +42,8 @@ return new class extends Migration
             $table->integer('kraken_btc_balance')->default(0);
             $table->integer('ideal_lightning_node_balance')->default(6000000);
             $table->json('provider_statuses')->nullable();
+
+            $table->string('primary_currency')->default('USD');
             $table->timestamps();
         });
     }

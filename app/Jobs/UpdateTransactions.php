@@ -28,7 +28,7 @@ class UpdateTransactions implements ShouldQueue
 
 
     // timeout 180 seconds
-    public int $timeout = 180;
+    public int $timeout = 300;
 
     public function handle(): void
     {

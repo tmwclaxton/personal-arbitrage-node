@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Offer;
+use App\Models\PostedOfferTemplate;
 use App\WorkerClasses\HelperFunctions;
 use Illuminate\Http\Request;
 
@@ -77,12 +78,53 @@ class GraphController extends Controller
             $dailyGBPProfit[$date] = $helper->convertCurrency($helper->satoshiToBtc($profit), 'BTC', 'GBP');
         }
 
+        $dailyPremium = [];
+        foreach ($offers as $offer) {
+            $dailyPremium[$offer->created_at->format('Y-m-d')][] = $offer->accepted_offer_profit_sat / $offer->accepted_offer_amount_sat * 100;
+        }
+
+        foreach ($dailyPremium as $date => $volumes) {
+            $dailyPremium[$date] = array_sum($volumes) / count($volumes);
+        }
+
+        // Calculate the ratio between make and take i.e. the flag of my_offer
+        $dailyRatioBetweenMakeAndTake = [];
+        foreach ($offers as $offer) {
+            $dailyRatioBetweenMakeAndTake[$offer->created_at->format('Y-m-d')][] = $offer->my_offer;
+        }
+
+        foreach ($dailyRatioBetweenMakeAndTake as $date => $ratios) {
+            $dailyRatioBetweenMakeAndTake[$date] = array_sum($ratios) / count($ratios);
+        }
+
+        // Calculate the popularity of each template
+        $templatePopularity = [];
+        $templateIds = PostedOfferTemplate::all()->pluck('id')->toArray();
+
+
+        foreach ($templateIds as $templateId) {
+            $templatePopularity[$templateId] = Offer::where('posted_offer_template_id', $templateId)->whereIn('status', ['14', '13','15'])->count();
+        }
+
+        // Prepare the data to pass to the frontend
+        $templatePopularityForBarChart = [];
+        foreach ($templatePopularity as $templateId => $popularity) {
+            $templatePopularityForBarChart[$templateId] = $popularity;
+        }
+
+
+
+
 
         return inertia('Graphs', [
             'dates' => $dates, // Dates in chronological order
             'volumesByCurrency' => $volumesByCurrency, // Volume data organized by currency
             'profits' => array_values($dailySatProfit),
             'profitsInGBP' => array_values($dailyGBPProfit),
+            'averagePremiums' => array_values($dailyPremium),
+            'ratiosBetweenMakeAndTake' => array_values($dailyRatioBetweenMakeAndTake),
+            'templateIds' => $templateIds,
+            'templatePopularity' => array_values($templatePopularityForBarChart),
         ]);
     }
 

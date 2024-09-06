@@ -19,6 +19,7 @@ use Hackzilla\PasswordGenerator\Generator\ComputerPasswordGenerator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redis;
 use WebSocket\Client;
 use WebSocket\Connection;
 use WebSocket\Message\Message;
@@ -689,29 +690,15 @@ class Robosats
 
         }
 
-        $adminDashboard = AdminDashboard::all()->first();
-        // last chance to back out
-        if ($adminDashboard->panicButton) {
-            $message = 'Apologies, but I am unable to proceed with this trade at the moment due to banking issues. ' .
-                'Kindly I request you to cancel the trade. Thank you for your understanding.';
-            $secondaryMessage = null;
-        }
-
         $this->webSocketCommunicate($offer, $robot, $message);
         if (isset($secondaryMessage)) {
             sleep(5);
             $this->webSocketCommunicate($offer, $robot, $secondaryMessage);
         }
 
-        // if panic button is on, collaborativeCancel
-        if ($adminDashboard->panicButton) {
-            $this->collaborativeCancel($offer);
-        } else {
-            (new DiscordService)->sendMessage('Expect a payment for ' . round($robot->offer->accepted_offer_amount, 2) . ' ' . $robot->offer->currency
-                . ' from one of these payment methods: ' . $robot->offer->payment_methods .
-                ' soon! Once received, confirm the payment by typing !confirm ' . $offer->robosatsId . ' in the chat.');
-        }
-
+        (new DiscordService)->sendMessage('Expect a payment for ' . round($robot->offer->accepted_offer_amount, 2) . ' ' . $robot->offer->currency
+            . ' from one of these payment methods: ' . $robot->offer->payment_methods .
+            ' soon! Once received, confirm the payment by typing !confirm ' . $offer->robosatsId . ' in the chat.');
 
 
     }
@@ -849,8 +836,12 @@ class Robosats
         $transaction = $offer->transaction()->first();
         $url = $this->getHost() . '/mainnet/' . $transaction->offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
 
-        $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->get($url);
-
+        try {
+            $response = Http::withHeaders($this->getHeaders($offer))->timeout(20)->get($url);
+        } catch (\Exception $e) {
+            //!TODO we need some error handling here
+            return null;
+        }
 
         $response = json_decode($response->body(), true);
         if (isset($response['bad_request']) ) {

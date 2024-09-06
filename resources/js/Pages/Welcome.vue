@@ -148,7 +148,12 @@ const showSidebar = ref(true);
             </Link>
             <Link :href="route('offers.completed')" >
                 <secondary-button class="h-12">
-                    Completed Offers
+                    Offer Management
+                </secondary-button>
+            </Link>
+            <Link :href="route('offers.completed')" >
+                <secondary-button class="h-12">
+                    Robot Management
                 </secondary-button>
             </Link>
             <Link :href="route('offers.posting.index')" >
@@ -193,6 +198,11 @@ const showSidebar = ref(true);
                     <p class=""><span class="font-bold text-xl mb-2">Automation:</span></p>
                     <div class="border-b border-zinc-300 dark:border-zinc-700 my-1"></div>
 
+                    <!--<div class="flex flex-row justify-between items-center"><span-->
+                    <!--    class="font-bold mr-1">Auto Reward Collection</span>-->
+                    <!--    <ToggleButton v-model="tempAdminDashboard.autoReward" size="sm" activeColor="bg-green-500"-->
+                    <!--                  inactiveColor="bg-red-500"/>-->
+                    <!--</div>-->
                     <div class="flex flex-row justify-between items-center"><span
                         class="font-bold mr-1">Auto Accept</span>
                         <ToggleButton v-model="tempAdminDashboard.autoAccept" size="sm" activeColor="bg-green-500"

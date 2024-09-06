@@ -282,7 +282,7 @@ class DiscordCommands implements ShouldQueue
 
                             $lightningNode = new LightningNode();
                             $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Withdrawal of ' . $btcBalance . ' BTC at ' . Carbon::now()->toDateTimeString());
-                            $discordService->sendMessage('Invoice created: ' . $invoice);
+                            $discordService->sendMessage($invoice);
                             break;
 
 
