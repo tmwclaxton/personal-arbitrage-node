@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Offer;
+use App\Models\PostedOfferTemplate;
 use App\WorkerClasses\HelperFunctions;
 use Illuminate\Http\Request;
 
@@ -96,6 +97,25 @@ class GraphController extends Controller
             $dailyRatioBetweenMakeAndTake[$date] = array_sum($ratios) / count($ratios);
         }
 
+        // Calculate the popularity of each template
+        $templatePopularity = [];
+        $templateIds = PostedOfferTemplate::all()->pluck('id')->toArray();
+
+
+        foreach ($templateIds as $templateId) {
+            $templatePopularity[$templateId] = Offer::where('posted_offer_template_id', $templateId)->whereIn('status', ['14', '13','15'])->count();
+        }
+
+        // Prepare the data to pass to the frontend
+        $templatePopularityForBarChart = [];
+        foreach ($templatePopularity as $templateId => $popularity) {
+            $templatePopularityForBarChart[$templateId] = $popularity;
+        }
+
+
+
+
+
         return inertia('Graphs', [
             'dates' => $dates, // Dates in chronological order
             'volumesByCurrency' => $volumesByCurrency, // Volume data organized by currency
@@ -103,6 +123,8 @@ class GraphController extends Controller
             'profitsInGBP' => array_values($dailyGBPProfit),
             'averagePremiums' => array_values($dailyPremium),
             'ratiosBetweenMakeAndTake' => array_values($dailyRatioBetweenMakeAndTake),
+            'templateIds' => $templateIds,
+            'templatePopularity' => array_values($templatePopularityForBarChart),
         ]);
     }
 

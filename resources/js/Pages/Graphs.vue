@@ -36,7 +36,9 @@ const props = defineProps({
     profits: Object,
     profitsInGBP: Object,
     averagePremiums: Object,
-    ratiosBetweenMakeAndTake: Object
+    ratiosBetweenMakeAndTake: Object,
+    templateIds: Object,
+    templatePopularity: Object
 });
 
 // Define color scheme for the datasets
@@ -126,6 +128,24 @@ const optionsRatios = {
     maintainAspectRatio: false
 }
 
+// bar chart for template popularity
+const dataTemplatePopularity = {
+    labels: props.templateIds,
+    datasets: [
+        {
+            label: 'Template Popularity',
+            backgroundColor: '#f87979',
+            data: props.templatePopularity
+        }
+    ]
+}
+
+const optionsTemplatePopularity = {
+    responsive: true,
+    maintainAspectRatio: false
+}
+
+
 </script>
 
 <template>
@@ -150,6 +170,9 @@ const optionsRatios = {
                 </div>
                 <div class="mt-5 overflow-hidden shadow-sm sm:rounded-lg">
                     <Line class="!h-64"  :data="dataRatios" :options="optionsRatios"/>
+                </div>
+                <div class="mt-5 overflow-hidden shadow-sm sm:rounded-lg">
+                    <Bar class="!h-64" :data="dataTemplatePopularity" :options="optionsTemplatePopularity"/>
                 </div>
             </div>
         </div>
