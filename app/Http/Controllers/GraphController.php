@@ -77,12 +77,32 @@ class GraphController extends Controller
             $dailyGBPProfit[$date] = $helper->convertCurrency($helper->satoshiToBtc($profit), 'BTC', 'GBP');
         }
 
+        $dailyPremium = [];
+        foreach ($offers as $offer) {
+            $dailyPremium[$offer->created_at->format('Y-m-d')][] = $offer->accepted_offer_profit_sat / $offer->accepted_offer_amount_sat * 100;
+        }
+
+        foreach ($dailyPremium as $date => $volumes) {
+            $dailyPremium[$date] = array_sum($volumes) / count($volumes);
+        }
+
+        // Calculate the ratio between make and take i.e. the flag of my_offer
+        $dailyRatioBetweenMakeAndTake = [];
+        foreach ($offers as $offer) {
+            $dailyRatioBetweenMakeAndTake[$offer->created_at->format('Y-m-d')][] = $offer->my_offer;
+        }
+
+        foreach ($dailyRatioBetweenMakeAndTake as $date => $ratios) {
+            $dailyRatioBetweenMakeAndTake[$date] = array_sum($ratios) / count($ratios);
+        }
 
         return inertia('Graphs', [
             'dates' => $dates, // Dates in chronological order
             'volumesByCurrency' => $volumesByCurrency, // Volume data organized by currency
             'profits' => array_values($dailySatProfit),
             'profitsInGBP' => array_values($dailyGBPProfit),
+            'averagePremiums' => array_values($dailyPremium),
+            'ratiosBetweenMakeAndTake' => array_values($dailyRatioBetweenMakeAndTake),
         ]);
     }
 

@@ -35,6 +35,8 @@ const props = defineProps({
     volumesByCurrency: Object,
     profits: Object,
     profitsInGBP: Object,
+    averagePremiums: Object,
+    ratiosBetweenMakeAndTake: Object
 });
 
 // Define color scheme for the datasets
@@ -92,6 +94,38 @@ const optionsLine = {
     maintainAspectRatio: false
 }
 
+const dataPremiums = {
+    labels: props.dates,
+    datasets: [
+        {
+            label: 'Daily Average Premium',
+            backgroundColor: '#00a5ff',
+            data: props.averagePremiums
+        }
+    ]
+}
+
+const optionsPremiums = {
+    responsive: true,
+    maintainAspectRatio: false
+}
+
+const dataRatios = {
+    labels: props.dates,
+    datasets: [
+        {
+            label: 'Ratio between Make and Take (close to 1 is better for volume fees from the provider)',
+            backgroundColor: '#f87979',
+            data: props.ratiosBetweenMakeAndTake
+        }
+    ]
+}
+
+const optionsRatios = {
+    responsive: true,
+    maintainAspectRatio: false
+}
+
 </script>
 
 <template>
@@ -100,11 +134,22 @@ const optionsLine = {
     <GuestLayout>
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <!--<div class="overflow-hidden shadow-sm sm:rounded-lg">-->
+                <!--    <div class="p-6 bg-white border-b border-gray-200">-->
+                <!--        <h1 class="text-2xl font-semibold">Graphs</h1>-->
+                <!--    </div>-->
+                <!--</div>-->
                 <div class="overflow-hidden shadow-sm sm:rounded-lg">
                     <Bar class="!h-64" :data="data" :options="options"/>
                 </div>
                 <div class="mt-5 overflow-hidden shadow-sm sm:rounded-lg">
+                    <Line class="!h-64"  :data="dataPremiums" :options="optionsPremiums"/>
+                </div>
+                <div class="mt-5 overflow-hidden shadow-sm sm:rounded-lg">
                     <Line class="!h-64"  :data="dataLine" :options="optionsLine"/>
+                </div>
+                <div class="mt-5 overflow-hidden shadow-sm sm:rounded-lg">
+                    <Line class="!h-64"  :data="dataRatios" :options="optionsRatios"/>
                 </div>
             </div>
         </div>
