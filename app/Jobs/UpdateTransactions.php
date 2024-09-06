@@ -37,7 +37,7 @@ class UpdateTransactions implements ShouldQueue
         foreach ($transactions as $transaction) {
             $offer = $transaction->offer;
             $robosats = new Robosats();
-            $response = $robosats->updateTransactionStatus($offer);
+            $robosats->updateTransactionStatus($offer);
         }
     }
 
