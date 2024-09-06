@@ -84,25 +84,25 @@ Schedule::command('app:warning-system')
 // !! with mitmproxy we now need to trigger the revolut login job whenever we are waiting for a payment
 
 // every minute trigger a revolut payment listener job
-Schedule::command('revolut:payment-listener')
-    ->description('revolut payment listener')
-    ->everyMinute()->withoutOverlapping(1);
+//Schedule::command('revolut:payment-listener')
+//    ->description('revolut payment listener')
+//    ->everyMinute()->withoutOverlapping(1);
 
 // every minute trigger a revolut payment listener job
-Schedule::command('wise:payment-listener')
-    ->description('wise payment listener')
-    ->everyMinute()->withoutOverlapping(1);
+//Schedule::command('wise:payment-listener')
+//    ->description('wise payment listener')
+//    ->everyMinute()->withoutOverlapping(1);
 
 
 // payment matcher
-Schedule::command('payment:matcher')
-    ->description('payment matcher')
-    ->everyMinute()->withoutOverlapping(1);
+//Schedule::command('payment:matcher')
+//    ->description('payment matcher')
+//    ->everyMinute()->withoutOverlapping(1);
 
 // currency converter
-Schedule::command('currency:converter')
-    ->description('currency converter')
-    ->everyFiveMinutes()->withoutOverlapping(1);
+//Schedule::command('currency:converter')
+//    ->description('currency converter')
+//    ->everyFiveMinutes()->withoutOverlapping(1);
 
 // kraken auto purchaser
 Schedule::command('kraken:auto-purchaser')

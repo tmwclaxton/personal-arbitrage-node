@@ -64,6 +64,11 @@ services:
       WISE_RECIPIENT_ID_FOR_REVOLUT: '${WISE_RECIPIENT_ID_FOR_REVOLUT}'
       WISE_OTP_KEY: '${WISE_OTP_KEY}'
       WISE_PIN: '${WISE_PIN}'
+      WISE_PROFILE_ID: '${WISE_PROFILE_ID}'
+      WISE_EMAIL: '${WISE_EMAIL}'
+      WISE_PASSWORD: '${WISE_PASSWORD}'
+      WISE_GBP_BALANCE_ID: '${WISE_GBP_BALANCE_ID}'
+      WISE_EUR_BALANCE_ID: '${WISE_EUR_BALANCE_ID}'
       KRAKEN_API_KEY: '${KRAKEN_API_KEY}'
       KRAKEN_PRIVATE_KEY: '${KRAKEN_PRIVATE_KEY}'
       KRAKEN_OTP_KEY: '${KRAKEN_OTP_KEY}'
@@ -85,6 +90,9 @@ services:
       UMBREL_IP: '${UMBREL_IP}'
       UMBREL_PASSWORD: '${UMBREL_PASSWORD}'
       UMBREL_TOTP_KEY: '${UMBREL_TOTP_KEY}'
+      HOST_IP: '${HOST_IP}'
+      SUAVE_PORT: '${SUAVE_PORT}'
+      SUAVE_HOST: '${HOST_IP}'
     volumes:
       - 'sail-laravel:/var/www/html'
     networks:
@@ -137,55 +145,30 @@ services:
         - ping
       retries: 3
       timeout: 5s
-  selenium:
-    image: selenium/standalone-firefox
-    restart: always
-    ports:
-      - '4444:4444'
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
-    volumes:
-      - '/dev/shm:/dev/shm'
-    networks:
-      - sail
-  mitmproxy:
-    image: mitmproxy/mitmproxy:latest
-    restart: always
-    command: mitmweb --web-host 0.0.0.0
-    ports:
-      - "8080:8080"
-      - "8081:8081"
-    volumes:
-      - ./mitm_certs:/home/mitmproxy/.mitmproxy  # Volume for CA certificates
-    stdin_open: true   # Equivalent to -it (interactive mode)
-    tty: true          # Equivalent to -it (pseudo-TTY)
-    networks:
-      - sail
-  sauve-py:
-    image: 811648613266.dkr.ecr.eu-west-2.amazonaws.com/suave-py:latest
-    restart: always
-    ports:
-      - "8000:8000"
-    depends_on:
-      - mitmproxy
-    environment:
-      PROXY_ENDPOINT: '${PROXY_ENDPOINT}'
-      HOST_IP: '${HOST_IP}'
-      TWO_CAPTCHA_API_KEY: '${TWO_CAPTCHA_API_KEY}'
-      REVOLUT_PHONE_NUMBER: '${REVOLUT_PHONE_NUMBER}'
-      REVOLUT_PASSCODE: '${REVOLUT_PASSCODE}'
-      KRAKEN_EUR_REFERENCE: '${KRAKEN_EUR_REFERENCE}'
-      REVOLUT_EUR_THRESHOLD: '${REVOLUT_EUR_THRESHOLD}'
-      REVOLUT_GBP_THRESHOLD: '${REVOLUT_GBP_THRESHOLD}'
-      DISCORD_API_BOT_TOKEN: '${DISCORD_API_BOT_TOKEN}'
-      DISCORD_APPLICATION_ID: '${DISCORD_APPLICATION_ID}'
-      DISCORD_PUBLIC_KEY: '${DISCORD_PUBLIC_KEY}'
-      DISCORD_CHANNEL_ID: '${DISCORD_CHANNEL_ID}'
-    volumes:
-      - ./mitm_certs:/certs
-      - /dev/bus/usb:/dev/bus/usb
-    networks:
-      - sail
+  # selenium:
+  #   image: selenium/standalone-firefox
+  #   restart: always
+  #   ports:
+  #     - '4444:4444'
+  #   extra_hosts:
+  #     - 'host.docker.internal:host-gateway'
+  #   volumes:
+  #     - '/dev/shm:/dev/shm'
+  #   networks:
+  #     - sail
+  # mitmproxy:
+  #   image: mitmproxy/mitmproxy:latest
+  #   restart: always
+  #   command: mitmweb --web-host 0.0.0.0
+  #   ports:
+  #     - "8080:8080"
+  #     - "8081:8081"
+  #   volumes:
+  #     - ./mitm_certs:/home/mitmproxy/.mitmproxy  # Volume for CA certificates
+  #   stdin_open: true   # Equivalent to -it (interactive mode)
+  #   tty: true          # Equivalent to -it (pseudo-TTY)
+  #   networks:
+  #     - sail
 networks:
   sail:
     driver: bridge

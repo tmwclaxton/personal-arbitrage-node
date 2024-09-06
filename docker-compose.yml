@@ -63,54 +63,54 @@ services:
                 - ping
             retries: 3
             timeout: 5s
-    selenium:
-        image: selenium/standalone-firefox
-        ports:
-            - '4444:4444'
-        extra_hosts:
-            - 'host.docker.internal:host-gateway'
-        volumes:
-            - '/dev/shm:/dev/shm'
-        networks:
-            - sail
-    mitmproxy:
-        image: mitmproxy/mitmproxy:latest
-        command: mitmweb --web-host 0.0.0.0
-        ports:
-            - "8080:8080"
-            - "8081:8081"
-        volumes:
-            - ./mitm_certs:/home/mitmproxy/.mitmproxy  # Volume for CA certificates
-        stdin_open: true   # Equivalent to -it (interactive mode)
-        tty: true          # Equivalent to -it (pseudo-TTY)
-        networks:
-            - sail
-    suave-py:
-        image: suave-py:latest
-        privileged: true
-        ports:
-            - "8083:8000"
-            - "3389:3389"
-        depends_on:
-            - mitmproxy
-        environment:
-            PROXY_ENDPOINT: '${PROXY_ENDPOINT}'
-            PROXY_RESULTS_ENDPOINT: '${PROXY_RESULTS_ENDPOINT}'
-            TWO_CAPTCHA_API_KEY: '${TWO_CAPTCHA_API_KEY}'
-            REVOLUT_PHONE_NUMBER: '${REVOLUT_PHONE_NUMBER}'
-            REVOLUT_PASSCODE: '${REVOLUT_PASSCODE}'
-            KRAKEN_EUR_REFERENCE: '${KRAKEN_EUR_REFERENCE}'
-            REVOLUT_EUR_THRESHOLD: '${REVOLUT_EUR_THRESHOLD}'
-            REVOLUT_GBP_THRESHOLD: '${REVOLUT_GBP_THRESHOLD}'
-            DISCORD_API_BOT_TOKEN: '${DISCORD_API_BOT_TOKEN}'
-            DISCORD_APPLICATION_ID: '${DISCORD_APPLICATION_ID}'
-            DISCORD_PUBLIC_KEY: '${DISCORD_PUBLIC_KEY}'
-            DISCORD_CHANNEL_ID: '${DISCORD_CHANNEL_ID}'
-        volumes:
-            - ./mitm_certs:/certs
-            - /dev:/dev
-        networks:
-            - sail
+#    selenium:
+#        image: selenium/standalone-firefox
+#        ports:
+#            - '4444:4444'
+#        extra_hosts:
+#            - 'host.docker.internal:host-gateway'
+#        volumes:
+#            - '/dev/shm:/dev/shm'
+#        networks:
+#            - sail
+#    mitmproxy:
+#        image: mitmproxy/mitmproxy:latest
+#        command: mitmweb --web-host 0.0.0.0
+#        ports:
+#            - "8080:8080"
+#            - "8081:8081"
+#        volumes:
+#            - ./mitm_certs:/home/mitmproxy/.mitmproxy  # Volume for CA certificates
+#        stdin_open: true   # Equivalent to -it (interactive mode)
+#        tty: true          # Equivalent to -it (pseudo-TTY)
+#        networks:
+#            - sail
+#    suave-py:
+#        image: suave-py:latest
+#        privileged: true
+#        ports:
+#            - "8083:8000"
+#            - "3389:3389"
+#        depends_on:
+#            - mitmproxy
+#        environment:
+#            PROXY_ENDPOINT: '${PROXY_ENDPOINT}'
+#            PROXY_RESULTS_ENDPOINT: '${PROXY_RESULTS_ENDPOINT}'
+#            TWO_CAPTCHA_API_KEY: '${TWO_CAPTCHA_API_KEY}'
+#            REVOLUT_PHONE_NUMBER: '${REVOLUT_PHONE_NUMBER}'
+#            REVOLUT_PASSCODE: '${REVOLUT_PASSCODE}'
+#            KRAKEN_EUR_REFERENCE: '${KRAKEN_EUR_REFERENCE}'
+#            REVOLUT_EUR_THRESHOLD: '${REVOLUT_EUR_THRESHOLD}'
+#            REVOLUT_GBP_THRESHOLD: '${REVOLUT_GBP_THRESHOLD}'
+#            DISCORD_API_BOT_TOKEN: '${DISCORD_API_BOT_TOKEN}'
+#            DISCORD_APPLICATION_ID: '${DISCORD_APPLICATION_ID}'
+#            DISCORD_PUBLIC_KEY: '${DISCORD_PUBLIC_KEY}'
+#            DISCORD_CHANNEL_ID: '${DISCORD_CHANNEL_ID}'
+#        volumes:
+#            - ./mitm_certs:/certs
+#            - /dev:/dev
+#        networks:
+#            - sail
 networks:
     sail:
         driver: bridge
@@ -119,4 +119,4 @@ volumes:
         driver: local
     sail-redis:
         driver: local
-    sslkeylog:
+#    sslkeylog:
