@@ -685,7 +685,10 @@ class Robosats
                 $message .= "\nIf possible, please put this number somewhere in the payment reference (" . $offer->id . "). " .
                     "This is just to help me match your payment to your order, but is totally optional. Cheers!";
 
-                $secondaryMessage = "Also kindly state which payment method you will be using. Thanks!";
+                if ($handleCount > 1) {
+                    // Add a final note if there are multiple handles
+                    $secondaryMessage = "Also kindly state which payment method you will be using. Thanks!";
+                }
             }
 
         }
