@@ -306,7 +306,8 @@ class OfferController extends Controller
         // grab the offer price amount or max amount
         if ($offer->has_range) {
             if (!isset($offer->min_satoshi_amount) || !isset($offer->max_satoshi_amount)) {
-                (new DiscordService)->sendMessage('Error: Offer has range but no min or max amount');
+                // this error can happen when we are creating an offer but it hasn't been updated just yet
+                //(new DiscordService)->sendMessage('Error: Offer has range but no min or max amount');
                 return 'Offer has range but no min or max amount';
             }
             $variationAmounts = [
@@ -322,7 +323,8 @@ class OfferController extends Controller
             ];
         } else {
             if (!isset($offer->satoshis_now)) {
-                (new DiscordService)->sendMessage('Error: Offer has no amount');
+                // this error can happen when we are creating an offer but it hasn't been updated just yet
+//                (new DiscordService)->sendMessage('Error: Offer has no amount');
                 return 'Offer has no amount';
             }
             $variationAmounts = [$offer->satoshis_now];
