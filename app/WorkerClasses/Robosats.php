@@ -507,7 +507,9 @@ class Robosats
             $offer->accepted_offer_profit_sat = round($offer->accepted_offer_profit_sat, 0);
             $offer->accepted_offer_amount_sat = round($offer->accepted_offer_amount_sat, 0);
         } else {
-            return $calculations;
+            $discordService = new DiscordService();
+            $discordService->sendMessage('Error: Failed to accept offer: ' . $robosatsId . ' because the calculations failed');
+            return 'Failed to accept offer: ' . $robosatsId . ' because the calculations failed';
         }
         $offer->accepted = true;
 
@@ -685,7 +687,10 @@ class Robosats
                 $message .= "\nIf possible, please put this number somewhere in the payment reference (" . $offer->id . "). " .
                     "This is just to help me match your payment to your order, but is totally optional. Cheers!";
 
-                $secondaryMessage = "Also kindly state which payment method you will be using. Thanks!";
+                if ($handleCount > 1) {
+                    // Add a final note if there are multiple handles
+                    $secondaryMessage = "Also kindly state which payment method you will be using. Thanks!";
+                }
             }
 
         }
@@ -1013,6 +1018,15 @@ class Robosats
     ) {
         $isRange = $maxAmount != null;
 
+        // check if the provider is online
+        $adminDashboard = AdminDashboard::all()->first();
+        $providers = json_decode($adminDashboard->provider_statuses, true);
+        if (!array_key_exists($provider, $providers) || $providers[$provider] == "false") {
+//            (new DiscordService)->sendMessage('Failed to create sell offer.  Provider is offline');
+            return 'Provider is offline';
+        }
+
+
         $discordService = new DiscordService();
         $message = 'Creating sell offer for ';
         if ($isRange) {
@@ -1095,16 +1109,18 @@ class Robosats
             $array['amount'] = $minAmount;
         }
 
-        $response = Http::withHeaders($this->getHeaders($tempOffer))->timeout(30)->post($url, $array);
+        try {
+            $response = Http::withHeaders($this->getHeaders($tempOffer))->timeout(30)->post($url, $array);
+        } catch (\Exception $e) {
+            // its okay to delete the temp offer and the robots here as the bond has not been paid
+            $tempOffer->delete();
+            foreach ($robots as $robot) {
+                $robot->delete();
+            }
+            $discordService->sendMessage('Failed to create sell offer.  Error: ' . $e->getMessage());
+            return $e->getMessage();
+        }
         $response = json_decode($response->body(), true);
-        // dd($response);
-
-        // response
-        // {"id":13521,"status":0,"created_at":"2024-08-04T16:18:09.308342Z",
-        //"expires_at":"2024-08-04T16:23:09.308303Z","type":1,"currency":2,"amount":"14.00000000",
-        //"has_range":false,"min_amount":null,"max_amount":null,"payment_method":"Revolut",
-        //"is_explicit":false,"premium":"20.00","satoshis":null,"maker":89404,"taker":null,
-        //"escrow_duration":14400,"bond_size":"3.00","latitude":null,"longitude":null}
 
         // if the response is null or failed
         if ($response == null || !array_key_exists('id', $response)) {
