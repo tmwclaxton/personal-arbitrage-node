@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('admin_dashboards', function (Blueprint $table) {
             $table->id();
             $table->boolean('panicButton')->default(false);
-            $table->boolean('autoTopup')->default(true);
             $table->boolean('autoReward')->default(false);
             $table->boolean('autoAccept')->default(false);
             $table->boolean('autoBond')->default(true);
@@ -38,12 +37,30 @@ return new class extends Migration
             $table->integer('max_concurrent_transactions')->default(1);
             $table->json('payment_currencies')->nullable();
             $table->json('payment_methods')->nullable();
-            $table->string('umbrel_token')->nullable();
             $table->integer('kraken_btc_balance')->default(0);
             $table->integer('ideal_lightning_node_balance')->default(6000000);
             $table->json('provider_statuses')->nullable();
 
             $table->string('primary_currency')->default('USD');
+
+            $table->string('slack_app_id')->nullable();
+            $table->string('slack_client_id')->nullable();
+            $table->string('slack_client_secret')->nullable();
+            $table->string('slack_signing_secret')->nullable();
+            $table->string('slack_bot_token')->nullable();
+
+            $table->boolean('autoTopup')->default(true);
+            $table->string('kraken_api_key')->nullable();
+            $table->string('kraken_private_key')->nullable();
+            $table->string('kraken_otp_key')->nullable();
+
+            $table->string('umbrel_ip')->nullable();
+            $table->string('umbrel_port')->nullable();
+            $table->string('umbrel_password')->nullable();
+            $table->string('umbrel_topt_key')->nullable();
+            // the umbrel token is set automatically
+            $table->string('umbrel_token')->nullable();
+
             $table->timestamps();
         });
     }
