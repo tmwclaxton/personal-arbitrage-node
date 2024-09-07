@@ -37,7 +37,7 @@ class CreateRobots implements ShouldQueue
     {
         if (!$this->adminDashboard->panicButton) {
             $robosats = new Robosats();
-            $robosats->createRobot($this->offer);
+            $robosats->createRobots($this->offer);
         } else {
             // throw an exception
             throw new \Exception('Panic button is enabled - CreateRobots.php');

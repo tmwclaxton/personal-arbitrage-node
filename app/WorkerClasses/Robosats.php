@@ -182,7 +182,7 @@ class Robosats
 
 
 
-    public function createRobot($offer) {
+    public function createRobots($offer) {
         // check if the offer already has a robot
         $robots = Robot::where('offer_id', $offer->id)->get();
         if ($robots->count() > 0 || $offer->robots_created) {
@@ -224,8 +224,24 @@ class Robosats
         $authentication = str_replace('-----BEGIN PGP PRIVATE KEY BLOCK-----', '-----BEGIN PGP PRIVATE KEY BLOCK-----\\\\', $authentication);
         $authentication = str_replace('-----END PGP PRIVATE KEY BLOCK-----', '\\-----END PGP PRIVATE KEY BLOCK-----\\\\', $authentication);
 
+        // check if the provider is online
+        $adminDashboard = AdminDashboard::all()->first();
+        $providers = json_decode($adminDashboard->provider_statuses, true);
+        $onlineProviders = [];
+        if (!array_key_exists($offer->provider, $providers) || $providers[$offer->provider] == 'offline') {
+            return 'Provider is offline';
+        }
+        foreach ($providers as $provider => $status) {
+            if ($status != null && $status != 'offline') {
+                $onlineProviders[] = $provider;
+            }
+        }
 
-        foreach ($this->providers as $provider) {
+        if (!in_array($offer->provider, $onlineProviders)) {
+            return 'Main provider is offline';
+        }
+
+        foreach ($onlineProviders as $provider) {
             $url = $this->getHost() . '/mainnet/' . $provider . '/api/robot/';
             $headers = $this->getHeaders();
             $headers['Authorization'] = $authentication;
@@ -1022,7 +1038,6 @@ class Robosats
         $adminDashboard = AdminDashboard::all()->first();
         $providers = json_decode($adminDashboard->provider_statuses, true);
         if (!array_key_exists($provider, $providers) || $providers[$provider] == "false") {
-//            (new DiscordService)->sendMessage('Failed to create sell offer.  Provider is offline');
             return 'Provider is offline';
         }
 
@@ -1069,7 +1084,7 @@ class Robosats
         $tempOffer->save();
 
         try {
-            $robots = $this->createRobot($tempOffer);
+            $robots = $this->createRobots($tempOffer);
         } catch (Exception $e) {
             $tempOffer->delete();
             $discordService->sendMessage('Failed to create sell offer.  Error: ' . $e->getMessage());

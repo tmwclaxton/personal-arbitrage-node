@@ -423,7 +423,7 @@ class OfferController extends Controller
         $offer = Offer::find($offerId);
 
         $robosats = new Robosats();
-        $response = $robosats->createRobot($offer);
+        $response = $robosats->createRobots($offer);
         return $response;
     }
 
