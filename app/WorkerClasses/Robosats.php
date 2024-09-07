@@ -40,11 +40,13 @@ class Robosats
     ];
 
     public function getWsHost() {
-        return 'ws://' . env('UMBREL_IP') . ':12596';
+        $adminDashboard = AdminDashboard::all()->first();
+        return 'ws://' . $adminDashboard->umbrel_ip . ':12596';
     }
 
     public function getHost() {
-        return 'http://' . env('UMBREL_IP') . ':12596';
+        $adminDashboard = AdminDashboard::all()->first();
+        return 'http://' . $adminDashboard->umbrel_ip . ':12596';
     }
 
 

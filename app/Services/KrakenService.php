@@ -26,12 +26,13 @@ class KrakenService
 
     public function __construct()
     {
+        $adminDashboard = \App\Models\AdminDashboard::all()->first();
         $this->client = new \Butschster\Kraken\Client(
             new Client(),
             new \Butschster\Kraken\NonceGenerator(),
             (new \Butschster\Kraken\Serializer\SerializerFactory())->build(),
-            env('KRAKEN_API_KEY'),
-            env('KRAKEN_PRIVATE_KEY')
+            $adminDashboard->kraken_api_key,
+            $adminDashboard->kraken_private_key
         );
         $this->httpClient = new Client();
         $this->discordService = new DiscordService();
@@ -184,7 +185,8 @@ class KrakenService
 
     public function getOTP(): string
     {
-        $otp = TOTP::createFromSecret(env("KRAKEN_OTP_KEY"));
+        $adminDashboard = \App\Models\AdminDashboard::all()->first();
+        $otp = TOTP::createFromSecret($adminDashboard->kraken_totp_key);
         return $otp->now();
     }
 
@@ -237,11 +239,12 @@ class KrakenService
     private function makeSignature(string $method, array $parameters = []): string
     {
         $queryString = http_build_query($parameters, '', '&');
+        $adminDashboard = \App\Models\AdminDashboard::all()->first();
 
         $signature = hash_hmac(
             'sha512',
             $this->buildPath($method) . hash('sha256', $parameters['nonce'] . $queryString, true),
-            base64_decode(env('KRAKEN_PRIVATE_KEY')),
+            base64_decode($adminDashboard->kraken_private_key),
             true
         );
 

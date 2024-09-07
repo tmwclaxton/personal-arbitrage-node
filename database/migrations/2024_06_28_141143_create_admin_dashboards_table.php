@@ -49,10 +49,10 @@ return new class extends Migration
             $table->string('slack_signing_secret')->nullable();
             $table->string('slack_bot_token')->nullable();
 
-            $table->boolean('autoTopup')->default(true);
+            $table->boolean('autoTopup')->default(false);
             $table->string('kraken_api_key')->nullable();
             $table->string('kraken_private_key')->nullable();
-            $table->string('kraken_otp_key')->nullable();
+            $table->boolean('kraken_action')->default(true); // buy btc is false, sell btc is true
 
             $table->string('umbrel_ip')->nullable();
             $table->string('umbrel_port')->nullable();

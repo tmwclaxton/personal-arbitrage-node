@@ -30,15 +30,16 @@ class LightningNode
         $currentHeaders = $this->headers;
         $adminDash = AdminDashboard::all()->first();
         $currentHeaders['Cookie'] = 'UMBREL_PROXY_TOKEN=' . $adminDash->umbrel_token;
-        $currentHeaders['Host'] = env('UMBREL_IP');
-        $currentHeaders['Referer'] = env('UMBREL_IP') . ':2101';
+        $currentHeaders['Host'] = $adminDash->umbrel_ip;
+        $currentHeaders['Referer'] = $adminDash->umbrel_ip . ':2101';
         return $currentHeaders;
     }
 
     public function __construct($endpoint = null, $headers = null)
     {
         // set endpoint and headers maybe?
-        $this->endpoint = env('UMBREL_IP') . ':2101';
+        $adminDash = AdminDashboard::all()->first();
+        $this->endpoint = $adminDash->umbrel_ip . ':2101';
 
     }
 

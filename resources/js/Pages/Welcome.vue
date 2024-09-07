@@ -229,7 +229,7 @@ const showSidebar = ref(true);
                                       inactiveColor="bg-red-500"/>
                     </div>
                     <div class="flex flex-row justify-between items-center"><span
-                        class="font-bold mr-1">Auto Topup:</span>
+                        class="font-bold mr-1">Kraken Auto Topup:</span>
                         <ToggleButton v-model="tempAdminDashboard.autoTopup" size="sm" activeColor="bg-green-500"
                                       inactiveColor="bg-red-500"/>
                     </div>
@@ -337,7 +337,8 @@ const showSidebar = ref(true);
                         <div class="text-left flex flex-col gap-y-1 ">
                                 <span class="font-bold text-xl mb-2">Provider Statuses:</span>
                                 <div class="flex flex-col gap-y-2">
-                                    <div v-for="(value, key) in tempAdminDashboard.provider_statuses"
+                                    <div  v-if="tempAdminDashboard.provider_statuses !== null"
+									  	v-for="(value, key) in tempAdminDashboard.provider_statuses"
                                          class="flex flex-col gap-y-2">
                                         <div class="flex flex-row gap-x-2 font-bold">
                                             <span class=""> {{ key }}: </span>
@@ -353,6 +354,9 @@ const showSidebar = ref(true);
 
                                         </div>
                                     </div>
+									<div v-else class="text-xs mx-auto">
+										<p>No provider statuses available</p>
+									</div>
                                 </div>
                         </div>
                     </div>

@@ -14,13 +14,9 @@ class UmbrelService
     // create client for it
     public function __construct()
     {
-        // resolve hostname to local ip
-        $hostname = env('UMBREL_URL');
-        $this->ip = gethostbyname($hostname);
-
-        // if ip is not found i.e contains letters
-        if (filter_var($this->ip, FILTER_VALIDATE_IP) === false) {
-            $this->ip = env('UMBREL_IP');
+        if ($this->ip === null || filter_var($this->ip, FILTER_VALIDATE_IP) === false) {
+            $adminDashboard = AdminDashboard::all()->first();
+            $this->ip = $adminDashboard->umbrel_ip;
         }
 
     }
@@ -46,11 +42,12 @@ class UmbrelService
 
     public function resetProxyToken()
     {
+        $adminDashboard = AdminDashboard::all()->first();
         $params = [
-            'password' => env("UMBREL_PASSWORD"),
+            'password' => $adminDashboard->umbrel_password,
         ];
-        if (env("UMBREL_TOTP_KEY") !== null) {
-            $otp = TOTP::createFromSecret(env("UMBREL_TOTP_KEY"));
+        if ($adminDashboard->umbrel_totp_key !== null) {
+            $otp = TOTP::createFromSecret($adminDashboard->umbrel_totp_key);
         }
         if (isset($otp)) {
             $params['totpToken'] = $otp->now();
