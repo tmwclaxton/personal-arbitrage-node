@@ -249,7 +249,7 @@ class Robosats
                 if ($provider == $offer->provider) {
                     // because we haven't accepted the offer it is acceptable to delete the robots
                     $offer->robots()->delete();
-                    $offer->locked = false;
+                    $offer->job_locked = false;
                     $offer->save();
                     return $e->getMessage();
                 } else {
