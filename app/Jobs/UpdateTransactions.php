@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Models\AdminDashboard;
 use App\Models\Transaction;
 use App\WorkerClasses\Robosats;
 use Illuminate\Bus\Queueable;
@@ -33,11 +32,6 @@ class UpdateTransactions implements ShouldQueue
 
     public function handle(): void
     {
-
-        $adminDashboard = AdminDashboard::all()->first();
-        if (!isset($adminDashboard->umbrel_ip, $adminDashboard->umbrel_token)) {
-            return;
-        }
         // update all current transactions where status != 14, 12, 17, 18, 99
         $transactions = Transaction::whereNotIn('status', [5, 14, 12, 17, 18, 99])->get();
         foreach ($transactions as $transaction) {

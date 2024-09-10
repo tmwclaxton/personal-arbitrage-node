@@ -33,10 +33,14 @@ class UpdateOffers implements ShouldQueue
      */
     public function handle(): void
     {
-        $adminDashboard = AdminDashboard::all()->first();
-        if (!isset($adminDashboard->umbrel_ip, $adminDashboard->umbrel_token)) {
-            return;
-        }
+        // delete any offers that are accepted equals false
+        // Offer::where('accepted', false)->delete();
+
+        // or if they are expired
+        // Offer::where('expires_at', '<', now())->delete(); and the transaction also was not accepted
+        // Offer::where('expires_at', '<', now())
+        //     ->where('accepted', false)
+        //     ->delete();
 
         // grab transactions
         $transactions = Transaction::all();

@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Models\AdminDashboard;
 use App\Models\BtcFiat;
 use App\Models\BtcPurchase;
 use App\Models\Payment;
@@ -30,17 +29,14 @@ class BtcPurchaseDetailer implements ShouldQueue
      */
     public function handle(): void
     {
-        $adminDashboard = \App\Models\AdminDashboard::all()->first();
-        if (!isset($adminDashboard->kraken_api_key, $adminDashboard->kraken_private_key)) {
-            return;
-        }
-        if ($adminDashboard->panicButton) {
-            return;
-        }
         $krakenService = new \App\Services\KrakenService();
         $btcPurchases = BtcPurchase::whereNull('ref_id')->get();
         $response  = $krakenService->getClient()->getClosedOrders();
 
+        $adminDashboard = \App\Models\AdminDashboard::all()->first();
+        if ($adminDashboard->panicButton) {
+            return;
+        }
 
         foreach ($response->closed as $txId => $order) {
             // check if txId exists in btcPurchases

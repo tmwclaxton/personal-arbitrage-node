@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Models\AdminDashboard;
 use App\Models\BtcFiat;
 use App\WorkerClasses\Robosats;
 use Illuminate\Bus\Queueable;
@@ -31,10 +30,6 @@ class UpdateFiats implements ShouldQueue
      */
     public function handle(): void
     {
-        $adminDashboard = AdminDashboard::all()->first();
-        if (!isset($adminDashboard->umbrel_ip, $adminDashboard->umbrel_token)) {
-            return;
-        }
         $robosats = new Robosats();
         $prices = $robosats->getCurrentPrices();
         if (!$prices) {

@@ -35,9 +35,6 @@ class AutoAccept extends Command
     {
 
         $adminDashboard = AdminDashboard::all()->first();
-        if (!isset($adminDashboard->umbrel_ip, $adminDashboard->umbrel_token)) {
-            return 0;
-        }
         if (!$adminDashboard->autoAccept) {
             return 0;
         }

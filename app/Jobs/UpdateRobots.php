@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Models\AdminDashboard;
 use App\Models\Offer;
 use App\Models\Robot;
 use App\WorkerClasses\Robosats;
@@ -32,10 +31,6 @@ class UpdateRobots implements ShouldQueue
     public int $timeout = 180;
     public function handle(): void
     {
-        $adminDashboard = AdminDashboard::all()->first();
-        if (!isset($adminDashboard->umbrel_ip, $adminDashboard->umbrel_token)) {
-            return;
-        }
         // where accepted and created at is less than 2 days
         $offers = Offer::where('accepted', true)->where('created_at', '>=', now()->subHours(5))->get();
         $robots = Robot::whereIn('offer_id', $offers->pluck('id'))->get();
