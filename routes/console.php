@@ -23,6 +23,14 @@ if (Schema::hasTable('admin_dashboards')) {
         // $adminDashboard->payment_methods = json_encode(["Revolut", "Wise"]);
         // $adminDashboard->payment_currencies = json_encode(["EUR", "USD", "GBP"]);
     }
+
+    // ping umbrel check
+    if (isset($adminDashboard, $adminDashboard->umbrel_ip, $adminDashboard->umbrel_password)) {
+        Schedule::command('app:umbrel-token-reset')
+            ->description('reset umbrel token')
+            ->everyFiveMinutes()->withoutOverlapping(1);
+    }
+
     if (isset($adminDashboard, $adminDashboard->umbrel_ip, $adminDashboard->umbrel_token)) {
         Schedule::command('refresh:dashboard')
             ->description('refresh dashboard')
@@ -77,10 +85,7 @@ if (Schema::hasTable('admin_dashboards')) {
             ->description('auto confirm final')
             ->everyMinute()->withoutOverlapping(1);
 
-        // ping umbrel check
-        Schedule::command('app:umbrel-token-reset')
-            ->description('reset umbrel token')
-            ->everyFiveMinutes()->withoutOverlapping(1);
+
 
         // auto:create
         Schedule::command('auto:create')

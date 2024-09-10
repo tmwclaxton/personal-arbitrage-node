@@ -65,14 +65,15 @@ class KrakenAutoPurchaser implements ShouldQueue
         }
 
 
-        $response = $kraken->getUSDBalance();
-        $discordService = new DiscordService();
-        if ($response->isGreaterThan(BigDecimal::of('10'))) {
-            $discordService->sendMessage('Auto purchasing BTC with EUR from Kraken');
-
-            $kraken->buyFullAmt("USD", $kraken->getUSDBalance());
-            sleep(5);
-        }
+        // !TODO: we need to support every currency on strike
+        // $response = $kraken->getUSDBalance();
+        // $discordService = new DiscordService();
+        // if ($response->isGreaterThan(BigDecimal::of('10'))) {
+        //     $discordService->sendMessage('Auto purchasing BTC with EUR from Kraken');
+        //
+        //     $kraken->buyFullAmt("USD", $kraken->getUSDBalance());
+        //     sleep(5);
+        // }
 
     }
 }

@@ -34,9 +34,9 @@ class UpdateProviders implements ShouldQueue
         $providers = $robosats->providers;
         // foreach provider in providers
         $responses = [];
+        $adminDashboard = AdminDashboard::all()->first();
         foreach ($providers as $provider) {
 
-            $adminDashboard = AdminDashboard::all()->first();
             $headers["Cookie"] = "UMBREL_PROXY_TOKEN=" . $adminDashboard->umbrel_token;
             try {
                 $response = Http::withHeaders($headers)->get('http://' . $adminDashboard->umbrel_ip . ':12596/mainnet/' . $provider . '/api/info/');
@@ -54,8 +54,8 @@ class UpdateProviders implements ShouldQueue
             }
 
             $adminDashboard->provider_statuses = json_encode($responses);
-            $adminDashboard->save();
 
         }
+        $adminDashboard->save();
     }
 }
