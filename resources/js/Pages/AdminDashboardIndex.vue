@@ -150,10 +150,6 @@ const refreshKey = ref(0);
                         class="font-bold mr-1">Kraken Private Key: <span class="text-red-500"></span></span>
                         <TextInput v-model="tempAdminDashboard.kraken_private_key"/>
                     </div>
-                    <div class="flex flex-row justify-between items-center"><span
-                        class="font-bold mr-1">Kraken API Secret: <span class="text-red-500"></span></span>
-                        <TextInput v-model="tempAdminDashboard.kraken_api_secret"/>
-                    </div>
 					<div class="flex flex-row justify-between items-center" :key="refreshKey">
 					  <span class="font-bold mr-1">Kraken Action:
 						  <span class="text-red-500" v-text="tempAdminDashboard.kraken_action ? 'Auto Buy BTC' : 'Auto Sell BTC'"/>
