@@ -39,7 +39,11 @@ class LightningNode
     {
         // set endpoint and headers maybe?
         $adminDash = AdminDashboard::all()->first();
-        $this->endpoint = $adminDash->umbrel_ip . ':2101';
+        if (isset($adminDash->umbrel_ip)) {
+            $this->endpoint = $adminDash->umbrel_ip . ':2101';
+        } else {
+            $this->endpoint = "";
+        }
 
     }
 

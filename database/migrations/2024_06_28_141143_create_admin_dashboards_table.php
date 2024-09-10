@@ -61,6 +61,9 @@ return new class extends Migration
             // the umbrel token is set automatically
             $table->string('umbrel_token')->nullable();
 
+            $table->string('client_private_key')->nullable();
+            $table->string('server_public_key')->nullable();
+
             $table->timestamps();
         });
     }

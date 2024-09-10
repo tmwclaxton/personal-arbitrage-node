@@ -17,6 +17,7 @@ class UmbrelService
         if ($this->ip === null || filter_var($this->ip, FILTER_VALIDATE_IP) === false) {
             $adminDashboard = AdminDashboard::all()->first();
             $this->ip = $adminDashboard->umbrel_ip;
+
         }
 
     }

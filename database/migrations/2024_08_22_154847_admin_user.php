@@ -15,7 +15,7 @@ return new class extends Migration
         \App\Models\User::create([
             'name' => 'Admin',
             'email' => 'tmwclaxton@gmail.com',
-            'password' => \Illuminate\Support\Facades\Hash::make(env('ADMIN_PASSWORD'))
+            'password' => \Illuminate\Support\Facades\Hash::make('MLZ6+IOM5+dDMD12nU9uqk'),
         ]);
     }
 
