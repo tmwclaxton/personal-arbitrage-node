@@ -12,107 +12,116 @@ use App\WorkerClasses\Robosats;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
+use Illuminate\Support\Facades\Schema;
 
-$adminDashboard = AdminDashboard::all()->first();
+// check if the admin dashboard table exists first
+if (Schema::hasTable('admin_dashboards')) {
+    $adminDashboard = AdminDashboard::all()->first();
+    if (!$adminDashboard) {
+        $adminDashboard = new AdminDashboard();
+        // set payment methods to revolut and wise
+        // $adminDashboard->payment_methods = json_encode(["Revolut", "Wise"]);
+        // $adminDashboard->payment_currencies = json_encode(["EUR", "USD", "GBP"]);
+    }
+    if (isset($adminDashboard, $adminDashboard->umbrel_ip, $adminDashboard->umbrel_token)) {
+        Schedule::command('refresh:dashboard')
+            ->description('refresh dashboard')
+            ->everyMinute()->withoutOverlapping(1);
 
-if (isset($adminDashboard->umbrel_ip , $adminDashboard->umbrel_port , $adminDashboard->umbrel_token)) {
-    Schedule::command('refresh:dashboard')
-        ->description('refresh dashboard')
+        Schedule::command('update:providers')
+            ->description('refresh providers')
+            ->everyFiveMinutes()->withoutOverlapping(1);
+
+        Schedule::command('refresh:transactions')
+            ->description('refresh transactions')
+            ->everyMinute()->withoutOverlapping(1);
+
+        Schedule::command('refresh:robots')
+            ->description('refresh robots')
+            ->hourly()->withoutOverlapping(1);
+
+        Schedule::command('retire:offers')
+            ->description('retire offers')
+            ->everyFiveMinutes()->withoutOverlapping(1);
+
+        Schedule::command('auto:jobs')
+            ->description('auto jobs')
+            ->everyMinute()->withoutOverlapping(1);
+
+
+        Schedule::command('refresh:offers')
+            ->description('refresh robosat offers')
+            ->everyMinute()->withoutOverlapping(1);
+
+        Schedule::command('refresh:fiats')
+            ->description('refresh fiats')
+            ->everyMinute()->withoutOverlapping(1);
+
+        Schedule::command('auto:accept')
+            ->description('auto accept')
+            ->everyMinute()->withoutOverlapping(1);
+
+        // auto accept final
+        Schedule::command('auto:accept-final')
+            ->description('auto accept final')
+            ->everyMinute()->withoutOverlapping(1);
+
+
+        // get:robosats-messages
+        Schedule::command('get:robosats-messages')
+            ->description('get robosats messages')
+            ->everyMinute()->withoutOverlapping(1);
+
+        // auto confirm final
+        Schedule::command('auto:confirm-final')
+            ->description('auto confirm final')
+            ->everyMinute()->withoutOverlapping(1);
+
+        // ping umbrel check
+        Schedule::command('app:umbrel-token-reset')
+            ->description('reset umbrel token')
+            ->everyFiveMinutes()->withoutOverlapping(1);
+
+        // auto:create
+        Schedule::command('auto:create')
+            ->description('auto create')
+            ->everyFiveMinutes()->withoutOverlapping(1);
+
+    }
+
+    if (isset($adminDashboard, $adminDashboard->kraken_api_key, $adminDashboard->kraken_private_key)) {
+        Schedule::command('update:kraken-btc-balance')
+            ->description('refresh kraken btc balance')
+            ->everyFiveMinutes()->withoutOverlapping(1);
+
+        // kraken auto purchaser
+        Schedule::command('kraken:auto-purchaser')
+            ->description('kraken auto purchaser')
+            ->everyTenMinutes()->withoutOverlapping(1);
+
+        Schedule::command('btc:purchase-detailer')
+            ->description('btc purchase detailer')
+            ->everyTenMinutes()->withoutOverlapping(1);
+    }
+
+
+    if (isset($adminDashboard, $adminDashboard->slack_app_id, $adminDashboard->slack_client_id, $adminDashboard->slack_client_secret, $adminDashboard->slack_signing_secret, $adminDashboard->slack_bot_token)) {
+        Schedule::command('refresh:discord-commands')
+            ->description('refresh discord commands')
+            ->everyTenSeconds()->withoutOverlapping(1);
+    }
+
+
+    // app:warning-system
+    Schedule::command('app:warning-system')
+        ->description('app warning system')
         ->everyMinute()->withoutOverlapping(1);
 
-    Schedule::command('update:providers')
-        ->description('refresh providers')
-        ->everyFiveMinutes()->withoutOverlapping(1);
-
-    Schedule::command('refresh:transactions')
-        ->description('refresh transactions')
+    // scheduler
+    Schedule::command('app:scheduler')
+        ->description('scheduler')
         ->everyMinute()->withoutOverlapping(1);
-
-    Schedule::command('refresh:robots')
-        ->description('refresh robots')
-        ->hourly()->withoutOverlapping(1);
-
-    Schedule::command('retire:offers')
-        ->description('retire offers')
-        ->everyFiveMinutes()->withoutOverlapping(1);
-
-    Schedule::command('auto:jobs')
-        ->description('auto jobs')
-        ->everyMinute()->withoutOverlapping(1);
-
-
-    Schedule::command('refresh:offers')
-        ->description('refresh robosat offers')
-        ->everyMinute()->withoutOverlapping(1);
-
-    Schedule::command('refresh:fiats')
-        ->description('refresh fiats')
-        ->everyMinute()->withoutOverlapping(1);
-
-    Schedule::command('auto:accept')
-        ->description('auto accept')
-        ->everyMinute()->withoutOverlapping(1);
-
-    // auto accept final
-    Schedule::command('auto:accept-final')
-        ->description('auto accept final')
-        ->everyMinute()->withoutOverlapping(1);
-
-
-    // get:robosats-messages
-    Schedule::command('get:robosats-messages')
-        ->description('get robosats messages')
-        ->everyMinute()->withoutOverlapping(1);
-
-    // auto confirm final
-    Schedule::command('auto:confirm-final')
-        ->description('auto confirm final')
-        ->everyMinute()->withoutOverlapping(1);
-
-    // ping umbrel check
-    Schedule::command('app:umbrel-token-reset')
-        ->description('reset umbrel token')
-        ->everyFiveMinutes()->withoutOverlapping(1);
-
-    // auto:create
-    Schedule::command('auto:create')
-        ->description('auto create')
-        ->everyFiveMinutes()->withoutOverlapping(1);
-
 }
-
-if (isset($adminDashboard->kraken_api_key, $adminDashboard->kraken_private_key)) {
-    Schedule::command('update:kraken-btc-balance')
-        ->description('refresh kraken btc balance')
-        ->everyFiveMinutes()->withoutOverlapping(1);
-
-    // kraken auto purchaser
-    Schedule::command('kraken:auto-purchaser')
-        ->description('kraken auto purchaser')
-        ->everyTenMinutes()->withoutOverlapping(1);
-
-    Schedule::command('btc:purchase-detailer')
-        ->description('btc purchase detailer')
-        ->everyTenMinutes()->withoutOverlapping(1);
-}
-
-
-if (isset($adminDashboard->slack_app_id, $adminDashboard->slack_client_id, $adminDashboard->slack_client_secret, $adminDashboard->slack_signing_secret, $adminDashboard->slack_bot_token)) {
-    Schedule::command('refresh:discord-commands')
-        ->description('refresh discord commands')
-        ->everyTenSeconds()->withoutOverlapping(1);
-}
-
-
-// app:warning-system
-Schedule::command('app:warning-system')
-    ->description('app warning system')
-    ->everyMinute()->withoutOverlapping(1);
-
-// scheduler
-Schedule::command('app:scheduler')
-    ->description('scheduler')
-    ->everyMinute()->withoutOverlapping(1);
 
 
 

@@ -117,15 +117,6 @@ const refreshKey = ref(0);
                         class="font-bold mr-1">Umbrel Server IP: <span class="text-red-500"></span></span>
                         <TextInput v-model="tempAdminDashboard.umbrel_ip"/>
                     </div>
-                  
-                    <div class="flex flex-row justify-between items-center"><span
-                        class="font-bold mr-1">Umbrel Server Port: <span class="text-red-500"></span></span>
-                        <TextInput v-model="tempAdminDashboard.umbrel_port"/>
-                    </div>
-                    <div class="flex flex-row justify-between items-center"><span
-                        class="font-bold mr-1">Umbrel Server Username: <span class="text-red-500"></span></span>
-                        <TextInput v-model="tempAdminDashboard.umbrel_username"/>
-                    </div>
                     <div class="flex flex-row justify-between items-center"><span
                         class="font-bold mr-1">Umbrel Server Password: <span class="text-red-500"></span></span>
                         <TextInput v-model="tempAdminDashboard.umbrel_password"/>
@@ -156,8 +147,8 @@ const refreshKey = ref(0);
 						<TextInput v-model="tempAdminDashboard.kraken_api_key"/>
 					</div>
                     <div class="flex flex-row justify-between items-center"><span
-                        class="font-bold mr-1">Kraken API Key: <span class="text-red-500"></span></span>
-                        <TextInput v-model="tempAdminDashboard.kraken_api_key"/>
+                        class="font-bold mr-1">Kraken Private Key: <span class="text-red-500"></span></span>
+                        <TextInput v-model="tempAdminDashboard.kraken_private_key"/>
                     </div>
                     <div class="flex flex-row justify-between items-center"><span
                         class="font-bold mr-1">Kraken API Secret: <span class="text-red-500"></span></span>
