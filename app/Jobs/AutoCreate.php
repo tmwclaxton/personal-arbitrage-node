@@ -29,6 +29,9 @@ class AutoCreate implements ShouldQueue
     public function handle(): void
     {
         $adminDashboard = AdminDashboard::all()->first();
+        if (!isset($adminDashboard->umbrel_ip, $adminDashboard->umbrel_token)) {
+            return;
+        }
         if (!$adminDashboard->autoCreate || $adminDashboard->panicButton) {
             return;
         }

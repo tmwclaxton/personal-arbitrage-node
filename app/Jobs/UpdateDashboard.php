@@ -35,9 +35,13 @@ class UpdateDashboard implements ShouldQueue
         if (!$adminDashboard) {
             $adminDashboard = new AdminDashboard();
             // set payment methods to revolut and wise
-            $adminDashboard->payment_methods = json_encode(["Revolut", "Wise"]);
-            $adminDashboard->payment_currencies = json_encode(["EUR", "USD", "GBP"]);
+            // $adminDashboard->payment_methods = json_encode(["Revolut", "Wise"]);
+            // $adminDashboard->payment_currencies = json_encode(["EUR", "USD", "GBP"]);
         }
+        if (!isset($adminDashboard->umbrel_ip, $adminDashboard->umbrel_token)) {
+            return;
+        }
+
         $lightningNode = new LightningNode();
         $balanceArray = $lightningNode->getLightningWalletBalance();
         $adminDashboard->localBalance = $balanceArray['localBalance'];

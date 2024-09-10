@@ -37,6 +37,9 @@ class UpdateProviders implements ShouldQueue
         foreach ($providers as $provider) {
 
             $adminDashboard = AdminDashboard::all()->first();
+            if (!isset($adminDashboard->umbrel_ip, $adminDashboard->umbrel_token)) {
+                return;
+            }
             $headers["Cookie"] = "UMBREL_PROXY_TOKEN=" . $adminDashboard->umbrel_token;
             try {
                 $response = Http::withHeaders($headers)->get('http://' . $adminDashboard->umbrel_ip . ':12596/mainnet/' . $provider . '/api/info/');

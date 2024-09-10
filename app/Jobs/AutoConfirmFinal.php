@@ -31,6 +31,9 @@ class AutoConfirmFinal implements ShouldQueue
     public function handle(): void
     {
         $adminDashboard = AdminDashboard::all()->first();
+        if (!isset($adminDashboard->umbrel_ip, $adminDashboard->umbrel_token)) {
+            return;
+        }
         if (!$adminDashboard->autoConfirm || $adminDashboard->panicButton) {
             return;
         }

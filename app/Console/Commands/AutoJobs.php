@@ -58,6 +58,9 @@ class AutoJobs extends Command
 
         // every second check status of offer
         $adminDashboard = AdminDashboard::all()->first();
+        if (!isset($adminDashboard->umbrel_ip, $adminDashboard->umbrel_token)) {
+            return;
+        }
         $offers = Offer::where([['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14]])->get();
         foreach ($offers as $offer) {
             // if status is 0 and robosatsIdStorage is not null then continue

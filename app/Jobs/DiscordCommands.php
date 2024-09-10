@@ -34,7 +34,10 @@ class DiscordCommands implements ShouldQueue
      */
     public function handle(): void
     {
-        $commands = [
+            if (!isset($adminDashboard->slack_app_id, $adminDashboard->slack_client_id, $adminDashboard->slack_client_secret, $adminDashboard->slack_signing_secret, $adminDashboard->slack_bot_token)) {
+                return;
+            }
+            $commands = [
             '!help',
             '!panic',
             '!calm',

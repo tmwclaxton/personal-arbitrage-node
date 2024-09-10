@@ -27,6 +27,9 @@ class UpdateKrakenBtcBalance extends Command
     public function handle()
     {
         $adminDashboard = AdminDashboard::all()->first();
+        if (!isset($adminDashboard->kraken_api_key, $adminDashboard->kraken_private_key)) {
+            return;
+        }
         $krakenService = new \App\Services\KrakenService();
         $btcBalance = $krakenService->getBTCBalance();
         $helperFunctions = new \App\WorkerClasses\HelperFunctions();

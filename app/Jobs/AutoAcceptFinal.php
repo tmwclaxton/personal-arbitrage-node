@@ -30,6 +30,9 @@ class AutoAcceptFinal implements ShouldQueue
     public function handle(): void
     {
         $adminDashboard = AdminDashboard::all()->first();
+        if (!isset($adminDashboard->umbrel_ip, $adminDashboard->umbrel_token)) {
+            return;
+        }
         if (!$adminDashboard->autoAccept || $adminDashboard->panicButton) {
             return;
         }

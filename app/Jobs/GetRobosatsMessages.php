@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\AdminDashboard;
 use App\Models\Offer;
 use App\Services\PgpService;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -28,7 +29,10 @@ class GetRobosatsMessages implements ShouldQueue
      */
     public function handle(): void
     {
-        $adminDashboard = \App\Models\AdminDashboard::all()->first();
+        $adminDashboard = AdminDashboard::all()->first();
+        if (!isset($adminDashboard->umbrel_ip, $adminDashboard->umbrel_token)) {
+            return;
+        }
         if ($adminDashboard->panicButton) {
             return;
         }
