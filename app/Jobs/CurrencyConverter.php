@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Services\DiscordService;
+use App\Services\SlackService;
 use App\Services\RevolutService;
 use App\Services\WiseService;
 use Illuminate\Bus\Queueable;

@@ -6,7 +6,7 @@ use App\Jobs\ConfirmPayment;
 use App\Models\AdminDashboard;
 use App\Models\DiscordMessage;
 use App\Models\Offer;
-use App\Services\DiscordService;
+use App\Services\SlackService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 

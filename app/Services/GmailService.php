@@ -84,8 +84,8 @@ class GmailService
 
         $link = $gmailService->grabLink($text, $start);
         if ($link === null) {
-            $discordService = new \App\Services\DiscordService();
-            $discordService->sendMessage("Link not found in email");
+            $slackService = new \App\Services\SlackService();
+            $slackService->sendMessage("Link not found in email");
             return json_encode(['error' => 'Link not found']);
         }
 

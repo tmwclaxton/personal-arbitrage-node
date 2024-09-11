@@ -257,8 +257,8 @@
 //             // {
 //             //     $this->clickLinksWithText($linkValues[0], [$signInText]);
 //             // } else {
-//             //     $discordService = new DiscordService();
-//             //     $discordService->sendMessage('No sign in link found on Kraken sign in page.');
+//             //     $slackService = new DiscordService();
+//             //     $slackService->sendMessage('No sign in link found on Kraken sign in page.');
 //             // }
 //             // sleep(rand(5,7));
 //
@@ -338,8 +338,8 @@
 //                 $code = $gmailService->getLinkFromLastEmail();
 //                 $iterations++;
 //                 if ($iterations > 5) {
-//                     $discordService = new DiscordService();
-//                     $discordService->sendMessage('No link found in most recent email from Kraken.');
+//                     $slackService = new DiscordService();
+//                     $slackService->sendMessage('No link found in most recent email from Kraken.');
 //                     return response()->json(['error' => 'No link found in most recent email from Kraken.']);
 //                 }
 //             }

@@ -7,7 +7,7 @@ use App\Jobs\releaseOffer;
 use App\Models\AdminDashboard;
 use App\Models\Offer;
 use App\Models\Transaction;
-use App\Services\DiscordService;
+use App\Services\SlackService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
@@ -178,8 +178,8 @@ class AutoAccept extends Command
             if ($offer->job_locked) {
                 continue;
             }
-            $discordService = new DiscordService();
-            $discordService->sendMessage('Auto accepting offer ' . $offer->robosatsId . ' in 1 minutes for ' . $offer->estimated_offer_amount . ' ' . $offer->currency . ' at ' . $offer->premium . '% premium');
+            $slackService = new SlackService();
+            $slackService->sendMessage('Auto accepting offer ' . $offer->robosatsId . ' in 1 minutes for ' . $offer->estimated_offer_amount . ' ' . $offer->currency . ' at ' . $offer->premium . '% premium');
             // reset offer
             $offer = Offer::find($offer->id);
             $offer->job_locked = true;

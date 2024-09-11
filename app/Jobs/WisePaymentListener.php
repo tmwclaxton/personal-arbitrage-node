@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Payment;
-use App\Services\DiscordService;
+use App\Services\SlackService;
 use App\Services\RevolutService;
 use App\Services\WiseService;
 use Illuminate\Bus\Queueable;
@@ -90,7 +90,7 @@ class WisePaymentListener implements ShouldQueue
 
                 $payment->save();
 
-                $discordService = new DiscordService();
+                $slackService = new SlackService();
                 $message = 'Payment received: ' . $payment->payment_amount . ' ' . $payment->payment_currency . ' on Wise';
                 # if there is a description, append it to the message
                 if ($payment->platform_description) {
@@ -100,7 +100,7 @@ class WisePaymentListener implements ShouldQueue
                 if ($payment->payment_reference) {
                     $message .= ' with reference: ' . $payment->payment_reference;
                 }
-                $discordService->sendMessage($message);
+                $slackService->sendMessage($message);
 
 
             }

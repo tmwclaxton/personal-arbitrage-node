@@ -13,7 +13,7 @@ use App\Models\Payment;
 use App\Models\RevolutAccessToken;
 use App\Models\Robot;
 use App\Models\Transaction;
-use App\Services\DiscordService;
+use App\Services\SlackService;
 use App\Services\MonzoService;
 use App\Services\PgpService;
 use App\Services\RevolutService;
@@ -274,8 +274,8 @@ Route::get('/testing', function () {
 
         $payment->save();
 
-        $discordService = new DiscordService();
-        $discordService->sendMessage('Payment received: ' . $payment->payment_amount . ' ' . $payment->payment_currency . ' on Revolut');
+        $slackService = new SlackService();
+        $slackService->sendMessage('Payment received: ' . $payment->payment_amount . ' ' . $payment->payment_currency . ' on Revolut');
 
 
         return response()->json(['message' => 'Payments created']);

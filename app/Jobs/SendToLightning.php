@@ -46,8 +46,8 @@ class SendToLightning implements ShouldQueue
         sleep(5);
         $balance = $lightningNode->getLightningWalletBalance();
         if ($balance['localBalance'] < 600000) {
-            $discordService = new \App\Services\DiscordService();
-            $discordService->sendMessage('Send money to Kraken!');
+            $slackService = new \App\Services\SlackService();
+            $slackService->sendMessage('Send money to Kraken!');
         }
     }
 }

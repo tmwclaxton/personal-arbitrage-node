@@ -7,7 +7,7 @@ use App\Jobs\PayEscrow;
 use App\Jobs\SendPaymentHandle;
 use App\Models\AdminDashboard;
 use App\Models\Offer;
-use App\Services\DiscordService;
+use App\Services\SlackService;
 use Illuminate\Console\Command;
 
 class AutoJobs extends Command
@@ -107,7 +107,7 @@ class AutoJobs extends Command
             }
             if ($offer->status == 11 || $offer->status == 16) {
                 // send discord message or check programmatically
-                (new \App\Services\DiscordService)->sendMessage('Offer ' . $offer->robosatsId . ' is in dispute');
+                (new \App\Services\SlackService)->sendMessage('Offer ' . $offer->robosatsId . ' is in dispute');
             }
 
             $offer->save();

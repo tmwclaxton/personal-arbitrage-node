@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use Aloha\Twilio\Twilio;
 use App\Models\Offer;
-use App\Services\DiscordService;
+use App\Services\SlackService;
 use App\WorkerClasses\RobosatsStatus;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -90,7 +90,7 @@ class WarningSystem extends Command
         // $twilio->message("07837370669", $message);
         // $twilio->message("07711800899", $message);
 
-        $discord = new DiscordService();
+        $discord = new SlackService();
         $discord->sendMessage('**Warning**: Offer ' . $offer->robosatsId . ' has been in no. ' . $offer->status .
             ' status (' . RobosatsStatus::getStatusText($offer->status) . ') for ' . round(Carbon::parse($data['timestamp'])->diffInMinutes()) .
             ' minutes. Please check the offer' .

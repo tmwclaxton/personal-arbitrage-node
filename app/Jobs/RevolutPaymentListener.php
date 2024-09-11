@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Payment;
-use App\Services\DiscordService;
+use App\Services\SlackService;
 use App\Services\RevolutService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -69,15 +69,15 @@ class RevolutPaymentListener implements ShouldQueue
 
             // if payment reference says "my_transfer" then ignore it
             if ($payment->payment_reference === 'my_transfer') {
-                $discordService = new DiscordService();
-                $discordService->sendMessage('Ignoring payment with reference: my_transfer of ' . $payment->payment_amount . ' ' . $payment->payment_currency . ' on Revolut');
+                $slackService = new SlackService();
+                $slackService->sendMessage('Ignoring payment with reference: my_transfer of ' . $payment->payment_amount . ' ' . $payment->payment_currency . ' on Revolut');
                 continue;
             }
 
 
             $payment->save();
 
-            $discordService = new DiscordService();
+            $slackService = new SlackService();
             $message = 'Payment received: ' . $payment->payment_amount . ' ' . $payment->payment_currency . ' on Revolut';
             # if there is a description, append it to the message
             if ($payment->platform_description) {
@@ -87,7 +87,7 @@ class RevolutPaymentListener implements ShouldQueue
             if ($payment->payment_reference) {
                 $message .= ' with reference: ' . $payment->payment_reference;
             }
-            $discordService->sendMessage($message);
+            $slackService->sendMessage($message);
 
         }
 

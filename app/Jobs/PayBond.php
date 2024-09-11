@@ -5,7 +5,7 @@ namespace App\Jobs;
 use App\Models\AdminDashboard;
 use App\Models\Offer;
 use App\Models\Transaction;
-use App\Services\DiscordService;
+use App\Services\SlackService;
 use App\WorkerClasses\LightningNode;
 use App\WorkerClasses\Robosats;
 use Illuminate\Bus\Queueable;
@@ -46,7 +46,7 @@ class PayBond implements ShouldQueue
             $invoice = $transaction->bond_invoice;
             $lightningNode = new LightningNode();
             if ($this->offer->status === 3 && !$this->offer->my_offer || ($this->offer->my_offer && $this->offer->status === 0)) {
-                (new DiscordService)->sendMessage('Paid bond for offer ' . $this->offer->robosatsId);
+                (new SlackService)->sendMessage('Paid bond for offer ' . $this->offer->robosatsId);
                 $lightningNode->payInvoice($invoice);
             }
         } else {

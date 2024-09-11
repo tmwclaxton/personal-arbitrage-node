@@ -11,7 +11,7 @@ use App\Models\PaymentMethod;
 use App\Models\PostedOfferTemplate;
 use App\Models\Robot;
 use App\Models\Transaction;
-use App\Services\DiscordService;
+use App\Services\SlackService;
 use App\Services\PgpService;
 use Exception;
 use Faker\Factory;
@@ -260,8 +260,8 @@ class Robosats
 
             } catch (\Exception $e) {
                 // Return or log the exception
-                $discordService = new DiscordService();
-                $discordService->sendMessage('Error creating robot: ' . $e->getMessage() . ' on ' . $provider);
+                $slackService = new SlackService();
+                $slackService->sendMessage('Error creating robot: ' . $e->getMessage() . ' on ' . $provider);
                 // unlock the offer // this allows it to be retried
                 // if the robot creation failed for the same provider as the offer then return otherwise continue
                 if ($provider == $offer->provider) {
@@ -525,8 +525,8 @@ class Robosats
             $offer->accepted_offer_profit_sat = round($offer->accepted_offer_profit_sat, 0);
             $offer->accepted_offer_amount_sat = round($offer->accepted_offer_amount_sat, 0);
         } else {
-            $discordService = new DiscordService();
-            $discordService->sendMessage('Error: Failed to accept offer: ' . $robosatsId . ' because the calculations failed');
+            $slackService = new SlackService();
+            $slackService->sendMessage('Error: Failed to accept offer: ' . $robosatsId . ' because the calculations failed');
             return 'Failed to accept offer: ' . $robosatsId . ' because the calculations failed';
         }
         $offer->accepted = true;
@@ -548,7 +548,7 @@ class Robosats
         // }
         // round to 0 decimal places
         if ($offer->accepted_offer_profit_sat < $adminDashboard->min_satoshi_profit) {
-            (new DiscordService)->sendMessage('Error: trying to accept offer with less than ' . $adminDashboard->min_satoshi_profit . ' sats profit');
+            (new SlackService)->sendMessage('Error: trying to accept offer with less than ' . $adminDashboard->min_satoshi_profit . ' sats profit');
             return 'Offer has less than ' . $adminDashboard->min_satoshi_profit . ' sats profit';
         }
 
@@ -563,13 +563,13 @@ class Robosats
             }
         }
         if (!$allowed) {
-            (new DiscordService)->sendMessage('Error: Offer has no allowed payment methods');
+            (new SlackService)->sendMessage('Error: Offer has no allowed payment methods');
             return 'Offer has no allowed payment methods';
         }
         // // check if offer has the allowed currency
         $allowedCurrencies = json_decode($adminDashboard->payment_currencies, true);
         if (!in_array($offer->currency, $allowedCurrencies)) {
-            (new DiscordService)->sendMessage('Error: Offer has no allowed currency');
+            (new SlackService)->sendMessage('Error: Offer has no allowed currency');
             return 'Offer has no allowed currency';
         }
 
@@ -578,7 +578,7 @@ class Robosats
         // if the offer was last updated more than 10 minutes ago
         $offerUpdated = Carbon::parse($offer->updated_at);
         if ($now->diffInMinutes($offerUpdated) > 10) {
-            (new DiscordService)->sendMessage('Error: Offer is suspiciously old');
+            (new SlackService)->sendMessage('Error: Offer is suspiciously old');
             return 'Offer is suspiciously old';
         }
 
@@ -586,14 +586,14 @@ class Robosats
         $btcFiat = BtcFiat::all()->first();
         $btcFiatUpdated = Carbon::parse($btcFiat->updated_at);
         if ($now->diffInMinutes($btcFiatUpdated) > 10) {
-            (new DiscordService)->sendMessage('Error: BtcFiat item is suspiciously old');
+            (new SlackService)->sendMessage('Error: BtcFiat item is suspiciously old');
             return 'BtcFiat is suspiciously old';
         }
 
 
         // check if offer satoshi amount is above adminDashboard->max_satoshi_amount
         if ($offer->accepted_offer_amount_sat > $adminDashboard->max_satoshi_amount) {
-            (new DiscordService)->sendMessage('Error: Offer accepted amount is above max_satoshi_amount in admin dashboard');
+            (new SlackService)->sendMessage('Error: Offer accepted amount is above max_satoshi_amount in admin dashboard');
             return 'Offer accepted amount is above max_satoshi_amount in admin dashboard';
         }
 
@@ -614,21 +614,21 @@ class Robosats
             $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'take', 'amount' => $offer->accepted_offer_amount]);
         }
         if ($response == null || $response->failed()) {
-            (new DiscordService)->sendMessage('Failed to accept offer' . $response->body());
+            (new SlackService)->sendMessage('Failed to accept offer' . $response->body());
             // {"bad_request":"You are not a participant in this order"}
             if ($response->json('bad_request') == 'You are not a participant in this order') {
                 $offer->accepted = false;
                 $transaction->delete();
                 $offer->delete();
             } else {
-                (new DiscordService)->sendMessage('For debugging here are the request parameters: Headers: ' . json_encode($this->getHeaders($offer)) . ' URL: ' . $url . ' Data: ' . json_encode(['action' => 'take', 'amount' => $offer->accepted_offer_amount]));
+                (new SlackService)->sendMessage('For debugging here are the request parameters: Headers: ' . json_encode($this->getHeaders($offer)) . ' URL: ' . $url . ' Data: ' . json_encode(['action' => 'take', 'amount' => $offer->accepted_offer_amount]));
             }
 
             return 'Failed to accept offer';
         }
         $offer->save();
 
-        (new DiscordService)->sendMessage('Accepted offer: ' . round($offer->accepted_offer_amount,2) . ' ' . $offer->currency . ' for ' . $offer->accepted_offer_profit_sat . ' sats profit.');
+        (new SlackService)->sendMessage('Accepted offer: ' . round($offer->accepted_offer_amount,2) . ' ' . $offer->currency . ' for ' . $offer->accepted_offer_profit_sat . ' sats profit.');
 
         // convert response to json
         $response = json_decode($response->body(), true);
@@ -683,8 +683,8 @@ class Robosats
 
             if (empty($handleParts)) {
                 // If no payment methods match, we can return or handle the case accordingly
-                $discordService = new DiscordService();
-                $discordService->sendMessage('Error: No matching payment methods found for the offer with ID ' . $offer->robosatsId);
+                $slackService = new SlackService();
+                $slackService->sendMessage('Error: No matching payment methods found for the offer with ID ' . $offer->robosatsId);
             } else {
                 // Building the final message
                 $handleCount = count($handleParts);
@@ -719,7 +719,7 @@ class Robosats
             $this->webSocketCommunicate($offer, $robot, $secondaryMessage);
         }
 
-        (new DiscordService)->sendMessage('Expect a payment for ' . round($robot->offer->accepted_offer_amount, 2) . ' ' . $robot->offer->currency
+        (new SlackService)->sendMessage('Expect a payment for ' . round($robot->offer->accepted_offer_amount, 2) . ' ' . $robot->offer->currency
             . ' from one of these payment methods: ' . $robot->offer->payment_methods .
             ' soon! Once received, confirm the payment by typing !confirm ' . $offer->robosatsId . ' in the chat.');
 
@@ -811,7 +811,7 @@ class Robosats
 
 
         $adminDashboard->save();
-        (new DiscordService)->sendMessage('Trade completed: ' .
+        (new SlackService)->sendMessage('Trade completed: ' .
             round($transaction->offer->accepted_offer_amount,2) . ' ' .
             $transaction->offer->currency . ' for ' .
             round($transaction->offer->accepted_offer_profit_sat,0) - $transaction->fees . ' sats profit.');
@@ -878,8 +878,8 @@ class Robosats
                 $transaction->status = 99;
                 $transaction->save();
             } else {
-                $discordService = new DiscordService();
-                $discordService->sendMessage('Error on an offer that is already completed: ' . $response['bad_request'] . ' - ' . $offer->robosatsId . ' - ' .
+                $slackService = new SlackService();
+                $slackService->sendMessage('Error on an offer that is already completed: ' . $response['bad_request'] . ' - ' . $offer->robosatsId . ' - ' .
                     ' - This is likely due to the offer not being retired yet, but the transaction is still being checked.');
             }
             return $response;
@@ -936,8 +936,8 @@ class Robosats
         if (isset($response['pending_cancel'])) {
             // if this was false and is now true then we need to send a message to discord
             if (!$offer->pending_cancel && $response['pending_cancel']) {
-                $discordService = new DiscordService();
-                $discordService->sendMessage('**Collaborative cancel initiated by counterparty for order ' . $offer->robosatsId . '**');
+                $slackService = new SlackService();
+                $slackService->sendMessage('**Collaborative cancel initiated by counterparty for order ' . $offer->robosatsId . '**');
             }
             $offer->pending_cancel = $response['pending_cancel'];
         }
@@ -1017,8 +1017,8 @@ class Robosats
         $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'cancel']);
         $response = json_decode($response->body(), true);
 
-        $discordService = new DiscordService();
-        $discordService->sendMessage('Collaborative cancel initiated for order ' . $offer->robosatsId);
+        $slackService = new SlackService();
+        $slackService->sendMessage('Collaborative cancel initiated for order ' . $offer->robosatsId);
 
         return $response;
     }
@@ -1044,14 +1044,14 @@ class Robosats
         }
 
 
-        $discordService = new DiscordService();
+        $slackService = new SlackService();
         $message = 'Creating sell offer for ';
         if ($isRange) {
             $message .= 'between ' . $minAmount . ' and ' . $maxAmount . ' ' . $currency . ' with a premium of ' . $premium . '%';
         } else {
             $message .= $minAmount . ' ' . $currency . ' with a premium of ' . $premium . '%';
         }
-        $discordService->sendMessage($message);
+        $slackService->sendMessage($message);
 
 
         // create temp offer, create robots, create offer, pay bond.
@@ -1089,7 +1089,7 @@ class Robosats
             $robots = $this->createRobots($tempOffer);
         } catch (Exception $e) {
             $tempOffer->delete();
-            $discordService->sendMessage('Failed to create sell offer.  Error: ' . $e->getMessage());
+            $slackService->sendMessage('Failed to create sell offer.  Error: ' . $e->getMessage());
             return $e->getMessage();
         }
 
@@ -1134,7 +1134,7 @@ class Robosats
             foreach ($robots as $robot) {
                 $robot->delete();
             }
-            $discordService->sendMessage('Failed to create sell offer.  Error: ' . $e->getMessage());
+            $slackService->sendMessage('Failed to create sell offer.  Error: ' . $e->getMessage());
             return $e->getMessage();
         }
         $response = json_decode($response->body(), true);
@@ -1147,7 +1147,7 @@ class Robosats
             foreach ($robots as $robot) {
                 $robot->delete();
             }
-            $discordService->sendMessage('Failed to create sell offer.  Error: ' . json_encode($response));
+            $slackService->sendMessage('Failed to create sell offer.  Error: ' . json_encode($response));
             return $response;
         }
 

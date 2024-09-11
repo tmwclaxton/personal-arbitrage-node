@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\AdminDashboard;
-use App\Services\DiscordService;
+use App\Services\SlackService;
 use App\WorkerClasses\LightningNode;
 use Brick\Math\BigDecimal;
 use Brick\Math\Exception\MathException;
@@ -47,18 +47,18 @@ class KrakenAutoPurchaser implements ShouldQueue
         $kraken = new \App\Services\KrakenService();
 
         $response = $kraken->getGBPBalance();
-        $discordService = new DiscordService();
+        $slackService = new SlackService();
         if ($response->isGreaterThan(BigDecimal::of('10'))) {
-            $discordService->sendMessage('Auto purchasing BTC with GBP from Kraken');
+            $slackService->sendMessage('Auto purchasing BTC with GBP from Kraken');
 
             $kraken->buyFullAmt("GBP", $kraken->getGBPBalance());
             sleep(5);
         }
 
         $response = $kraken->getEURBalance();
-        $discordService = new DiscordService();
+        $slackService = new SlackService();
         if ($response->isGreaterThan(BigDecimal::of('10'))) {
-            $discordService->sendMessage('Auto purchasing BTC with EUR from Kraken');
+            $slackService->sendMessage('Auto purchasing BTC with EUR from Kraken');
 
             $kraken->buyFullAmt("EUR", $kraken->getEURBalance());
             sleep(5);
@@ -67,9 +67,9 @@ class KrakenAutoPurchaser implements ShouldQueue
 
         // !TODO: we need to support every currency on strike
         // $response = $kraken->getUSDBalance();
-        // $discordService = new DiscordService();
+        // $slackService = new DiscordService();
         // if ($response->isGreaterThan(BigDecimal::of('10'))) {
-        //     $discordService->sendMessage('Auto purchasing BTC with EUR from Kraken');
+        //     $slackService->sendMessage('Auto purchasing BTC with EUR from Kraken');
         //
         //     $kraken->buyFullAmt("USD", $kraken->getUSDBalance());
         //     sleep(5);

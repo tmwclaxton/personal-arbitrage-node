@@ -2,23 +2,30 @@
 
 namespace App\Services;
 
+use App\Models\AdminDashboard;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 
-class DiscordService
+class SlackService
 {
-    protected $botToken;
-    protected $applicationId;
-    protected $publicKey;
-    protected $channelId;
-    protected $client;
+    protected mixed $slack_app_id;
+    protected mixed $slack_client_id;
+    protected mixed $slack_client_secret;
+    protected mixed $slack_signing_secret;
+    protected mixed $slack_bot_token;
+
+    protected Client $client;
 
     public function __construct()
     {
-        $this->botToken = env('DISCORD_API_BOT_TOKEN');
-        $this->applicationId = env('DISCORD_APPLICATION_ID');
-        $this->publicKey = env('DISCORD_PUBLIC_KEY');
-        $this->channelId = env('DISCORD_CHANNEL_ID');
+        $adminDashboard = AdminDashboard::all()->first();
+        $this->slack_app_id = $adminDashboard->slack_app_id;
+        $this->slack_client_id = $adminDashboard->slack_client_id;
+        $this->slack_client_secret = $adminDashboard->slack_client_secret;
+        $this->slack_signing_secret = $adminDashboard->slack_signing_secret;
+        $this->slack_bot_token = $adminDashboard->slack_bot_token;
+
+
         $this->client = new Client([
             'base_uri' => 'https://discord.com/api/',
             'headers' => [

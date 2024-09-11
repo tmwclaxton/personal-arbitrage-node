@@ -22,7 +22,7 @@ class KrakenService
 
     private Client $httpClient;
 
-    private DiscordService $discordService;
+    private SlackService $slackService;
 
     public function __construct()
     {
@@ -35,7 +35,7 @@ class KrakenService
             $adminDashboard->kraken_private_key
         );
         $this->httpClient = new Client();
-        $this->discordService = new DiscordService();
+        $this->discordService = new SlackService();
     }
 
     public function getClient(): \Butschster\Kraken\Client
@@ -92,8 +92,8 @@ class KrakenService
     public function sendFullAmtToLightning() {
 
 
-        $discordService = new DiscordService();
-        $discordService->sendMessage('Sending BTC to lightning node');
+        $slackService = new SlackService();
+        $slackService->sendMessage('Sending BTC to lightning node');
 
         $krakenService = new \App\Services\KrakenService();
         $btcBalance = $krakenService->getBTCBalance();
@@ -104,7 +104,7 @@ class KrakenService
         $satoshis = intval($btc * 100000000) - 2000; // possible fees?
         $lightningNode = new LightningNode();
         $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Withdrawal of ' . $btcBalance . ' BTC at ' . Carbon::now()->toDateTimeString());
-        // $discordService->sendMessage('Invoice created: ' . $invoice);
+        // $slackService->sendMessage('Invoice created: ' . $invoice);
 
 
         // THIS IS TO SET REDIS KEYS plz dont delete
@@ -131,8 +131,8 @@ class KrakenService
         );
 
 
-        $discordService = new DiscordService();
-        $discordService->sendMessage('Withdrawal Complete: ' . $btc . ' BTC');
+        $slackService = new SlackService();
+        $slackService->sendMessage('Withdrawal Complete: ' . $btc . ' BTC');
         // to ' . $invoice);
 
         return response()->json([

@@ -131,8 +131,8 @@ class WiseService
                     $request = $this->_makeRequest($method, $endpoint, $params, $extraHeaders, false);
 
                 } else if ($primaryChallenge['type'] === "PIN") {
-                    $discordService = new DiscordService();
-                    $discordService->sendMessage('Wise PIN Challenge not implemented yet');
+                    $slackService = new SlackService();
+                    $slackService->sendMessage('Wise PIN Challenge not implemented yet');
                     // $verifyPin = $this->verifyPin($ott);
                 }
             } else {
@@ -323,11 +323,11 @@ class WiseService
         $convert = $wiseService->convertAcrossBalAccounts($quoteID, $fromAccount['id'], $toAccount['id']);
 
         if ($convert['state'] == 'COMPLETED') {
-            $discordService = new DiscordService();
-            $discordService->sendMessage('Wise Currency Exchange Completed of ' . $convert['targetAmount']['value'] . ' ' . $fromCurrency . ' to ' . $toCurrency);
+            $slackService = new SlackService();
+            $slackService->sendMessage('Wise Currency Exchange Completed of ' . $convert['targetAmount']['value'] . ' ' . $fromCurrency . ' to ' . $toCurrency);
         } else {
-            $discordService = new DiscordService();
-            $discordService->sendMessage('Wise Currency Exchange Failed: ' . json_encode($convert) );
+            $slackService = new SlackService();
+            $slackService->sendMessage('Wise Currency Exchange Failed: ' . json_encode($convert) );
         }
     }
 

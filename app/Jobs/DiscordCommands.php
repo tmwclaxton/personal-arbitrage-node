@@ -7,7 +7,7 @@ use App\Models\DiscordMessage;
 use App\Models\Offer;
 use App\Models\RevolutAccessToken;
 use App\Models\RobosatsChatMessage;
-use App\Services\DiscordService;
+use App\Services\SlackService;
 use App\WorkerClasses\LightningNode;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -60,8 +60,8 @@ class DiscordCommands implements ShouldQueue
             '!setMaxSatAmount',
             '!generateDepositAddress',
         ];
-        $discordService = new DiscordService();
-        $latestMessages = $discordService->getLatestMessages();
+        $slackService = new SlackService();
+        $latestMessages = $slackService->getLatestMessages();
         foreach ($latestMessages as $message) {
             // check if message already exists in the database
             if (DiscordMessage::where('discord_id', $message['id'])->exists()) {
@@ -83,7 +83,7 @@ class DiscordCommands implements ShouldQueue
                 // check if the command is in the list of commands
                 $firstWord = explode(' ', $message['content'])[0];
                 if (in_array($firstWord, $commands)) {
-                    $discordService->sendMessage('Executing command: ' . $message['content']);
+                    $slackService->sendMessage('Executing command: ' . $message['content']);
 
                     // if it is, send a message to the discord channel
                     $adminDashboard = AdminDashboard::all()->first();
@@ -94,7 +94,7 @@ class DiscordCommands implements ShouldQueue
                             foreach ($commands as $command) {
                                 $commandsFormatted = $commandsFormatted . $command . "\n";
                             }
-                            $discordService->sendMessage("Available commands: \n" . $commandsFormatted);
+                            $slackService->sendMessage("Available commands: \n" . $commandsFormatted);
 
                             break;
                         case '!panic':
@@ -113,12 +113,12 @@ class DiscordCommands implements ShouldQueue
                         case '!autoSchedule':
                             $adminDashboard->scheduler = !$adminDashboard->scheduler;
                             $adminDashboard->save();
-                            $discordService->sendMessage('Auto schedule is now ' . ($adminDashboard->scheduler ? 'on' : 'off'));
+                            $slackService->sendMessage('Auto schedule is now ' . ($adminDashboard->scheduler ? 'on' : 'off'));
                             break;
                         case '!autoCreate':
                             $adminDashboard->autoCreate = !$adminDashboard->autoCreate;
                             $adminDashboard->save();
-                            $discordService->sendMessage('Auto create is now ' . ($adminDashboard->autoCreate ? 'on' : 'off'));
+                            $slackService->sendMessage('Auto create is now ' . ($adminDashboard->autoCreate ? 'on' : 'off'));
                             break;
                         case '!resetRevolut':
                             // unset revolut_auth_code_request in Redis
@@ -162,7 +162,7 @@ class DiscordCommands implements ShouldQueue
                             foreach ($chatMessages as $chatMessage) {
                                 $messages = $messages . "**" . $chatMessage->user_nick . "**: " . $chatMessage->message . " \n";
                             }
-                            $discordService->sendMessage($messages);
+                            $slackService->sendMessage($messages);
                             break;
                         case '!collaborativeCancel':
                             // grab offer id //!collaborativeCancel 6960
@@ -174,82 +174,82 @@ class DiscordCommands implements ShouldQueue
                         case '!toggleAutoAccept':
                             $adminDashboard->autoAccept = !$adminDashboard->autoAccept;
                             $adminDashboard->save();
-                            $discordService->sendMessage('Auto accept is now ' . ($adminDashboard->autoAccept ? 'on' : 'off'));
+                            $slackService->sendMessage('Auto accept is now ' . ($adminDashboard->autoAccept ? 'on' : 'off'));
                             break;
                         case '!toggleAutoBond':
                             $adminDashboard->autoBond = !$adminDashboard->autoBond;
                             $adminDashboard->save();
-                            $discordService->sendMessage('Auto bond is now ' . ($adminDashboard->autoBond ? 'on' : 'off'));
+                            $slackService->sendMessage('Auto bond is now ' . ($adminDashboard->autoBond ? 'on' : 'off'));
                             break;
                         case '!toggleAutoEscrow':
                             $adminDashboard->autoEscrow = !$adminDashboard->autoEscrow;
                             $adminDashboard->save();
-                            $discordService->sendMessage('Auto escrow is now ' . ($adminDashboard->autoEscrow ? 'on' : 'off'));
+                            $slackService->sendMessage('Auto escrow is now ' . ($adminDashboard->autoEscrow ? 'on' : 'off'));
                             break;
                         case '!toggleAutoChat':
                             $adminDashboard->autoChat = !$adminDashboard->autoChat;
                             $adminDashboard->save();
-                            $discordService->sendMessage('Auto chat is now ' . ($adminDashboard->autoChat ? 'on' : 'off'));
+                            $slackService->sendMessage('Auto chat is now ' . ($adminDashboard->autoChat ? 'on' : 'off'));
                             break;
                         case '!toggleAutoTopup':
                             $adminDashboard->autoTopup = !$adminDashboard->autoTopup;
                             $adminDashboard->save();
-                            $discordService->sendMessage('Auto topup is now ' . ($adminDashboard->autoTopup ? 'on' : 'off'));
+                            $slackService->sendMessage('Auto topup is now ' . ($adminDashboard->autoTopup ? 'on' : 'off'));
                             break;
                         case '!toggleAutoConfirm':
                             $adminDashboard->autoConfirm = !$adminDashboard->autoConfirm;
                             $adminDashboard->save();
-                            $discordService->sendMessage('Auto confirm is now ' . ($adminDashboard->autoConfirm ? 'on' : 'off'));
+                            $slackService->sendMessage('Auto confirm is now ' . ($adminDashboard->autoConfirm ? 'on' : 'off'));
                             break;
                         case '!setSellPremium':
                             $adminDashboard->sell_premium = intval(explode(' ', $message['content'])[1]);
                             // ensure the value is a float and positive
                             if ($adminDashboard->sell_premium < 0) {
-                                $discordService->sendMessage('Invalid value for sell premium ' . $adminDashboard->sell_premium);
+                                $slackService->sendMessage('Invalid value for sell premium ' . $adminDashboard->sell_premium);
                                 break;
                             }
                             $adminDashboard->save();
-                            $discordService->sendMessage('Sell premium set to ' . $adminDashboard->sell_premium);
+                            $slackService->sendMessage('Sell premium set to ' . $adminDashboard->sell_premium);
                             break;
                         case '!setBuyPremium':
                             $adminDashboard->buy_premium = intval(explode(' ', $message['content'])[1]);
                             // ensure the value is a float and negative
                             if ($adminDashboard->buy_premium > 0) {
-                                $discordService->sendMessage('Invalid value for buy premium');
+                                $slackService->sendMessage('Invalid value for buy premium');
                                 break;
                             }
                             $adminDashboard->save();
-                            $discordService->sendMessage('Buy premium set to ' . $adminDashboard->buy_premium);
+                            $slackService->sendMessage('Buy premium set to ' . $adminDashboard->buy_premium);
                             break;
                         case '!setConcurrentTransactions':
                             $adminDashboard->max_concurrent_transactions = intval(explode(' ', $message['content'])[1]);
                             // ensure the value is an integer and positive
                             if ($adminDashboard->max_concurrent_transactions < 0) {
-                                $discordService->sendMessage('Invalid value for concurrent transactions');
+                                $slackService->sendMessage('Invalid value for concurrent transactions');
                                 break;
                             }
                             $adminDashboard->save();
-                            $discordService->sendMessage('Concurrent transactions set to ' . $adminDashboard->max_concurrent_transactions);
+                            $slackService->sendMessage('Concurrent transactions set to ' . $adminDashboard->max_concurrent_transactions);
                             break;
                         case '!setMinSatProfit':
                             $adminDashboard->min_satoshi_profit = intval(explode(' ', $message['content'])[1]);
                             // ensure the value is an integer and positive
                             if ($adminDashboard->min_satoshi_profit < 0) {
-                                $discordService->sendMessage('Invalid value for minimum satoshi profit');
+                                $slackService->sendMessage('Invalid value for minimum satoshi profit');
                                 break;
                             }
                             $adminDashboard->save();
-                            $discordService->sendMessage('Minimum satoshi profit set to ' . $adminDashboard->min_satoshi_profit);
+                            $slackService->sendMessage('Minimum satoshi profit set to ' . $adminDashboard->min_satoshi_profit);
                             break;
                         case '!setMaxSatAmount':
                             $adminDashboard->max_satoshi_amount = intval(explode(' ', $message['content'])[1]);
                             // ensure the value is an integer and positive
                             if ($adminDashboard->max_satoshi_amount < 0) {
-                                $discordService->sendMessage('Invalid value for maximum satoshi amount');
+                                $slackService->sendMessage('Invalid value for maximum satoshi amount');
                                 break;
                             }
                             $adminDashboard->save();
-                            $discordService->sendMessage('Maximum satoshi amount set to ' . $adminDashboard->max_satoshi_amount);
+                            $slackService->sendMessage('Maximum satoshi amount set to ' . $adminDashboard->max_satoshi_amount);
                             break;
                         case '!generateDepositAddress':
                             $krakenService = new \App\Services\KrakenService();
@@ -268,26 +268,26 @@ class DiscordCommands implements ShouldQueue
                             if ($localBalance + $satoshis > $idealLightningNodeBalance) {
                                 $satoshis = $idealLightningNodeBalance - $localBalance;
                                 if ($satoshis <= 0) {
-                                    $discordService->sendMessage('You have already reached the ideal balance');
+                                    $slackService->sendMessage('You have already reached the ideal balance');
                                     break;
                                 }
                             }
 
                             // if the satoshis is less than 2000, don't create an invoice
                             if ($satoshis < 2000) {
-                                $discordService->sendMessage('Not enough BTC to create an invoice');
+                                $slackService->sendMessage('Not enough BTC to create an invoice');
                                 break;
                             }
 
 
                             $lightningNode = new LightningNode();
                             $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Withdrawal of ' . $btcBalance . ' BTC at ' . Carbon::now()->toDateTimeString());
-                            $discordService->sendMessage($invoice);
+                            $slackService->sendMessage($invoice);
                             break;
 
 
                         default:
-                            $discordService->sendMessage('Command not recognized');
+                            $slackService->sendMessage('Command not recognized');
                             break;
 
                     }

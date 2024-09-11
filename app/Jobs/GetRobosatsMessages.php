@@ -134,8 +134,8 @@ class GetRobosatsMessages implements ShouldQueue
                 ]);
                 $robosatsChatMessage->save();
 
-                $discordService = new \App\Services\DiscordService();
-                $discordService->sendMessage("**New message in chatroom for offer ID: " . $offer->robosatsId . "**\n" . $decodedMessage);
+                $slackService = new \App\Services\SlackService();
+                $slackService->sendMessage("**New message in chatroom for offer ID: " . $offer->robosatsId . "**\n" . $decodedMessage);
             }
         }
     }

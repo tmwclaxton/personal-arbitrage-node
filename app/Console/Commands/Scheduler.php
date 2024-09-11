@@ -38,7 +38,7 @@ class Scheduler extends Command
             $end_time = $admin_dashboard->auto_accept_end_time;
 
             // check if the current time is within the start and end time
-            $discord_service = new \App\Services\DiscordService();
+            $discord_service = new \App\Services\SlackService();
             if ($current_time >= $start_time && $current_time <= $end_time) {
                 // turn on the auto accept
                 if (!$admin_dashboard->autoAccept) {

@@ -8,7 +8,7 @@ use App\Models\Offer;
 use App\Models\PaymentMethod;
 use App\Models\RobosatsChatMessage;
 use App\Models\Transaction;
-use App\Services\DiscordService;
+use App\Services\SlackService;
 use App\WorkerClasses\HelperFunctions;
 use App\WorkerClasses\LightningNode;
 use App\WorkerClasses\Robosats;
