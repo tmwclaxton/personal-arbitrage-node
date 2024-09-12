@@ -42,7 +42,7 @@ class AutoAccept extends Command
         $offers = Offer::where([['status', '<=', 11],['my_offer', '=', false],['accepted', '=', true]])->get();
         $count = $offers->count();
         if ($count >= $maxConcurrentTransactions) {
-            // (new DiscordService())->sendMessage('Max concurrent transactions reached');
+            // (new SlackService())->sendMessage('Max concurrent transactions reached');
             return 0;
         }
         // calculate difference

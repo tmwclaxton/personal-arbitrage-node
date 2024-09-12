@@ -307,7 +307,7 @@ class OfferController extends Controller
         if ($offer->has_range) {
             if (!isset($offer->min_satoshi_amount) || !isset($offer->max_satoshi_amount)) {
                 // this error can happen when we are creating an offer but it hasn't been updated just yet
-                //(new DiscordService)->sendMessage('Error: Offer has range but no min or max amount');
+                //(new SlackService)->sendMessage('Error: Offer has range but no min or max amount');
                 return 'Offer has range but no min or max amount';
             }
             $variationAmounts = [
@@ -324,7 +324,7 @@ class OfferController extends Controller
         } else {
             if (!isset($offer->satoshis_now)) {
                 // this error can happen when we are creating an offer but it hasn't been updated just yet
-//                (new DiscordService)->sendMessage('Error: Offer has no amount');
+//                (new SlackService)->sendMessage('Error: Offer has no amount');
                 return 'Offer has no amount';
             }
             $variationAmounts = [$offer->satoshis_now];
@@ -364,7 +364,7 @@ class OfferController extends Controller
         }
 
         if ($largestAmountSat == 0) {
-            // (new DiscordService)->sendMessage('Error: Insufficient balance (ps need 100000 extra for fees for bond and potentially fees)');
+            // (new SlackService)->sendMessage('Error: Insufficient balance (ps need 100000 extra for fees for bond and potentially fees)');
             return [
                 'estimated_offer_amount_sats' => 0,
                 'estimated_offer_amount' => 0,

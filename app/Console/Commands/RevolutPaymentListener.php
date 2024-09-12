@@ -18,7 +18,7 @@ class RevolutPaymentListener extends Command
      *
      * @var string
      */
-    protected $description = 'Listen for incoming payments from Revolut and send a discord notification';
+    protected $description = 'Listen for incoming payments from Revolut and send a slack notification';
 
     /**
      * Execute the console command.

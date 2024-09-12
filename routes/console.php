@@ -112,8 +112,8 @@
 //
 //
 //     if (isset($adminDashboard, $adminDashboard->slack_app_id, $adminDashboard->slack_client_id, $adminDashboard->slack_client_secret, $adminDashboard->slack_signing_secret, $adminDashboard->slack_bot_token)) {
-//         Schedule::command('refresh:discord-commands')
-//             ->description('refresh discord commands')
+//         Schedule::command('refresh:slack-commands')
+//             ->description('refresh slack commands')
 //             ->everyTenSeconds()->withoutOverlapping(1);
 //     }
 //

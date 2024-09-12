@@ -543,7 +543,7 @@ class Robosats
 
         // round to 0 decimal places
         // if ($offer->accepted_offer_profit_sat < 0) {
-        //     (new DiscordService)->sendMessage('Error: trying to accept offer with a negative profit');
+        //     (new SlackService)->sendMessage('Error: trying to accept offer with a negative profit');
         //     return 'Offer has a negative profit';
         // }
         // round to 0 decimal places
@@ -605,7 +605,7 @@ class Robosats
 
         // post request
         $url = $this->getHost() . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $robosatsId;
-        // (new DiscordService)->sendMessage($offer->accepted_offer_amount . ' ' . $offer->currency . '.  RoboSats ID: ' . $robosatsId);
+        // (new SlackService)->sendMessage($offer->accepted_offer_amount . ' ' . $offer->currency . '.  RoboSats ID: ' . $robosatsId);
         Log::info($offer->accepted_offer_amount . ' ' . $offer->currency . '.  RoboSats ID: ' . $robosatsId);
 
         if (!$offer->has_range) {
@@ -934,7 +934,7 @@ class Robosats
             $offer->asked_for_cancel = $response['asked_for_cancel'];
         }
         if (isset($response['pending_cancel'])) {
-            // if this was false and is now true then we need to send a message to discord
+            // if this was false and is now true then we need to send a message to slack
             if (!$offer->pending_cancel && $response['pending_cancel']) {
                 $slackService = new SlackService();
                 $slackService->sendMessage('**Collaborative cancel initiated by counterparty for order ' . $offer->robosatsId . '**');
@@ -957,7 +957,7 @@ class Robosats
             $transaction->status_message = $response['status_message'];
         } else {
             // log response {"id":10213,"status":1,"created_at":"2024-07-03T21:16:35.391831Z","expires_at":"2024-07-04T21:15:35.391831Z","type":0,"currency":2,"amount":"200.00000000","has_range":false,"min_amount":null,"max_amount":null,"payment_method":"Wise","is_explicit":false,"premium":"2.80","satoshis":null,"maker":59843,"taker":null,"escrow_duration":10800,"bond_size":"3.00","latitude":null,"longitude":null,"total_secs_exp":86340,"penalty":"2024-07-03T23:19:29.668012Z","is_maker":false,"is_taker":false,"is_participant":false,"maker_nick":"CourteousAmount532","maker_hash_id":"3c2fced4b96d01fba681da4cc6b64c6891efc93e871286810dae507fa7265450","maker_status":"Inactive","price_now":57449,"premium_now":2.8,"satoshis_now":348134}
-            Log::info('Unknown response from robosats: ' . json_encode($response));
+            Log::info('Unusual response from Robosats: ' . json_encode($response));
             $transaction->status_message= 'Unknown';
         }
         if ($offer->status != 1) {

@@ -67,7 +67,7 @@ class KrakenAutoPurchaser implements ShouldQueue
 
         // !TODO: we need to support every currency on strike
         // $response = $kraken->getUSDBalance();
-        // $slackService = new DiscordService();
+        // $slackService = new SlackService();
         // if ($response->isGreaterThan(BigDecimal::of('10'))) {
         //     $slackService->sendMessage('Auto purchasing BTC with EUR from Kraken');
         //

@@ -35,7 +35,7 @@ class KrakenService
             $adminDashboard->kraken_private_key
         );
         $this->httpClient = new Client();
-        $this->discordService = new SlackService();
+        $this->slackService = new SlackService();
     }
 
     public function getClient(): \Butschster\Kraken\Client
@@ -97,7 +97,7 @@ class KrakenService
 
         $krakenService = new \App\Services\KrakenService();
         $btcBalance = $krakenService->getBTCBalance();
-        // $this->discordService->sendMessage('Sending ' . $btcBalance . ' BTC to lightning node');
+        // $this->slackService->sendMessage('Sending ' . $btcBalance . ' BTC to lightning node');
         // make btc balance a big decimal
         $btc = $btcBalance->jsonSerialize();
         // ensure satoshis is an integer
@@ -136,7 +136,7 @@ class KrakenService
         // to ' . $invoice);
 
         return response()->json([
-            'success' => 'Withdrawal request sent to discord',
+            'success' => 'Withdrawal request sent to slack',
             'invoice' => $invoice,
         ]);
     }
@@ -149,7 +149,7 @@ class KrakenService
             return response()->json(['error' => 'Amount is too low to buy bitcoin'], 400);
         }
 
-        $this->discordService->sendMessage('Buying bitcoin with ' . $amount . ' ' . $currency);
+        $this->slackService->sendMessage('Buying bitcoin with ' . $amount . ' ' . $currency);
 
         $pairs = [
             'GBP' => 'XXBTZGBP',

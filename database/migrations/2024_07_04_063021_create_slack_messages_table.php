@@ -11,10 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('discord_messages', function (Blueprint $table) {
+        Schema::create('slack_messages', function (Blueprint $table) {
             $table->id();
-            $table->string('discord_id')->unique();
-            $table->string('author_id');
+            $table->string('slack_id')->unique();
             $table->string('channel_id');
             $table->string('content');
             $table->timestamps();
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('discord_messages');
+        Schema::dropIfExists('slack_messages');
     }
 };

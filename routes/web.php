@@ -12,6 +12,7 @@ use App\Models\Offer;
 use App\Models\Payment;
 use App\Models\RevolutAccessToken;
 use App\Models\Robot;
+use App\Models\SlackMessage;
 use App\Models\Transaction;
 use App\Services\SlackService;
 use App\Services\MonzoService;
@@ -40,7 +41,7 @@ use Inertia\Inertia;
 use OTPHP\TOTP;
 use PragmaRX\Google2FA\Google2FA;
 use RevolutPHP\Auth\Provider;
-use Spatie\DiscordAlerts\Facades\DiscordAlert;
+use Spatie\SlackAlerts\Facades\SlackAlert;
 use Webklex\IMAP\Facades\Client;
 use Webklex\PHPIMAP\Folder;
 use Webklex\PHPIMAP\Message;
@@ -226,25 +227,40 @@ Route::get('/wise-alternative', function() {
 
 Route::get('/testing', function () {
 
+
     $slackService = new SlackService();
-    // $slackService->client->conversationsCreate([
-    //     'name' => 'test-channel2',
-    // ]);
+    $channelId = 'C07M1H1RPHB';
+    $messages = $slackService->getLatestMessages($channelId);
 
-    // grab all users
-    $users = $slackService->client->usersList();
-    $members = $users->getMembers();
+    foreach ($messages as $message) {
 
-    // filter out bots
-    foreach ($members as $key => $member) {
-        if ($member->getIsBot()) {
-            unset($members[$key]);
+        // check if message already exists in the database
+        if ($message->getClientMsgId() === null || SlackMessage::where('slack_id', $message->getClientMsgId())->exists() || $message->getBotId() !== null) {
+            continue;
         }
+
+        $slackMessage = new SlackMessage([
+            'slack_id' => $message->getClientMsgId(),
+            'content' => $message->getText(),
+            'channel_id' => $channelId
+        ]);
+
+        $slackMessage->save();
+
     }
-
-
-    $channels = $slackService->client->conversationsList();
-    dd($channels, $users);
+        // // check if message already exists in the database
+        // if (SlackMessage::where('slack_id', $message->getClientID())->exists()) {
+        //     continue;
+        // }
+        //
+        // $slackMessage = new SlackMessage([
+        //     'slack_id' => $message['id'],
+        //     'content' => $message['content'],
+        //     'author_id' => $message['author']['id'],
+        //     'channel_id' => $message['channel_id'],
+        //     'updated_at' => Carbon::parse($message['timestamp'])
+        // ]);
+        // $slackMessage->save();
 
     dd('done');
 
