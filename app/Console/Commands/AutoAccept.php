@@ -179,7 +179,7 @@ class AutoAccept extends Command
                 continue;
             }
             $slackService = new SlackService();
-            $slackService->sendMessage('Auto accepting offer ' . $offer->robosatsId . ' in 1 minutes for ' . $offer->estimated_offer_amount . ' ' . $offer->currency . ' at ' . $offer->premium . '% premium');
+            $slackService->sendMessage('Auto accepting offer ' . $offer->robosatsId . ' in 1 minutes for ' . $offer->estimated_offer_amount . ' ' . $offer->currency . ' at ' . $offer->premium . '% premium', $adminDashboard->slack_main_channel_id);
             // reset offer
             $offer = Offer::find($offer->id);
             $offer->job_locked = true;
