@@ -3,8 +3,9 @@
 namespace App\Services;
 
 use App\Models\AdminDashboard;
-use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use JoliCode\Slack\Api\Client;
+use JoliCode\Slack\ClientFactory;
 
 class SlackService
 {
@@ -14,7 +15,7 @@ class SlackService
     protected mixed $slack_signing_secret;
     protected mixed $slack_bot_token;
 
-    protected Client $client;
+    public Client $client;
 
     public function __construct()
     {
@@ -25,14 +26,7 @@ class SlackService
         $this->slack_signing_secret = $adminDashboard->slack_signing_secret;
         $this->slack_bot_token = $adminDashboard->slack_bot_token;
 
-
-        $this->client = new Client([
-            'base_uri' => 'https://discord.com/api/',
-            'headers' => [
-                'Authorization' => 'Bot ' . $this->botToken,
-                'Content-Type' => 'application/json'
-            ]
-        ]);
+        $this->client = ClientFactory::create($adminDashboard->slack_bot_token);
     }
 
     /**

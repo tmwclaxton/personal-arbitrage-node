@@ -226,20 +226,27 @@ Route::get('/wise-alternative', function() {
 
 Route::get('/testing', function () {
 
-    //!:TODO we need to figure out how to set the accepted amount and other shit inorder for auto accept to work
-    $robosats = new Robosats();
-    $providers = ['satstralia','lake']; //veneto  'temple',
-    $response = $robosats->createSellOffer(
-        "EUR",
-        20,
-        $providers[array_rand($providers)],
-        20,
-        "Revolut",
-        2,
-        null
-    );
+    $slackService = new SlackService();
+    // $slackService->client->conversationsCreate([
+    //     'name' => 'test-channel2',
+    // ]);
 
-    dd($response);
+    // grab all users
+    $users = $slackService->client->usersList();
+    $members = $users->getMembers();
+
+    // filter out bots
+    foreach ($members as $key => $member) {
+        if ($member->getIsBot()) {
+            unset($members[$key]);
+        }
+    }
+
+
+    $channels = $slackService->client->conversationsList();
+    dd($channels, $users);
+
+    dd('done');
 
     $mitmService = new \App\Services\MitmService();
     $transactions = $mitmService->grabTransactions();
