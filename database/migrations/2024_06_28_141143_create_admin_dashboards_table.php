@@ -48,6 +48,7 @@ return new class extends Migration
             $table->string('slack_client_secret')->nullable();
             $table->string('slack_signing_secret')->nullable();
             $table->string('slack_bot_token')->nullable();
+            $table->string('slack_main_channel_id')->nullable();
 
             $table->boolean('autoTopup')->default(false);
             $table->string('kraken_api_key')->nullable();

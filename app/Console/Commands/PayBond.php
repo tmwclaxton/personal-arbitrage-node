@@ -23,7 +23,7 @@ class PayBond extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Pay bond for offers';
 
     /**
      * Execute the console command.

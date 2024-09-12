@@ -92,7 +92,7 @@ class SlackService
      * @throws GuzzleException
      * @throws \Exception
      */
-    public function sendMessage(string $message, string $channelId = null): void
+    public function sendMessage(string $message, string $channelId): void
     {
         $this->client->chatPostMessage([
             'channel' => $channelId,

@@ -9,6 +9,7 @@ use App\Models\Offer;
 use App\Models\RobosatsChatMessage;
 use App\Services\SlackService;
 use App\WorkerClasses\LightningNode;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -31,6 +32,7 @@ use Illuminate\Support\Facades\Redis;
 
     /**
      * Execute the job.
+     * @throws GuzzleException
      */
     public function handle(): void
     {
@@ -92,7 +94,7 @@ use Illuminate\Support\Facades\Redis;
                             foreach ($commands as $command) {
                                 $commandsFormatted = $commandsFormatted . $command . "\n";
                             }
-                            $slackService->sendMessage("Available commands: \n" . $commandsFormatted);
+                            $slackService->sendMessage("Available commands: \n" . $commandsFormatted, $adminDashboard->slack_main_channel_id);
 
                             break;
                         case '!panic':
@@ -111,12 +113,12 @@ use Illuminate\Support\Facades\Redis;
                         case '!autoSchedule':
                             $adminDashboard->scheduler = !$adminDashboard->scheduler;
                             $adminDashboard->save();
-                            $slackService->sendMessage('Auto schedule is now ' . ($adminDashboard->scheduler ? 'on' : 'off'));
+                            $slackService->sendMessage('Auto schedule is now ' . ($adminDashboard->scheduler ? 'on' : 'off'), $adminDashboard->slack_main_channel_id);
                             break;
                         case '!autoCreate':
                             $adminDashboard->autoCreate = !$adminDashboard->autoCreate;
                             $adminDashboard->save();
-                            $slackService->sendMessage('Auto create is now ' . ($adminDashboard->autoCreate ? 'on' : 'off'));
+                            $slackService->sendMessage('Auto create is now ' . ($adminDashboard->autoCreate ? 'on' : 'off'), $adminDashboard->slack_main_channel_id);
                             break;
                         case '!chat':
                             // grab offer id then message //!chat 6960 hello?
@@ -148,82 +150,82 @@ use Illuminate\Support\Facades\Redis;
                         case '!toggleAutoAccept':
                             $adminDashboard->autoAccept = !$adminDashboard->autoAccept;
                             $adminDashboard->save();
-                            $slackService->sendMessage('Auto accept is now ' . ($adminDashboard->autoAccept ? 'on' : 'off'));
+                            $slackService->sendMessage('Auto accept is now ' . ($adminDashboard->autoAccept ? 'on' : 'off'), $adminDashboard->slack_main_channel_id);
                             break;
                         case '!toggleAutoBond':
                             $adminDashboard->autoBond = !$adminDashboard->autoBond;
                             $adminDashboard->save();
-                            $slackService->sendMessage('Auto bond is now ' . ($adminDashboard->autoBond ? 'on' : 'off'));
+                            $slackService->sendMessage('Auto bond is now ' . ($adminDashboard->autoBond ? 'on' : 'off'), $adminDashboard->slack_main_channel_id);
                             break;
                         case '!toggleAutoEscrow':
                             $adminDashboard->autoEscrow = !$adminDashboard->autoEscrow;
                             $adminDashboard->save();
-                            $slackService->sendMessage('Auto escrow is now ' . ($adminDashboard->autoEscrow ? 'on' : 'off'));
+                            $slackService->sendMessage('Auto escrow is now ' . ($adminDashboard->autoEscrow ? 'on' : 'off'), $adminDashboard->slack_main_channel_id);
                             break;
                         case '!toggleAutoChat':
                             $adminDashboard->autoChat = !$adminDashboard->autoChat;
                             $adminDashboard->save();
-                            $slackService->sendMessage('Auto chat is now ' . ($adminDashboard->autoChat ? 'on' : 'off'));
+                            $slackService->sendMessage('Auto chat is now ' . ($adminDashboard->autoChat ? 'on' : 'off'), $adminDashboard->slack_main_channel_id);
                             break;
                         case '!toggleAutoTopup':
                             $adminDashboard->autoTopup = !$adminDashboard->autoTopup;
                             $adminDashboard->save();
-                            $slackService->sendMessage('Auto topup is now ' . ($adminDashboard->autoTopup ? 'on' : 'off'));
+                            $slackService->sendMessage('Auto topup is now ' . ($adminDashboard->autoTopup ? 'on' : 'off'), $adminDashboard->slack_main_channel_id);
                             break;
                         case '!toggleAutoConfirm':
                             $adminDashboard->autoConfirm = !$adminDashboard->autoConfirm;
                             $adminDashboard->save();
-                            $slackService->sendMessage('Auto confirm is now ' . ($adminDashboard->autoConfirm ? 'on' : 'off'));
+                            $slackService->sendMessage('Auto confirm is now ' . ($adminDashboard->autoConfirm ? 'on' : 'off'), $adminDashboard->slack_main_channel_id);
                             break;
                         case '!setSellPremium':
                             $adminDashboard->sell_premium = intval(explode(' ', $slackMessage['content'])[1]);
                             // ensure the value is a float and positive
                             if ($adminDashboard->sell_premium < 0) {
-                                $slackService->sendMessage('Invalid value for sell premium ' . $adminDashboard->sell_premium);
+                                $slackService->sendMessage('Invalid value for sell premium ' . $adminDashboard->sell_premium, $adminDashboard->slack_main_channel_id);
                                 break;
                             }
                             $adminDashboard->save();
-                            $slackService->sendMessage('Sell premium set to ' . $adminDashboard->sell_premium);
+                            $slackService->sendMessage('Sell premium set to ' . $adminDashboard->sell_premium, $adminDashboard->slack_main_channel_id);
                             break;
                         case '!setBuyPremium':
                             $adminDashboard->buy_premium = intval(explode(' ', $slackMessage['content'])[1]);
                             // ensure the value is a float and negative
                             if ($adminDashboard->buy_premium > 0) {
-                                $slackService->sendMessage('Invalid value for buy premium');
+                                $slackService->sendMessage('Invalid value for buy premium', $adminDashboard->slack_main_channel_id);
                                 break;
                             }
                             $adminDashboard->save();
-                            $slackService->sendMessage('Buy premium set to ' . $adminDashboard->buy_premium);
+                            $slackService->sendMessage('Buy premium set to ' . $adminDashboard->buy_premium, $adminDashboard->slack_main_channel_id);
                             break;
                         case '!setConcurrentTransactions':
                             $adminDashboard->max_concurrent_transactions = intval(explode(' ', $slackMessage['content'])[1]);
                             // ensure the value is an integer and positive
                             if ($adminDashboard->max_concurrent_transactions < 0) {
-                                $slackService->sendMessage('Invalid value for concurrent transactions');
+                                $slackService->sendMessage('Invalid value for concurrent transactions', $adminDashboard->slack_main_channel_id);
                                 break;
                             }
                             $adminDashboard->save();
-                            $slackService->sendMessage('Concurrent transactions set to ' . $adminDashboard->max_concurrent_transactions);
+                            $slackService->sendMessage('Concurrent transactions set to ' . $adminDashboard->max_concurrent_transactions, $adminDashboard->slack_main_channel_id);
                             break;
                         case '!setMinSatProfit':
                             $adminDashboard->min_satoshi_profit = intval(explode(' ', $slackMessage['content'])[1]);
                             // ensure the value is an integer and positive
                             if ($adminDashboard->min_satoshi_profit < 0) {
-                                $slackService->sendMessage('Invalid value for minimum satoshi profit');
+                                $slackService->sendMessage('Invalid value for minimum satoshi profit', $adminDashboard->slack_main_channel_id);
                                 break;
                             }
                             $adminDashboard->save();
-                            $slackService->sendMessage('Minimum satoshi profit set to ' . $adminDashboard->min_satoshi_profit);
+                            $slackService->sendMessage('Minimum satoshi profit set to ' . $adminDashboard->min_satoshi_profit, $adminDashboard->slack_main_channel_id);
                             break;
                         case '!setMaxSatAmount':
                             $adminDashboard->max_satoshi_amount = intval(explode(' ', $slackMessage['content'])[1]);
                             // ensure the value is an integer and positive
                             if ($adminDashboard->max_satoshi_amount < 0) {
-                                $slackService->sendMessage('Invalid value for maximum satoshi amount');
+                                $slackService->sendMessage('Invalid value for maximum satoshi amount', $adminDashboard->slack_main_channel_id);
                                 break;
                             }
                             $adminDashboard->save();
-                            $slackService->sendMessage('Maximum satoshi amount set to ' . $adminDashboard->max_satoshi_amount);
+                            $slackService->sendMessage('Maximum satoshi amount set to ' . $adminDashboard->max_satoshi_amount, $adminDashboard->slack_main_channel_id);
                             break;
                         case '!generateDepositAddress':
                             $krakenService = new \App\Services\KrakenService();
@@ -242,26 +244,26 @@ use Illuminate\Support\Facades\Redis;
                             if ($localBalance + $satoshis > $idealLightningNodeBalance) {
                                 $satoshis = $idealLightningNodeBalance - $localBalance;
                                 if ($satoshis <= 0) {
-                                    $slackService->sendMessage('You have already reached the ideal balance');
+                                    $slackService->sendMessage('You have already reached the ideal balance', $adminDashboard->slack_main_channel_id);
                                     break;
                                 }
                             }
 
                             // if the satoshis is less than 2000, don't create an invoice
                             if ($satoshis < 2000) {
-                                $slackService->sendMessage('Not enough BTC to create an invoice');
+                                $slackService->sendMessage('Not enough BTC to create an invoice', $adminDashboard->slack_main_channel_id);
                                 break;
                             }
 
 
                             $lightningNode = new LightningNode();
                             $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Withdrawal of ' . $btcBalance . ' BTC at ' . Carbon::now()->toDateTimeString());
-                            $slackService->sendMessage($invoice);
+                            $slackService->sendMessage($invoice, $adminDashboard->slack_main_channel_id);
                             break;
 
 
                         default:
-                            $slackService->sendMessage('Command not recognized');
+                            $slackService->sendMessage('Command not recognized', $adminDashboard->slack_main_channel_id);
                             break;
 
                     }
