@@ -183,8 +183,12 @@ const refreshKey = ref(0);
 						<TextInput v-model="tempAdminDashboard.slack_signing_secret"/>
 					</div>
 					<div class="flex flex-row justify-between items-center"><span
-						class="font-bold mr-1">Slack Bot Token: <span class="text-red-500"></span></span>
+					  class="font-bold mr-1">Slack Bot Token: <span class="text-red-500"></span></span>
 						<TextInput v-model="tempAdminDashboard.slack_bot_token"/>
+					</div>
+					<div class="flex flex-row justify-between items-center"><span
+					  class="font-bold mr-1">Slack Main Channel ID: <span class="text-red-500"></span></span>
+						<TextInput v-model="tempAdminDashboard.slack_main_channel_id"/>
 					</div>
 					
 					<div class="border-b border-gray-300 dark:border-zinc-700 mb-4"/>
