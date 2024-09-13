@@ -94,9 +94,9 @@ const offerTemplate = ref({
                         <text-input v-model="offerTemplate.min" label="Min" />
                         <label class="text-sm text-gray-500">Max amount (optional i.e. put 0)</label>
                         <text-input v-model="offerTemplate.max" label="Max" />
-						<label class="text-sm text-gray-500">Latitude</label>
+						<label class="text-sm text-gray-500">Latitude (optional i.e. put 0)</label>
 						<text-input v-model="offerTemplate.latitude" label="Latitude" />
-						<label class="text-sm text-gray-500">Longitude</label>
+						<label class="text-sm text-gray-500">Longitude (optional i.e. put 0)</label>
 						<text-input v-model="offerTemplate.longitude" label="Longitude" />
                         <label class="text-sm text-gray-500">Premium</label>
                         <text-input v-model="offerTemplate.premium" label="Premium" />

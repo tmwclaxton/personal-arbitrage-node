@@ -59,6 +59,8 @@ class OfferTemplatesController extends Controller
             'premium' => 'required',
             'min_amount' => 'required|numeric|min:0|gt:0',
             'max_amount' => 'nullable|numeric|min:0|gte:0',
+            'latitude' => 'nullable',
+            'longitude' => 'nullable',
             'payment_methods' => 'required|array|min:1',
             'bond_size' => 'required|numeric|min:1|gte:3',
             'auto_create' => 'required|boolean',
@@ -78,6 +80,8 @@ class OfferTemplatesController extends Controller
         $template->auto_create = $request->auto_create;
         $template->quantity = $request->quantity;
         $template->cooldown = $request->cooldown;
+        $template->latitude = $request->latitude;
+        $template->longitude = $request->longitude;
         $template->ttl = $request->ttl;
         $template->save();
 
