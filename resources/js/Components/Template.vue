@@ -90,69 +90,8 @@ offerEditTemplate.value.providers = offerEditTemplate.value.provider.split(' ');
          class="rounded-lg border border-gray-200 w-full my-2 p-2 bg-white dark:bg-zinc-900">
         <p class="font-bold" v-text="'Template ID: ' + template.id"></p>
         <div class="border-t border-gray-200 my-2"/>
-        <div v-if="!editMode" class="grid grid-cols-4  p-2">
-            <p>
-                <span class="font-bold">Type: </span>
-                {{template.type }}
-            </p>
-            <p>
-                <span class="font-bold" v-text="template.max_amount && template.max_amount > 0 ? 'Min: ' : 'Amount: '"></span>
-                {{template.min_amount }}
-            </p>
-            <p v-if="template.max_amount && template.max_amount > 0">
-                <span class="font-bold">Max: </span>
-                {{template.max_amount }}
-            </p>
 
-            <p>
-                <span class="font-bold">Quantity: </span>
-                {{template.quantity }}
-            </p>
-
-            <p>
-                <span class="font-bold">Premium: </span>
-                {{template.premium }}
-            </p>
-
-            <p>
-                <span class="font-bold">Bond Size: </span>
-                {{template.bond_size }}
-            </p>
-
-            <p>
-                <span class="font-bold">Currency: </span>
-                {{template.currency }}
-            </p>
-
-            <p>
-                <span class="font-bold">Cooldown: </span>
-                {{template.cooldown }}
-            </p>
-
-            <p>
-                <span class="font-bold">TTL: </span>
-                {{template.ttl }}
-            </p>
-
-            <p>
-                <span class="font-bold">Auto Create: </span>
-                <span v-text="template.auto_create ? 'True' : 'False'"></span>
-            </p>
-
-            <p class="col-span-4 my-1">
-                <span class="font-bold">Payment Methods: </span>
-                {{template.payment_methods }}
-            </p>
-
-            <p class="col-span-4">
-                <span class="font-bold">Provider: </span>
-                {{template.provider }}
-            </p>
-
-
-        </div>
-
-        <div v-else class="grid grid-cols-5 gap-2 p-2">
+        <div class="grid grid-cols-5 gap-2 p-2">
             <label class="text-sm text-gray-500">Offer Type</label>
             <select v-model="offerEditTemplate.type" class="w-36 block mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                 <option value="buy">Buy</option>

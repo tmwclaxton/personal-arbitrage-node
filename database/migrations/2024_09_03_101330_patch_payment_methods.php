@@ -90,6 +90,11 @@ return new class extends Migration
                 'name' => 'Monero',
                 'logo_url' => 'https://cryptologos.cc/logos/monero-xmr-logo.png',
                 'reference_message' => false,
+            ],
+            [
+                'name' => 'Cash F2F',
+                'logo_url' => 'https://www.pngkey.com/png/full/1-11652_cash-icon-cash-icon.png',
+                'reference_message' => false,
             ]
         ]);
 

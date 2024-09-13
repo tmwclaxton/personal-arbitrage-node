@@ -11,6 +11,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import GuestLayout from "@/Layouts/GuestLayout.vue";
 import ProvidersInput from "@/Components/ProvidersInput.vue";
 import Template from "@/Components/Template.vue";
+import L from 'leaflet';
 
 const props = defineProps({
     templates: Object,
@@ -23,6 +24,8 @@ const create = () => {
         type: offerTemplate.value.type,
         min_amount	: parseInt(offerTemplate.value.min),
         max_amount: parseInt(offerTemplate.value.max),
+		latitude: offerTemplate.value.latitude,
+		longitude: offerTemplate.value.longitude,
         premium: offerTemplate.value.premium,
         currency: offerTemplate.value.currency,
         payment_methods: offerTemplate.value.paymentMethods,
@@ -58,6 +61,8 @@ const offerTemplate = ref({
     type: 'sell',
     min: 30,
     max: 100,
+	latitude: 0,
+	longitude: 0,
     premium: 20,
     currency: 'GBP',
     paymentMethods: ['Revolut'],
@@ -69,7 +74,6 @@ const offerTemplate = ref({
     ttl: 3600,
 });
 
-
 </script>
 
 
@@ -80,7 +84,7 @@ const offerTemplate = ref({
         <div class=" min-h-screen flex flex-row w-screen">
             <div class="border-r border-gray-200 w-1/4">
                 <div class="flex flex-col items-center">
-                        <h1 class="text-2xl font-bold underline mb-1">Create an offer template</h1>
+                        <h1 class="text-2xl font-bold underline mb-1 text-center">Create an offer template</h1>
                         <label class="text-sm text-gray-500">Offer Type</label>
                         <select v-model="offerTemplate.type" class="w-36 block mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             <option value="buy">Buy</option>
@@ -90,6 +94,10 @@ const offerTemplate = ref({
                         <text-input v-model="offerTemplate.min" label="Min" />
                         <label class="text-sm text-gray-500">Max amount (optional i.e. put 0)</label>
                         <text-input v-model="offerTemplate.max" label="Max" />
+						<label class="text-sm text-gray-500">Latitude</label>
+						<text-input v-model="offerTemplate.latitude" label="Latitude" />
+						<label class="text-sm text-gray-500">Longitude</label>
+						<text-input v-model="offerTemplate.longitude" label="Longitude" />
                         <label class="text-sm text-gray-500">Premium</label>
                         <text-input v-model="offerTemplate.premium" label="Premium" />
                         <label class="text-sm text-gray-500">Bond Size</label>
@@ -108,7 +116,7 @@ const offerTemplate = ref({
                         <toggle-button v-model="offerTemplate.autoCreate" label="Auto Create" />
 
                         <primary-button class="mt-4" @click="create">Create</primary-button>
-
+					
 
                 </div>
             </div>
