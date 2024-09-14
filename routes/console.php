@@ -84,14 +84,14 @@ Schedule::command('app:warning-system')
 // !! with mitmproxy we now need to trigger the revolut login job whenever we are waiting for a payment
 
 // every minute trigger a revolut payment listener job
-Schedule::command('revolut:payment-listener')
-    ->description('revolut payment listener')
-    ->everyMinute()->withoutOverlapping(1);
+// Schedule::command('revolut:payment-listener')
+//     ->description('revolut payment listener')
+//     ->everyMinute()->withoutOverlapping(1);
 
 // every minute trigger a revolut payment listener job
-Schedule::command('wise:payment-listener')
-    ->description('wise payment listener')
-    ->everyMinute()->withoutOverlapping(1);
+// Schedule::command('wise:payment-listener')
+//     ->description('wise payment listener')
+//     ->everyMinute()->withoutOverlapping(1);
 
 
 // payment matcher

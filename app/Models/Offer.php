@@ -12,14 +12,19 @@ class Offer extends Model
 
     protected $guarded = ['id'];
 
-    public function transaction()
+    public function transaction(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(Transaction::class);
     }
 
-    public function robots()
+    public function robots(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Robot::class);
+    }
+
+    public function templates(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(PostedOfferTemplate::class);
     }
 
 

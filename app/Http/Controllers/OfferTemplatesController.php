@@ -18,30 +18,30 @@ class OfferTemplatesController extends Controller
         ]);
     }
 
-    public function createTemplate(Request $request): \Illuminate\Http\RedirectResponse
+    public function createTemplate(Request $request): array
     {
         $template = new PostedOfferTemplate();
         $this->offerUpdate($request, $template);
 
-        return redirect()->route('offers.posting.index');
+        return [
+            'template' => $template,
+        ];
     }
 
-    public function deleteTemplate($id): \Illuminate\Http\RedirectResponse
+    public function deleteTemplate($id)
     {
         $template = PostedOfferTemplate::find($id);
         $template->delete();
 
-        return redirect()->route('offers.posting.index');
+        return [
+            'template' => $template,
+        ];
     }
 
     public function editTemplate(Request $request): array
     {
         $template = PostedOfferTemplate::find($request->id);
         return $this->offerUpdate($request, $template);
-    }
-
-    public function autoCreateTemplates() {
-
     }
 
     /**

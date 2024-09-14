@@ -93,7 +93,7 @@ return new class extends Migration
             ],
             [
                 'name' => 'Cash F2F',
-                'logo_url' => 'https://www.pngkey.com/png/full/1-11652_cash-icon-cash-icon.png',
+                'logo_url' => 'https://s.wsj.net/public/resources/images/BN-PO355_cash_M_20160825105904.jpg',
                 'reference_message' => false,
             ]
         ]);

@@ -29,6 +29,7 @@ return new class extends Migration
             $table->integer('cooldown')->default(0);
             $table->integer('ttl')->default(86400);
             $table->timestamp('last_created')->nullable();
+            $table->timestamp('last_accepted')->nullable();
             $table->timestamps();
         });
     }

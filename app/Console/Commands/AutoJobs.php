@@ -86,6 +86,11 @@ class AutoJobs extends Command
                 && $adminDashboard->autoBond) {
                 PayBond::dispatch($offer, $adminDashboard);
             }
+
+            if ($offer->accepted === false && $offer->status > 3 && $offer->my_offer === true) {
+                $template = $offer->templates()->first();
+                $template->last_created = now();
+            }
             if ($offer->status > 3) {
                 $offer->accepted = true;
                 $offer->save();

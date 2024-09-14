@@ -37,7 +37,7 @@ const create = () => {
         ttl: offerTemplate.value.ttl,
     }).then(response => {
         console.log(response.data);
-        location.reload();
+		refreshPage();
 
     }).catch(error => {
         console.log(error);
@@ -50,7 +50,7 @@ const autoCreate = () => {
 
     }).then(response => {
         console.log(response.data);
-        location.reload();
+		refreshPage();
     }).catch(error => {
         console.log(error);
     });
@@ -74,6 +74,10 @@ const offerTemplate = ref({
     ttl: 3600,
 });
 
+const refreshPage = () => {
+	router.visit(route('offers.posting.index'))
+}
+
 </script>
 
 
@@ -81,10 +85,10 @@ const offerTemplate = ref({
     <Head title="Config" />
 
     <guest-layout>
-        <div class=" min-h-screen flex flex-row w-screen">
-            <div class="border-r border-gray-200 w-1/4">
-                <div class="flex flex-col items-center">
-                        <h1 class="text-2xl font-bold underline mb-1 text-center">Create an offer template</h1>
+        <div class=" min-h-screen flex flex-col w-screen">
+            <div class="border-r border-gray-200 w-full">
+				<h1 class="text-2xl font-bold underline mb-1 text-center">Create an offer template</h1>
+                <div class="grid grid-cols-4 flex-wrap items-center mx-auto gap-4 max-w-xl ">
                         <label class="text-sm text-gray-500">Offer Type</label>
                         <select v-model="offerTemplate.type" class="w-36 block mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             <option value="buy">Buy</option>
@@ -106,8 +110,8 @@ const offerTemplate = ref({
                         <text-input v-model="offerTemplate.currency" label="Currency" />
                         <label class="text-sm text-gray-500">Quantity</label>
                         <text-input v-model="offerTemplate.quantity" label="Quantity" />
-                        <payments-input class="mx-16" v-model="offerTemplate.paymentMethods" label="Payment Methods" :options="paymentMethods" />
-                        <providers-input class="mx-16" v-model="offerTemplate.provider" label="Provider" />
+                        <payments-input class="mx-16 col-span-4" v-model="offerTemplate.paymentMethods" label="Payment Methods" :options="paymentMethods" />
+                        <providers-input class="mx-16 col-span-4" v-model="offerTemplate.provider" label="Provider" />
                         <label class="text-sm text-gray-500">Cooldown</label>
                         <text-input v-model="offerTemplate.cooldown" label="Cooldown" />
                         <label class="text-sm text-gray-500">TTL</label>
@@ -121,15 +125,110 @@ const offerTemplate = ref({
                 </div>
             </div>
 
-            <div class="w-3/4">
-                <div class="flex flex-col items-center">
-                    <h1 class="text-2xl font-bold underline mb-1">Templates</h1>
-                    <div class="w-3/4 flex flex-col items-center">
-                        <Template v-for="template in templates" :template="template" :options="paymentMethods" :key="template.id" />
+			<div class="flex flex-col items-center w-full overflow-x-overflow mx-10">
+				<h1 class="text-2xl font-bold underline mb-1">Templates</h1>
+				<div class="  flex flex-col items-center">
+					<!--<Template v-for="template in templates" :template="template" :options="paymentMethods" :key="template.id"-->
+					<!--	@refresh="refreshPage" />-->
+					
+					<table class=" divide-y divide-gray-200">
+						<thead class="bg-gray-50 mx-10">
+							<tr>
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									Type
+								</th>
+								
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									Min
+								</th>
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									Max
+								</th>
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									Premium
+								</th>
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									Latitude
+								</th>
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									Longitude
+								</th>
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									Bond Size
+								</th>
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									Currency
+								</th>
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									Payment Methods
+								</th>
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									Provider
+								</th>
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									Cooldown
+								</th>
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									TTL
+								</th>
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									Auto Create
+								</th>
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									Actions
+								</th>
+								
+							</tr>
+						</thead>
+						<tbody class="bg-white divide-y divide-gray-200">
+							<tr v-for="template in templates" :key="template.id">
+								<td class="px-1 py-4 whitespace-nowrap">
+									<div class="text-sm text-gray-900">{{ template.type }}</div>
+								</td>
+								<td class="px-1 py-4 whitespace-nowrap">
+									<div class="text-sm text-gray-900">{{ template.min_amount }}</div>
+								</td>
+								<td class="px-1 py-4 whitespace-nowrap">
+									<div class="text-sm text-gray-900">{{ template.max_amount }}</div>
+								</td>
+								<td class="px-1 py-4 whitespace-nowrap">
+									<div class="text-sm text-gray-900">{{ template.premium }}</div>
+								</td>
+								<td class="px-1 py-4 whitespace-nowrap">
+									<div class="text-sm text-gray-900">{{ template.latitude }}</div>
+								</td>
+								<td class="px-1 py-4 whitespace-nowrap">
+									<div class="text-sm text-gray-900">{{ template.longitude }}</div>
+								</td>
+								<td class="px-1 py-4 whitespace-nowrap">
+									<div class="text-sm text-gray-900">{{ template.bond_size }}</div>
+								</td>
+								<td class="px-1 py-4 whitespace-nowrap">
+									<div class="text-sm text-gray-900">{{ template.currency }}</div>
+								</td>
+								<td class="px-1 py-4 whitespace-nowrap">
+									<div class="text-sm text-gray-900">{{ template.payment_methods }}</div>
+								</td>
+								<td class="px-1 py-4 whitespace-nowrap">
+									<div class="text-sm text-gray-900">{{ template.provider }}</div>
+								</td>
+								<td class="px-1 py-4 whitespace-nowrap">
+									<div class="text-sm text-gray-900">{{ template.cooldown }}</div>
+								</td>
+								<td class="px-1 py-4 whitespace-nowrap">
+									<div class="text-sm text-gray-900">{{ template.ttl }}</div>
+								</td>
+								<td class="px-1 py-4 whitespace-nowrap">
+									<div class="text-sm text-gray-900">{{ template.auto_create }}</div>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					
+					
 
-                    </div>
-                </div>
-            </div>
+				</div>
+			</div>
 
 
         </div>

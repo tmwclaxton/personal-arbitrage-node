@@ -23,10 +23,14 @@ const props = defineProps({
     }
 });
 
+const emits = defineEmits(['refresh']);
+
 const offerEditTemplate = ref({
     type: props.template.type,
     min: props.template.min_amount,
     max: props.template.max_amount,
+	latitude: props.template.latitude,
+	longitude: props.template.longitude,
     premium: props.template.premium,
     currency: props.template.currency,
     paymentMethods: props.template.payment_methods,
@@ -46,6 +50,8 @@ const update = () => {
         type: offerEditTemplate.value.type,
         min_amount: parseInt(offerEditTemplate.value.min),
         max_amount: parseInt(offerEditTemplate.value.max),
+		latitude: offerEditTemplate.value.latitude,
+		longitude: offerEditTemplate.value.longitude,
         premium: offerEditTemplate.value.premium,
         currency: offerEditTemplate.value.currency,
         payment_methods: offerEditTemplate.value.paymentMethods,
@@ -57,8 +63,8 @@ const update = () => {
         ttl: offerEditTemplate.value.ttl,
     }).then(response => {
         console.log(response.data);
-        // reload the page
-        location.reload();
+		// reload the page
+		emits('refresh');
     }).catch(error => {
         console.log(error);
     });
@@ -68,14 +74,15 @@ const update = () => {
 const deleteTemplate = () => {
     axios.get(route('delete-template', {id: props.template.id})).then(response => {
         console.log(response.data);
-        // reload the page
-        location.reload();
+		// reload the page
+		emits('refresh');
+		
     }).catch(error => {
         console.log(error);
     });
 }
 
-const editMode = ref(false);
+const editMode = ref(true);
 
 // convert the payment methods from json to array
 offerEditTemplate.value.paymentMethods = JSON.parse(offerEditTemplate.value.paymentMethods);
@@ -92,11 +99,14 @@ offerEditTemplate.value.providers = offerEditTemplate.value.provider.split(' ');
         <div class="border-t border-gray-200 my-2"/>
 
         <div class="grid grid-cols-5 gap-2 p-2">
-            <label class="text-sm text-gray-500">Offer Type</label>
-            <select v-model="offerEditTemplate.type" class="w-36 block mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                <option value="buy">Buy</option>
-                <option value="sell">Sell</option>
-            </select>
+			<div class="flex flex-row gap-x-2">
+				<label class="font-bold my-auto">Type:</label>
+				<select v-model="offerEditTemplate.type"
+						class="w-36 block mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+					<option value="buy">Buy</option>
+					<option value="sell">Sell</option>
+				</select>
+			</div>
             <div class="flex flex-row gap-x-2">
                 <p class="font-bold my-auto">Min:</p>
                 <text-input v-model="offerEditTemplate.min" label="Min" class="w-full"/>
@@ -105,6 +115,14 @@ offerEditTemplate.value.providers = offerEditTemplate.value.provider.split(' ');
                 <p class="font-bold my-auto">Max:</p>
                 <text-input v-model="offerEditTemplate.max" label="Max" class="w-full"/>
             </div>
+			<div class="flex flex-row gap-x-2">
+				<p class="font-bold my-auto">Latitude:</p>
+				<text-input v-model="offerEditTemplate.latitude" label="Latitude" class="w-full"/>
+			</div>
+			<div class="flex flex-row gap-x-2">
+				<p class="font-bold my-auto">Longitude:</p>
+				<text-input v-model="offerEditTemplate.longitude" label="Longitude" class="w-full"/>
+			</div>
             <div class="flex flex-row gap-x-2">
                 <p class="font-bold my-auto">Quantity:</p>
                 <text-input v-model="offerEditTemplate.quantity" label="Quantity" class="w-full"/>
