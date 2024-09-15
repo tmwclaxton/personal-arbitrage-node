@@ -43,9 +43,7 @@ const offerEditTemplate = ref({
     ttl: props.template.ttl,
 });
 
-const update = () => {
-
-
+const update = (refreshPage = false) => {
     axios.post(route('edit-template', {id: props.template.id}), {
         type: offerEditTemplate.value.type,
         min_amount: parseInt(offerEditTemplate.value.min),
@@ -63,8 +61,10 @@ const update = () => {
         ttl: offerEditTemplate.value.ttl,
     }).then(response => {
         console.log(response.data);
-		// reload the page
-		emits('refresh');
+		if (refreshPage) {
+			// reload the page
+			emits('refresh');
+		}
     }).catch(error => {
         console.log(error);
     });
@@ -82,7 +82,6 @@ const deleteTemplate = () => {
     });
 }
 
-const editMode = ref(true);
 
 // convert the payment methods from json to array
 offerEditTemplate.value.paymentMethods = JSON.parse(offerEditTemplate.value.paymentMethods);
@@ -93,98 +92,11 @@ offerEditTemplate.value.providers = JSON.parse(offerEditTemplate.value.provider)
 </script>
 
 <template>
-    <!--<div :key="template.id"-->
-    <!--     class="rounded-lg border border-gray-200 w-full my-2 p-2 bg-white dark:bg-zinc-900">-->
-    <!--    <p class="font-bold" v-text="'Template ID: ' + template.id"></p>-->
-    <!--    <div class="border-t border-gray-200 my-2"/>-->
-	
-    <!--    <div class="grid grid-cols-5 gap-2 p-2">-->
-	<!--		<div class="flex flex-row gap-x-2">-->
-	<!--			<label class="font-bold my-auto">Type:</label>-->
-	<!--			<select v-model="offerEditTemplate.type"-->
-	<!--					class="w-36 block mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">-->
-	<!--				<option value="buy">Buy</option>-->
-	<!--				<option value="sell">Sell</option>-->
-	<!--			</select>-->
-	<!--		</div>-->
-    <!--        <div class="flex flex-row gap-x-2">-->
-    <!--            <p class="font-bold my-auto">Min:</p>-->
-    <!--            <text-input v-model="offerEditTemplate.min" label="Min" class="w-full"/>-->
-    <!--        </div>-->
-    <!--        <div class="flex flex-row gap-x-2">-->
-    <!--            <p class="font-bold my-auto">Max:</p>-->
-    <!--            <text-input v-model="offerEditTemplate.max" label="Max" class="w-full"/>-->
-    <!--        </div>-->
-	<!--		<div class="flex flex-row gap-x-2">-->
-	<!--			<p class="font-bold my-auto">Latitude:</p>-->
-	<!--			<text-input v-model="offerEditTemplate.latitude" label="Latitude" class="w-full"/>-->
-	<!--		</div>-->
-	<!--		<div class="flex flex-row gap-x-2">-->
-	<!--			<p class="font-bold my-auto">Longitude:</p>-->
-	<!--			<text-input v-model="offerEditTemplate.longitude" label="Longitude" class="w-full"/>-->
-	<!--		</div>-->
-    <!--        <div class="flex flex-row gap-x-2">-->
-    <!--            <p class="font-bold my-auto">Quantity:</p>-->
-    <!--            <text-input v-model="offerEditTemplate.quantity" label="Quantity" class="w-full"/>-->
-    <!--        </div>-->
-    <!--        <div class="flex flex-row gap-x-2">-->
-    <!--            <p class="font-bold my-auto">Premium:</p>-->
-    <!--            <text-input v-model="offerEditTemplate.premium" label="Premium" class="w-full"/>-->
-    <!--        </div>-->
-    <!--        <div class="flex flex-row gap-x-2">-->
-    <!--            <p class="font-bold my-auto">Bond Size:</p>-->
-    <!--            <text-input v-model="offerEditTemplate.bondSize" label="Bond Size" class="w-full"/>-->
-    <!--        </div>-->
-    <!--        <div class="flex flex-row gap-x-2">-->
-    <!--            <p class="font-bold my-auto">Currency:</p>-->
-    <!--            <text-input v-model="offerEditTemplate.currency" label="Currency" class="w-full"/>-->
-    <!--        </div>-->
-    <!--        <div class="flex flex-row gap-x-2">-->
-    <!--            <p class="font-bold my-auto">Cooldown:</p>-->
-    <!--            <text-input v-model="offerEditTemplate.cooldown" label="Cooldown" class="w-full"/>-->
-    <!--        </div>-->
-    <!--        <div class="flex flex-row gap-x-2">-->
-    <!--            <p class="font-bold my-auto">TTL:</p>-->
-    <!--            <text-input v-model="offerEditTemplate.ttl" label="TTL" class="w-full"/>-->
-    <!--        </div>-->
-    <!--        <div class="flex flex-row gap-x-2 col-span-2 mt-2">-->
-    <!--            <p class="font-bold my-auto ">Auto Create:</p>-->
-    <!--            <toggle-button v-model="offerEditTemplate.autoCreate" label="Auto Create" class=""/>-->
-    <!--        </div>-->
-    <!--        <div class="flex flex-row gap-x-2 col-span-5">-->
-    <!--            <p class="font-bold my-auto">Payment Methods:</p>-->
-    <!--            <payments-input :key="template.id + 'payment'" :payment_methods="offerEditTemplate.paymentMethods"-->
-    <!--                v-model="offerEditTemplate.paymentMethods" label="Payment Methods" class="w-full" :options="payment_methods"/>-->
-    <!--        </div>-->
-    <!--        <div class="flex flex-row gap-x-2 col-span-5">-->
-    <!--            <p class="font-bold my-auto">Provider:</p>-->
-    <!--            <providers-input :key="template.id + 'provider'"-->
-    <!--                :providers="offerEditTemplate.providers"-->
-    <!--                :options="providers"-->
-    <!--                v-model="offerEditTemplate.providers" label="Provider" class="w-full ml-10"/>-->
-    <!--        </div>-->
-	
-    <!--        &lt;!&ndash;<text-input v-model="offerEditTemplate.max" label="Max" />&ndash;&gt;-->
-    <!--        &lt;!&ndash;<text-input v-model="offerEditTemplate.premium" label="Premium" />&ndash;&gt;-->
-    <!--        &lt;!&ndash;<text-input v-model="offerEditTemplate.bondSize" label="Bond Size" />&ndash;&gt;-->
-    <!--        &lt;!&ndash;<text-input v-model="offerEditTemplate.currency" label="Currency" />&ndash;&gt;-->
-    <!--        &lt;!&ndash;<payments-input  v-model="offerEditTemplate.paymentMethods" label="Payment Methods" />&ndash;&gt;-->
-    <!--        &lt;!&ndash;<providers-input v-model="offerEditTemplate.provider" label="Provider" />&ndash;&gt;-->
-    <!--        &lt;!&ndash;<toggle-button v-model="offerEditTemplate.autoCreate" label="Auto Create" />&ndash;&gt;-->
-    <!--    </div>-->
-	
-    <!--    <div class="flex flex-row justify-between">-->
-    <!--        <div class="flex flex-row gap-x-2">-->
-    <!--            <secondary-button @click="editMode = !editMode" v-text="editMode ? 'Cancel' : 'Edit'"/>-->
-    <!--            <primary-button v-if="editMode" @click="update" v-text="'Update'"/>-->
-    <!--        </div>-->
-    <!--        <danger-button v-if="editMode" @click="deleteTemplate" v-text="'Delete'"/>-->
-    <!--    </div>-->
-    <!--</div>-->
+
 	
 	<tr  :key="template.id" class="bg-white dark:bg-zinc-900">
 		<td class="px-1 py-4 whitespace-nowrap text-center">
-			<div class="text-sm text-gray-900 dark:text-gray-200">{{ template.slug }}</div>
+			<div class="text-sm font-bold text-gray-900 dark:text-gray-200">{{ template.slug }}</div>
 		</td>
 		<td class="px-1 py-4 whitespace-nowrap text-center">
 			<select v-model="offerEditTemplate.type"
@@ -214,14 +126,14 @@ offerEditTemplate.value.providers = JSON.parse(offerEditTemplate.value.provider)
 		<td class="px-1 py-4 whitespace-nowrap text-center">
 			<text-input v-model="offerEditTemplate.currency" label="Currency" class="w-16"/>
 		</td>
-		<td class="px-1 py-4 whitespace-nowrap text-center w-20">
+		<td class="px-1 py-4 whitespace-nowrap text-center ">
 			<payments-input :key="template.id + 'payment'" :payment_methods="offerEditTemplate.paymentMethods"
-				v-model="offerEditTemplate.paymentMethods" label="Payment Methods" class="w-full" :options="payment_methods"/>
+				v-model="offerEditTemplate.paymentMethods" label="Payment Methods" class="w-96" :options="payment_methods"/>
 		</td>
 		<td class="px-1 py-4 whitespace-nowrap text-center w-20">
 			<providers-input :key="template.id + 'provider'"
 				:providers="offerEditTemplate.providers"
-				:options="providers"  v-model="offerEditTemplate.providers" label="Provider" class="w-full ml-10"/>
+				:options="providers"  v-model="offerEditTemplate.providers" label="Provider" class="w-full "/>
 		</td>
 		<td class="px-1 py-4 whitespace-nowrap text-center">
 			<text-input v-model="offerEditTemplate.cooldown" label="Cooldown" class="w-14"/>
@@ -230,11 +142,15 @@ offerEditTemplate.value.providers = JSON.parse(offerEditTemplate.value.provider)
 			<text-input v-model="offerEditTemplate.ttl" label="TTL" class="w-16"/>
 		</td>
 		<td class="px-1 py-4 whitespace-nowrap text-center">
+			<text-input v-model="offerEditTemplate.quantity" label="Quantity" class="w-12"/>
+		</td>
+		<td class="px-1 py-4 whitespace-nowrap text-center">
 			<toggle-button v-model="offerEditTemplate.autoCreate" label="Auto Create" />
 		</td>
 		<td class="px-1 py-4 whitespace-nowrap text-center">
 			<div class="flex flex-col gap-y-2 ">
-				<primary-button  @click="update" v-text="'Update'"/>
+				<primary-button @click="update(true)" v-text="'Update'"/>
+				<primary-button :id="'update' + template.id" @click="update(false)" v-text="'Update'" class="hidden"/>
 				<danger-button @click="deleteTemplate" v-text="'Delete'"/>
 			</div>
 		</td>

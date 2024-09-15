@@ -32,7 +32,7 @@ const submit = () => {
 
 <template>
 	<div class="flex flex-col gap-y-2 ">
-		<p class="my-1 mt-2 text-md font-bold">Provider</p>
+		<!--<p class="my-1 mt-2 text-md font-bold">Provider</p>-->
 		<div class="select-none flex flex-row gap-x-5 flex-wrap">
 			<div v-for="(option, index) in options" :key="option" class="flex flex-row gap-2 items-center">
 				<!-- Custom Checkbox for each option -->

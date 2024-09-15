@@ -189,7 +189,7 @@ Route::get('test-kraken', function () {
 //         # check if the template is active
 //         if ($template->auto_create) {
 //             # check if the template quantity is less than matching offers
-//             $count = Offer::where([['status', '<=', 1], ['posted_offer_template_id', $template->id]])->get()->count();
+//             $count = Offer::where([['status', '<=', 1], ['posted_offer_template_slug', $template->id]])->get()->count();
 //             if ($template->quantity > $count) {
 //
 //                 for ($i = 0; $i < $template->quantity - $count; $i++) {

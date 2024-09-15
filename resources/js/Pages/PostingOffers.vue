@@ -11,6 +11,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import GuestLayout from "@/Layouts/GuestLayout.vue";
 import ProvidersInput from "@/Components/ProvidersInput.vue";
 import Template from "@/Components/Template.vue";
+import SecondaryButton from "@/Components/SecondaryButton.vue";
 
 
 const props = defineProps({
@@ -46,17 +47,6 @@ const create = () => {
 }
 
 
-const autoCreate = () => {
-    axios.post(route('offer.autocreate'), {
-
-    }).then(response => {
-        console.log(response.data);
-		refreshPage();
-    }).catch(error => {
-        console.log(error);
-    });
-
-}
 
 const offerTemplate = ref({
     type: 'sell',
@@ -76,9 +66,18 @@ const offerTemplate = ref({
 });
 
 const refreshPage = () => {
-	router.visit(route('offers.posting.index'))
+	router.visit(route('offers.posting.index'), {preserveScroll: true, preserveState: true});
 }
 
+const updateAll = () => {
+	
+	// foreach click button using id :id="'update' + template.id"
+	for (let template of props.templates) {
+	 	document.getElementById('update' + template.id).click();
+ 	}
+	
+	refreshPage();
+};
 
 const hideSidebar = ref(false);
 </script>
@@ -117,7 +116,9 @@ const hideSidebar = ref(false);
                         <text-input v-model="offerTemplate.currency" label="Currency" />
                         <label class="text-sm text-gray-500">Quantity</label>
                         <text-input v-model="offerTemplate.quantity" label="Quantity" />
+						<label class="text-sm text-gray-500">Payment Methods</label>
                         <payments-input class="mx-16 col-span-4" v-model="offerTemplate.paymentMethods" label="Payment Methods" :options="paymentMethods" />
+						<label class="text-sm text-gray-500">Providers</label>
                         <providers-input class="mx-16 col-span-4" :options="providers" v-model="offerTemplate.provider" label="Provider" />
                         <label class="text-sm text-gray-500">Cooldown</label>
                         <text-input v-model="offerTemplate.cooldown" label="Cooldown" />
@@ -132,13 +133,16 @@ const hideSidebar = ref(false);
                 </div>
             </div>
 
-			<div class="flex flex-col items-center w-full overflow-x-overflow mx-10">
-				<h1 class="text-2xl font-bold underline mb-1">Templates</h1>
-				<div class="  flex flex-col items-center">
-
+			<div class="flex flex-col items-center w-3/4 overflow-x-overflow px-5">
+				<div class="flex flex-row gap-x-2 mb-3">
+					<h1 class="text-2xl font-bold underline mb-1">Templates</h1>
+					<secondary-button @click="updateAll">Update All</secondary-button>
+				</div>
+				<div class="w-full overflow-x-scroll mx-5  flex flex-col rounded border">
 					
-					<table class=" divide-y divide-gray-200">
-						<thead class="bg-gray-50 mx-10">
+					
+					<table class="divide-y divide-gray-200">
+						<thead class="bg-gray-50 px-10">
 							<tr>
 								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
 									Template ID
@@ -181,6 +185,9 @@ const hideSidebar = ref(false);
 									TTL
 								</th>
 								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
+									Qty
+								</th>
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
 									Active
 								</th>
 								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
@@ -190,12 +197,13 @@ const hideSidebar = ref(false);
 							</tr>
 						</thead>
 						<tbody class="bg-white divide-y divide-gray-200">
-							<!--<template v-for="template in templates" :key="template.id" :template="template"-->
-							<!--		  :providers="providers" :paymentMethods="paymentMethods">-->
-							
-							<!--</template>-->
-							<Template v-for="template in templates" :template="template" :options="paymentMethods" :key="template.id"
-									  @refresh="refreshPage" />
+							<Template
+							  v-for="template in templates"
+							  :template="template"
+							  :payment_methods="paymentMethods"
+							  :key="template.id"
+							  @refresh="refreshPage"
+							/>
 						</tbody>
 					</table>
 					
