@@ -2,6 +2,7 @@
 
 namespace App\WorkerClasses;
 
+use App\Models\AdminDashboard;
 use App\Models\BtcFiat;
 use Brick\Math\BigDecimal;
 
@@ -41,5 +42,19 @@ class HelperFunctions
     // satoshi to btc
     public function satoshiToBtc($satoshi) {
         return $satoshi / 100000000;
+    }
+
+    public function getOnlineProviders(): array
+    {
+        $adminDashboard = AdminDashboard::first();
+        $raw = json_decode($adminDashboard->provider_statuses, true);
+        $providers = [];
+        // get keys of the array where the value is not false
+        foreach ($raw as $key => $value) {
+            if ($value !== false) {
+                $providers[] = $key;
+            }
+        }
+        return $providers;
     }
 }

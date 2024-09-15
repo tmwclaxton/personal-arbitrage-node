@@ -19,7 +19,7 @@ const props = defineProps({
     },
     providers: {
         type: Array,
-        default: ['satstralia', 'temple', 'lake', 'veneto', 'exp']
+        // default: ['satstralia', 'temple', 'lake', 'veneto', 'exp']
     }
 });
 

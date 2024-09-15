@@ -16,6 +16,7 @@ import L from 'leaflet';
 const props = defineProps({
     templates: Object,
     paymentMethods: Array,
+	providers: Array,
 });
 
 
@@ -111,7 +112,7 @@ const refreshPage = () => {
                         <label class="text-sm text-gray-500">Quantity</label>
                         <text-input v-model="offerTemplate.quantity" label="Quantity" />
                         <payments-input class="mx-16 col-span-4" v-model="offerTemplate.paymentMethods" label="Payment Methods" :options="paymentMethods" />
-                        <providers-input class="mx-16 col-span-4" v-model="offerTemplate.provider" label="Provider" />
+                        <providers-input class="mx-16 col-span-4" :options="providers" v-model="offerTemplate.provider" label="Provider" />
                         <label class="text-sm text-gray-500">Cooldown</label>
                         <text-input v-model="offerTemplate.cooldown" label="Cooldown" />
                         <label class="text-sm text-gray-500">TTL</label>
@@ -182,43 +183,43 @@ const refreshPage = () => {
 						</thead>
 						<tbody class="bg-white divide-y divide-gray-200">
 							<tr v-for="template in templates" :key="template.id">
-								<td class="px-1 py-4 whitespace-nowrap">
+								<td class="px-1 py-4 whitespace-nowrap text-center">
 									<div class="text-sm text-gray-900">{{ template.type }}</div>
 								</td>
-								<td class="px-1 py-4 whitespace-nowrap">
+								<td class="px-1 py-4 whitespace-nowrap text-center">
 									<div class="text-sm text-gray-900">{{ template.min_amount }}</div>
 								</td>
-								<td class="px-1 py-4 whitespace-nowrap">
+								<td class="px-1 py-4 whitespace-nowrap text-center">
 									<div class="text-sm text-gray-900">{{ template.max_amount }}</div>
 								</td>
-								<td class="px-1 py-4 whitespace-nowrap">
+								<td class="px-1 py-4 whitespace-nowrap text-center">
 									<div class="text-sm text-gray-900">{{ template.premium }}</div>
 								</td>
-								<td class="px-1 py-4 whitespace-nowrap">
+								<td class="px-1 py-4 whitespace-nowrap text-center">
 									<div class="text-sm text-gray-900">{{ template.latitude }}</div>
 								</td>
-								<td class="px-1 py-4 whitespace-nowrap">
+								<td class="px-1 py-4 whitespace-nowrap text-center">
 									<div class="text-sm text-gray-900">{{ template.longitude }}</div>
 								</td>
-								<td class="px-1 py-4 whitespace-nowrap">
+								<td class="px-1 py-4 whitespace-nowrap text-center">
 									<div class="text-sm text-gray-900">{{ template.bond_size }}</div>
 								</td>
-								<td class="px-1 py-4 whitespace-nowrap">
+								<td class="px-1 py-4 whitespace-nowrap text-center">
 									<div class="text-sm text-gray-900">{{ template.currency }}</div>
 								</td>
-								<td class="px-1 py-4 whitespace-nowrap">
+								<td class="px-1 py-4 whitespace-nowrap text-center">
 									<div class="text-sm text-gray-900">{{ template.payment_methods }}</div>
 								</td>
-								<td class="px-1 py-4 whitespace-nowrap">
+								<td class="px-1 py-4 whitespace-nowrap text-center">
 									<div class="text-sm text-gray-900">{{ template.provider }}</div>
 								</td>
-								<td class="px-1 py-4 whitespace-nowrap">
+								<td class="px-1 py-4 whitespace-nowrap text-center">
 									<div class="text-sm text-gray-900">{{ template.cooldown }}</div>
 								</td>
-								<td class="px-1 py-4 whitespace-nowrap">
+								<td class="px-1 py-4 whitespace-nowrap text-center">
 									<div class="text-sm text-gray-900">{{ template.ttl }}</div>
 								</td>
-								<td class="px-1 py-4 whitespace-nowrap">
+								<td class="px-1 py-4 whitespace-nowrap text-center">
 									<div class="text-sm text-gray-900">{{ template.auto_create }}</div>
 								</td>
 							</tr>

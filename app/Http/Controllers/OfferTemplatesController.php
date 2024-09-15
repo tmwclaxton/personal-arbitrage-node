@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AdminDashboard;
 use App\Models\Offer;
 use App\Models\PaymentMethod;
 use App\Models\PostedOfferTemplate;
+use App\WorkerClasses\HelperFunctions;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -12,9 +14,12 @@ class OfferTemplatesController extends Controller
 {
     public function postingPage()
     {
+        $helpers = new HelperFunctions();
+        $providers = $helpers->getOnlineProviders();
         return Inertia::render('PostingOffers', [
             'templates' => PostedOfferTemplate::all(),
             'paymentMethods' => PaymentMethod::all()->pluck('name'),
+            'providers' => $providers,
         ]);
     }
 
