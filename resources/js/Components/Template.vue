@@ -87,8 +87,8 @@ const editMode = ref(true);
 // convert the payment methods from json to array
 offerEditTemplate.value.paymentMethods = JSON.parse(offerEditTemplate.value.paymentMethods);
 
-//  convert provider from String to Array
-offerEditTemplate.value.providers = offerEditTemplate.value.provider.split(' ');
+// convert the provider from json to array
+offerEditTemplate.value.providers = JSON.parse(offerEditTemplate.value.provider);
 
 </script>
 
@@ -215,10 +215,13 @@ offerEditTemplate.value.providers = offerEditTemplate.value.provider.split(' ');
 			<text-input v-model="offerEditTemplate.currency" label="Currency" class="w-16"/>
 		</td>
 		<td class="px-1 py-4 whitespace-nowrap text-center w-20">
-			<payments-input  v-model="offerEditTemplate.paymentMethods" label="Payment Methods" />
+			<payments-input :key="template.id + 'payment'" :payment_methods="offerEditTemplate.paymentMethods"
+				v-model="offerEditTemplate.paymentMethods" label="Payment Methods" class="w-full" :options="payment_methods"/>
 		</td>
 		<td class="px-1 py-4 whitespace-nowrap text-center w-20">
-			<providers-input v-model="offerEditTemplate.provider" label="Provider" />
+			<providers-input :key="template.id + 'provider'"
+				:providers="offerEditTemplate.providers"
+				:options="providers"  v-model="offerEditTemplate.providers" label="Provider" class="w-full ml-10"/>
 		</td>
 		<td class="px-1 py-4 whitespace-nowrap text-center">
 			<text-input v-model="offerEditTemplate.cooldown" label="Cooldown" class="w-14"/>

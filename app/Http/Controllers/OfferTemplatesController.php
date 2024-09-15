@@ -64,7 +64,7 @@ class OfferTemplatesController extends Controller
         // validate the request (i.e. bond size must be 3 or greater)
         $request->validate([
             'type' => 'required|in:buy,sell',
-            'provider' => 'required|array|max:1',
+            'provider' => 'required|array',
             'currency' => 'required|size:3|alpha',
             'premium' => 'required',
             'min_amount' => 'required|numeric|min:0|gt:0',

@@ -11,7 +11,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import GuestLayout from "@/Layouts/GuestLayout.vue";
 import ProvidersInput from "@/Components/ProvidersInput.vue";
 import Template from "@/Components/Template.vue";
-import L from 'leaflet';
+
 
 const props = defineProps({
     templates: Object,
