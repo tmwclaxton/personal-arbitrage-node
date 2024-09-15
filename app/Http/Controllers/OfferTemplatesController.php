@@ -75,7 +75,7 @@ class OfferTemplatesController extends Controller
         ]);
 
         $template->type = $request->type;
-        $template->provider = $request->provider[0];
+        $template->provider = json_encode($request->provider);
         $template->currency = $request->currency;
         $template->premium = (float) $request->premium;
         $template->min_amount = $request->min_amount;

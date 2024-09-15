@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('posted_offer_templates', function (Blueprint $table) {
             $table->id();
             $table->enum('type', ['buy', 'sell'])->default('sell');
-            $table->string('provider');
+            $table->json('provider');
             $table->string('currency');
             $table->decimal('premium', 10, 2);
             $table->decimal('min_amount', 10, 2);
