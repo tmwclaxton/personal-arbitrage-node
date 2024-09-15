@@ -17,8 +17,10 @@ class OfferTemplatesController extends Controller
     {
         $helpers = new HelperFunctions();
         $providers = $helpers->getOnlineProviders();
+        $templates = PostedOfferTemplate::all();
+
         return Inertia::render('PostingOffers', [
-            'templates' => PostedOfferTemplate::all(),
+            'templates' => $templates,
             'paymentMethods' => PaymentMethod::all()->pluck('name'),
             'providers' => $providers,
         ]);

@@ -10,7 +10,7 @@ const props = defineProps({
 	},
 	options: {
 		type: Array,
-		// default: ['satstralia', 'temple', 'lake', 'veneto', 'exp']
+		default: ['satstralia', 'temple', 'lake', 'veneto']
 	}
 });
 

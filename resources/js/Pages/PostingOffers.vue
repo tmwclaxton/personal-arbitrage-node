@@ -79,6 +79,8 @@ const refreshPage = () => {
 	router.visit(route('offers.posting.index'))
 }
 
+
+const hideSidebar = ref(false);
 </script>
 
 
@@ -86,8 +88,12 @@ const refreshPage = () => {
     <Head title="Config" />
 
     <guest-layout>
+		<div class="w-1/6 flex flex-row">
+			<primary-button @click="hideSidebar = !hideSidebar" class="w-max mx-auto">Toggle Sidebar</primary-button>
+		</div>
         <div class=" min-h-screen flex flex-row w-screen">
-            <div class="border-r border-gray-200 w-1/4">
+            <div v-if="!hideSidebar"
+			  class="border-r border-gray-200 w-1/4">
 				<h1 class="text-2xl font-bold underline mb-1 text-center">Create an offer template</h1>
                 <div class="flex flex-col flex-wrap items-center mx-auto gap-2 max-w-xl ">
                         <label class="text-sm text-gray-500">Offer Type</label>
@@ -117,7 +123,7 @@ const refreshPage = () => {
                         <text-input v-model="offerTemplate.cooldown" label="Cooldown" />
                         <label class="text-sm text-gray-500">TTL</label>
                         <text-input v-model="offerTemplate.ttl" label="TTL" />
-                        <label class="text-sm text-gray-500 mt-5">Auto Create</label>
+                        <label class="text-sm text-gray-500 mt-5">Active</label>
                         <toggle-button v-model="offerTemplate.autoCreate" label="Auto Create" />
 
                         <primary-button class="mt-4" @click="create">Create</primary-button>
@@ -129,8 +135,7 @@ const refreshPage = () => {
 			<div class="flex flex-col items-center w-full overflow-x-overflow mx-10">
 				<h1 class="text-2xl font-bold underline mb-1">Templates</h1>
 				<div class="  flex flex-col items-center">
-					<!--<Template v-for="template in templates" :template="template" :options="paymentMethods" :key="template.id"-->
-					<!--	@refresh="refreshPage" />-->
+
 					
 					<table class=" divide-y divide-gray-200">
 						<thead class="bg-gray-50 mx-10">
@@ -176,7 +181,7 @@ const refreshPage = () => {
 									TTL
 								</th>
 								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
-									Auto Create
+									Active
 								</th>
 								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
 									Actions
@@ -185,50 +190,12 @@ const refreshPage = () => {
 							</tr>
 						</thead>
 						<tbody class="bg-white divide-y divide-gray-200">
-							<tr v-for="template in templates" :key="template.id">
-								<td class="px-1 py-4 whitespace-nowrap text-center">
-									<div class="text-sm text-gray-900">{{ template.slug }}</div>
-								</td>
-								<td class="px-1 py-4 whitespace-nowrap text-center">
-									<div class="text-sm text-gray-900">{{ template.type }}</div>
-								</td>
-								<td class="px-1 py-4 whitespace-nowrap text-center">
-									<div class="text-sm text-gray-900">{{ template.min_amount }}</div>
-								</td>
-								<td class="px-1 py-4 whitespace-nowrap text-center">
-									<div class="text-sm text-gray-900">{{ template.max_amount }}</div>
-								</td>
-								<td class="px-1 py-4 whitespace-nowrap text-center">
-									<div class="text-sm text-gray-900">{{ template.premium }}</div>
-								</td>
-								<td class="px-1 py-4 whitespace-nowrap text-center">
-									<div class="text-sm text-gray-900">{{ template.latitude }}</div>
-								</td>
-								<td class="px-1 py-4 whitespace-nowrap text-center">
-									<div class="text-sm text-gray-900">{{ template.longitude }}</div>
-								</td>
-								<td class="px-1 py-4 whitespace-nowrap text-center">
-									<div class="text-sm text-gray-900">{{ template.bond_size }}</div>
-								</td>
-								<td class="px-1 py-4 whitespace-nowrap text-center">
-									<div class="text-sm text-gray-900">{{ template.currency }}</div>
-								</td>
-								<td class="px-1 py-4 whitespace-nowrap text-center">
-									<div class="text-sm text-gray-900">{{ template.payment_methods }}</div>
-								</td>
-								<td class="px-1 py-4 whitespace-nowrap text-center">
-									<div class="text-sm text-gray-900">{{ template.provider }}</div>
-								</td>
-								<td class="px-1 py-4 whitespace-nowrap text-center">
-									<div class="text-sm text-gray-900">{{ template.cooldown }}</div>
-								</td>
-								<td class="px-1 py-4 whitespace-nowrap text-center">
-									<div class="text-sm text-gray-900">{{ template.ttl }}</div>
-								</td>
-								<td class="px-1 py-4 whitespace-nowrap text-center">
-									<div class="text-sm text-gray-900">{{ template.auto_create }}</div>
-								</td>
-							</tr>
+							<!--<template v-for="template in templates" :key="template.id" :template="template"-->
+							<!--		  :providers="providers" :paymentMethods="paymentMethods">-->
+							
+							<!--</template>-->
+							<Template v-for="template in templates" :template="template" :options="paymentMethods" :key="template.id"
+									  @refresh="refreshPage" />
 						</tbody>
 					</table>
 					

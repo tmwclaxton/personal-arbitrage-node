@@ -50,6 +50,9 @@ class HelperFunctions
         $raw = json_decode($adminDashboard->provider_statuses, true);
         $providers = [];
         // get keys of the array where the value is not false
+        if ($raw === null) {
+            return [];
+        }
         foreach ($raw as $key => $value) {
             if ($value !== false) {
                 $providers[] = $key;
