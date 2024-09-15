@@ -51,8 +51,8 @@ class DiscordCommands implements ShouldQueue
             '!toggleAutoChat',
             '!toggleAutoTopup',
             '!toggleAutoConfirm',
-            '!autoSchedule',
-            '!autoCreate',
+            '!toggleAutoSchedule',
+            '!toggleAutoCreate',
             '!setSellPremium',
             '!setBuyPremium',
             '!setConcurrentTransactions',
@@ -110,12 +110,12 @@ class DiscordCommands implements ShouldQueue
                             $offer = Offer::where('robosatsId', $secondWord)->first();
                             ConfirmPayment::dispatch($offer, $adminDashboard);
                             break;
-                        case '!autoSchedule':
+                        case '!toggleAutoSchedule':
                             $adminDashboard->scheduler = !$adminDashboard->scheduler;
                             $adminDashboard->save();
                             $discordService->sendMessage('Auto schedule is now ' . ($adminDashboard->scheduler ? 'on' : 'off'));
                             break;
-                        case '!autoCreate':
+                        case '!toggleAutoCreate':
                             $adminDashboard->autoCreate = !$adminDashboard->autoCreate;
                             $adminDashboard->save();
                             $discordService->sendMessage('Auto create is now ' . ($adminDashboard->autoCreate ? 'on' : 'off'));

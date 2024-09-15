@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('posted_offer_templates', function (Blueprint $table) {
             $table->id();
+            $table->string('slug')->unique();
             $table->enum('type', ['buy', 'sell'])->default('sell');
             $table->json('provider');
             $table->string('currency');

@@ -57,4 +57,15 @@ class HelperFunctions
         }
         return $providers;
     }
+
+    public function generateSlug($length = 8): string
+    {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $slug = '';
+        for ($i = 0; $i < $length; $i++) {
+            $slug .= $characters[rand(0, $charactersLength - 1)];
+        }
+        return $slug;
+    }
 }

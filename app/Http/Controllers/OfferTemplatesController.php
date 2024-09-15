@@ -9,6 +9,7 @@ use App\Models\PostedOfferTemplate;
 use App\WorkerClasses\HelperFunctions;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use SebastianBergmann\Template\Template;
 
 class OfferTemplatesController extends Controller
 {
@@ -26,6 +27,8 @@ class OfferTemplatesController extends Controller
     public function createTemplate(Request $request): array
     {
         $template = new PostedOfferTemplate();
+        $helpers = new HelperFunctions();
+        $template->slug = $helpers->generateSlug();
         $this->offerUpdate($request, $template);
 
         return [

@@ -86,12 +86,12 @@ const refreshPage = () => {
     <Head title="Config" />
 
     <guest-layout>
-        <div class=" min-h-screen flex flex-col w-screen">
-            <div class="border-r border-gray-200 w-full">
+        <div class=" min-h-screen flex flex-row w-screen">
+            <div class="border-r border-gray-200 w-1/4">
 				<h1 class="text-2xl font-bold underline mb-1 text-center">Create an offer template</h1>
-                <div class="grid grid-cols-4 flex-wrap items-center mx-auto gap-4 max-w-xl ">
+                <div class="flex flex-col flex-wrap items-center mx-auto gap-2 max-w-xl ">
                         <label class="text-sm text-gray-500">Offer Type</label>
-                        <select v-model="offerTemplate.type" class="w-36 block mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <select v-model="offerTemplate.type" class="w-36 block  bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             <option value="buy">Buy</option>
                             <option value="sell">Sell</option>
                         </select>
@@ -135,47 +135,50 @@ const refreshPage = () => {
 					<table class=" divide-y divide-gray-200">
 						<thead class="bg-gray-50 mx-10">
 							<tr>
-								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
+									Template ID
+								</th>
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
 									Type
 								</th>
 								
-								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
 									Min
 								</th>
-								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
 									Max
 								</th>
-								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
 									Premium
 								</th>
-								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
 									Latitude
 								</th>
-								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
 									Longitude
 								</th>
-								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
 									Bond Size
 								</th>
-								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
 									Currency
 								</th>
-								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
 									Payment Methods
 								</th>
-								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
 									Provider
 								</th>
-								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
 									Cooldown
 								</th>
-								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
 									TTL
 								</th>
-								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
 									Auto Create
 								</th>
-								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
 									Actions
 								</th>
 								
@@ -183,6 +186,9 @@ const refreshPage = () => {
 						</thead>
 						<tbody class="bg-white divide-y divide-gray-200">
 							<tr v-for="template in templates" :key="template.id">
+								<td class="px-1 py-4 whitespace-nowrap text-center">
+									<div class="text-sm text-gray-900">{{ template.slug }}</div>
+								</td>
 								<td class="px-1 py-4 whitespace-nowrap text-center">
 									<div class="text-sm text-gray-900">{{ template.type }}</div>
 								</td>
