@@ -66,7 +66,7 @@ class AutoJobs extends Command
                 // we want to create a Slack channel for the offer if it doesn't exist
                 $slackService = new SlackService();
                 if ($offer->slack_channel_id === null) {
-                    $channel_id = $slackService->createChannel($offer->robosatsId);
+                    $channel_id = $slackService->createChannel("Order " . strval($offer->robosatsId));
                     $offer->slack_channel_id = $channel_id;
                     $offer->save();
                 }
