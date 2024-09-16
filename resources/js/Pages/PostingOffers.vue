@@ -137,7 +137,7 @@ const hideSidebar = ref(false);
                 </div>
             </div>
 
-			<div class="flex flex-col items-center w-3/4 overflow-x-overflow px-5">
+			<div class="flex flex-col items-center w-3/4 overflow-x-overflow px-5" :class="{'w-full': hideSidebar}">
 				<div class="flex flex-row gap-x-2 mb-3">
 					<h1 class="text-2xl font-bold underline mb-1">Templates</h1>
 					<secondary-button @click="updateAll">Update All</secondary-button>

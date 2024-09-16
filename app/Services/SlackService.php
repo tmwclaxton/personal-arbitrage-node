@@ -92,8 +92,13 @@ class SlackService
      * @throws GuzzleException
      * @throws \Exception
      */
-    public function sendMessage(string $message, string $channelId): void
+    public function sendMessage(string $message, string $channelId = null): void
     {
+        if (!$channelId) {
+            $adminDashboard = AdminDashboard::all()->first();
+            $channelId = $adminDashboard->slack_main_channel_id;
+        }
+
         $this->client->chatPostMessage([
             'channel' => $channelId,
             'text' => $message,

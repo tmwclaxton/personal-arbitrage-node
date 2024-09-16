@@ -46,7 +46,7 @@ class PayEscrow implements ShouldQueue
             $escrowInvoice = $transaction->escrow_invoice;
             $lightningNode = new LightningNode();
             if ( ($this->offer->status === 6 || $this->offer->status === 7)) {
-                (new SlackService)->sendMessage('Paid escrow for offer ' . $this->offer->robosatsId );
+                (new SlackService)->sendMessage('Paid escrow for offer ' . $this->offer->robosatsId, $this->offer->slack_channel_id);
                 $lightningNode->payInvoice($escrowInvoice);
             }
 

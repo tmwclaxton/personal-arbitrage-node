@@ -63,6 +63,13 @@ class AutoJobs extends Command
             // if status is 3 then dispatch a bond job
             if (($offer->status == 3 || ($offer->my_offer && $offer->status == 0))
                 && $adminDashboard->autoBond) {
+                // we want to create a Slack channel for the offer if it doesn't exist
+                $slackService = new SlackService();
+                if ($offer->slack_channel_id === null) {
+                    $channel_id = $slackService->createChannel($offer->robosatsId);
+                    $offer->slack_channel_id = $channel_id;
+                    $offer->save();
+                }
                 PayBond::dispatch($offer, $adminDashboard);
             }
 
@@ -73,13 +80,7 @@ class AutoJobs extends Command
             if ($offer->status > 3) {
                 $offer->accepted = true;
                 $offer->save();
-                // we want to create a Slack channel for the offer if it doesn't exist
-                $slackService = new SlackService();
-                if ($offer->slack_channel_id === null) {
-                    $channel_id = $slackService->createChannel($offer->robosatsId);
-                    $offer->slack_channel_id = $channel_id;
-                    $offer->save();
-                }
+
             }
             if (($offer->status == 6 || $offer->status == 7) && $adminDashboard->autoEscrow) {
                 PayEscrow::dispatch($offer, $adminDashboard);

@@ -11,6 +11,8 @@ import ToggleButton from "@/Components/ToggleButton.vue";
 import {router} from "@inertiajs/vue3";
 import DangerButton from "@/Components/DangerButton.vue";
 import {useConfirmModalStore} from "@/Stores/ConfirmModelStore.js";
+import Dropdown from 'vue-simple-search-dropdown';
+import SearchSelect from "@/Components/SearchSelect.vue";
 
 const props = defineProps({
     template: Object,
@@ -150,6 +152,7 @@ offerEditTemplate.value.providers = JSON.parse(offerEditTemplate.value.provider)
 			<providers-input :key="template.id + 'provider'"
 				:providers="offerEditTemplate.providers"
 				:options="providers"  v-model="offerEditTemplate.providers" label="Provider" class="w-full "/>
+
 		</td>
 		<td class="px-1 py-4 whitespace-nowrap text-center">
 			<text-input v-model="offerEditTemplate.cooldown" label="Cooldown" class="w-14"/>

@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Offer;
+use App\Services\SlackService;
 use Illuminate\Console\Command;
 
 class RetireOffer extends Command
@@ -34,6 +35,10 @@ class RetireOffer extends Command
             $offer->robosatsIdStorage = $offer->robosatsId;
             $offer->robosatsId = $randomNumber;
             $offer->save();
+
+            // if there is a slack channel associated with the offer, archive it
+            $slackService = new SlackService();
+            $slackService->deleteChannel($offer->slack_channel_id);
 
         }
     }

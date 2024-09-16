@@ -1156,6 +1156,8 @@ class Robosats
         $offer->my_offer = true;
         $offer->save();
 
+        $slackService->createChannel(strval($offer->robosatsId));
+
 
 
 
