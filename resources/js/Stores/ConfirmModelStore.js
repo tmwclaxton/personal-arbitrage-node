@@ -1,6 +1,4 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
-import {useToastStore} from "@/Stores/ToastStore";
 export const useConfirmModalStore = defineStore('ConfirmModalStore', {
     state: () => {
         return {

@@ -10,6 +10,7 @@ import PaymentsInput from "@/Components/PaymentsInput.vue";
 import ToggleButton from "@/Components/ToggleButton.vue";
 import {router} from "@inertiajs/vue3";
 import DangerButton from "@/Components/DangerButton.vue";
+import {useConfirmModalStore} from "@/Stores/ConfirmModelStore.js";
 
 const props = defineProps({
     template: Object,
@@ -76,15 +77,22 @@ const update = (refreshPage = false) => {
 }
 
 const deleteTemplate = () => {
-    axios.get(route('delete-template', {id: props.template.id})).then(response => {
-        console.log(response.data);
-		// reload the page
-		emits('refresh');
-		
-    }).catch(error => {
-        console.log(error);
-    });
+	useConfirmModalStore().buttonOneText = 'Cancel';
+	useConfirmModalStore().buttonTwoText = 'Delete';
+	useConfirmModalStore().title = 'Are you sure, this will delete your template?';
+	useConfirmModalStore().show = true;
+	useConfirmModalStore().continue = () => {
+		axios.get(route('delete-template', {id: props.template.id})).then(response => {
+			console.log(response.data);
+			// reload the page
+			emits('refresh');
+			
+		}).catch(error => {
+			console.log(error);
+		});
+	};
 }
+
 
 
 // convert the payment methods from json to array

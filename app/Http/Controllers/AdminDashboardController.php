@@ -16,7 +16,7 @@ class AdminDashboardController extends Controller
         return Inertia::render('AdminDashboardIndex', [
             'adminDashboard' => AdminDashboard::all()->first(),
             'btcFiats' => $btcFiats,
-            'paymentMethods' => PaymentMethod::orderByDesc('handle')->orderByDesc('custom_message')->get(),
+            'paymentMethods' => PaymentMethod::orderByDesc('handle')->orderByDesc('custom_message')->orderByDesc('logo_url')->get(),
             'paymentMethodList' => PaymentMethod::all()->pluck('name'),
             'currencies' => $btcFiats->pluck('currency'),
         ]);
