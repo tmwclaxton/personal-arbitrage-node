@@ -50,8 +50,8 @@ use Illuminate\Support\Facades\Redis;
             '!toggleAutoChat',
             '!toggleAutoTopup',
             '!toggleAutoConfirm',
-            '!autoSchedule',
-            '!autoCreate',
+            '!toggleAutoSchedule',
+            '!toggleAutoCreate',
             '!setSellPremium',
             '!setBuyPremium',
             '!setConcurrentTransactions',
@@ -110,12 +110,12 @@ use Illuminate\Support\Facades\Redis;
                             $offer = Offer::where('robosatsId', $secondWord)->first();
                             ConfirmPayment::dispatch($offer, $adminDashboard);
                             break;
-                        case '!autoSchedule':
+                        case '!toggleAutoSchedule':
                             $adminDashboard->scheduler = !$adminDashboard->scheduler;
                             $adminDashboard->save();
                             $slackService->sendMessage('Auto schedule is now ' . ($adminDashboard->scheduler ? 'on' : 'off'), $adminDashboard->slack_main_channel_id);
                             break;
-                        case '!autoCreate':
+                        case '!toggleAutoCreate':
                             $adminDashboard->autoCreate = !$adminDashboard->autoCreate;
                             $adminDashboard->save();
                             $slackService->sendMessage('Auto create is now ' . ($adminDashboard->autoCreate ? 'on' : 'off'), $adminDashboard->slack_main_channel_id);

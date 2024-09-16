@@ -2,6 +2,7 @@
 
 namespace App\WorkerClasses;
 
+use App\Models\AdminDashboard;
 use App\Models\BtcFiat;
 use Brick\Math\BigDecimal;
 
@@ -41,5 +42,33 @@ class HelperFunctions
     // satoshi to btc
     public function satoshiToBtc($satoshi) {
         return $satoshi / 100000000;
+    }
+
+    public function getOnlineProviders(): array
+    {
+        $adminDashboard = AdminDashboard::first();
+        $raw = json_decode($adminDashboard->provider_statuses, true);
+        $providers = [];
+        // get keys of the array where the value is not false
+        if ($raw === null) {
+            return [];
+        }
+        foreach ($raw as $key => $value) {
+            if ($value !== false) {
+                $providers[] = $key;
+            }
+        }
+        return $providers;
+    }
+
+    public function generateSlug($length = 8): string
+    {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $slug = '';
+        for ($i = 0; $i < $length; $i++) {
+            $slug .= $characters[rand(0, $charactersLength - 1)];
+        }
+        return $slug;
     }
 }

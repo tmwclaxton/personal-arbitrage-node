@@ -19,6 +19,7 @@
     },
     "dependencies": {
         "chart.js": "^4.4.4",
+        "leaflet": "^1.9.4",
         "vue-chartjs": "^5.3.1"
     }
 }

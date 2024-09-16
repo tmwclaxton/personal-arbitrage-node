@@ -41,7 +41,6 @@ use Inertia\Inertia;
 use OTPHP\TOTP;
 use PragmaRX\Google2FA\Google2FA;
 use RevolutPHP\Auth\Provider;
-use Spatie\SlackAlerts\Facades\SlackAlert;
 use Webklex\IMAP\Facades\Client;
 use Webklex\PHPIMAP\Folder;
 use Webklex\PHPIMAP\Message;
@@ -190,7 +189,7 @@ Route::get('test-kraken', function () {
 //         # check if the template is active
 //         if ($template->auto_create) {
 //             # check if the template quantity is less than matching offers
-//             $count = Offer::where([['status', '<=', 1], ['posted_offer_template_id', $template->id]])->get()->count();
+//             $count = Offer::where([['status', '<=', 1], ['posted_offer_template_slug', $template->id]])->get()->count();
 //             if ($template->quantity > $count) {
 //
 //                 for ($i = 0; $i < $template->quantity - $count; $i++) {

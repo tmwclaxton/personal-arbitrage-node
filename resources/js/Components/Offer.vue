@@ -14,8 +14,8 @@
                 <!--<span v-if="offer.my_offer" class="text-blue-500 dark:text-blue-300">-->
                 <!--    · Maker Offer-->
                 <!--</span>-->
-                <span v-if="offer.posted_offer_template_id" class="text-blue-500 dark:text-blue-300">
-                    · Template {{ offer.posted_offer_template_id }}
+                <span v-if="offer.posted_offer_template_slug" class="text-blue-500 dark:text-blue-300">
+                    · Template {{ offer.posted_offer_template_slug }}
                 </span>
             <!--    asked_for_cancel-->
                 <span v-if="offer.pending_cancel" class="text-red-500 dark:text-red-300">

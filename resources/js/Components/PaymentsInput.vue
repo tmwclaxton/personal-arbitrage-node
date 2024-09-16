@@ -31,7 +31,7 @@ watch(payment_methodsLocal, () => {
 
 <template>
     <div class="flex flex-col gap-y-2 ">
-        <p class="my-1 mt-2 text-md font-bold">Payment Methods</p>
+        <!--<p class="my-1 mt-2 text-md font-bold">Payment Methods</p>-->
         <div class=" select-none flex flex-row gap-x-5 flex-wrap ">
             <div v-for="option in options" :key="option" class="flex flex-row gap-2 items-center">
                 <input type="checkbox" :id="option" :value="option" v-model="payment_methodsLocal"

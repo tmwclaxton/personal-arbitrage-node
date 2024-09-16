@@ -79,7 +79,8 @@ return new class extends Migration
 
 //            $table->string('slack_channel_id')->nullable();
             $table->boolean('my_offer')->default(false);
-            $table->foreignIdFor(\App\Models\PostedOfferTemplate::class)->nullable();
+            // $table->foreignIdFor(\App\Models\PostedOfferTemplate::class)->nullable();
+            $table->string('posted_offer_template_slug')->nullable();
 
             $table->string('slack_channel_id')->nullable();
 

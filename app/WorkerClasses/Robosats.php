@@ -1028,21 +1028,15 @@ class Robosats
         $premium,
         $provider,
         $minAmount,
-        $paymentMethods = (['Revolut']),
+        $paymentMethods,
         $bondSize = 3,
-        $templateId = null,
         $ttl = 7200,
+        $latitute = null,
+        $longitude = null,
+        $templateSlug = null,
         $maxAmount = null,
     ) {
         $isRange = $maxAmount != null;
-
-        // check if the provider is online
-        $adminDashboard = AdminDashboard::all()->first();
-        $providers = json_decode($adminDashboard->provider_statuses, true);
-        if (!array_key_exists($provider, $providers) || $providers[$provider] == "false") {
-            return 'Provider is offline';
-        }
-
 
         $slackService = new SlackService();
         $message = 'Creating sell offer for ';
@@ -1054,7 +1048,7 @@ class Robosats
         $slackService->sendMessage($message);
 
 
-        // create temp offer, create robots, create offer, pay bond.
+        // create temp  offer, create robots, create offer, pay bond.
         $tempOffer = new Offer([
             'robosatsId' => rand(111111111, 999999999),
             'provider' => $provider,
@@ -1067,8 +1061,8 @@ class Robosats
             'premium' => $premium,
             'escrow_duration' => 0,
             'bond_size' => 0,
-            'latitude' => null,
-            'longitude' => null,
+            'latitude' => $latitute,
+            'longitude' => $longitude,
             'maker_nick' => '',
             'maker_hash_id' => '',
             'satoshis_now' => 0,
@@ -1079,7 +1073,7 @@ class Robosats
             'satoshi_amount_profit' => 0,
             'accepted' => false,
             'maker' => 0,
-            'posted_offer_template_id' => $templateId,
+            'posted_offer_template_slug' => $templateSlug,
             'my_offer' => true
         ]);
 
@@ -1095,15 +1089,13 @@ class Robosats
 
         // convert currency to int
         $currency = $this->currencyToInt($currency);
-        // POST
-        // 	http://192.168.0.18:12596/mainnet/satstralia/api/make/
-        // {"type":1,"currency":2,"amount":"14","has_range":false,"min_amount":null,
-        //"max_amount":null,"payment_method":"Revolut","is_explicit":false,"premium":20,
-        //"satoshis":null,"public_duration":14400,"escrow_duration":14400,"bond_size":3,"latitude":null,
-        //"longitude":null}
-        // take payment methods json array and convert to space separated string
+
         $paymentMethods = implode(' ', json_decode($paymentMethods));
         $url = $this->getHost() . '/mainnet/' . $provider . '/api/make/';
+        // round lat and long to 5 decimal places
+        $latitute = round($latitute, 4);
+        $longitude = round($longitude, 5);
+
         $array = [
             'type' => 1,
             'currency' => $currency,
@@ -1116,12 +1108,14 @@ class Robosats
             'public_duration' => $ttl,
             'escrow_duration' => 28800,
             'bond_size' => $bondSize,
-            'latitude' => null,
-            'longitude' => null
+            'latitude' => $latitute,
+            'longitude' => $longitude
         ];
         // add min amount if it is a range
         if ($isRange) {
             $array['min_amount'] = $minAmount;
+            $array['amount'] = null;
+            $array['satoshis'] = null;
         } else {
             $array['amount'] = $minAmount;
         }
