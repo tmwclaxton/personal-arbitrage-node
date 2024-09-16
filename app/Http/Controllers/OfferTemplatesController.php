@@ -20,10 +20,13 @@ class OfferTemplatesController extends Controller
         $providers = $helpers->getOnlineProviders();
         $templates = PostedOfferTemplate::all();
         $currencies = BtcFiat::all()->pluck('currency');
+        $adminDashboard = AdminDashboard::all()->first();
+        //PaymentMethod::all()->pluck('name')
+        $paymentMethods = json_decode($adminDashboard->payment_methods);
 
         return Inertia::render('PostingOffers', [
             'templates' => $templates,
-            'paymentMethods' => PaymentMethod::all()->pluck('name'),
+            'paymentMethods' => $paymentMethods,
             'providers' => $providers,
             'currencies' => $currencies
         ]);
