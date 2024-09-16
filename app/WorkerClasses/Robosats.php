@@ -1156,7 +1156,8 @@ class Robosats
         $offer->my_offer = true;
         $offer->save();
 
-        $channel_id = $slackService->createChannel("Order " . strval($offer->robosatsId));
+        $name = "order-" . $offer->robosatsId;
+        $channel_id = $slackService->createChannel($name);
         $offer->slack_channel_id = $channel_id;
         $offer->save();
 

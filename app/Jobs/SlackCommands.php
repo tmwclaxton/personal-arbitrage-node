@@ -25,9 +25,8 @@ use Illuminate\Support\Facades\Redis;
     /**
      * Create a new job instance.
      */
-    public function __construct($channelId)
+    public function __construct()
     {
-        $this->channelId = $channelId;
     }
 
     /**
@@ -60,216 +59,223 @@ use Illuminate\Support\Facades\Redis;
             '!generateDepositAddress',
         ];
         $slackService = new SlackService();
-        $messages = $slackService->getLatestMessages($this->channelId);
+        $adminDashboard = AdminDashboard::all()->first();
+        $channelId = $adminDashboard->slack_main_channel_id;
+        $offerChannelIds = Offer::where('slack_channel_id', '!=', null)->pluck('slack_channel_id')->toArray();
+        $combinedChannelIds = array_merge([$channelId], $offerChannelIds);
 
-        foreach ($messages as $message) {
+        foreach ($combinedChannelIds as $channelId) {
+            $messages = $slackService->getLatestMessages($channelId);
+            foreach ($messages as $message) {
 
-            // check if message already exists in the database
-            if ($message->getClientMsgId() === null || SlackMessage::where('slack_id', $message->getClientMsgId())->exists() || $message->getBotId() !== null) {
-                continue;
-            }
-
-            $slackMessage = new SlackMessage([
-                'slack_id' => $message->getClientMsgId(),
-                'content' => $message->getText(),
-                'channel_id' => $this->channelId,
-            ]);
-
-            $slackMessage->save();
-
-            // if the message was within the last 5 minutes check if it was a command (starts with /)
-            if (Carbon::parse($slackMessage['created_at'])->diffInMinutes(Carbon::now()) < 1 && strpos($slackMessage['content'], '!') === 0) {
-
-                // check if the command is in the list of commands
-                $firstWord = explode(' ', $slackMessage['content'])[0];
-                if (in_array($firstWord, $commands)) {
-                    $slackService->sendMessage('Executing command: ' . $slackMessage['content']);
-
-                    // if it is, send a message to the slack channel
-                    $adminDashboard = AdminDashboard::all()->first();
-                    switch ($firstWord) {
-                        case '!help':
-
-                            $commandsFormatted = "";
-                            foreach ($commands as $command) {
-                                $commandsFormatted = $commandsFormatted . $command . "\n";
-                            }
-                            $slackService->sendMessage("Available commands: \n" . $commandsFormatted, $adminDashboard->slack_main_channel_id);
-
-                            break;
-                        case '!panic':
-                            $adminDashboard->panicButton = true;
-                            $adminDashboard->save();
-                            break;
-                        case '!calm':
-                            $adminDashboard->panicButton = false;
-                            $adminDashboard->save();
-                            break;
-                        case '!confirm':
-                            $secondWord = explode(' ', $slackMessage['content'])[1];
-                            $offer = Offer::where('robosatsId', $secondWord)->first();
-                            ConfirmPayment::dispatch($offer, $adminDashboard);
-                            break;
-                        case '!toggleAutoSchedule':
-                            $adminDashboard->scheduler = !$adminDashboard->scheduler;
-                            $adminDashboard->save();
-                            $slackService->sendMessage('Auto schedule is now ' . ($adminDashboard->scheduler ? 'on' : 'off'), $adminDashboard->slack_main_channel_id);
-                            break;
-                        case '!toggleAutoCreate':
-                            $adminDashboard->autoCreate = !$adminDashboard->autoCreate;
-                            $adminDashboard->save();
-                            $slackService->sendMessage('Auto create is now ' . ($adminDashboard->autoCreate ? 'on' : 'off'), $adminDashboard->slack_main_channel_id);
-                            break;
-                        case '!chat':
-                            // grab offer id then message //!chat 6960 hello?
-                            $offerId = explode(' ', $slackMessage['content'])[1];
-                            $messageContent = explode(' ', $slackMessage['content'], 3)[2];
-                            $offer = Offer::where('robosatsId', $offerId)->first();
-                            $robot = $offer->robots()->first();
-                            $robosats = new \App\WorkerClasses\Robosats();
-                            $robosats->webSocketCommunicate($offer, $robot, $messageContent);
-                            break;
-                        case '!viewChat':
-                            // grab offer id //!viewChat 6960
-                            $offerId = explode(' ', $slackMessage['content'])[1];
-                            $offer = Offer::where('robosatsId', $offerId)->first();
-                            $chatMessages = RobosatsChatMessage::where('offer_id', $offer->id)->get();
-                            $messages = "";
-                            foreach ($chatMessages as $chatMessage) {
-                                $messages = $messages . "**" . $chatMessage->user_nick . "**: " . $chatMessage->message . " \n";
-                            }
-                            $slackService->sendMessage($messages);
-                            break;
-                        case '!collaborativeCancel':
-                            // grab offer id //!collaborativeCancel 6960
-                            $offerId = explode(' ', $slackMessage['content'])[1];
-                            $offer = Offer::where('robosatsId', $offerId)->first();
-                            $robosats = new \App\WorkerClasses\Robosats();
-                            $response = $robosats->collaborativeCancel($offer);
-                            break;
-                        case '!toggleAutoAccept':
-                            $adminDashboard->autoAccept = !$adminDashboard->autoAccept;
-                            $adminDashboard->save();
-                            $slackService->sendMessage('Auto accept is now ' . ($adminDashboard->autoAccept ? 'on' : 'off'), $adminDashboard->slack_main_channel_id);
-                            break;
-                        case '!toggleAutoBond':
-                            $adminDashboard->autoBond = !$adminDashboard->autoBond;
-                            $adminDashboard->save();
-                            $slackService->sendMessage('Auto bond is now ' . ($adminDashboard->autoBond ? 'on' : 'off'), $adminDashboard->slack_main_channel_id);
-                            break;
-                        case '!toggleAutoEscrow':
-                            $adminDashboard->autoEscrow = !$adminDashboard->autoEscrow;
-                            $adminDashboard->save();
-                            $slackService->sendMessage('Auto escrow is now ' . ($adminDashboard->autoEscrow ? 'on' : 'off'), $adminDashboard->slack_main_channel_id);
-                            break;
-                        case '!toggleAutoChat':
-                            $adminDashboard->autoChat = !$adminDashboard->autoChat;
-                            $adminDashboard->save();
-                            $slackService->sendMessage('Auto chat is now ' . ($adminDashboard->autoChat ? 'on' : 'off'), $adminDashboard->slack_main_channel_id);
-                            break;
-                        case '!toggleAutoTopup':
-                            $adminDashboard->autoTopup = !$adminDashboard->autoTopup;
-                            $adminDashboard->save();
-                            $slackService->sendMessage('Auto topup is now ' . ($adminDashboard->autoTopup ? 'on' : 'off'), $adminDashboard->slack_main_channel_id);
-                            break;
-                        case '!toggleAutoConfirm':
-                            $adminDashboard->autoConfirm = !$adminDashboard->autoConfirm;
-                            $adminDashboard->save();
-                            $slackService->sendMessage('Auto confirm is now ' . ($adminDashboard->autoConfirm ? 'on' : 'off'), $adminDashboard->slack_main_channel_id);
-                            break;
-                        case '!setSellPremium':
-                            $adminDashboard->sell_premium = intval(explode(' ', $slackMessage['content'])[1]);
-                            // ensure the value is a float and positive
-                            if ($adminDashboard->sell_premium < 0) {
-                                $slackService->sendMessage('Invalid value for sell premium ' . $adminDashboard->sell_premium, $adminDashboard->slack_main_channel_id);
-                                break;
-                            }
-                            $adminDashboard->save();
-                            $slackService->sendMessage('Sell premium set to ' . $adminDashboard->sell_premium, $adminDashboard->slack_main_channel_id);
-                            break;
-                        case '!setBuyPremium':
-                            $adminDashboard->buy_premium = intval(explode(' ', $slackMessage['content'])[1]);
-                            // ensure the value is a float and negative
-                            if ($adminDashboard->buy_premium > 0) {
-                                $slackService->sendMessage('Invalid value for buy premium', $adminDashboard->slack_main_channel_id);
-                                break;
-                            }
-                            $adminDashboard->save();
-                            $slackService->sendMessage('Buy premium set to ' . $adminDashboard->buy_premium, $adminDashboard->slack_main_channel_id);
-                            break;
-                        case '!setConcurrentTransactions':
-                            $adminDashboard->max_concurrent_transactions = intval(explode(' ', $slackMessage['content'])[1]);
-                            // ensure the value is an integer and positive
-                            if ($adminDashboard->max_concurrent_transactions < 0) {
-                                $slackService->sendMessage('Invalid value for concurrent transactions', $adminDashboard->slack_main_channel_id);
-                                break;
-                            }
-                            $adminDashboard->save();
-                            $slackService->sendMessage('Concurrent transactions set to ' . $adminDashboard->max_concurrent_transactions, $adminDashboard->slack_main_channel_id);
-                            break;
-                        case '!setMinSatProfit':
-                            $adminDashboard->min_satoshi_profit = intval(explode(' ', $slackMessage['content'])[1]);
-                            // ensure the value is an integer and positive
-                            if ($adminDashboard->min_satoshi_profit < 0) {
-                                $slackService->sendMessage('Invalid value for minimum satoshi profit', $adminDashboard->slack_main_channel_id);
-                                break;
-                            }
-                            $adminDashboard->save();
-                            $slackService->sendMessage('Minimum satoshi profit set to ' . $adminDashboard->min_satoshi_profit, $adminDashboard->slack_main_channel_id);
-                            break;
-                        case '!setMaxSatAmount':
-                            $adminDashboard->max_satoshi_amount = intval(explode(' ', $slackMessage['content'])[1]);
-                            // ensure the value is an integer and positive
-                            if ($adminDashboard->max_satoshi_amount < 0) {
-                                $slackService->sendMessage('Invalid value for maximum satoshi amount', $adminDashboard->slack_main_channel_id);
-                                break;
-                            }
-                            $adminDashboard->save();
-                            $slackService->sendMessage('Maximum satoshi amount set to ' . $adminDashboard->max_satoshi_amount, $adminDashboard->slack_main_channel_id);
-                            break;
-                        case '!generateDepositAddress':
-                            $krakenService = new \App\Services\KrakenService();
-                            $btcBalance = $krakenService->getBTCBalance();
-                            $btc = $btcBalance->jsonSerialize();
-                            // ensure satoshis is an integer
-                            $satoshis = intval($btc * 100000000) - 2000; // possible fees?
-
-                            $adminDashboard = AdminDashboard::all()->first();
-                            $remoteBalance = $adminDashboard->remoteBalance;
-                            $localBalance = $adminDashboard->localBalance;
-                            if ($satoshis > $remoteBalance - 200000) {
-                                $satoshis = $remoteBalance - 200000;
-                            }
-                            $idealLightningNodeBalance = $adminDashboard->ideal_lightning_node_balance;
-                            if ($localBalance + $satoshis > $idealLightningNodeBalance) {
-                                $satoshis = $idealLightningNodeBalance - $localBalance;
-                                if ($satoshis <= 0) {
-                                    $slackService->sendMessage('You have already reached the ideal balance', $adminDashboard->slack_main_channel_id);
-                                    break;
-                                }
-                            }
-
-                            // if the satoshis is less than 2000, don't create an invoice
-                            if ($satoshis < 2000) {
-                                $slackService->sendMessage('Not enough BTC to create an invoice', $adminDashboard->slack_main_channel_id);
-                                break;
-                            }
-
-
-                            $lightningNode = new LightningNode();
-                            $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Withdrawal of ' . $btcBalance . ' BTC at ' . Carbon::now()->toDateTimeString());
-                            $slackService->sendMessage($invoice, $adminDashboard->slack_main_channel_id);
-                            break;
-
-
-                        default:
-                            $slackService->sendMessage('Command not recognized', $adminDashboard->slack_main_channel_id);
-                            break;
-
-                    }
+                // check if message already exists in the database
+                if ($message->getClientMsgId() === null || SlackMessage::where('slack_id', $message->getClientMsgId())->exists() || $message->getBotId() !== null) {
+                    continue;
                 }
 
+                $slackMessage = new SlackMessage([
+                    'slack_id' => $message->getClientMsgId(),
+                    'content' => $message->getText(),
+                    'channel_id' => $channelId,
+                ]);
+
+                $slackMessage->save();
+
+                // if the message was within the last 5 minutes check if it was a command (starts with /)
+                if (Carbon::parse($slackMessage['created_at'])->diffInMinutes(Carbon::now()) < 1 && strpos($slackMessage['content'], '!') === 0) {
+
+                    // check if the command is in the list of commands
+                    $firstWord = explode(' ', $slackMessage['content'])[0];
+                    if (in_array($firstWord, $commands)) {
+                        $slackService->sendMessage('Executing command: ' . $slackMessage['content']);
+
+                        // if it is, send a message to the slack channel
+                        $adminDashboard = AdminDashboard::all()->first();
+                        switch ($firstWord) {
+                            case '!help':
+
+                                $commandsFormatted = "";
+                                foreach ($commands as $command) {
+                                    $commandsFormatted = $commandsFormatted . $command . "\n";
+                                }
+                                $slackService->sendMessage("Available commands: \n" . $commandsFormatted, $channelId);
+
+                                break;
+                            case '!panic':
+                                $adminDashboard->panicButton = true;
+                                $adminDashboard->save();
+                                break;
+                            case '!calm':
+                                $adminDashboard->panicButton = false;
+                                $adminDashboard->save();
+                                break;
+                            case '!confirm':
+                                $secondWord = explode(' ', $slackMessage['content'])[1];
+                                $offer = Offer::where('robosatsId', $secondWord)->first();
+                                ConfirmPayment::dispatch($offer, $adminDashboard);
+                                break;
+                            case '!toggleAutoSchedule':
+                                $adminDashboard->scheduler = !$adminDashboard->scheduler;
+                                $adminDashboard->save();
+                                $slackService->sendMessage('Auto schedule is now ' . ($adminDashboard->scheduler ? 'on' : 'off'), $channelId);
+                                break;
+                            case '!toggleAutoCreate':
+                                $adminDashboard->autoCreate = !$adminDashboard->autoCreate;
+                                $adminDashboard->save();
+                                $slackService->sendMessage('Auto create is now ' . ($adminDashboard->autoCreate ? 'on' : 'off'), $channelId);
+                                break;
+                            case '!chat':
+                                // grab offer id then message //!chat 6960 hello?
+                                $offerId = explode(' ', $slackMessage['content'])[1];
+                                $messageContent = explode(' ', $slackMessage['content'], 3)[2];
+                                $offer = Offer::where('robosatsId', $offerId)->first();
+                                $robot = $offer->robots()->first();
+                                $robosats = new \App\WorkerClasses\Robosats();
+                                $robosats->webSocketCommunicate($offer, $robot, $messageContent);
+                                break;
+                            case '!viewChat':
+                                // grab offer id //!viewChat 6960
+                                $offerId = explode(' ', $slackMessage['content'])[1];
+                                $offer = Offer::where('robosatsId', $offerId)->first();
+                                $chatMessages = RobosatsChatMessage::where('offer_id', $offer->id)->get();
+                                $messages = "";
+                                foreach ($chatMessages as $chatMessage) {
+                                    $messages = $messages . "**" . $chatMessage->user_nick . "**: " . $chatMessage->message . " \n";
+                                }
+                                $slackService->sendMessage($messages);
+                                break;
+                            case '!collaborativeCancel':
+                                // grab offer id //!collaborativeCancel 6960
+                                $offerId = explode(' ', $slackMessage['content'])[1];
+                                $offer = Offer::where('robosatsId', $offerId)->first();
+                                $robosats = new \App\WorkerClasses\Robosats();
+                                $response = $robosats->collaborativeCancel($offer);
+                                break;
+                            case '!toggleAutoAccept':
+                                $adminDashboard->autoAccept = !$adminDashboard->autoAccept;
+                                $adminDashboard->save();
+                                $slackService->sendMessage('Auto accept is now ' . ($adminDashboard->autoAccept ? 'on' : 'off'), $channelId);
+                                break;
+                            case '!toggleAutoBond':
+                                $adminDashboard->autoBond = !$adminDashboard->autoBond;
+                                $adminDashboard->save();
+                                $slackService->sendMessage('Auto bond is now ' . ($adminDashboard->autoBond ? 'on' : 'off'), $channelId);
+                                break;
+                            case '!toggleAutoEscrow':
+                                $adminDashboard->autoEscrow = !$adminDashboard->autoEscrow;
+                                $adminDashboard->save();
+                                $slackService->sendMessage('Auto escrow is now ' . ($adminDashboard->autoEscrow ? 'on' : 'off'), $channelId);
+                                break;
+                            case '!toggleAutoChat':
+                                $adminDashboard->autoChat = !$adminDashboard->autoChat;
+                                $adminDashboard->save();
+                                $slackService->sendMessage('Auto chat is now ' . ($adminDashboard->autoChat ? 'on' : 'off'), $channelId);
+                                break;
+                            case '!toggleAutoTopup':
+                                $adminDashboard->autoTopup = !$adminDashboard->autoTopup;
+                                $adminDashboard->save();
+                                $slackService->sendMessage('Auto topup is now ' . ($adminDashboard->autoTopup ? 'on' : 'off'), $channelId);
+                                break;
+                            case '!toggleAutoConfirm':
+                                $adminDashboard->autoConfirm = !$adminDashboard->autoConfirm;
+                                $adminDashboard->save();
+                                $slackService->sendMessage('Auto confirm is now ' . ($adminDashboard->autoConfirm ? 'on' : 'off'), $channelId);
+                                break;
+                            case '!setSellPremium':
+                                $adminDashboard->sell_premium = intval(explode(' ', $slackMessage['content'])[1]);
+                                // ensure the value is a float and positive
+                                if ($adminDashboard->sell_premium < 0) {
+                                    $slackService->sendMessage('Invalid value for sell premium ' . $adminDashboard->sell_premium, $channelId);
+                                    break;
+                                }
+                                $adminDashboard->save();
+                                $slackService->sendMessage('Sell premium set to ' . $adminDashboard->sell_premium, $channelId);
+                                break;
+                            case '!setBuyPremium':
+                                $adminDashboard->buy_premium = intval(explode(' ', $slackMessage['content'])[1]);
+                                // ensure the value is a float and negative
+                                if ($adminDashboard->buy_premium > 0) {
+                                    $slackService->sendMessage('Invalid value for buy premium', $channelId);
+                                    break;
+                                }
+                                $adminDashboard->save();
+                                $slackService->sendMessage('Buy premium set to ' . $adminDashboard->buy_premium, $channelId);
+                                break;
+                            case '!setConcurrentTransactions':
+                                $adminDashboard->max_concurrent_transactions = intval(explode(' ', $slackMessage['content'])[1]);
+                                // ensure the value is an integer and positive
+                                if ($adminDashboard->max_concurrent_transactions < 0) {
+                                    $slackService->sendMessage('Invalid value for concurrent transactions', $channelId);
+                                    break;
+                                }
+                                $adminDashboard->save();
+                                $slackService->sendMessage('Concurrent transactions set to ' . $adminDashboard->max_concurrent_transactions, $channelId);
+                                break;
+                            case '!setMinSatProfit':
+                                $adminDashboard->min_satoshi_profit = intval(explode(' ', $slackMessage['content'])[1]);
+                                // ensure the value is an integer and positive
+                                if ($adminDashboard->min_satoshi_profit < 0) {
+                                    $slackService->sendMessage('Invalid value for minimum satoshi profit', $channelId);
+                                    break;
+                                }
+                                $adminDashboard->save();
+                                $slackService->sendMessage('Minimum satoshi profit set to ' . $adminDashboard->min_satoshi_profit, $channelId);
+                                break;
+                            case '!setMaxSatAmount':
+                                $adminDashboard->max_satoshi_amount = intval(explode(' ', $slackMessage['content'])[1]);
+                                // ensure the value is an integer and positive
+                                if ($adminDashboard->max_satoshi_amount < 0) {
+                                    $slackService->sendMessage('Invalid value for maximum satoshi amount', $channelId);
+                                    break;
+                                }
+                                $adminDashboard->save();
+                                $slackService->sendMessage('Maximum satoshi amount set to ' . $adminDashboard->max_satoshi_amount, $channelId);
+                                break;
+                            case '!generateDepositAddress':
+                                $krakenService = new \App\Services\KrakenService();
+                                $btcBalance = $krakenService->getBTCBalance();
+                                $btc = $btcBalance->jsonSerialize();
+                                // ensure satoshis is an integer
+                                $satoshis = intval($btc * 100000000) - 2000; // possible fees?
+
+                                $adminDashboard = AdminDashboard::all()->first();
+                                $remoteBalance = $adminDashboard->remoteBalance;
+                                $localBalance = $adminDashboard->localBalance;
+                                if ($satoshis > $remoteBalance - 200000) {
+                                    $satoshis = $remoteBalance - 200000;
+                                }
+                                $idealLightningNodeBalance = $adminDashboard->ideal_lightning_node_balance;
+                                if ($localBalance + $satoshis > $idealLightningNodeBalance) {
+                                    $satoshis = $idealLightningNodeBalance - $localBalance;
+                                    if ($satoshis <= 0) {
+                                        $slackService->sendMessage('You have already reached the ideal balance', $channelId);
+                                        break;
+                                    }
+                                }
+
+                                // if the satoshis is less than 2000, don't create an invoice
+                                if ($satoshis < 2000) {
+                                    $slackService->sendMessage('Not enough BTC to create an invoice', $channelId);
+                                    break;
+                                }
+
+
+                                $lightningNode = new LightningNode();
+                                $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Withdrawal of ' . $btcBalance . ' BTC at ' . Carbon::now()->toDateTimeString());
+                                $slackService->sendMessage($invoice, $channelId);
+                                break;
+
+
+                            default:
+                                $slackService->sendMessage('Command not recognized', $channelId);
+                                break;
+
+                        }
+                    }
+
+                }
             }
+            sleep(3);
         }
     }
 }

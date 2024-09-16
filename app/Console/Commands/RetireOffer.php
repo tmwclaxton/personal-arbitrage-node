@@ -40,6 +40,9 @@ class RetireOffer extends Command
             $slackService = new SlackService();
             $slackService->deleteChannel($offer->slack_channel_id);
 
+            $offer->slack_channel_id = null;
+            $offer->save();
+
         }
     }
 }

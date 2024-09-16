@@ -76,10 +76,23 @@ class SlackService
      */
     public function getLatestMessages($channelId): array
     {
-        $messages = $this->client->conversationsHistory([
-            'channel' => $channelId,
-            'limit' => 20,
-        ]);
+        try {
+            $messages = $this->client->conversationsHistory([
+                'channel' => $channelId,
+                'limit' => 20,
+            ]);
+        } catch (\Exception $e) {
+            // if not_in_channel error add the bot to the channel
+            if ($e->getMessage() == 'not_in_channel') {
+                $this->client->conversationsJoin([
+                    'channel' => $channelId,
+                ]);
+                $messages = $this->client->conversationsHistory([
+                    'channel' => $channelId,
+                    'limit' => 20,
+                ]);
+            }
+        }
 
         return $messages->getMessages();
     }
