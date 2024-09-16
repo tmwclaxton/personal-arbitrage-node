@@ -18,6 +18,7 @@ const props = defineProps({
     templates: Object,
     paymentMethods: Array,
 	providers: Array,
+	currencies: Array,
 });
 
 
@@ -113,7 +114,10 @@ const hideSidebar = ref(false);
                         <label class="text-sm text-gray-500">Bond Size</label>
                         <text-input v-model="offerTemplate.bondSize" label="Bond Size" />
                         <label class="text-sm text-gray-500">Currency (GBP, USD, EUR)</label>
-                        <text-input v-model="offerTemplate.currency" label="Currency" />
+                        <select v-model="offerTemplate.currency"
+						class="w-max pr-6 block  bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+							<option v-for="currency in currencies" :value="currency" v-text="currency"></option>
+						</select>
                         <label class="text-sm text-gray-500">Quantity</label>
                         <text-input v-model="offerTemplate.quantity" label="Quantity" />
 						<label class="text-sm text-gray-500">Payment Methods</label>
@@ -202,6 +206,7 @@ const hideSidebar = ref(false);
 							  :template="template"
 							  :payment_methods="paymentMethods"
 							  :key="template.id"
+							  :currencies="currencies"
 							  @refresh="refreshPage"
 							/>
 						</tbody>

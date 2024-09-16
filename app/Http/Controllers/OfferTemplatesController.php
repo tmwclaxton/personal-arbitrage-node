@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AdminDashboard;
+use App\Models\BtcFiat;
 use App\Models\Offer;
 use App\Models\PaymentMethod;
 use App\Models\PostedOfferTemplate;
@@ -18,11 +19,13 @@ class OfferTemplatesController extends Controller
         $helpers = new HelperFunctions();
         $providers = $helpers->getOnlineProviders();
         $templates = PostedOfferTemplate::all();
+        $currencies = BtcFiat::all()->pluck('currency');
 
         return Inertia::render('PostingOffers', [
             'templates' => $templates,
             'paymentMethods' => PaymentMethod::all()->pluck('name'),
             'providers' => $providers,
+            'currencies' => $currencies
         ]);
     }
 

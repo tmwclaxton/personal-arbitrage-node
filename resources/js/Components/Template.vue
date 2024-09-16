@@ -20,7 +20,11 @@ const props = defineProps({
     providers: {
         type: Array,
         default: ['satstralia', 'temple', 'lake', 'veneto']
-    }
+    },
+	currencies: {
+		type: Array,
+		default: ['USD', 'EUR', 'GBP', 'BTC', 'ETH']
+	}
 });
 
 const emits = defineEmits(['refresh']);
@@ -124,7 +128,11 @@ offerEditTemplate.value.providers = JSON.parse(offerEditTemplate.value.provider)
 			<text-input v-model="offerEditTemplate.bondSize" label="Bond Size" class="w-10"/>
 		</td>
 		<td class="px-1 py-4 whitespace-nowrap text-center">
-			<text-input v-model="offerEditTemplate.currency" label="Currency" class="w-16"/>
+			<!--<text-input v-model="offerEditTemplate.currency" label="Currency" class="w-16"/>-->
+			<select v-model="offerEditTemplate.currency"
+					class="w-max pr-6 block  bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+				<option v-for="currency in currencies" :value="currency" v-text="currency"></option>
+			</select>
 		</td>
 		<td class="px-1 py-4 whitespace-nowrap text-center ">
 			<payments-input :key="template.id + 'payment'" :payment_methods="offerEditTemplate.paymentMethods"
