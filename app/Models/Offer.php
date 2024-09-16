@@ -27,6 +27,12 @@ class Offer extends Model
         return $this->belongsTo(PostedOfferTemplate::class);
     }
 
+    // grab active offers
+    public static function activeOffers(): \Illuminate\Database\Eloquent\Collection
+    {
+        // return self::where([[['my_offers', true], ['status', 1]
+        //     ->orWhere([['status', 0]])
+    }
 
 
 }

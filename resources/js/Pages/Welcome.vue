@@ -16,6 +16,7 @@ const props = defineProps({
     offers: Array,
     btcPrices: Object,
     adminDashboard: Object,
+	satsInTransit: Number,
 });
 
 const accessOffers = ref(props.offers);
@@ -305,7 +306,9 @@ const showSidebar = ref(true);
                             <p class=""><span class="font-bold">Lighting Wallet Balance:</span> {{ tempAdminDashboard.localBalance }} </p>
                             <!--<p class=""><span class="font-bold">Revolut Balance:</span></p>-->
                             <!--<p class=""><span class="font-bold">Wise Balance:</span></p>-->
-                            <p class=""><span class="font-bold">Kraken Balance:</span> {{ tempAdminDashboard.kraken_btc_balance }} </p>
+							<p class=""><span class="font-bold">Kraken Balance:</span> {{ tempAdminDashboard.kraken_btc_balance }} </p>
+							<p class=""><span class="font-bold">Bond & Escrow Balance:</span> {{ satsInTransit }} </p>
+							
                             <p class=""><span class="font-bold">Remote Balance:</span> {{ tempAdminDashboard.remoteBalance }} </p>
                             <div class="border-b border-zinc-300 dark:border-zinc-700"></div>
                             <div v-if="channelBalances.length > 0"
