@@ -34,19 +34,19 @@ let isToastMessageCalled = false;
 
 function toastMessages() {
     if (!isToastMessageCalled) {
-        if (props.flash.message.error && props.flash.message.error.length > 0) {
+        if (props.flash && props.flash.message.error && props.flash.message.error.length > 0) {
             toastStore.add({
                 message: props.flash.message.error,
                 type: "error",
             });
         }
-        if (props.flash.message.success && props.flash.message.success.length > 0) {
+        if (props.flash && props.flash.message.success && props.flash.message.success.length > 0) {
             toastStore.add({
                 message: props.flash.message.success,
                 type: "success",
             });
         }
-        if (props.flash.message.status && props.flash.message.status.length > 0) {
+        if (props.flash && props.flash.message.status && props.flash.message.status.length > 0) {
             toastStore.add({
                 message: props.flash.message.status,
                 type: "normal",

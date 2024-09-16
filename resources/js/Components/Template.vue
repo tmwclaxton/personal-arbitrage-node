@@ -11,8 +11,7 @@ import ToggleButton from "@/Components/ToggleButton.vue";
 import {router} from "@inertiajs/vue3";
 import DangerButton from "@/Components/DangerButton.vue";
 import {useConfirmModalStore} from "@/Stores/ConfirmModelStore.js";
-import Dropdown from 'vue-simple-search-dropdown';
-import SearchSelect from "@/Components/SearchSelect.vue";
+import toastStore from "@/Stores/ToastStore.js";
 
 const props = defineProps({
     template: Object,
@@ -71,6 +70,10 @@ const update = (refreshPage = false) => {
 		if (refreshPage) {
 			// reload the page
 			emits('refresh');
+			toastStore.add({
+				message: 'Template updated',
+				type: "success",
+			});
 		}
     }).catch(error => {
         console.log(error);
@@ -88,7 +91,10 @@ const deleteTemplate = () => {
 			console.log(response.data);
 			// reload the page
 			emits('refresh');
-			
+			toastStore.add({
+				message: 'Template deleted',
+				type: "error",
+			});
 		}).catch(error => {
 			console.log(error);
 		});

@@ -9,6 +9,8 @@ import PaymentsInput from "@/Components/PaymentsInput.vue";
 import CurrenciesInput from "@/Components/CurrenciesInput.vue";
 import SecondaryButton from "@/Components/SecondaryButton.vue";
 import DangerButton from "@/Components/DangerButton.vue";
+import ToastList from "@/Components/Toast/ToastList.vue";
+import ConfirmModal from "@/Modals/ConfirmModal.vue";
 
 const props = defineProps({
     offers: Array,
@@ -97,6 +99,8 @@ const showSidebar = ref(true);
 
 <template>
     <Head title="Offers" />
+	<ConfirmModal />
+	<ToastList/>
     <div class="min-h-screen">
 
         <div class="flex flex-col ">

@@ -1,7 +1,6 @@
 <script setup>
 import {onMounted} from "vue";
 
-import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
 
 const props = defineProps({

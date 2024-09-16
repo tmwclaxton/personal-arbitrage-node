@@ -4,10 +4,14 @@ import { Link } from '@inertiajs/vue3';
 import DangerButton from "@/Components/DangerButton.vue";
 import SecondaryButton from "@/Components/SecondaryButton.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
+import ConfirmModal from "@/Modals/ConfirmModal.vue";
+import ToastList from "@/Components/Toast/ToastList.vue";
 </script>
 
 <template>
     <div class="min-h-screen flex flex-col   pt-6 sm:pt-0 ">
+		<ConfirmModal />
+		<ToastList/>
         <div>
             <p class="font-bold text-2xl mx-auto text-center py-5">Lightning Arbitrage Solutions</p>
 

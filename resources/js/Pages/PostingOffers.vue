@@ -12,6 +12,7 @@ import GuestLayout from "@/Layouts/GuestLayout.vue";
 import ProvidersInput from "@/Components/ProvidersInput.vue";
 import Template from "@/Components/Template.vue";
 import SecondaryButton from "@/Components/SecondaryButton.vue";
+import toastStore from "@/Stores/ToastStore.js";
 
 
 const props = defineProps({
@@ -41,6 +42,11 @@ const create = () => {
     }).then(response => {
         console.log(response.data);
 		refreshPage();
+		
+		toastStore.add({
+			message: 'Template created',
+			type: "success",
+		});
 
     }).catch(error => {
         console.log(error);
@@ -78,6 +84,11 @@ const updateAll = () => {
  	}
 	
 	refreshPage();
+	
+	toastStore.add({
+		message: 'All templates updated',
+		type: "success",
+	});
 };
 
 const hideSidebar = ref(false);
