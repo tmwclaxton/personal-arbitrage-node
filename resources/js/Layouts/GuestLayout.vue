@@ -23,52 +23,59 @@ import ToastList from "@/Components/Toast/ToastList.vue";
 			</a>
             <div class="w-full flex flex-row flex-wrap gap-3 mt-2 mx-auto justify-center">
                 <Link :href="route('welcome')" >
-                    <secondary-button class="h-12">
+                    <primary-button class="h-12">
                         Live Offers
-                    </secondary-button>
-                </Link>
-
-                <Link :href="route('offers.completed')" >
-                    <secondary-button class="h-12">
-                        Completed Offers
-                    </secondary-button>
-                </Link>
-
-                <Link :href="route('offers.posting.index')" >
-                    <secondary-button class="h-12">
-                        Offer Templates
-                    </secondary-button>
+                    </primary-button>
                 </Link>
 
                 <Link :href="route('dashboard.index')">
-                    <secondary-button  class="h-12">
+                    <primary-button  class="h-12">
                         Config
-                    </secondary-button>
+                    </primary-button>
                 </Link>
-                <Link :href="route('transactions.index')" >
-                    <secondary-button class="h-12">
+
+                <Link :href="route('offers.completed')" >
+                    <primary-button class="h-12">
+                        Offer Management
+                    </primary-button>
+                </Link>
+				
+				<Link :href="route('offers.posting.index')" >
+					<primary-button class="h-12">
+						Robot Management
+					</primary-button>
+				</Link>
+				
+				<Link :href="route('offers.posting.index')" >
+					<primary-button class="h-12">
+						Offer Templates
+					</primary-button>
+				</Link>
+				
+				<Link :href="route('transactions.index')" >
+                    <primary-button class="h-12">
                         Transactions
-                    </secondary-button>
+                    </primary-button>
                 </Link>
                 <Link :href="route('payments.index')" class="opacity-50 pointer-events-none">
-                    <secondary-button class="h-12">
+                    <primary-button class="h-12">
                         Payments
-                    </secondary-button>
+                    </primary-button>
                 </Link>
                 <Link :href="route('purchases.index')" >
-                    <secondary-button class="h-12">
+                    <primary-button class="h-12">
                         Bitcoin Purchases
-                    </secondary-button>
+                    </primary-button>
                 </Link>
                 <Link :href="route('graphs.index')" >
-                    <secondary-button class="h-12">
+                    <primary-button class="h-12">
                         Graphs
-                    </secondary-button>
+                    </primary-button>
                 </Link>
                 <Link :href="route('graphs.index')" >
-                    <secondary-button class="h-12">
+                    <primary-button class="h-12">
                         Tabulated Data
-                    </secondary-button>
+                    </primary-button>
                 </Link>
             </div>
             <div class="my-5 border-b-2 border-gray-300 dark:border-zinc-700"></div>

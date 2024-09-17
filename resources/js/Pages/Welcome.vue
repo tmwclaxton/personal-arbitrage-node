@@ -154,49 +154,49 @@ const showSidebar = ref(true);
                 Panic Button {{ tempAdminDashboard.panicButton ? 'ON' : 'OFF' }}
             </danger-button>
             <Link :href="route('dashboard.index')">
-                <secondary-button  class="h-12">
+                <primary-button  class="h-12">
                     Config
-                </secondary-button>
+                </primary-button>
             </Link>
             <Link :href="route('offers.completed')" >
-                <secondary-button class="h-12">
+                <primary-button class="h-12">
                     Offer Management
-                </secondary-button>
+                </primary-button>
             </Link>
             <Link :href="route('offers.completed')" >
-                <secondary-button class="h-12">
+                <primary-button class="h-12">
                     Robot Management
-                </secondary-button>
+                </primary-button>
             </Link>
             <Link :href="route('offers.posting.index')" >
-                <secondary-button class="h-12">
+                <primary-button class="h-12">
                     Offer Templates
-                </secondary-button>
+                </primary-button>
             </Link>
             <Link :href="route('transactions.index')" >
-                <secondary-button class="h-12">
+                <primary-button class="h-12">
                     Transactions
-                </secondary-button>
+                </primary-button>
             </Link>
             <Link :href="route('payments.index')" class="opacity-50 pointer-events-none">
-                <secondary-button class="h-12">
+                <primary-button class="h-12">
                     Payments
-                </secondary-button>
+                </primary-button>
             </Link>
             <Link :href="route('purchases.index')" >
-                <secondary-button class="h-12">
+                <primary-button class="h-12">
                     Bitcoin Purchases
-                </secondary-button>
+                </primary-button>
             </Link>
             <Link :href="route('graphs.index')" >
-                <secondary-button class="h-12">
+                <primary-button class="h-12">
                     Graphs
-                </secondary-button>
+                </primary-button>
             </Link>
             <Link :href="route('graphs.index')" >
-                <secondary-button class="h-12">
+                <primary-button class="h-12">
                     Tabulated Data
-                </secondary-button>
+                </primary-button>
             </Link>
         </div>
         <div class="my-5 border-b-2 border-gray-300 dark:border-zinc-700"></div>
