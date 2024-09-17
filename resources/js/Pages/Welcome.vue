@@ -105,7 +105,14 @@ const showSidebar = ref(true);
     <div class="min-h-screen">
 
         <div class="flex flex-col ">
-            <p class="font-bold text-2xl mx-auto text-center py-5">Lightning Arbitrage Solutions</p>
+            <a href="https://www.lightningarbitragesolutions.com"
+			   class="font-bold text-2xl mx-auto text-center py-5 ">
+				<!--Lightning Arbitrage Solutions-->
+				<!--<img src="/images/logo.png" alt="Lightning Arbitrage Solutions" class="w-32 mx-auto"/>-->
+				<img src="/images/logoLight.png" alt="Lightning Arbitrage Solutions" class="w-72 mx-auto dark:hidden"/>
+				<img src="/images/logoDark.png" alt="Lightning Arbitrage Solutions" class="w-72 mx-auto hidden dark:block"/>
+				
+			</a>
             <div class="w-full flex flex-row gap-x-8 mx-auto  justify-center ">
                 <div v-if="btcPrices.length > 0" v-for="btcPrice in btcPrices" :key="btcPrice.id">
                     <div class="text-center">
@@ -120,18 +127,18 @@ const showSidebar = ref(true);
                 </div>
             </div>
         </div>
-        <div class="flex flex-row gap-x-2 absolute top-0 w-full">
-            <div class="flex flex-col flex-grow opacity-0 h-20">
-            </div>
-
-            <div class="flex-shrink-0 my-auto mx-10">
-                <!--<Link :href="route('simple')">-->
-                <!--    <secondary-button class="h-10 my-auto">-->
-                <!--        Simple-->
-                <!--    </secondary-button>-->
-                <!--</Link>-->
-            </div>
-        </div>
+        <!--<div class="flex flex-row gap-x-2 absolute top-0 w-full">-->
+        <!--    <div class="flex flex-col flex-grow opacity-0 h-20">-->
+        <!--    </div>-->
+		
+        <!--    <div class="flex-shrink-0 my-auto mx-10">-->
+        <!--        &lt;!&ndash;<Link :href="route('simple')">&ndash;&gt;-->
+        <!--        &lt;!&ndash;    <secondary-button class="h-10 my-auto">&ndash;&gt;-->
+        <!--        &lt;!&ndash;        Simple&ndash;&gt;-->
+        <!--        &lt;!&ndash;    </secondary-button>&ndash;&gt;-->
+        <!--        &lt;!&ndash;</Link>&ndash;&gt;-->
+        <!--    </div>-->
+        <!--</div>-->
 
 
         <div class="w-full flex flex-row flex-wrap gap-3 mt-2 mx-auto justify-center">
