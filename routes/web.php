@@ -165,10 +165,21 @@ Route::get('grab-transactions', function () {
     return $transactions;
 });
 
-// Route::get('pgp-test', function () {
-//     $pgpService = new PgpService();
-//
-// });
+Route::get('pgp-test', function () {
+    $pgpService = new PgpService();
+    $helper = new \App\WorkerClasses\HelperFunctions();
+    $highEntropyToken = $helper->generateSlug(16);
+    $keypair = $pgpService->generate_keypair($highEntropyToken);
+    // return $keypair;
+
+    $message = "Hello World";
+    $encrypted = $pgpService->sign($keypair['private_key'],$message, $highEntropyToken, $keypair['public_key']);
+    return [
+        'message' => $message,
+        'encrypted' => $encrypted,
+    ];
+
+});
 
 Route::get('test-kraken', function () {
     $kraken = new \App\Services\KrakenService();

@@ -173,8 +173,9 @@ class PgpService extends Controller
             $fingerPrintPublic = $publicKeyImport['fingerprint'];
             $crypt_gpg->addDecryptKey($fingerPrintPublic);
             try {
-                $verified = $crypt_gpg->verify($signed);
-                if ($verified) {
+                $verified = $crypt_gpg->verify($signed)[0];
+                //     if verified.valid and verified.fingerprint == import_result.fingerprints[0]:
+                if ($verified->isValid() && $verified->getKeyFingerprint() == $fingerPrintPrivate) {
                     return $signed;
                 } else {
                     return 'Signature verification failed';
