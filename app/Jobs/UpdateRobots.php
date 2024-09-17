@@ -32,8 +32,7 @@ class UpdateRobots implements ShouldQueue
     public function handle(): void
     {
         // where accepted and created at is less than 2 days
-        $offers = Offer::where('accepted', true)->where('created_at', '>=', now()->subHours(5))->get();
-        $robots = Robot::whereIn('offer_id', $offers->pluck('id'))->get();
+        $robots = Robot::where('created_at', '>', now()->subDays(2))->get();
         foreach ($robots as $robot) {
             $robosats = new Robosats();
             $response = $robosats->updateRobot($robot);

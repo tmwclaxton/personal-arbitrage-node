@@ -49,6 +49,10 @@ if (Schema::hasTable('admin_dashboards')) {
             ->description('refresh robots')
             ->hourly()->withoutOverlapping(1);
 
+        Schedule::command('claim:compensation')
+            ->description('claim compensation')
+            ->hourly();
+
         Schedule::command('retire:offers')
             ->description('retire offers')
             ->everyFiveMinutes()->withoutOverlapping(1);
@@ -165,6 +169,3 @@ if (Schema::hasTable('admin_dashboards')) {
 //     ->description('Send btc from kraken to lightning node')
 //     ->everyThreeHours()->withoutOverlapping(1);
 
-// Schedule::command('claim:compensation')
-//     ->description('claim compensation')
-//     ->hourly();

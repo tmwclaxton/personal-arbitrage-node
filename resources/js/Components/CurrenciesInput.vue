@@ -31,7 +31,6 @@ watch(payment_methodsLocal, () => {
 
 <template>
     <div class="flex flex-col gap-y-2 ">
-        <p class="my-1 mt-2 text-md font-bold">Accepted Currencies</p>
         <div class=" select-none flex flex-row gap-x-5 flex-wrap max-w-3xl">
             <div v-for="currency in currencies" :key="currency" class="flex flex-row gap-2 items-center w-16">
                 <input type="checkbox" :id="currency" :value="currency" v-model="payment_methodsLocal"

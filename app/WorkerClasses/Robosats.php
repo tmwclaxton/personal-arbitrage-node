@@ -1009,12 +1009,15 @@ class Robosats
         // sign invoice
         $pgpService = new PgpService();
         $signedInvoice = $pgpService->sign($robot->private_key, $invoice, $robot->token, $robot->public_key);
-            // escape new lines with \\
-        // $signedInvoice = str_replace("\n", '', $signedInvoice);
 
         // post request
         $response = Http::withHeaders($this->getHeaders($robot->offer))->timeout(90)->post($url, ['invoice' => $signedInvoice]);
         $response = json_decode($response->body(), true);
+
+        // send slack message
+        $slackService = new SlackService();
+        $message = "*Claiming compensation for robot* " . $robot->token . " with " . $earnedRewards . " sats.  Response: " . json_encode($response);
+        $slackService->sendMessage($message);
 
         return $response;
     }
@@ -1039,6 +1042,7 @@ class Robosats
         $paymentMethods,
         $bondSize = 3,
         $ttl = 7200,
+        $escrowDuration = 28800,
         $latitute = null,
         $longitude = null,
         $templateSlug = null,
@@ -1114,7 +1118,7 @@ class Robosats
             'premium' => $premium,
             'satoshis' => null,
             'public_duration' => $ttl,
-            'escrow_duration' => 28800,
+            'escrow_duration' => $escrowDuration,
             'bond_size' => $bondSize,
             'latitude' => $latitute,
             'longitude' => $longitude

@@ -51,10 +51,10 @@ class PaymentMatcher implements ShouldQueue
                 ->get();
 
             if ($offers->count() > 1) {
-                $message = '**Warning**: Multiple offers found for payment ' . $payment->id . ' of ' . $payment->payment_amount . ' ' . $payment->payment_currency;
+                $message = '*Warning*: Multiple offers found for payment ' . $payment->id . ' of ' . $payment->payment_amount . ' ' . $payment->payment_currency;
                 $this->sendUniqueMessage($slackService, $payment->id, $message);
             } elseif ($offers->count() === 0) {
-                $message = '**Warning**: No offers found for payment ' . $payment->id . ' of ' . $payment->payment_amount . ' ' . $payment->payment_currency;
+                $message = '*Warning*: No offers found for payment ' . $payment->id . ' of ' . $payment->payment_amount . ' ' . $payment->payment_currency;
                 $this->sendUniqueMessage($slackService, $payment->id, $message);
             } else {
                 $offerId = $offers->first()->id;

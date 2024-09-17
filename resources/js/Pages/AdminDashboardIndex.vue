@@ -194,10 +194,11 @@ const refreshKey = ref(0);
 					<div class="border-b border-gray-300 dark:border-zinc-700 mb-4"/>
 					
 
+					<p class="font-bold mb-2">Payment Methods</p>
                     <PaymentsInput :payment_methods="tempAdminDashboard.payment_methods"
                                    :options="props.paymentMethodList"
                                    @update:model-value="tempAdminDashboard.payment_methods = $event"/>
-
+					<p class="font-bold mb-2">Accepted Currencies</p>
                     <div class="flex flex-row gap-x-4 justify-between">
                         <CurrenciesInput :key="'adminDashboard'"
                                          :payment_methods="tempAdminDashboard.payment_currencies"

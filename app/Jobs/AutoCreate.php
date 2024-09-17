@@ -85,6 +85,7 @@ class AutoCreate implements ShouldQueue
                             $template->payment_methods,
                             $template->bond_size,
                             $template->ttl,
+                            $template->escrow_time,
                             $template->latitude == 0 ? null : $template->latitude,
                             $template->longitude == 0 ? null : $template->longitude,
                             $template->slug,

@@ -140,7 +140,7 @@ use Illuminate\Support\Facades\Redis;
                                 $chatMessages = RobosatsChatMessage::where('offer_id', $offer->id)->get();
                                 $messages = "";
                                 foreach ($chatMessages as $chatMessage) {
-                                    $messages = $messages . "**" . $chatMessage->user_nick . "**: " . $chatMessage->message . " \n";
+                                    $messages = $messages . "*" . $chatMessage->user_nick . "*: " . $chatMessage->message . " \n";
                                 }
                                 $slackService->sendMessage($messages);
                                 break;

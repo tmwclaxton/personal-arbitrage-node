@@ -14,7 +14,7 @@ class ClaimCompensation extends Command
      *
      * @var string
      */
-    protected $signature = 'robot:compensation';
+    protected $signature = 'claim:compensation';
 
     /**
      * The console command description.

@@ -47,6 +47,7 @@ const offerEditTemplate = ref({
     quantity: props.template.quantity,
     cooldown: props.template.cooldown,
     ttl: props.template.ttl,
+	escrow_time: props.template.escrow_time,
 });
 
 const update = (refreshPage = false) => {
@@ -65,6 +66,7 @@ const update = (refreshPage = false) => {
         quantity: offerEditTemplate.value.quantity,
         cooldown: offerEditTemplate.value.cooldown,
         ttl: offerEditTemplate.value.ttl,
+		escrow_time: offerEditTemplate.value.escrow_time,
     }).then(response => {
         console.log(response.data);
 		if (refreshPage) {
@@ -165,6 +167,9 @@ offerEditTemplate.value.providers = JSON.parse(offerEditTemplate.value.provider)
 		</td>
 		<td class="px-1 py-4 whitespace-nowrap text-center">
 			<text-input v-model="offerEditTemplate.ttl" label="TTL" class="w-16"/>
+		</td>
+		<td class="px-1 py-4 whitespace-nowrap text-center">
+			<text-input v-model="offerEditTemplate.escrow_time" label="Escrow Time" class="w-16"/>
 		</td>
 		<td class="px-1 py-4 whitespace-nowrap text-center">
 			<text-input v-model="offerEditTemplate.quantity" label="Quantity" class="w-12"/>

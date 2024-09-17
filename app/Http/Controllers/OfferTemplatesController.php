@@ -83,6 +83,7 @@ class OfferTemplatesController extends Controller
             'quantity' => 'required|numeric|min:1',
             'cooldown' => 'required|numeric|min:0',
             'ttl' => 'required|numeric|min:0',
+            'escrow_time' => 'required|numeric|min:0',
         ]);
 
         $template->type = $request->type;
@@ -99,6 +100,7 @@ class OfferTemplatesController extends Controller
         $template->latitude = $request->latitude;
         $template->longitude = $request->longitude;
         $template->ttl = $request->ttl;
+        $template->escrow_time = $request->escrow_time;
         $template->save();
 
         return [

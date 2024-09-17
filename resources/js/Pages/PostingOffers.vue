@@ -39,6 +39,7 @@ const create = () => {
         quantity: offerTemplate.value.quantity,
         cooldown: offerTemplate.value.cooldown,
         ttl: offerTemplate.value.ttl,
+		escrow_time: offerTemplate.value.escrow_time,
     }).then(response => {
         console.log(response.data);
 		refreshPage();
@@ -70,6 +71,7 @@ const offerTemplate = ref({
     quantity: 1,
     cooldown: 600,
     ttl: 3600,
+	escrow_time: 3600,
 });
 
 const refreshPage = () => {
@@ -139,6 +141,8 @@ const hideSidebar = ref(false);
                         <text-input v-model="offerTemplate.cooldown" label="Cooldown" />
                         <label class="text-sm text-gray-500">TTL</label>
                         <text-input v-model="offerTemplate.ttl" label="TTL" />
+						<label class="text-sm text-gray-500">Escrow Time</label>
+						<text-input v-model="offerTemplate.escrow_time" label="Escrow Time" />
                         <label class="text-sm text-gray-500 mt-5">Active</label>
                         <toggle-button v-model="offerTemplate.autoCreate" label="Auto Create" />
 
@@ -198,6 +202,9 @@ const hideSidebar = ref(false);
 								</th>
 								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
 									TTL
+								</th>
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
+									Escrow Time
 								</th>
 								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
 									Qty
