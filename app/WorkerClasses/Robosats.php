@@ -729,7 +729,7 @@ class Robosats
 
         (new SlackService)->sendMessage('Expect a payment for ' . round($robot->offer->accepted_offer_amount, 2) . ' ' . $robot->offer->currency
             . ' from one of these payment methods: ' . $robot->offer->payment_methods .
-            ' soon! Once received, confirm the payment by typing !confirm ' . $offer->robosatsId . ' in the chat.');
+            ' soon! Once received, confirm the payment by typing !confirm ' . $offer->robosatsId . ' in the chat.', $offer->slack_channel_id);
 
 
     }
@@ -945,7 +945,7 @@ class Robosats
             // if this was false and is now true then we need to send a message to slack
             if (!$offer->pending_cancel && $response['pending_cancel']) {
                 $slackService = new SlackService();
-                $slackService->sendMessage('**Collaborative cancel initiated by counterparty for order ' . $offer->robosatsId . '**');
+                $slackService->sendMessage('**Collaborative cancel initiated by counterparty for order ' . $offer->robosatsId . '**', $offer->slack_channel_id);
             }
             $offer->pending_cancel = $response['pending_cancel'];
         }
@@ -1026,7 +1026,7 @@ class Robosats
         $response = json_decode($response->body(), true);
 
         $slackService = new SlackService();
-        $slackService->sendMessage('Collaborative cancel initiated for order ' . $offer->robosatsId);
+        $slackService->sendMessage('Collaborative cancel initiated for order ' . $offer->robosatsId, $offer->slack_channel_id);
 
         return $response;
     }
