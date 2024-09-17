@@ -46,20 +46,13 @@ class PgpService extends Controller
         $keyId = $crypt_gpg->getFingerprint($userID);
         $crypt_gpg->addPassphrase($keyId, $highEntropyToken);
 
-        // // sign some data
-        // $signKeyId = $crypt_gpg->getFingerprint($userID);
-        // $signed = $crypt_gpg->sign('hello world', Crypt_GPG::SIGN_MODE_CLEAR);
-        // dd($signed);
-
         // Export the public and private keys
         $exportedPublicKey = $crypt_gpg->exportPublicKey($userID, true);
         $exportedPrivateKey = $crypt_gpg->exportPrivateKey($userID, true);
-        // $exportedSignKey = $crypt_gpg->exportSignKey($userID, true);
 
         return [
             'public_key' => $exportedPublicKey,
             'private_key' => $exportedPrivateKey,
-
         ];
 
     }
@@ -136,7 +129,6 @@ class PgpService extends Controller
 
         // Add the keys
         $private_key = $crypt_gpg->addDecryptKey($fingerPrint, $passphrase);
-        // $crypt_gpg->addPassphrase($fingerPrint, $passphrase);
 
         // Decrypt the message
         $decrypted = $crypt_gpg->decrypt($encrypted_message);
