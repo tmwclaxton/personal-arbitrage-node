@@ -159,19 +159,19 @@ const optionsTemplatePopularity = {
                 <!--        <h1 class="text-2xl font-semibold">Graphs</h1>-->
                 <!--    </div>-->
                 <!--</div>-->
-                <div class="overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="overflow-hidden shadow-sm sm:rounded-lg bg-white">
                     <Bar class="!h-64" :data="data" :options="options"/>
                 </div>
-                <div class="mt-5 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="mt-5 overflow-hidden shadow-sm sm:rounded-lg bg-white">
                     <Line class="!h-64"  :data="dataPremiums" :options="optionsPremiums"/>
                 </div>
-                <div class="mt-5 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="mt-5 overflow-hidden shadow-sm sm:rounded-lg bg-white">
                     <Line class="!h-64"  :data="dataLine" :options="optionsLine"/>
                 </div>
-                <div class="mt-5 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="mt-5 overflow-hidden shadow-sm sm:rounded-lg bg-white">
                     <Line class="!h-64"  :data="dataRatios" :options="optionsRatios"/>
                 </div>
-                <div class="mt-5 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="mt-5 overflow-hidden shadow-sm sm:rounded-lg bg-white">
                     <Bar class="!h-64" :data="dataTemplatePopularity" :options="optionsTemplatePopularity"/>
                 </div>
             </div>
