@@ -13,8 +13,14 @@ import ToastList from "@/Components/Toast/ToastList.vue";
 		<ConfirmModal />
 		<ToastList/>
         <div>
-            <p class="font-bold text-2xl mx-auto text-center py-5">Lightning Arbitrage Solutions</p>
-
+			<a href="https://www.lightningarbitragesolutions.com"
+			   class="font-bold text-2xl mx-auto text-center py-5 ">
+				<!--Lightning Arbitrage Solutions-->
+				<!--<img src="/images/logo.png" alt="Lightning Arbitrage Solutions" class="w-32 mx-auto"/>-->
+				<img src="/images/logoLight.png" alt="Lightning Arbitrage Solutions" class="w-72 mx-auto dark:hidden"/>
+				<img src="/images/logoDark.png" alt="Lightning Arbitrage Solutions" class="w-72 mx-auto hidden dark:block"/>
+			
+			</a>
             <div class="w-full flex flex-row flex-wrap gap-3 mt-2 mx-auto justify-center">
                 <Link :href="route('welcome')" >
                     <secondary-button class="h-12">

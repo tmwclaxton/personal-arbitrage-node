@@ -35,6 +35,12 @@ return new class extends Migration
             $table->integer('min_bond')->default(3);
             $table->integer('max_satoshi_amount')->default(400000);
             $table->integer('max_concurrent_transactions')->default(1);
+            $table->integer('max_distance_for_p2p_cash')->default(1); // in km
+            // latitude and longitude
+            $table->decimal('latitude', 10, 8)->nullable();
+            $table->decimal('longitude', 11, 8)->nullable();
+
+
             $table->json('payment_currencies')->nullable();
             $table->json('payment_methods')->nullable();
             $table->integer('kraken_btc_balance')->default(0);
