@@ -173,10 +173,17 @@ Route::get('pgp-test', function () {
     // return $keypair;
 
     $message = "Hello World";
-    $encrypted = $pgpService->sign($keypair['private_key'],$message, $highEntropyToken, $keypair['public_key']);
+    $encrypted = $pgpService->encryptAndSign($keypair['public_key'], $keypair['public_key'],$message, $highEntropyToken);
+    $decrypted = $pgpService->decrypt($keypair['private_key'], $encrypted, $highEntropyToken);
+    $signed = $pgpService->sign($keypair['private_key'],$message, $highEntropyToken, $keypair['public_key']);
+    $verified = $pgpService->verify($keypair['public_key'],$signed);
+
     return [
         'message' => $message,
         'encrypted' => $encrypted,
+        'decrypted' => $decrypted,
+        'signed' => $signed,
+        'verified' => $verified
     ];
 
 });

@@ -14,35 +14,23 @@ class PgpService extends Controller
         return hash('sha256', $data, true);
     }
 
-    public function generate_keypair($highEntropyToken, $key_length = 2048)
+    public function generate_keypair($highEntropyToken)
     {
-        // Generate the SHA-256 hash of the SHA-256 hash of the high-entropy token
-        $hashedToken = bin2hex($this->sha256(bin2hex($this->sha256($highEntropyToken))));
-        $userID = "RoboSats ID: " . $hashedToken;
+        $userID = "RoboSats ID: " . bin2hex($this->sha256($this->sha256($highEntropyToken)));
 
-        // Initialize the key generator
+        // Generate ECC key pair using the appropriate library (Crypt_GPG supports RSA)
         $cryptGen = new Crypt_GPG_KeyGenerator();
 
-        $newTime = strtotime('-24 hours', time());
+        $newTime = strtotime('-24 hours'); // Date offset like in the JS code
 
-        // Generate the key pair
+        // Set key parameters (RSA in this case, switch to ECC if supported)
         $cryptKey = $cryptGen->setPassphrase($highEntropyToken)
-            //  set creation date  --faked-system-time epoch
-            ->setEngineOptions(array('gen-key' =>  '--faked-system-time ' . $newTime))
-            ->setKeyParams(Crypt_GPG_SubKey::ALGORITHM_RSA, $key_length,1)
-            ->setSubKeyParams(Crypt_GPG_SubKey::ALGORITHM_RSA, $key_length,2)
+            ->setEngineOptions(array('gen-key' => '--faked-system-time ' . $newTime))
+            ->setKeyParams(Crypt_GPG_SubKey::ALGORITHM_RSA, 2048) // Replace with ECC params if available
             ->generateKey($userID);
 
-        // Initialize the Crypt_GPG instance
+        // Export the public and private keys as armored strings
         $crypt_gpg = new Crypt_GPG();
-        $crypt_gpg->clearPassphrases();
-
-        // Add the keys
-        $privateKey = $crypt_gpg->addEncryptKey($cryptKey);
-        $publicKey = $crypt_gpg->addDecryptKey($cryptKey);
-        $signKey = $crypt_gpg->addSignKey($cryptKey, $highEntropyToken);
-
-        // Grab key id of private key
         $keyId = $crypt_gpg->getFingerprint($userID);
         $crypt_gpg->addPassphrase($keyId, $highEntropyToken);
 
@@ -238,4 +226,22 @@ class PgpService extends Controller
         ];
 
     }
+
+    public function signCleartextMessage($message, $privateKey, $passphrase)
+    {
+        $crypt_gpg = new Crypt_GPG();
+
+        // Import and decrypt private key
+        $privateKeyImport = $crypt_gpg->importKey($privateKey);
+        $crypt_gpg->addSignKey($privateKeyImport['fingerprint'], $passphrase);
+
+        // Sign the message
+        $newTime = strtotime('-24 hours');
+        $signedMessage = $crypt_gpg->setEngineOptions(array(
+            'sign' => '--faked-system-time ' . $newTime
+        ))->sign($message, Crypt_GPG::SIGN_MODE_CLEAR);
+
+        return $signedMessage;
+    }
+
 }
