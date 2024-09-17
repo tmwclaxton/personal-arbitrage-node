@@ -33,10 +33,12 @@ class ClaimCompensation extends Command
             return;
         }
         $adminDashboard = AdminDashboard::all()->first();
+        if ($adminDashboard->panicButton || !$adminDashboard->autoReward) {
+            return;
+        }
 
         $robosats = new Robosats();
         foreach ($robots as $robot) {
-            $adminDashboard->satoshi_profit += $robot->earned_rewards;
             $robosats->claimCompensation($robot);
         }
     }

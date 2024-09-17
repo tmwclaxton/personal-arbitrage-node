@@ -125,11 +125,11 @@ const showSidebar = ref(true);
             </div>
 
             <div class="flex-shrink-0 my-auto mx-10">
-                <Link :href="route('simple')">
-                    <secondary-button class="h-10 my-auto">
-                        Simple
-                    </secondary-button>
-                </Link>
+                <!--<Link :href="route('simple')">-->
+                <!--    <secondary-button class="h-10 my-auto">-->
+                <!--        Simple-->
+                <!--    </secondary-button>-->
+                <!--</Link>-->
             </div>
         </div>
 
@@ -208,11 +208,16 @@ const showSidebar = ref(true);
                     <!--    <ToggleButton v-model="tempAdminDashboard.autoReward" size="sm" activeColor="bg-green-500"-->
                     <!--                  inactiveColor="bg-red-500"/>-->
                     <!--</div>-->
-                    <div class="flex flex-row justify-between items-center"><span
-                        class="font-bold mr-1">Auto Accept</span>
-                        <ToggleButton v-model="tempAdminDashboard.autoAccept" size="sm" activeColor="bg-green-500"
-                                      inactiveColor="bg-red-500"/>
-                    </div>
+					<div class="flex flex-row justify-between items-center"><span
+					  class="font-bold mr-1">Auto Reward</span>
+						<ToggleButton v-model="tempAdminDashboard.autoReward" size="sm" activeColor="bg-green-500"
+									  inactiveColor="bg-red-500"/>
+					</div>
+					<div class="flex flex-row justify-between items-center"><span
+					  class="font-bold mr-1">Auto Accept</span>
+						<ToggleButton v-model="tempAdminDashboard.autoAccept" size="sm" activeColor="bg-green-500"
+									  inactiveColor="bg-red-500"/>
+					</div>
                     <div class="flex flex-row justify-between items-center"><span
                         class="font-bold mr-1">Auto Bond</span>
                         <ToggleButton v-model="tempAdminDashboard.autoBond" size="sm" activeColor="bg-green-500"
