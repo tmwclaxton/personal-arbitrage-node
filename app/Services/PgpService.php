@@ -27,6 +27,7 @@ class PgpService extends Controller
         $cryptKey = $cryptGen->setPassphrase($highEntropyToken)
             ->setEngineOptions(array('gen-key' => '--faked-system-time ' . $newTime))
             ->setKeyParams(Crypt_GPG_SubKey::ALGORITHM_RSA, 2048) // Replace with ECC params if available
+            ->setSubKeyParams(Crypt_GPG_SubKey::ALGORITHM_RSA, 2048)
             ->generateKey($userID);
 
         // Export the public and private keys as armored strings

@@ -153,17 +153,18 @@ Route::get('/test-revolut-login', function () {
     Http::post($url);
 });
 
-Route::get('test-revolut-payment-listener', function () {
-    // trigger job
-    $job = new \App\Jobs\RevolutPaymentListener();
-    $job->handle();
-});
-
 Route::get('grab-transactions', function () {
     $mitmService = new \App\Services\MitmService();
     $transactions = $mitmService->grabTransactions();
     return $transactions;
 });
+
+// create robot
+Route::get('create-robots', function () {
+    $robot = new Robosats();
+    return $robot->createRobots();
+});
+
 
 Route::get('pgp-test', function () {
     $pgpService = new PgpService();
@@ -200,36 +201,7 @@ Route::get('test-kraken', function () {
     return "less than 0.01";
 });
 
-// Route::get('autoCreate', function () {
-//     # grab all templates
-//     $templates = \App\Models\PostedOfferTemplate::all();
-//     foreach ($templates as $template) {
-//         # check if the template is active
-//         if ($template->auto_create) {
-//             # check if the template quantity is less than matching offers
-//             $count = Offer::where([['status', '<=', 1], ['posted_offer_template_slug', $template->id]])->get()->count();
-//             if ($template->quantity > $count) {
-//
-//                 for ($i = 0; $i < $template->quantity - $count; $i++) {
-//                     $robosats = new \App\WorkerClasses\Robosats();
-//                     $response = $robosats->createSellOffer(
-//                         $template->currency,
-//                         $template->premium,
-//                         $template->provider,
-//                         $template->min_amount,
-//                         json_decode($template->payment_methods)[0],
-//                         $template->bond_size,
-//                         $template->id,
-//                         $template->max_amount == 0 ? null : $template->max_amount,
-//                     );
-//
-//                 }
-//
-//             }
-//         }
-//
-//     }
-// });
+
 
 Route::get('/wise-alternative', function() {
     $wiseService = new \App\Services\WiseService();

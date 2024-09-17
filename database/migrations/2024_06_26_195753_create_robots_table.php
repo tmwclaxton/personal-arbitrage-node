@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('robots', function (Blueprint $table) {
             $table->id();
             // this can be the same for many robots so it is not unique
-            $table->foreignIdFor(Offer::class);
+            $table->integer('offer_id')->nullable();
             $table->unsignedBigInteger('offerIdStorage')->nullable();
             $table->string('provider');
             $table->string('nickname');

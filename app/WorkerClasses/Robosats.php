@@ -184,11 +184,13 @@ class Robosats
 
 
 
-    public function createRobots($offer) {
-        // check if the offer already has a robot
-        $robots = Robot::where('offer_id', $offer->id)->get();
-        if ($robots->count() > 0 || $offer->robots_created) {
-            return $robots;
+    public function createRobots($offer = null) {
+        if ($offer) {
+            // check if the offer already has a robot
+            $robots = Robot::where('offer_id', $offer->id)->get();
+            if ($robots->count() > 0 || $offer->robots_created) {
+                return $robots;
+            }
         }
 
         $generator = new ComputerPasswordGenerator();
@@ -230,16 +232,18 @@ class Robosats
         $adminDashboard = AdminDashboard::all()->first();
         $providers = json_decode($adminDashboard->provider_statuses, true);
         $onlineProviders = [];
-        if (!array_key_exists($offer->provider, $providers) || $providers[$offer->provider] == 'offline') {
+
+        if ($offer && (!array_key_exists($offer->provider, $providers) || $providers[$offer->provider] == 'offline')) {
             return 'Provider is offline';
         }
+
         foreach ($providers as $provider => $status) {
             if ($status != null && $status != 'offline') {
                 $onlineProviders[] = $provider;
             }
         }
 
-        if (!in_array($offer->provider, $onlineProviders)) {
+        if ($offer && !in_array($offer->provider, $onlineProviders)) {
             return 'Main provider is offline';
         }
 
@@ -264,7 +268,7 @@ class Robosats
                 $slackService->sendMessage('Error creating robot: ' . $e->getMessage() . ' on ' . $provider);
                 // unlock the offer // this allows it to be retried
                 // if the robot creation failed for the same provider as the offer then return otherwise continue
-                if ($provider == $offer->provider) {
+                if ($offer && $provider == $offer->provider) {
                     // because we haven't accepted the offer it is acceptable to delete the robots
                     $offer->robots()->delete();
                     $offer->job_locked = false;
@@ -282,7 +286,9 @@ class Robosats
 
             $robot = new Robot();
             $robot->provider = $provider;
-            $robot->offer_id = $offer->id;
+            if ($offer) {
+                $robot->offer_id = $offer->id;
+            }
             $robot->token = $generatedToken;
             $robot->sha256 = $b91Token;
             $robot->nickname = $json['nickname'];
@@ -299,10 +305,12 @@ class Robosats
             $robot->tg_bot_name = $json['tg_bot_name'];
             $robot->save();
         }
-        $offer->robots_created = true;
-        $offer->save();
+        if ($offer) {
+            $offer->robots_created = true;
+            $offer->save();
+        }
 
-        return $robots;
+        return Robot::where('token', $generatedToken)->get();
     }
 
 
@@ -1156,10 +1164,7 @@ class Robosats
         $offer->my_offer = true;
         $offer->save();
 
-        $name = "order-" . $offer->robosatsId;
-        $channel_id = $slackService->createChannel($name);
-        $offer->slack_channel_id = $channel_id;
-        $offer->save();
+
 
 
 
