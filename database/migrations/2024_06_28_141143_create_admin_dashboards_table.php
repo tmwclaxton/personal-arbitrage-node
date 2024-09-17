@@ -18,7 +18,8 @@ return new class extends Migration
             $table->boolean('autoAccept')->default(false);
             $table->boolean('autoBond')->default(true);
             $table->boolean('autoEscrow')->default(true);
-            $table->boolean('autoMessage')->default(true);
+            $table->boolean('autoInvoice')->default(true);
+            $table->boolean('autoMessage')->default(false);
             $table->boolean('autoConfirm')->default(false);
             $table->boolean('autoCreate')->default(false);
             $table->time('auto_accept_start_time')->default('09:00:00');

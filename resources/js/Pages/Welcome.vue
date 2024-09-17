@@ -106,7 +106,7 @@ const showSidebar = ref(true);
 
         <div class="flex flex-col ">
             <a href="https://www.lightningarbitragesolutions.com"
-			   class="font-bold text-2xl mx-auto text-center py-5 ">
+			   class="font-bold text-2xl mx-auto text-center pt-5 ">
 				<!--Lightning Arbitrage Solutions-->
 				<!--<img src="/images/logo.png" alt="Lightning Arbitrage Solutions" class="w-32 mx-auto"/>-->
 				<img src="/images/logoLight.png" alt="Lightning Arbitrage Solutions" class="w-72 mx-auto dark:hidden"/>
@@ -230,11 +230,16 @@ const showSidebar = ref(true);
                         <ToggleButton v-model="tempAdminDashboard.autoBond" size="sm" activeColor="bg-green-500"
                                       inactiveColor="bg-red-500"/>
                     </div>
-                    <div class="flex flex-row justify-between items-center"><span
-                        class="font-bold mr-1">Auto Escrow</span>
-                        <ToggleButton v-model="tempAdminDashboard.autoEscrow" size="sm" activeColor="bg-green-500"
-                                      inactiveColor="bg-red-500"/>
-                    </div>
+					<div class="flex flex-row justify-between items-center"><span
+					  class="font-bold mr-1">Auto Escrow</span>
+						<ToggleButton v-model="tempAdminDashboard.autoEscrow" size="sm" activeColor="bg-green-500"
+									  inactiveColor="bg-red-500"/>
+					</div>
+					<div class="flex flex-row justify-between items-center"><span
+					  class="font-bold mr-1">Auto Invoice</span>
+						<ToggleButton v-model="tempAdminDashboard.autoInvoice" size="sm" activeColor="bg-green-500"
+									  inactiveColor="bg-red-500"/>
+					</div>
                     <div class="flex flex-row justify-between items-center"><span
                         class="font-bold mr-1">Auto Chat</span>
                         <ToggleButton v-model="tempAdminDashboard.autoMessage" size="sm" activeColor="bg-green-500"

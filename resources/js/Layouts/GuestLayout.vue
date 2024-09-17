@@ -14,7 +14,7 @@ import ToastList from "@/Components/Toast/ToastList.vue";
 		<ToastList/>
         <div>
 			<a href="https://www.lightningarbitragesolutions.com"
-			   class="font-bold text-2xl mx-auto text-center py-5 ">
+			   class="font-bold text-2xl mx-auto text-center pt-5 ">
 				<!--Lightning Arbitrage Solutions-->
 				<!--<img src="/images/logo.png" alt="Lightning Arbitrage Solutions" class="w-32 mx-auto"/>-->
 				<img src="/images/logoLight.png" alt="Lightning Arbitrage Solutions" class="w-72 mx-auto dark:hidden"/>
