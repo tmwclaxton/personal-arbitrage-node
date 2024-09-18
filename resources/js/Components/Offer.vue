@@ -5,7 +5,7 @@
     <!--'col-span-1': !offer.accepted,-->
 
     <div class="max-w-md mx-auto bg-white dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700 dark:shadow-lg
-    rounded-xl shadow-md overflow-hidden md:max-w-2xl"  :class="{'col-span-2': showSidebar && (offer.accepted || (offer.robots && offer.robots.length > 0)), 'col-span-3': !showSidebar && (offer.accepted || (offer.robots && offer.robots.length > 0)), 'col-span-1': !offer.accepted}">
+    rounded-xl shadow-md overflow-hidden md:max-w-2xl"  :class="{'col-span-1': showSidebar && (offer.accepted || (offer.robots && offer.robots.length > 0)), 'col-span-1': !showSidebar && (offer.accepted || (offer.robots && offer.robots.length > 0)), 'col-span-1': !offer.accepted}">
 
         <div v-if="offer.status">
             <p class=" text-zinc-500 dark:text-zinc-200 font-bold break-words p-4"

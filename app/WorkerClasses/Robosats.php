@@ -1052,7 +1052,7 @@ class Robosats
         $isRange = $maxAmount != null;
 
         $slackService = new SlackService();
-        $message = 'Creating sell offer for ';
+        $message = 'Creating ' . $type . ' offer on ' . $provider . ' for ';
         if ($isRange) {
             $message .= 'between ' . $minAmount . ' and ' . $maxAmount . ' ' . $currency . ' with a premium of ' . $premium . '%';
         } else {
