@@ -1034,7 +1034,8 @@ class Robosats
         return $response;
     }
 
-    public function createSellOffer(
+    public function createOffer(
+        $type,
         $currency,
         $premium,
         $provider,
@@ -1064,7 +1065,7 @@ class Robosats
         $tempOffer = new Offer([
             'robosatsId' => rand(111111111, 999999999),
             'provider' => $provider,
-            'type' => 'sell',
+            'type' => $type,
             'currency' => 0,
             'amount' => 0,
             'has_range' => $isRange,
@@ -1108,8 +1109,15 @@ class Robosats
         $latitute = round($latitute, 4);
         $longitude = round($longitude, 5);
 
+        $typeInt = 0;
+        if ($type == 'sell') {
+            $typeInt = 1;
+        } else if ($type == 'buy') {
+            $typeInt = 0;
+        }
+
         $array = [
-            'type' => 1,
+            'type' => $typeInt,
             'currency' => $currency,
             'has_range' => $isRange,
             'max_amount' => $maxAmount,

@@ -29,39 +29,64 @@ class SlackService
         $this->client = ClientFactory::create($adminDashboard->slack_bot_token);
     }
 
+    // Retry helper function
 
+    /**
+     * @throws \Exception
+     */
+    protected function retry(callable $callback, int $retries = 3, int $delay = 2)
+    {
+        $attempt = 0;
+        while ($attempt < $retries) {
+            try {
+                return $callback();
+            } catch (\Exception $e) {
+                $attempt++;
+                if ($attempt >= $retries) {
+                    throw $e; // rethrow exception if maximum attempts are reached
+                }
+                sleep($delay); // wait before retrying
+            }
+        }
+    }
+
+    /**
+     * @throws \Exception
+     */
     public function createChannel($channelName): ?string
     {
-        //!TODO: might be an idea to add retry logic here at some point
         $slackService = new SlackService();
-        $channel = $slackService->client->conversationsCreate([
-            'name' => $channelName,
-        ]);
+
+        // Retry the channel creation
+        $channel = $this->retry(function () use ($slackService, $channelName) {
+            return $slackService->client->conversationsCreate(['name' => $channelName]);
+        });
+
         $channelID = $channel->getChannel()->getId();
 
         sleep(3);
 
-        // grab all users
-        $users = $slackService->client->usersList();
+        // Retry fetching users
+        $users = $this->retry(function () use ($slackService) {
+            return $slackService->client->usersList();
+        });
         $members = $users->getMembers();
 
-        // filter out bots
+        // Filter out bots
         foreach ($members as $key => $member) {
-            if ($member->getIsBot()) {
-                unset($members[$key]);
-            }
-            // check if id is USLACKBOT
-            if ($member->getId() == 'USLACKBOT') {
+            if ($member->getIsBot() || $member->getId() == 'USLACKBOT') {
                 unset($members[$key]);
             }
         }
 
-        // add users to channel
+        // Retry adding users to the channel
         foreach ($members as $member) {
-            $slackService->client->conversationsInvite([
-                'channel' => $channelID,
-                'users' => $member->getId(),
-            ]);
+            $this->retry(function () use ($slackService, $channelID, $member) {
+                $slackService->client->conversationsInvite([
+                    'channel' => $channelID,
+                    'users' => $member->getId(),
+                ]);
+            });
             sleep(5);
         }
 
@@ -69,40 +94,19 @@ class SlackService
     }
 
     /**
-     * Get the last 50 messages from the Slack channel.
-     *
-     * @return array
-     * @throws GuzzleException
+     * @throws \Exception
      */
     public function getLatestMessages($channelId): array
     {
-        try {
-            $messages = $this->client->conversationsHistory([
+        return $this->retry(function () use ($channelId) {
+            return $this->client->conversationsHistory([
                 'channel' => $channelId,
                 'limit' => 20,
-            ]);
-        } catch (\Exception $e) {
-            // if not_in_channel error add the bot to the channel
-            if ($e->getMessage() == 'not_in_channel') {
-                $this->client->conversationsJoin([
-                    'channel' => $channelId,
-                ]);
-                $messages = $this->client->conversationsHistory([
-                    'channel' => $channelId,
-                    'limit' => 20,
-                ]);
-            }
-        }
-
-        return $messages->getMessages();
+            ])->getMessages();
+        });
     }
 
     /**
-     * Send a message to the Slack channel.
-     *
-     * @param string $message
-     * @return void
-     * @throws GuzzleException
      * @throws \Exception
      */
     public function sendMessage(string $message, string $channelId = null): void
@@ -112,18 +116,23 @@ class SlackService
             $channelId = $adminDashboard->slack_main_channel_id;
         }
 
-        $this->client->chatPostMessage([
-            'channel' => $channelId,
-            'text' => $message,
-        ]);
-
-        sleep(3);
+        $this->retry(function () use ($message, $channelId) {
+            $this->client->chatPostMessage([
+                'channel' => $channelId,
+                'text' => $message,
+            ]);
+        });
     }
 
+    /**
+     * @throws \Exception
+     */
     public function deleteChannel($channelId): void
     {
-        $this->client->conversationsArchive([
-            'channel' => $channelId,
-        ]);
+        $this->retry(function () use ($channelId) {
+            $this->client->conversationsArchive([
+                'channel' => $channelId,
+            ]);
+        });
     }
 }

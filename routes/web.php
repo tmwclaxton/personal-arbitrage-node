@@ -218,38 +218,12 @@ Route::get('/testing', function () {
 
 
     $slackService = new SlackService();
-    $channelId = 'C07M1H1RPHB';
-    $messages = $slackService->getLatestMessages($channelId);
-
-    foreach ($messages as $message) {
-
-        // check if message already exists in the database
-        if ($message->getClientMsgId() === null || SlackMessage::where('slack_id', $message->getClientMsgId())->exists() || $message->getBotId() !== null) {
-            continue;
-        }
-
-        $slackMessage = new SlackMessage([
-            'slack_id' => $message->getClientMsgId(),
-            'content' => $message->getText(),
-            'channel_id' => $channelId
-        ]);
-
-        $slackMessage->save();
-
+    $channelId = 'C07L754M6TY';
+    for ($i = 0; $i < 1; $i++) {
+        $slackService->sendMessage('Test message ' . $i, $channelId);
     }
-        // // check if message already exists in the database
-        // if (SlackMessage::where('slack_id', $message->getClientID())->exists()) {
-        //     continue;
-        // }
-        //
-        // $slackMessage = new SlackMessage([
-        //     'slack_id' => $message['id'],
-        //     'content' => $message['content'],
-        //     'author_id' => $message['author']['id'],
-        //     'channel_id' => $message['channel_id'],
-        //     'updated_at' => Carbon::parse($message['timestamp'])
-        // ]);
-        // $slackMessage->save();
+    $messages = $slackService->getLatestMessages($channelId);
+    dd($messages);
 
     dd('done');
 

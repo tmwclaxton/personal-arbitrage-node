@@ -77,7 +77,8 @@ class AutoCreate implements ShouldQueue
                         }
 
                         $robosats = new \App\WorkerClasses\Robosats();
-                        $response = $robosats->createSellOffer(
+                        $response = $robosats->createOffer(
+                            $template->type,
                             $template->currency,
                             $template->premium,
                             $chosen_provider,
