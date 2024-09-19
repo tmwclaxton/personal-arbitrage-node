@@ -28,8 +28,8 @@ class OfferController extends Controller
 
         // where status != 14, 12, 17, 18, 99, 4, 5, 2, 13, 15
         $offers = Offer::where([['accepted', '=', true], ['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14]])
-            ->orWhere([['accepted', '=', false],['premium', '>=', $sellPremium], ['type', 'sell']])
-            ->orWhere([['accepted', '=', false],['premium', '<=', $buyPremium], ['type', 'buy']])
+            ->orWhere([['accepted', '=', false],['premium', '>=', $sellPremium], ['type', 'sell'], ['status', '!=', 5]])
+            ->orWhere([['accepted', '=', false],['premium', '<=', $buyPremium], ['type', 'buy'], ['status', '!=', 5]])
             ->orWhere([['my_offer', '=', true], ['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14]])
             ->orderBy('accepted', 'desc')
             ->orderBy('my_offer', 'desc')
@@ -59,6 +59,7 @@ class OfferController extends Controller
 
 
         $offers = $this->getOffersInternal($adminDashboard);
+
         $paymentMethods = json_decode($adminDashboard->payment_methods);
 
 
@@ -265,6 +266,20 @@ class OfferController extends Controller
                 $offer['max_satoshi_amount_profit'] = $actualMaxSatoshiAmount - $offer['max_satoshi_amount'];
             }
 
+            // find offer if it exists
+            $existingOffer = Offer::where('robosatsId', $offer['robosatsId'])->first();
+            // if my_offer is true and type is buy, then we need to change the profit to a absolute number
+            if ($existingOffer && $existingOffer->type == "buy") {
+                if (isset($offer['satoshi_amount_profit'])) {
+                    $offer['satoshi_amount_profit'] = abs($offer['satoshi_amount_profit']);
+                }
+                if (isset($offer['min_satoshi_amount_profit'])) {
+                    $offer['min_satoshi_amount_profit'] = abs($offer['min_satoshi_amount_profit']);
+                }
+                if (isset($offer['max_satoshi_amount_profit'])) {
+                    $offer['max_satoshi_amount_profit'] = abs($offer['max_satoshi_amount_profit']);
+                }
+            }
 
         }
 
@@ -301,7 +316,7 @@ class OfferController extends Controller
         $offer = Offer::where('robosatsId', $offer['robosatsId'])->first();
         // if the offer is a buy offer (will show up as sell for the counterparty)
         // and it is our offer, then we need to change the profit to a negative number
-        $offer->fixProfitSigns();
+        // $offer->fixProfitSigns();
 
         // buy is 1 and sell is 2 // if we are the taker
         if ($offer->my_offer) {
