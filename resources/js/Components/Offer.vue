@@ -54,17 +54,17 @@
 
                 <primary-button class="w-full text-center  h-10 break-words "
                                 v-on:click="payBond"
-                                v-if="!offer.my_offer && offer.status === 3 && offer.accepted || offer.my_offer && offer.status === 0">
+                                v-if="offer.type === 'sell' && (!offer.my_offer && offer.status === 3 && offer.accepted || offer.my_offer && offer.status === 0)">
                     <p class="text-center w-full">Bond</p>
                 </primary-button>
 				
 				<primary-button v-on:click="payEscrow"
-								v-if="offer.accepted && (offer.status === 6 || offer.status === 7)"
+								v-if="offer.type === 'sell' && (offer.accepted && (offer.status === 6 || offer.status === 7))"
 								class="w-full text-center  h-10 break-words ">
 					<p class="text-center w-full">Escrow</p>
 				</primary-button>
 				<primary-button v-on:click="generateInvoice"
-								v-if="offer.accepted && (offer.status === 6 || offer.status === 8)"
+								v-if="offer.type === 'buy' && (offer.accepted && (offer.status === 6 || offer.status === 8))"
 								class="w-full text-center  h-10 break-words ">
 					<p class="text-center w-full">Invoice</p>
 				</primary-button>
@@ -281,6 +281,18 @@ const payBond = () => {
     }).catch(error => {
         console.log(error);
     });
+}
+
+const generateInvoice = () => {
+	console.log('generating invoice');
+
+	axios.post(route('generate-invoice'), {
+		offer_id: props.offer.id
+	}).then(response => {
+		console.log(response);
+	}).catch(error => {
+		console.log(error);
+	});
 }
 
 const confirmPayment = () => {
