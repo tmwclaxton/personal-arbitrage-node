@@ -3,10 +3,10 @@
 	<Head title="Graphs"/>
 	
 	<GuestLayout>
-
+		
 		<div class="max-w-md mx-auto bg-white dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700 dark:shadow-lg
-		rounded-xl shadow-md overflow-hidden md:max-w-2xl"  :class="{'col-span-2': showSidebar && (offer.accepted || (offer.robots && offer.robots.length > 0)), 'col-span-3': !showSidebar && (offer.accepted || (offer.robots && offer.robots.length > 0)), 'col-span-1': !offer.accepted}">
-	
+    			rounded-xl shadow-md overflow-hidden md:max-w-2xl"  >
+			
 			<div v-if="offer.status">
 				<p class=" text-zinc-500 dark:text-zinc-200 font-bold break-words p-4"
 				   :class="{'bg-blue-200 dark:bg-blue-800': offer.my_offer, 'bg-red-200 dark:bg-red-700': !offer.my_offer}">
@@ -15,70 +15,71 @@
 					<!--    · Maker Offer-->
 					<!--</span>-->
 					<span v-if="offer.posted_offer_template_slug" class="text-blue-500 dark:text-blue-300">
-						· Template {{ offer.posted_offer_template_slug }}
-					</span>
-				<!--    asked_for_cancel-->
+                    · Template {{ offer.posted_offer_template_slug }}
+                </span>
+					<!--    asked_for_cancel-->
 					<span v-if="offer.pending_cancel" class="text-red-500 dark:text-red-300">
-						· Counterparty asked for cancel!
-					</span>
+                    · Counterparty asked for cancel!
+                </span>
 					<span v-if="offer.asked_for_cancel" class="text-red-500 dark:text-red-300">
-						· We asked for cancel!
-					</span>
+                    · We asked for cancel!
+                </span>
 				</p>
 			</div>
 			<div v-else class="mt-4">   </div>
 			<!--0, 6, 7, 9, 10-->
 			<div class="p-4 pt-0">
-			 <!--   <div v-if="offer.transaction && (!offer.my_offer &&-->
-			 <!--(offer.status === 0 || offer.status === 6 || offer.status === 7 || offer.status === 9 || offer.status === 10))"-->
-			 <!--        class="border border-gray-200 dark:border-zinc-700 "></div>-->
+				<!--   <div v-if="offer.transaction && (!offer.my_offer &&-->
+				<!--(offer.status === 0 || offer.status === 6 || offer.status === 7 || offer.status === 9 || offer.status === 10))"-->
+				<!--        class="border border-gray-200 dark:border-zinc-700 "></div>-->
 				<div class="grid grid-cols-3  gap-1 p-1">
-	
-					<danger-button v-on:click="autoRun" v-if="!offer.accepted && !offer.my_offer"
+					
+					<danger-button v-on:click="offerStore.autoRun(offer.id)"
+								   v-if="!offer.accepted && !offer.my_offer"
 								   :disabled="offer.job_locked || offer.accepted"
 								   class="w-full text-center  h-10 break-words disabled:opacity-50">
 						<p class="text-center w-full">Auto Run</p>
 					</danger-button>
-	
-					<primary-button v-on:click="uniqueRobot"
+					
+					<primary-button v-on:click="offerStore.uniqueRobot(offer.id)"
 									v-if="!offer.robots || offer.robots.length === 0"
 									class="w-full text-center  h-10 break-words ">
 						<p class="text-center w-full">Create Robots</p>
 					</primary-button>
-	
-					<primary-button v-on:click="acceptOffer"
+					
+					<primary-button v-on:click="offerStore.acceptOffer(offer.id)"
 									v-if="(!offer.accepted && !offer.my_offer) || (offer.status === 1 && !offer.my_offer)"
 									class="w-full text-center  h-10 break-words ">
 						<p class="text-center w-full">Accept</p>
 					</primary-button>
-	
+					
 					<primary-button class="w-full text-center  h-10 break-words "
-									v-on:click="payBond"
+									v-on:click="offerStore.payBond(offer.id)"
 									v-if="offer.type === 'sell' && (!offer.my_offer && offer.status === 3 && offer.accepted || offer.my_offer && offer.status === 0)">
 						<p class="text-center w-full">Bond</p>
 					</primary-button>
 					
-					<primary-button v-on:click="payEscrow"
+					<primary-button v-on:click="offerStore.payEscrow(offer.id)"
 									v-if="offer.type === 'sell' && (offer.accepted && (offer.status === 6 || offer.status === 7))"
 									class="w-full text-center  h-10 break-words ">
 						<p class="text-center w-full">Escrow</p>
 					</primary-button>
-					<primary-button v-on:click="generateInvoice"
+					<primary-button v-on:click="offerStore.generateInvoice(offer.id)"
 									v-if="offer.type === 'buy' && (offer.accepted && (offer.status === 6 || offer.status === 8))"
 									class="w-full text-center  h-10 break-words ">
 						<p class="text-center w-full">Invoice</p>
 					</primary-button>
-	
-	
+					
+					
 					<primary-button class="w-full text-center p-0  h-10 break-words"
 									v-if="offer.accepted && (offer.status === 9 || offer.status === 10)"
-									v-on:click="sendPaymentHandle">
+									v-on:click="offerStore.sendPaymentHandle(offer.id)">
 						<p class="text-center w-full">Auto Chat</p>
 					</primary-button>
-	
+					
 					<primary-button class="w-full text-center p-0  h-10 break-words"
 									v-if="offer.accepted && (offer.status === 9 || offer.status === 10)"
-									v-on:click="confirmPayment">
+									v-on:click="offerStore.confirmPayment(offer.id)">
 						<p class="text-center w-full">Confirm</p>
 					</primary-button>
 					<secondary-button class="w-full text-center p-0  h-10 break-words"
@@ -86,19 +87,19 @@
 									  v-on:click="">
 						<p class="text-center w-full">View Chat</p>
 					</secondary-button>
-	
-	
+					
+					
 					<danger-button v-on:click="collaborativeCancel"
 								   v-if="offer.accepted && (offer.status === 9 || offer.status === 10)"
 								   class="w-full text-center  h-10 break-words ">
 						<p class="text-center w-full">Collaborative Cancel</p>
 					</danger-button>
 				</div>
-	
+				
 				<div class="border-b border-gray-200 dark:border-zinc-700 mb-2 "></div>
 				<div class=" flex flew-row gap-4">
-	
-	
+					
+					
 					<div class="flex flex-col max-w-44 flex-shrink-0">
 						<div class="mt-0.5 uppercase tracking-wide text-sm text-indigo-500 font-semibold">
 							<span v-text="offer.provider"></span>
@@ -106,7 +107,7 @@
 							<span class="mt-2 text-zinc-500 dark:text-zinc-200 font-bold">{{
 									offer.accepted && offer.taker ? ' · Accepted' : ''
 								}}</span>
-	
+						
 						</div>
 						<p class="block mt-1  leading-tight font-bold underline dark:text-zinc-200">
 							Offer #{{ offer.robosatsId }}
@@ -153,8 +154,8 @@
 							<p class="text-zinc-500 dark:text-zinc-200 text-xs">Profit:
 								{{ offer.accepted_offer_profit_sat ?? 'N/A' }}</p>
 						</div>
-	
-	
+					
+					
 					</div>
 					<div class="flex flex-col"><p class="text-zinc-500 dark:text-zinc-200 italic">Expires at:
 						{{ offer.expires_at }}</p>
@@ -176,18 +177,18 @@
 						<p class="text-zinc-500 dark:text-zinc-200">Bond Size: {{ offer.bond_size }}</p>
 						<p class="text-zinc-500 dark:text-zinc-200">Premium: {{ offer.premium }}</p>
 						<p class="text-zinc-500 dark:text-zinc-200 font-medium ">Payment Methods: <br><span
-							class="break-words font-bold">{{ offer.payment_methods }}</span></p>
-	
+						  class="break-words font-bold">{{ offer.payment_methods }}</span></p>
+						
 						<p v-if="offer.status === 9 || offer.status === 10"
-							class="text-zinc-500 dark:text-zinc-200 font-medium mt-2">Expected Reference ID: <br><span
-							class="break-words font-bold">{{ offer.id }}</span></p>
-	
-	
+						   class="text-zinc-500 dark:text-zinc-200 font-medium mt-2">Expected Reference ID: <br><span
+						  class="break-words font-bold">{{ offer.id }}</span></p>
+					
+					
 					</div>
-	
-	
+					
+					
 					<div v-if="offer.robots && offer.robots.length > 0" class="border-r border-gray-200  "></div>
-	
+					
 					<div class="flex flex-col gap-2">
 						<div v-if="offer.robots && offer.robots.length > 0">
 							<p class="  text-zinc-500 dark:text-zinc-200 "><span class="font-bold">Nickname</span>: <br>{{
@@ -199,16 +200,16 @@
 								<p class="mt-2 text-zinc-500 dark:text-zinc-200">Provider: {{ robot.provider }}</p>
 							</div>
 						</div>
-	
+					
 					</div>
 				</div>
-	
-	
+			
+			
 			</div>
-	
-	
-	
-	
+		
+		
+		
+		
 		</div>
 	</GuestLayout>
 </template>
@@ -219,117 +220,10 @@ import { defineProps } from 'vue';
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import DangerButton from "@/Components/DangerButton.vue";
 import SecondaryButton from "@/Components/SecondaryButton.vue";
+import {useOfferActionStore} from "@/Stores/OfferActionStore.js";
 import GuestLayout from "@/Layouts/GuestLayout.vue";
+const offerStore = useOfferActionStore();
+const props = defineProps(['offer']);
 
-const props = defineProps(['offer', 'showSidebar']);
-
-const autoRun = () => {
-    console.log('auto run');
-
-    axios.post(route('auto-accept'), {
-        offer_id: props.offer.id
-    }).then(response => {
-        console.log(response);
-    }).catch(error => {
-        console.log(error);
-    });
-}
-
-const uniqueRobot = () => {
-    console.log('creating unique robot');
-
-    axios.post(route('create-robot'), {
-        offer_id: props.offer.id
-    }).then(response => {
-        console.log(response);
-    }).catch(error => {
-        console.log(error);
-    });
-}
-
-
-// when accept offer click send post request to /accept-offer with offer_id
-const acceptOffer = () => {
-    console.log('accepting offer');
-
-    axios.post(route('accept-offer'), {
-        offer_id: props.offer.id
-    }).then(response => {
-        console.log(response);
-    }).catch(error => {
-        console.log(error);
-    });
-}
-
-const payEscrow = () => {
-    console.log('paying escrow');
-
-    axios.post(route('pay-escrow'), {
-        offer_id: props.offer.id
-    }).then(response => {
-        console.log(response);
-    }).catch(error => {
-        console.log(error);
-    });
-}
-
-const payBond = () => {
-    console.log('paying bond');
-
-    axios.post(route('pay-bond'), {
-        offer_id: props.offer.id
-    }).then(response => {
-        console.log(response);
-    }).catch(error => {
-        console.log(error);
-    });
-}
-
-const generateInvoice = () => {
-	console.log('generating invoice');
-
-	axios.post(route('update-invoice'), {
-		offer_id: props.offer.id
-	}).then(response => {
-		console.log(response);
-	}).catch(error => {
-		console.log(error);
-	});
-}
-
-const confirmPayment = () => {
-    console.log('confirming payment');
-
-    axios.post(route('confirm-payment'), {
-        offer_id: props.offer.id
-    }).then(response => {
-        console.log(response);
-    }).catch(error => {
-        console.log(error);
-    });
-}
-
-const sendPaymentHandle = () => {
-    console.log('sending payment handle');
-
-    axios.post(route('send-payment-handle'), {
-        offer_id: props.offer.id
-    }).then(response => {
-        console.log(response);
-    }).catch(error => {
-        console.log(error);
-    });
-}
-
-const collaborativeCancel = () => {
-    console.log('collaborative cancel');
-
-    axios.post(route('collaborative-cancel'), {
-        offer_id: props.offer.id
-    }).then(response => {
-        console.log(response);
-    }).catch(error => {
-        console.log(error);
-    });
-}
 </script>
+
