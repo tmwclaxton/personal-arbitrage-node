@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AdminDashboard;
 use App\Models\Offer;
 use App\Models\PostedOfferTemplate;
 use App\WorkerClasses\HelperFunctions;
@@ -72,10 +73,13 @@ class GraphController extends Controller
         }
 
         // using helper function to convert satoshi to GBP
-        $dailyGBPProfit = [];
+        // grab primary currency from admin dashboard
+        $adminDashboard = AdminDashboard::all()->first();
+        $primaryCurrency = $adminDashboard->primary_currency;
+        $dailyFiatProfit = [];
         $helper = new HelperFunctions();
         foreach ($dailySatProfit as $date => $profit) {
-            $dailyGBPProfit[$date] = $helper->convertCurrency($helper->satoshiToBtc($profit), 'BTC', 'GBP');
+            $dailyFiatProfit[$date] = $helper->convertCurrency($helper->satoshiToBtc($profit), 'BTC', $primaryCurrency);
         }
 
         $dailyPremium = [];
@@ -120,7 +124,8 @@ class GraphController extends Controller
             'dates' => $dates, // Dates in chronological order
             'volumesByCurrency' => $volumesByCurrency, // Volume data organized by currency
             'profits' => array_values($dailySatProfit),
-            'profitsInGBP' => array_values($dailyGBPProfit),
+            'profitsInFiat' => array_values($dailyFiatProfit),
+            'primaryCurrency' => $primaryCurrency,
             'averagePremiums' => array_values($dailyPremium),
             'ratiosBetweenMakeAndTake' => array_values($dailyRatioBetweenMakeAndTake),
             'templateIds' => $templateSlugs,

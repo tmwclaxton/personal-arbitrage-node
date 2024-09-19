@@ -34,11 +34,12 @@ const props = defineProps({
     dates: Object,
     volumesByCurrency: Object,
     profits: Object,
-    profitsInGBP: Object,
+    profitsInFiat: Object,
     averagePremiums: Object,
     ratiosBetweenMakeAndTake: Object,
     templateIds: Object,
-    templatePopularity: Object
+    templatePopularity: Object,
+	primaryCurrency: String
 });
 
 // Define color scheme for the datasets
@@ -85,9 +86,9 @@ const dataLine = {
             data: props.profits
         },
         {
-            label: 'Daily Profit in GBP at current exchange rate',
+            label: 'Daily Profit in ' + props.primaryCurrency + ' at current exchange rate',
             backgroundColor: '#7979f8',
-            data: props.profitsInGBP
+            data: props.profitsInFiat
         }
     ]
 }
