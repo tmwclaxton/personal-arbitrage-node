@@ -216,6 +216,10 @@ Route::get('/wise-alternative', function() {
 
 Route::get('/testing', function () {
 
+    $robosats = new Robosats();
+    $offer = Offer::where('robosatsId', '18227')->first();
+    $response = $robosats->updateInvoice($offer);
+    dd($response);
 
     $slackService = new SlackService();
     $channelId = 'C07L754M6TY';
