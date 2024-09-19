@@ -27,12 +27,22 @@ class Offer extends Model
         return $this->belongsTo(PostedOfferTemplate::class);
     }
 
-    // grab active offers
-    public static function activeOffers(): \Illuminate\Database\Eloquent\Collection
+
+    // if the offer is a buy offer (will show up as sell for the counterparty)
+    // and it is our offer, then we need to change the profit to a negative number
+    public function fixProfitSigns(): void
     {
-        // return self::where([[['my_offers', true], ['status', 1]
-        //     ->orWhere([['status', 0]])
+        if ($this->type == "sell" && $this->my_offer) {
+            $this->satoshi_amount_profit = -$this->satoshi_amount_profit;
+            $this->min_satoshi_amount_profit = -$this->min_satoshi_amount_profit;
+            $this->max_satoshi_amount_profit = -$this->max_satoshi_amount_profit;
+            $this->accepted_offer_profit_sat = -$this->accepted_offer_profit_sat;
+            $this->save();
+        }
     }
+
+
+
 
 
 }

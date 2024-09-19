@@ -308,12 +308,8 @@ class OfferController extends Controller
         $offer = Offer::where('robosatsId', $offer['robosatsId'])->first();
         // if the offer is a buy offer (will show up as sell for the counterparty)
         // and it is our offer, then we need to change the profit to a negative number
-        if ($offer['type'] == "sell" && $offer->my_offer) {
-            $offer['satoshi_amount_profit'] = -$offer['satoshi_amount_profit'];
-            $offer['min_satoshi_amount_profit'] = -$offer['min_satoshi_amount_profit'];
-            $offer['max_satoshi_amount_profit'] = -$offer['max_satoshi_amount_profit'];
-            $offer->save();
-        }
+        $offer->fixProfitSigns();
+
         return $offer;
     }
 

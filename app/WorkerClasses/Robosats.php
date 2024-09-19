@@ -904,7 +904,6 @@ class Robosats
             $offer->accepted_offer_amount = $response['amount'];
             $offer->accepted_offer_amount_sat = $response['satoshis_now'];
             $offer->accepted_offer_profit_sat = round($response['satoshis_now'] * ($response['premium'] / 100), 0);
-
         }
         if (isset($response['status_message'])) {
             $offer->status_message = $response['status_message'];
@@ -953,6 +952,7 @@ class Robosats
             $offer->chat_last_index = $response['chat_last_index'];
         }
         $offer->save();
+        $offer->fixProfitSigns();
 
         if (isset($response['escrow_invoice'])) {
             $transaction->escrow_invoice = $response['escrow_invoice'];
