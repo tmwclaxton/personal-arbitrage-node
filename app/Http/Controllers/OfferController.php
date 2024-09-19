@@ -244,42 +244,25 @@ class OfferController extends Controller
             // grab currency from offer and find the price in btc using allFiats
             $btcPrice = $allFiats->where('currency', $offer['currency'])->first();
             // once a ranged offer is accepted, the amount is set to whatever we are selling
-            if ($offer['amount']) {
-                $offer['satoshis_now'] = intval(str_replace(',', '', $offer['amount'])) / $offer['price'] * 100000000;
-                $offer['satoshis_now'] = intval(str_replace(',', '', number_format($offer['satoshis_now'], 0)));
-                $offer['satoshi_amount_profit'] = intval(str_replace(',', '', $offer['amount'])) / $btcPrice->price * 100000000;
-                $offer['satoshi_amount_profit'] = intval(str_replace(',', '', number_format($offer['satoshi_amount_profit'], 0))) - $offer['satoshis_now'];
-            }
-            if ($offer['min_amount'] && $offer['max_amount']) {
-                $offer['min_satoshi_amount'] = intval(str_replace(',', '', $offer['min_amount'])) / $offer['price']  * 100000000;
-                $offer['min_satoshi_amount'] = intval(str_replace(',', '', number_format($offer['min_satoshi_amount'], 0)));
-                $offer['max_satoshi_amount'] = intval(str_replace(',', '', $offer['max_amount'])) / $offer['price']  * 100000000;
-                $offer['max_satoshi_amount'] = intval(str_replace(',', '', number_format($offer['max_satoshi_amount'], 0)));
-
-                // calculate the profit by using the bitcoin price and subtracting the value calculated from the price they are offering
-                $actualMinSatoshiAmount = intval(str_replace(',', '', $offer['min_amount'])) / $btcPrice->price * 100000000;
-                $actualMinSatoshiAmount = intval(str_replace(',', '', number_format($actualMinSatoshiAmount, 0)));
-                $offer['min_satoshi_amount_profit'] = $actualMinSatoshiAmount - $offer['min_satoshi_amount'];
-
-                $actualMaxSatoshiAmount = intval(str_replace(',', '', $offer['max_amount'])) / $btcPrice->price * 100000000;
-                $actualMaxSatoshiAmount = intval(str_replace(',', '', number_format($actualMaxSatoshiAmount, 0)));
-                $offer['max_satoshi_amount_profit'] = $actualMaxSatoshiAmount - $offer['max_satoshi_amount'];
-            }
-
-            // find offer if it exists
             $existingOffer = Offer::where('robosatsId', $offer['robosatsId'])->first();
-            // if my_offer is true and type is buy, then we need to change the profit to a absolute number
-            if ($existingOffer && $existingOffer->my_offer && $existingOffer->type == "buy") {
-                if (isset($offer['satoshi_amount_profit'])) {
-                    $offer['satoshi_amount_profit'] = abs($offer['satoshi_amount_profit']);
-                }
-                if (isset($offer['min_satoshi_amount_profit'])) {
-                    $offer['min_satoshi_amount_profit'] = abs($offer['min_satoshi_amount_profit']);
-                }
-                if (isset($offer['max_satoshi_amount_profit'])) {
-                    $offer['max_satoshi_amount_profit'] = abs($offer['max_satoshi_amount_profit']);
-                }
+            if ($offer['amount']) {
+                $offer['satoshis_now'] = $this->convertToSatoshis($offer['amount'], $offer['price']);
+                $offer['satoshi_amount_profit'] = $this->calculateProfit($offer['amount'], $offer['price'], $btcPrice->price, $existingOffer);
             }
+
+            if ($offer['min_amount'] && $offer['max_amount']) {
+                $offer['min_satoshi_amount'] = $this->convertToSatoshis($offer['min_amount'], $offer['price']);
+                $offer['max_satoshi_amount'] = $this->convertToSatoshis($offer['max_amount'], $offer['price']);
+
+                $offer['min_satoshi_amount_profit'] = $this->calculateProfit($offer['min_amount'], $offer['price'], $btcPrice->price, $existingOffer);
+                $offer['max_satoshi_amount_profit'] = $this->calculateProfit($offer['max_amount'], $offer['price'], $btcPrice->price, $existingOffer);
+            }
+
+            // // find offer if it exists
+            // $existingOffer = Offer::where('robosatsId', $offer['robosatsId'])->first();
+            // // if my_offer is true and type is buy, then we need to change the profit to a absolute number
+            // if ($existingOffer && $existingOffer->my_offer && $existingOffer->type == "buy") {
+
 
         }
 
@@ -552,6 +535,24 @@ class OfferController extends Controller
                 "Created At" => $offer->created_at,
             ])->withQueryString(),
         ]);
+    }
+
+    function convertToSatoshis($amount, $price): int
+    {
+        return intval(str_replace(',', '', number_format((intval(str_replace(',', '', $amount)) / $price) * 100000000, 0)));
+    }
+
+    function calculateProfit($amount, $price, $btcPrice, $existingOffer = null): int
+    {
+        $satoshis = $this->convertToSatoshis($amount, $price);
+        $actualSatoshis = $this->convertToSatoshis($amount, $btcPrice);
+        $calculation = $actualSatoshis - $satoshis;
+
+        if ($existingOffer && $existingOffer->type == "buy") {
+            $calculation = $calculation * -1;
+        }
+
+        return $calculation;
     }
 
 
