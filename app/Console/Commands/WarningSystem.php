@@ -93,7 +93,7 @@ class WarningSystem extends Command
         // $twilio->message("07711800899", $message);
 
         $slack = new SlackService();
-        $slack->sendMessage('**Warning**: Offer ' . $offer->robosatsId . ' has been in no. ' . $offer->status .
+        $slack->sendMessage('*Warning*: Offer ' . $offer->robosatsId . ' has been in no. ' . $offer->status .
             ' status (' . RobosatsStatus::getStatusText($offer->status) . ') for ' . round(Carbon::parse($data['timestamp'])->diffInMinutes()) .
             ' minutes. Please check the offer' .
             ' using the following token: ' . $offer->robots()->first()->token . ' and take necessary action.', $offer->slack_channel_id);

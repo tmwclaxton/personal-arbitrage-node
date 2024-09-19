@@ -34,36 +34,37 @@
          <!--        class="border border-gray-200 dark:border-zinc-700 "></div>-->
             <div class="grid grid-cols-3  gap-1 p-1">
 
-                <danger-button v-on:click="autoRun" v-if="!offer.accepted && !offer.my_offer"
+                <danger-button v-on:click="offerStore.autoRun(offer.id)"
+							   v-if="!offer.accepted && !offer.my_offer"
                                :disabled="offer.job_locked || offer.accepted"
                                class="w-full text-center  h-10 break-words disabled:opacity-50">
                     <p class="text-center w-full">Auto Run</p>
                 </danger-button>
 
-                <primary-button v-on:click="uniqueRobot"
+                <primary-button v-on:click="offerStore.uniqueRobot(offer.id)"
                                 v-if="!offer.robots || offer.robots.length === 0"
                                 class="w-full text-center  h-10 break-words ">
                     <p class="text-center w-full">Create Robots</p>
                 </primary-button>
 
-                <primary-button v-on:click="acceptOffer"
+                <primary-button v-on:click="offerStore.acceptOffer(offer.id)"
                                 v-if="(!offer.accepted && !offer.my_offer) || (offer.status === 1 && !offer.my_offer)"
                                 class="w-full text-center  h-10 break-words ">
                     <p class="text-center w-full">Accept</p>
                 </primary-button>
 
                 <primary-button class="w-full text-center  h-10 break-words "
-                                v-on:click="payBond"
+                                v-on:click="offerStore.payBond(offer.id)"
                                 v-if="offer.type === 'sell' && (!offer.my_offer && offer.status === 3 && offer.accepted || offer.my_offer && offer.status === 0)">
                     <p class="text-center w-full">Bond</p>
                 </primary-button>
 				
-				<primary-button v-on:click="payEscrow"
+				<primary-button v-on:click="offerStore.payEscrow(offer.id)"
 								v-if="offer.type === 'sell' && (offer.accepted && (offer.status === 6 || offer.status === 7))"
 								class="w-full text-center  h-10 break-words ">
 					<p class="text-center w-full">Escrow</p>
 				</primary-button>
-				<primary-button v-on:click="generateInvoice"
+				<primary-button v-on:click="offerStore.generateInvoice(offer.id)"
 								v-if="offer.type === 'buy' && (offer.accepted && (offer.status === 6 || offer.status === 8))"
 								class="w-full text-center  h-10 break-words ">
 					<p class="text-center w-full">Invoice</p>
@@ -72,13 +73,13 @@
 
                 <primary-button class="w-full text-center p-0  h-10 break-words"
                                 v-if="offer.accepted && (offer.status === 9 || offer.status === 10)"
-                                v-on:click="sendPaymentHandle">
+                                v-on:click="offerStore.sendPaymentHandle(offer.id)">
                     <p class="text-center w-full">Auto Chat</p>
                 </primary-button>
 
                 <primary-button class="w-full text-center p-0  h-10 break-words"
                                 v-if="offer.accepted && (offer.status === 9 || offer.status === 10)"
-                                v-on:click="confirmPayment">
+                                v-on:click="offerStore.confirmPayment(offer.id)">
                     <p class="text-center w-full">Confirm</p>
                 </primary-button>
                 <secondary-button class="w-full text-center p-0  h-10 break-words"
@@ -218,116 +219,8 @@ import { defineProps } from 'vue';
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import DangerButton from "@/Components/DangerButton.vue";
 import SecondaryButton from "@/Components/SecondaryButton.vue";
-
+import {useOfferActionStore} from "@/Stores/OfferActionStore.js";
+const offerStore = useOfferActionStore();
 const props = defineProps(['offer', 'showSidebar']);
 
-const autoRun = () => {
-    console.log('auto run');
-
-    axios.post(route('auto-accept'), {
-        offer_id: props.offer.id
-    }).then(response => {
-        console.log(response);
-    }).catch(error => {
-        console.log(error);
-    });
-}
-
-const uniqueRobot = () => {
-    console.log('creating unique robot');
-
-    axios.post(route('create-robot'), {
-        offer_id: props.offer.id
-    }).then(response => {
-        console.log(response);
-    }).catch(error => {
-        console.log(error);
-    });
-}
-
-
-// when accept offer click send post request to /accept-offer with offer_id
-const acceptOffer = () => {
-    console.log('accepting offer');
-
-    axios.post(route('accept-offer'), {
-        offer_id: props.offer.id
-    }).then(response => {
-        console.log(response);
-    }).catch(error => {
-        console.log(error);
-    });
-}
-
-const payEscrow = () => {
-    console.log('paying escrow');
-
-    axios.post(route('pay-escrow'), {
-        offer_id: props.offer.id
-    }).then(response => {
-        console.log(response);
-    }).catch(error => {
-        console.log(error);
-    });
-}
-
-const payBond = () => {
-    console.log('paying bond');
-
-    axios.post(route('pay-bond'), {
-        offer_id: props.offer.id
-    }).then(response => {
-        console.log(response);
-    }).catch(error => {
-        console.log(error);
-    });
-}
-
-const generateInvoice = () => {
-	console.log('generating invoice');
-
-	axios.post(route('update-invoice'), {
-		offer_id: props.offer.id
-	}).then(response => {
-		console.log(response);
-	}).catch(error => {
-		console.log(error);
-	});
-}
-
-const confirmPayment = () => {
-    console.log('confirming payment');
-
-    axios.post(route('confirm-payment'), {
-        offer_id: props.offer.id
-    }).then(response => {
-        console.log(response);
-    }).catch(error => {
-        console.log(error);
-    });
-}
-
-const sendPaymentHandle = () => {
-    console.log('sending payment handle');
-
-    axios.post(route('send-payment-handle'), {
-        offer_id: props.offer.id
-    }).then(response => {
-        console.log(response);
-    }).catch(error => {
-        console.log(error);
-    });
-}
-
-const collaborativeCancel = () => {
-    console.log('collaborative cancel');
-
-    axios.post(route('collaborative-cancel'), {
-        offer_id: props.offer.id
-    }).then(response => {
-        console.log(response);
-    }).catch(error => {
-        console.log(error);
-    });
-}
 </script>

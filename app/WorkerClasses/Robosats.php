@@ -944,7 +944,7 @@ class Robosats
             // if this was false and is now true then we need to send a message to slack
             if (!$offer->pending_cancel && $response['pending_cancel']) {
                 $slackService = new SlackService();
-                $slackService->sendMessage('**Collaborative cancel initiated by counterparty for order ' . $offer->robosatsId . '**', $offer->slack_channel_id);
+                $slackService->sendMessage('*Collaborative cancel initiated by counterparty for order ' . $offer->robosatsId . '*', $offer->slack_channel_id);
             }
             $offer->pending_cancel = $response['pending_cancel'];
         }
