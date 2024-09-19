@@ -65,56 +65,7 @@ class OfferController extends Controller
 
         // change the expires_at to a human readable format
         foreach ($offers as $offer) {
-            $offer->expires_at = Carbon::parse($offer->expires_at)->diffForHumans();
-            $offer->updated_at_readable = Carbon::parse($offer->updated_at)->diffForHumans();
-            if ($offer->auto_accept_at) {
-                $offer->auto_accept_at = Carbon::parse($offer->auto_accept_at)->diffForHumans();
-            }
-            if ($offer->auto_confirm_at) {
-                $offer->auto_confirm_at = Carbon::parse($offer->auto_confirm_at)->diffForHumans();
-            }
-            // round amount to 2 decimal places
-            $offer->amount = number_format($offer->amount, 2);
-            $offer->accepted_offer_amount = number_format($offer->accepted_offer_amount, 2) . ' ' . $offer->currency;
-            // round min_amount to 2 decimal places and max amount to 2 decimal places
-            $offer->min_amount = number_format($offer->min_amount, 2);
-            $offer->max_amount = number_format($offer->max_amount, 2);
-            // add a percentage to the premium
-            $offer->premium = $offer->premium . '%';
-            $offer->payment_methods = json_decode($offer->payment_methods);
-            $offer->escrow_duration = CarbonInterval::seconds($offer->escrow_duration)->cascade()->forHumans();
-
-            // status message isn't always correct so we will use status and RobosatsStatuses
-            $offer->status_message = (RobosatsStatus::getStatusTexts()[$offer['status']]);
-
-            // check if any of the payment methods are in the admin dashboard payment methods, if not remove the offer
-            $found = false;
-            if ($paymentMethods == null) {
-                $paymentMethods = [];
-            }
-            foreach ($offer->payment_methods as $paymentMethod) {
-                if (in_array($paymentMethod, $paymentMethods) || $offer->my_offer) {
-                    $found = true;
-                }
-            }
-            if (!$found) {
-                $offers = $offers->filter(function ($value, $key) use ($offer) {
-                    return $value->id != $offer->id;
-                });
-            }
-
-            // make human readable
-            $offer->payment_methods = implode(', ', $offer->payment_methods);
-
-            // if offer is accepted find the transaction
-            if ($offer->accepted || ($offer->robosatsIdStorage == null && $offer->robotTokenBackup != null)) {
-                $transaction = Transaction::where('offer_id', $offer->id)->first();
-                $offer->transaction = $transaction;
-            }
-
-
-            // grab robots
-            $offer->robots = $offer->robots()->get();
+            $this->prepareOffer($offers, $offer, $paymentMethods);
         }
 
         // convert the offers to an array
@@ -165,6 +116,18 @@ class OfferController extends Controller
             'btcPrices' => $btcFiats,
             'offers' => $offers,
             'adminDashboard' => $adminDashboard
+        ]);
+    }
+
+    public function getOffer($offerId)
+    {
+        $offer = Offer::find($offerId);
+        $offer = $this->prepareOffer(null, $offer, null);
+        $chatMessages = RobosatsChatMessage::where('offer_id', $offerId)->get();
+
+        return Inertia::render('OfferPage', [
+            'offer' => $offer,
+            'chatMessages' => $chatMessages
         ]);
     }
 
@@ -553,6 +516,64 @@ class OfferController extends Controller
         }
 
         return $calculation;
+    }
+
+    private function prepareOffer(mixed $offers,
+                                  mixed $offer,
+                                  mixed $paymentMethods)
+    {
+        $offer->expires_at = Carbon::parse($offer->expires_at)->diffForHumans();
+        $offer->updated_at_readable = Carbon::parse($offer->updated_at)->diffForHumans();
+        if ($offer->auto_accept_at) {
+            $offer->auto_accept_at = Carbon::parse($offer->auto_accept_at)->diffForHumans();
+        }
+        if ($offer->auto_confirm_at) {
+            $offer->auto_confirm_at = Carbon::parse($offer->auto_confirm_at)->diffForHumans();
+        }
+        // round amount to 2 decimal places
+        $offer->amount = number_format($offer->amount, 2);
+        $offer->accepted_offer_amount = number_format($offer->accepted_offer_amount, 2) . ' ' . $offer->currency;
+        // round min_amount to 2 decimal places and max amount to 2 decimal places
+        $offer->min_amount = number_format($offer->min_amount, 2);
+        $offer->max_amount = number_format($offer->max_amount, 2);
+        // add a percentage to the premium
+        $offer->premium = $offer->premium . '%';
+        $offer->payment_methods = json_decode($offer->payment_methods);
+        $offer->escrow_duration = CarbonInterval::seconds($offer->escrow_duration)->cascade()->forHumans();
+
+        // status message isn't always correct so we will use status and RobosatsStatuses
+        $offer->status_message = (RobosatsStatus::getStatusTexts()[$offer['status']]);
+
+        // check if any of the payment methods are in the admin dashboard payment methods, if not remove the offer
+        $found = false;
+        if ($paymentMethods == null) {
+            $paymentMethods = [];
+        }
+        foreach ($offer->payment_methods as $paymentMethod) {
+            if (in_array($paymentMethod, $paymentMethods) || $offer->my_offer) {
+                $found = true;
+            }
+        }
+        if (!$found) {
+            $offers = $offers->filter(function ($value, $key) use ($offer) {
+                return $value->id != $offer->id;
+            });
+        }
+
+        // make human readable
+        $offer->payment_methods = implode(', ', $offer->payment_methods);
+
+        // if offer is accepted find the transaction
+        if ($offer->accepted || ($offer->robosatsIdStorage == null && $offer->robotTokenBackup != null)) {
+            $transaction = Transaction::where('offer_id', $offer->id)->first();
+            $offer->transaction = $transaction;
+        }
+
+
+        // grab robots
+        $offer->robots = $offer->robots()->get();
+
+        return $offer;
     }
 
 

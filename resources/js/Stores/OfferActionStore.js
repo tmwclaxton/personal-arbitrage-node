@@ -161,6 +161,26 @@ export const useOfferActionStore = defineStore('OfferActionStore', {
                 console.log(error);
             }
         },
+        async sendChatMessage(id, message) {
+            console.log('sending chat message');
+            try {
+                const response = await axios.post(route('send-message'), {
+                    offer_id: id,
+                    message: message
+                });
+                toastStore.add({
+                    message: 'Chat Message Sent',
+                    type: "success",
+                });
+                console.log(response);
+            } catch (error) {
+                toastStore.add({
+                    message: 'Failed to Send Chat Message',
+                    type: "error",
+                });
+                console.log(error);
+            }
+        },
         async collaborativeCancel(id) {
             console.log('collaborative cancel');
             try {

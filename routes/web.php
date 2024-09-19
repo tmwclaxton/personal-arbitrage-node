@@ -74,6 +74,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/', [\App\Http\Controllers\OfferController::class, 'index'])->name('welcome');
     Route::get('/offers', [\App\Http\Controllers\OfferController::class, 'getOffers'])->name('offers.index');
+    Route::get('/offer/{offer_id}', [\App\Http\Controllers\OfferController::class, 'getOffer'])->name('offers.show');
     Route::get('/completed-offers', [\App\Http\Controllers\OfferController::class, 'completedOffers'])->name('offers.completed');
     // Route::get('/offer/{offer_id}/chat', [\App\Http\Controllers\OfferController::class, 'chatRoom'])->name('offers.chat');
     // Route::post('/offer/{offer_id}/chat', [\App\Http\Controllers\OfferController::class, 'sendMessage'])->name('offers.chat');
@@ -85,6 +86,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/confirm-payment', [OfferController::class, 'confirmPayment'])->name('confirm-payment');
     Route::get('/claim-rewards', [OfferController::class, 'claimRewards'])->name('claim-rewards');
     Route::post('/send-payment-handle', [OfferController::class, 'sendPaymentHandle'])->name('send-payment-handle');
+    Route::post('/send-message', [OfferController::class, 'sendMessage'])->name('send-message');
     Route::post('auto-accept', [OfferController::class, 'autoAccept'])->name('auto-accept');
     Route::post('collaborative-cancel', [OfferController::class, 'collaborativeCancel'])->name('collaborative-cancel');
 

@@ -82,11 +82,13 @@
                                 v-on:click="offerStore.confirmPayment(offer.id)">
                     <p class="text-center w-full">Confirm</p>
                 </primary-button>
-                <secondary-button class="w-full text-center p-0  h-10 break-words"
-                                  v-if="offer.accepted && (offer.status === 9 || offer.status === 10)"
-                                  v-on:click="">
-                    <p class="text-center w-full">View Chat</p>
-                </secondary-button>
+                <Link :href="route('offers.show', {offer_id: offer.id})">
+					<secondary-button class="w-full text-center p-0  h-10 break-words"
+									  v-if="offer.accepted && (offer.status === 9 || offer.status === 10)"
+									  v-on:click="">
+						<p class="text-center w-full">View Chat</p>
+					</secondary-button>
+				</Link>
 
 
                 <danger-button v-on:click="collaborativeCancel"
@@ -157,7 +159,8 @@
 
 
                 </div>
-                <div class="flex flex-col"><p class="text-zinc-500 dark:text-zinc-200 italic">Expires at:
+                <div class="flex flex-col">
+					<p class="text-zinc-500 dark:text-zinc-200 italic">Expires at:
                     {{ offer.expires_at }}</p>
                     <div class="border border-gray-200 dark:border-zinc-700 my-1"></div>
                     <p class="text-zinc-500 dark:text-zinc-200 italic">Last updated at: {{
@@ -179,9 +182,6 @@
                     <p class="text-zinc-500 dark:text-zinc-200 font-medium ">Payment Methods: <br><span
                         class="break-words font-bold">{{ offer.payment_methods }}</span></p>
 
-                    <p v-if="offer.status === 9 || offer.status === 10"
-                        class="text-zinc-500 dark:text-zinc-200 font-medium mt-2">Expected Reference ID: <br><span
-                        class="break-words font-bold">{{ offer.id }}</span></p>
 
 
                 </div>
@@ -196,10 +196,14 @@
                             }}</p>
                         <p class="mt-2 text-zinc-500 dark:text-zinc-200 break-all"><span class="font-bold">Token</span>:
                             <br>{{ offer.robots[0].token }}</p>
-                        <div v-for="robot in offer.robots" :key="robot.id">
-                            <p class="mt-2 text-zinc-500 dark:text-zinc-200">Provider: {{ robot.provider }}</p>
-                        </div>
-                    </div>
+                        <!--<div v-for="robot in offer.robots" :key="robot.id">-->
+                        <!--    <p class="mt-2 text-zinc-500 dark:text-zinc-200">Provider: {{ robot.provider }}</p>-->
+                        <!--</div>-->
+						<p v-if="offer.status === 9 || offer.status === 10"
+						   class="text-zinc-500 dark:text-zinc-200 font-medium mt-2">Expected Reference ID: <br><span
+						  class="break-words font-bold">{{ offer.id }}</span></p>
+					
+					</div>
 
                 </div>
             </div>
@@ -214,7 +218,7 @@
 </template>
 
 <script setup>
-import { Head } from '@inertiajs/vue3';
+import {Head, Link, router} from '@inertiajs/vue3';
 import { defineProps } from 'vue';
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import DangerButton from "@/Components/DangerButton.vue";
