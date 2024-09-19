@@ -471,6 +471,14 @@ class OfferController extends Controller
         return $response;
     }
 
+    public function updateInvoice(Request $request) {
+        $offerId = request('offer_id');
+        $offer = Offer::find($offerId);
+        $robosats = new Robosats();
+        $response = $robosats->updateInvoice($offer);
+        return $response;
+    }
+
     public function payEscrow(Request $request) {
         // grab offer_id and transaction_id
         $offerId = request('offer_id');

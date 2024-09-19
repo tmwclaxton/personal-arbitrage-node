@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Jobs\PayBond;
 use App\Jobs\PayEscrow;
+use App\Jobs\GenerateInvoice;
 use App\Jobs\SendPaymentHandle;
 use App\Models\AdminDashboard;
 use App\Models\Offer;
@@ -71,8 +72,7 @@ class AutoJobs extends Command
             }
 
             // if status is 3 then dispatch a bond job
-            if (($offer->status == 3 || ($offer->my_offer && $offer->status == 0))
-                && $adminDashboard->autoBond) {
+            if ( ((!$offer->my_offer && $offer->status == 3) || ($offer->my_offer && $offer->status == 0)) && $adminDashboard->autoBond) {
                 PayBond::dispatch($offer, $adminDashboard);
             }
 
@@ -83,11 +83,17 @@ class AutoJobs extends Command
             if ($offer->status > 3) {
                 $offer->accepted = true;
                 $offer->save();
-
             }
-            if (($offer->status == 6 || $offer->status == 7) && $adminDashboard->autoEscrow) {
+
+
+            if ($offer->type === "sell" && ($offer->status == 6 || $offer->status == 7) && $adminDashboard->autoEscrow) {
                 PayEscrow::dispatch($offer, $adminDashboard);
             }
+
+            if ($offer->type === "buy" && ($offer->status == 6 || $offer->status == 8) && $adminDashboard->autoInvoice) {
+                GenerateInvoice::dispatch($offer, $adminDashboard);
+            }
+
             if ($offer->status == 9 && $adminDashboard->autoMessage) {
                 SendPaymentHandle::dispatch($offer, $adminDashboard);
             }

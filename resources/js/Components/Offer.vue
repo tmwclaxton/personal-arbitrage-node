@@ -286,7 +286,7 @@ const payBond = () => {
 const generateInvoice = () => {
 	console.log('generating invoice');
 
-	axios.post(route('generate-invoice'), {
+	axios.post(route('update-invoice'), {
 		offer_id: props.offer.id
 	}).then(response => {
 		console.log(response);

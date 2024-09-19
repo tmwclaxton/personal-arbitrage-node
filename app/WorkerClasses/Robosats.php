@@ -1204,7 +1204,10 @@ class Robosats
     //
 
     public function updateInvoice($offer, $routingBudgetPpm = 1000, $exactAmount = null) {
-
+        if ($offer->type == "sell") {
+            $slackService = new SlackService();
+            $slackService->sendMessage('Error: Cannot update invoice for sell offer');
+        }
 
         $url = $this->getHost() . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
         if ($exactAmount) {
@@ -1233,7 +1236,7 @@ class Robosats
             // remove any none numeric characters
             $correctedAmount = preg_replace('/[^0-9]/', '', $response->json('bad_invoice'));
             $slackService = new SlackService();
-            $slackService->sendMessage('Invoice updated for ' . $offer->id, $offer->slack_channel_id);
+            $slackService->sendMessage('Invoice updated for ' . $offer->robosatsId, $offer->slack_channel_id);
             return $this->updateInvoice($offer, $routingBudgetPpm, $correctedAmount);
         }
 

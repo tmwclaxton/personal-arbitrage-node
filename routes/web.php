@@ -80,6 +80,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/create-robot', [OfferController::class, 'createRobot'])->name('create-robot');
     Route::post('/accept-offer', [OfferController::class, 'acceptOffer'])->name('accept-offer');
     Route::post('/pay-bond', [OfferController::class, 'payBond'])->name('pay-bond');
+    Route::post('/update-invoice', [OfferController::class, 'updateInvoice'])->name('update-invoice');
     Route::post('/pay-escrow', [OfferController::class, 'payEscrow'])->name('pay-escrow');
     Route::post('/confirm-payment', [OfferController::class, 'confirmPayment'])->name('confirm-payment');
     Route::get('/claim-rewards', [OfferController::class, 'claimRewards'])->name('claim-rewards');
