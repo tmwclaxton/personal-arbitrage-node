@@ -38,7 +38,7 @@ class PayEscrow extends Command
         $offers = Offer::where([['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14]])->get();
         foreach ($offers as $offer) {
 
-            // if status is 3 then dispatch a bond job
+            // if status is 6 or 7 then pay escrow
             if ( ($offer->status === 6 || $offer->status === 7)) {
                 $job = new \App\Jobs\PayEscrow($offer, $adminDashboard);
                 $job->handle();
