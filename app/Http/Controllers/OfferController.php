@@ -269,7 +269,7 @@ class OfferController extends Controller
             // find offer if it exists
             $existingOffer = Offer::where('robosatsId', $offer['robosatsId'])->first();
             // if my_offer is true and type is buy, then we need to change the profit to a absolute number
-            if ($existingOffer && $existingOffer->type == "buy") {
+            if ($existingOffer && $existingOffer->my_offer && $existingOffer->type == "buy") {
                 if (isset($offer['satoshi_amount_profit'])) {
                     $offer['satoshi_amount_profit'] = abs($offer['satoshi_amount_profit']);
                 }
