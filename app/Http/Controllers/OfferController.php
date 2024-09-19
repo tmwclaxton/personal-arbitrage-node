@@ -191,13 +191,6 @@ class OfferController extends Controller
         $provider = rtrim($provider, '/');
         $offer['provider'] = $provider;
 
-        // buy is 1 and sell is 2 // if we are the taker
-        if ($offer['is_maker'] = 0) {
-            $offer['type'] = $offer['type'] == 1 ? 'sell' : 'buy';
-        } else {
-            $offer['type'] = $offer['type'] == 1 ? 'buy' : 'sell';
-        }
-
         // convert the expires_at i.e. "2024-06-28T06:24:07.984166Z" to correct format
         $offer['expires_at'] = date('Y-m-d H:i:s', strtotime($offer['expires_at']));
 
@@ -309,6 +302,14 @@ class OfferController extends Controller
         // if the offer is a buy offer (will show up as sell for the counterparty)
         // and it is our offer, then we need to change the profit to a negative number
         $offer->fixProfitSigns();
+
+        // buy is 1 and sell is 2 // if we are the taker
+        if ($offer->my_offer) {
+            $offer->type = $offer["type"] == 0 ? "buy" : "sell";
+        } else {
+            $offer->type = $offer["type"] == 1 ? "buy" : "sell";
+        }
+        $offer->save();
 
         return $offer;
     }

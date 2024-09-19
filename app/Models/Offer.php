@@ -32,7 +32,7 @@ class Offer extends Model
     // and it is our offer, then we need to change the profit to a negative number
     public function fixProfitSigns(): void
     {
-        if ($this->type == "sell" && $this->my_offer) {
+        if ($this->type == "buy" && $this->my_offer) {
             $this->satoshi_amount_profit = abs($this->satoshi_amount_profit);
             $this->min_satoshi_amount_profit = abs($this->min_satoshi_amount_profit);
             $this->max_satoshi_amount_profit = abs($this->max_satoshi_amount_profit);

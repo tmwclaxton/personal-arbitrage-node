@@ -5,7 +5,7 @@
     <!--'col-span-1': !offer.accepted,-->
 
     <div class="max-w-md mx-auto bg-white dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700 dark:shadow-lg
-    rounded-xl shadow-md overflow-hidden md:max-w-2xl"  :class="{'col-span-1': showSidebar && (offer.accepted || (offer.robots && offer.robots.length > 0)), 'col-span-1': !showSidebar && (offer.accepted || (offer.robots && offer.robots.length > 0)), 'col-span-1': !offer.accepted}">
+    rounded-xl shadow-md overflow-hidden md:max-w-2xl"  :class="{'col-span-2': showSidebar && (offer.accepted || (offer.robots && offer.robots.length > 0)), 'col-span-3': !showSidebar && (offer.accepted || (offer.robots && offer.robots.length > 0)), 'col-span-1': !offer.accepted}">
 
         <div v-if="offer.status">
             <p class=" text-zinc-500 dark:text-zinc-200 font-bold break-words p-4"
@@ -57,12 +57,17 @@
                                 v-if="!offer.my_offer && offer.status === 3 && offer.accepted || offer.my_offer && offer.status === 0">
                     <p class="text-center w-full">Bond</p>
                 </primary-button>
-
-                <primary-button v-on:click="payEscrow"
-                                v-if="offer.accepted && (offer.status === 6 || offer.status === 7)"
-                                class="w-full text-center  h-10 break-words ">
-                    <p class="text-center w-full">Escrow</p>
-                </primary-button>
+				
+				<primary-button v-on:click="payEscrow"
+								v-if="offer.accepted && (offer.status === 6 || offer.status === 7)"
+								class="w-full text-center  h-10 break-words ">
+					<p class="text-center w-full">Escrow</p>
+				</primary-button>
+				<primary-button v-on:click="generateInvoice"
+								v-if="offer.accepted && (offer.status === 6 || offer.status === 8)"
+								class="w-full text-center  h-10 break-words ">
+					<p class="text-center w-full">Invoice</p>
+				</primary-button>
 
 
                 <primary-button class="w-full text-center p-0  h-10 break-words"
@@ -110,7 +115,14 @@
                     <p class="text-zinc-500 dark:text-zinc-200 font-bold">Price: {{ offer.price }} {{
                             offer.currency
                         }}</p>
-                    <p class="text-zinc-500 dark:text-zinc-200 font-bold">Type: {{ offer.type }} BTC</p>
+                    <p class="text-zinc-500 dark:text-zinc-200 font-bold">Type:
+						{{ offer.type }} BTC
+						<!--({{ offer.my_offer ? 'Maker' : 'Taker' }})-->
+					</p>
+					<!--<p class="text-zinc-500 dark:text-zinc-200 font-bold">-->
+					<!--	{{ offer.my_offer ? 'They are' : 'We would be' }}-->
+					<!--	{{ offer.type }}ing BTC-->
+					<!--</p>-->
                     <div v-if="(!offer.accepted && !offer.has_range)" class="flex flex-col">
                         <p class="mt-2 text-zinc-500 dark:text-zinc-200">Amount: {{ offer.amount ?? 'N/A' }}</p>
                         <p class="text-zinc-500 dark:text-zinc-200 text-xs">Sats: {{ offer.satoshis_now ?? 'N/A' }}</p>
