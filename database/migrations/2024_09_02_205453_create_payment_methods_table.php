@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('payment_methods', function (Blueprint $table) {
             $table->id();
+            $table->integer('preference')->default(0);
             $table->string('name')->unique();
             $table->text('handle')->nullable();
             $table->text('custom_message')->nullable();

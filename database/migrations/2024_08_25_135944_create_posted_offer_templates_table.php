@@ -32,6 +32,7 @@ return new class extends Migration
             $table->integer('escrow_time')->default(28800);
             $table->timestamp('last_created')->nullable();
             $table->timestamp('last_accepted')->nullable();
+            $table->text('custom_message')->nullable();
             $table->timestamps();
         });
     }
