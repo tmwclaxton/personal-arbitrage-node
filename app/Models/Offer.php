@@ -33,10 +33,10 @@ class Offer extends Model
     public function fixProfitSigns(): void
     {
         if ($this->type == "sell" && $this->my_offer) {
-            $this->satoshi_amount_profit = -$this->satoshi_amount_profit;
-            $this->min_satoshi_amount_profit = -$this->min_satoshi_amount_profit;
-            $this->max_satoshi_amount_profit = -$this->max_satoshi_amount_profit;
-            $this->accepted_offer_profit_sat = -$this->accepted_offer_profit_sat;
+            $this->satoshi_amount_profit = abs($this->satoshi_amount_profit);
+            $this->min_satoshi_amount_profit = abs($this->min_satoshi_amount_profit);
+            $this->max_satoshi_amount_profit = abs($this->max_satoshi_amount_profit);
+            $this->accepted_offer_profit_sat = abs($this->accepted_offer_profit_sat);
             $this->save();
         }
     }
