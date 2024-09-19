@@ -91,7 +91,7 @@
 				</Link>
 
 
-                <danger-button v-on:click="collaborativeCancel"
+                <danger-button v-on:click="offerStore.collaborativeCancel(offer.id)"
                                v-if="offer.accepted && (offer.status === 9 || offer.status === 10)"
                                class="w-full text-center  h-10 break-words ">
                     <p class="text-center w-full">Collaborative Cancel</p>
