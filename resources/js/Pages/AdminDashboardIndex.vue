@@ -10,6 +10,7 @@ import CurrenciesInput from "@/Components/CurrenciesInput.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import GuestLayout from "@/Layouts/GuestLayout.vue";
 import PaymentMethod from "@/Components/PaymentMethod.vue";
+import toastStore from "@/Stores/ToastStore.js";
 
 const props = defineProps({
     adminDashboard: Object,
@@ -30,13 +31,25 @@ tempAdminDashboard.payment_currencies = JSON.parse(tempAdminDashboard.payment_cu
 
 
 const clicked = () => {
-    axios.post(route('updateAdminDashboard'), {
-        adminDashboard: tempAdminDashboard
-    }).then(response => {
-        console.log(response.data);
-    }).catch(error => {
-        console.log(error);
-    });
+	axios.post(route('updateAdminDashboard'), {
+		adminDashboard: tempAdminDashboard,
+	}).then(response => {
+		console.log(response.data);
+		toastStore.add({
+			message: 'Admin Dashboard updated',
+			type: "success",
+		});
+	}).catch(error => {
+		console.log(error);
+		toastStore.add({
+			message: 'Error updating Admin Dashboard',
+			type: "error",
+		});
+	});
+	
+	setTimeout(() => {
+		router.reload()
+	}, 500);
 }
 
 const panicButtonToggle = () => {

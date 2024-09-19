@@ -11,6 +11,7 @@ import SecondaryButton from "@/Components/SecondaryButton.vue";
 import DangerButton from "@/Components/DangerButton.vue";
 import ToastList from "@/Components/Toast/ToastList.vue";
 import ConfirmModal from "@/Modals/ConfirmModal.vue";
+import toastStore from "@/Stores/ToastStore.js";
 
 const props = defineProps({
     offers: Array,
@@ -76,8 +77,16 @@ const clicked = () => {
         adminDashboard: tempAdminDashboard.value,
     }).then(response => {
         console.log(response.data);
+		toastStore.add({
+			message: 'Admin Dashboard updated',
+			type: "success",
+		});
     }).catch(error => {
         console.log(error);
+		toastStore.add({
+			message: 'Error updating Admin Dashboard',
+			type: "error",
+		});
     });
 
     setTimeout(() => {
