@@ -62,6 +62,8 @@ class AutoAccept extends Command
 
 
         $paymentMethods = json_decode($adminDashboard->payment_methods);
+        // remove Cash F2F from payment methods
+        $paymentMethods = array_diff($paymentMethods, ['Cash F2F']);
 
         foreach ($offers as $offer) {
             // check if offer has already been accepted

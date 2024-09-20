@@ -87,7 +87,12 @@ class HelperFunctions
             $transaction = $transactions->where('offer_id', $bondLockedOffer->id)->first();
             $bondInvoice = $transaction->bond_invoice;
             if ($bondInvoice) {
-                $bondSatoshis += intval($lightningNode->getInvoiceDetails($bondInvoice)['numSatoshis']);
+                $val = $lightningNode->getInvoiceDetails($bondInvoice);
+                if ($val) {
+                    $bondSatoshis += intval($val['numSatoshis']);
+                } else {
+                    $bondSatoshis += 0;
+                }
             }
         }
 
@@ -99,7 +104,12 @@ class HelperFunctions
             $transaction = $transactions->where('offer_id', $escrowLockedOffer->id)->first();
             $escrowInvoice = $transaction->escrow_invoice;
             if ($escrowInvoice) {
-                $escrowSatoshis += intval($lightningNode->getInvoiceDetails($escrowInvoice)['numSatoshis']);
+                $val = $lightningNode->getInvoiceDetails($escrowInvoice);
+                if ($val) {
+                    $escrowSatoshis += intval($val['numSatoshis']);
+                } else {
+                    $escrowSatoshis += 0;
+                }
             }
         }
 

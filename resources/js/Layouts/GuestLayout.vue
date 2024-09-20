@@ -40,11 +40,6 @@ import ToastList from "@/Components/Toast/ToastList.vue";
                     </primary-button>
                 </Link>
 				
-				<Link :href="route('offers.posting.index')" >
-					<primary-button class="h-12">
-						Robot Management
-					</primary-button>
-				</Link>
 				
 				<Link :href="route('offers.posting.index')" >
 					<primary-button class="h-12">

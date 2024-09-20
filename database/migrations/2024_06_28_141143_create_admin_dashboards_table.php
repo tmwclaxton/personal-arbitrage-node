@@ -64,7 +64,7 @@ return new class extends Migration
 
             $table->string('umbrel_ip')->nullable();
             $table->string('umbrel_password')->nullable();
-            $table->string('umbrel_topt_key')->nullable();
+            $table->string('umbrel_totp_key')->nullable();
             // the umbrel token is set automatically
             $table->string('umbrel_token')->nullable();
 

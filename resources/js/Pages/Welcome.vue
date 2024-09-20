@@ -23,6 +23,21 @@ const props = defineProps({
 const accessOffers = ref(props.offers);
 const channelBalances = ref(JSON.parse(props.adminDashboard.channelBalances));
 const refreshKey = ref(0);
+const sellOffers = ref([]);
+const buyOffers = ref([]);
+
+const setBuyAndSellOffers = () => {
+	sellOffers.value = [];
+	buyOffers.value = [];
+	for (let i = 0; i < accessOffers.value.length; i++) {
+		if (accessOffers.value[i].type === 'sell') {
+			sellOffers.value.push(accessOffers.value[i]);
+		} else {
+			buyOffers.value.push(accessOffers.value[i]);
+		}
+	}
+}
+setBuyAndSellOffers();
 
 //auto refresh page every 10 seconds soft
 setInterval(() => {
@@ -52,6 +67,7 @@ setInterval(() => {
             }
         }
         accessOffers.value = response.data.offers;
+		setBuyAndSellOffers();
         // tempAdminDashboard.value = response.data.adminDashboard;
         channelBalances.value = JSON.parse(response.data.adminDashboard.channelBalances);
         refreshKey.value += 1;
@@ -172,11 +188,7 @@ const showSidebar = ref(true);
                     Offer Management
                 </primary-button>
             </Link>
-            <Link :href="route('offers.completed')" >
-                <primary-button class="h-12">
-                    Robot Management
-                </primary-button>
-            </Link>
+
             <Link :href="route('offers.posting.index')" >
                 <primary-button class="h-12">
                     Offer Templates
@@ -399,10 +411,20 @@ const showSidebar = ref(true);
 
             <div class="relative flex flex-col flex-grow items-center selection:bg-[#FF2D20] selection:text-white"
                 v-bind:class="showSidebar ? 'border-l-2 dark:border-zinc-700 dark:border-white/70' : ''">
-                <div class="grid gap-6 gap-x-4 mx-auto px-2" v-if="accessOffers.length > 0"
-                     v-bind:class="showSidebar ? 'grid-cols-2' : 'grid-cols-3'">
-                    <Offer v-for="offer in accessOffers" :key="offer.robosatsId" :offer="offer"
-                        :showSidebar="showSidebar"/>
+                <div class="grid grid-cols-2 gap-6 gap-x-4 w-full px-2" v-if="accessOffers.length > 0">
+					<div class="flex flex-col w-full ">
+						<Offer v-for="offer in sellOffers"
+							   :offer="offer"
+							   :key="offer.robosatsId"
+							:showSidebar="showSidebar"/>
+					</div>
+					<div class="flex flex-col w-full">
+						<Offer v-for="offer in buyOffers"
+							   :offer="offer"
+							   :key="offer.robosatsId"
+							:showSidebar="showSidebar"/>
+					</div>
+				
                 </div>
                 <div class="mx-auto" v-else>
                     <p class="text-lg">No offers available</p>

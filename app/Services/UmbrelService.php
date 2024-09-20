@@ -56,8 +56,6 @@ class UmbrelService
 
         $response = Http::post($this->ip . ':80/trpc/user.login', $params);
 
-
-
         $proxyToken = $response->cookies()->getCookieByName('UMBREL_PROXY_TOKEN')->getValue();
 
         $adminDashboard = AdminDashboard::all()->first();

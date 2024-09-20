@@ -28,8 +28,8 @@ class OfferController extends Controller
 
         // where status != 14, 12, 17, 18, 99, 4, 5, 2, 13, 15
         $offers = Offer::where([['accepted', '=', true], ['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14]])
-            ->orWhere([['accepted', '=', false],['premium', '>=', $sellPremium], ['type', 'sell'], ['status', '!=', 5]])
-            ->orWhere([['accepted', '=', false],['premium', '<=', $buyPremium], ['type', 'buy'], ['status', '!=', 5]])
+            ->orWhere([['accepted', '=', false],['premium', '>=', $sellPremium], ['type', 'sell'], ['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14]])
+            ->orWhere([['accepted', '=', false],['premium', '<=', $buyPremium], ['type', 'buy'], ['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14]])
             ->orWhere([['my_offer', '=', true], ['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14]])
             ->orderBy('accepted', 'desc')
             ->orderBy('my_offer', 'desc')
@@ -518,7 +518,7 @@ class OfferController extends Controller
         return $calculation;
     }
 
-    private function prepareOffer(mixed $offers,
+    private function prepareOffer(mixed &$offers,
                                   mixed $offer,
                                   mixed $paymentMethods)
     {
@@ -536,10 +536,15 @@ class OfferController extends Controller
         // round min_amount to 2 decimal places and max amount to 2 decimal places
         $offer->min_amount = number_format($offer->min_amount, 2);
         $offer->max_amount = number_format($offer->max_amount, 2);
+        // ensure premium has a sign
+        $offer->premium = $offer->premium > 0 ? '+' . $offer->premium : $offer->premium;
         // add a percentage to the premium
         $offer->premium = $offer->premium . '%';
+
+
         $offer->payment_methods = json_decode($offer->payment_methods);
-        $offer->escrow_duration = CarbonInterval::seconds($offer->escrow_duration)->cascade()->forHumans();
+        // convert escrow_duration to hours
+        $offer->escrow_duration = round($offer->escrow_duration / 3600, 2);
 
         // status message isn't always correct so we will use status and RobosatsStatuses
         $offer->status_message = (RobosatsStatus::getStatusTexts()[$offer['status']]);
@@ -561,7 +566,7 @@ class OfferController extends Controller
         }
 
         // make human readable
-        $offer->payment_methods = implode(', ', $offer->payment_methods);
+        // $offer->payment_methods = implode(', ', $offer->payment_methods);
 
         // if offer is accepted find the transaction
         if ($offer->accepted || ($offer->robosatsIdStorage == null && $offer->robotTokenBackup != null)) {
