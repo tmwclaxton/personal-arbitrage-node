@@ -33,6 +33,7 @@ return new class extends Migration
             $table->timestamp('last_created')->nullable();
             $table->timestamp('last_accepted')->nullable();
             $table->text('custom_message')->nullable();
+            $table->boolean('custom_message_enabled')->default(false);
             $table->timestamps();
         });
     }
