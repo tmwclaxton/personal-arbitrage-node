@@ -271,11 +271,16 @@ const showSidebar = ref(true);
                         <ToggleButton v-model="tempAdminDashboard.autoConfirm" size="sm" activeColor="bg-green-500"
                                       inactiveColor="bg-red-500"/>
                     </div>
-                    <div class="flex flex-row justify-between items-center"><span
-                        class="font-bold mr-1">Kraken Auto Topup:</span>
-                        <ToggleButton v-model="tempAdminDashboard.autoTopup" size="sm" activeColor="bg-green-500"
-                                      inactiveColor="bg-red-500"/>
-                    </div>
+					<div class="flex flex-row justify-between items-center"><span
+					  class="font-bold mr-1">Kraken Auto Topup:</span>
+						<ToggleButton v-model="tempAdminDashboard.autoTopup" size="sm" activeColor="bg-green-500"
+									  inactiveColor="bg-red-500"/>
+					</div>
+					<div class="flex flex-row justify-between items-center"><span
+					  class="font-bold mr-1">Adverts</span>
+						<ToggleButton v-model="tempAdminDashboard.adverts_enabled" size="sm" activeColor="bg-green-500"
+									  inactiveColor="bg-red-500"/>
+					</div>
                     <div class="flex flex-row justify-between items-center"><span
                         class="font-bold mr-1">Auto Create:</span>
                         <ToggleButton v-model="tempAdminDashboard.autoCreate" size="sm" activeColor="bg-green-500"
@@ -293,7 +298,6 @@ const showSidebar = ref(true);
                     <div class="flex flex-row justify-between items-center"><span
                         class="font-bold mr-1">End Time:</span>
                         <input type="time" v-model="tempAdminDashboard.auto_accept_end_time" class="bg-zinc-100 dark:bg-zinc-700 text-black dark:text-white"/>
-
                     </div>
 
                     <div class="flex flex-row justify-between items-center"><span class="font-bold text-xl mt-2">Offer Selection:</span>
