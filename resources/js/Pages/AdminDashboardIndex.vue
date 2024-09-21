@@ -145,7 +145,7 @@ const refreshKey = ref(0);
                     </div>
                     <div class="flex flex-row justify-between items-center"><span
                         class="font-bold mr-1">Umbrel OTP Secret: <span class="text-red-500">(Only if 2FA is set)</span></span>
-                        <TextInput v-model="tempAdminDashboard.umbrel_topt_key"/>
+                        <TextInput v-model="tempAdminDashboard.umbrel_totp_key"/>
                     </div>
 
                     <div class="border-b border-gray-300 dark:border-zinc-700 "/>

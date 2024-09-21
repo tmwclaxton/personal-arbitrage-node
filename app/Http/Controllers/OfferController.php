@@ -122,7 +122,8 @@ class OfferController extends Controller
     public function getOffer($offerId)
     {
         $offer = Offer::find($offerId);
-        $offer = $this->prepareOffer(null, $offer, null);
+        $offers = [$offer];
+        $offer = $this->prepareOffer($offers, $offer, null);
         $chatMessages = RobosatsChatMessage::where('offer_id', $offerId)->get();
 
         return Inertia::render('OfferPage', [

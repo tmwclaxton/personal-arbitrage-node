@@ -33,7 +33,7 @@
 				<!--(offer.status === 0 || offer.status === 6 || offer.status === 7 || offer.status === 9 || offer.status === 10))"-->
 				<!--        class="border border-gray-200 dark:border-zinc-700 "></div>-->
 				<div class="flex flex-row gap-x-2">
-					<div class="flex flex-col w-52  gap-1 p-1">
+					<div class="flex flex-col w-max  gap-1 p-1">
 						
 						<danger-button v-on:click="offerStore.autoRun(offer.id)"
 									   v-if="!offer.accepted && !offer.my_offer"
@@ -206,7 +206,7 @@
 					</div>
 					<!--chatbox with message input-->
 					<!-- Chatbox with message input -->
-					<div
+					<div v-if="offer.accepted && (offer.status === 9 || offer.status === 10)"
 					  class="w-96 ml-auto rounded-lg bg-white dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700 dark:shadow-lg overflow-hidden border border-gray-200"
 					>
 						<div ref="chatContainer" class="flex flex-col h-64 overflow-y-auto">

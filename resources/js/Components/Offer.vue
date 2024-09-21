@@ -61,7 +61,7 @@ const collapse = ref(true);
 			
 			        <primary-button class="w-full text-center  h-10 break-words "
 			                        v-on:click="offerStore.payBond(offer.id)"
-			                        v-if="offer.type === 'sell' && (!offer.my_offer && offer.status === 3 && offer.accepted || offer.my_offer && offer.status === 0)">
+			                        v-if="(!offer.my_offer && offer.status === 3 && offer.accepted || offer.my_offer && offer.status === 0)">
 			            <p class="text-center w-full">Bond</p>
 			        </primary-button>
 					
@@ -95,7 +95,7 @@ const collapse = ref(true);
 							<p class="text-center w-full">View Chat</p>
 						</secondary-button>
 					</Link>
-			
+
 			
 			        <danger-button v-on:click="offerStore.collaborativeCancel(offer.id)"
 			                       v-if="offer.accepted && (offer.status === 9 || offer.status === 10)"
@@ -186,11 +186,19 @@ const collapse = ref(true);
 					
 					</div>
 				</div>
-				<div class="flex flex-row gap-1 flex-wrap ">
-							<span v-for="method in offer.payment_methods"
-								  class="break-words text-zinc-500 dark:text-zinc-200 font-medium rounded-lg bg-zinc-100 dark:bg-zinc-900 p-1 h-max">
-							{{ method }}
-							</span>
+				<div class="flex flex-row gap-1 flex-wrap justify-between">
+					<div class="flex flex-row gap-1 flex-wrap ">
+						<span v-for="method in offer.payment_methods"
+							  class="break-words text-zinc-500 dark:text-zinc-200 font-medium rounded-lg bg-zinc-100 dark:bg-zinc-900 p-1 h-max">
+						{{ method }}
+						</span>
+					</div>
+					<Link :href="route('offers.show', {offer_id: offer.id})">
+						<secondary-button class="w-full text-center p-0  h-10 break-words"
+										  v-on:click="">
+							<p class="text-center w-full">View Offer</p>
+						</secondary-button>
+					</Link>
 				</div>
 			</div>
 			
