@@ -71,6 +71,10 @@ return new class extends Migration
             $table->string('client_private_key')->nullable();
             $table->string('server_public_key')->nullable();
 
+            $table->boolean('adverts_enabled')->default(true);
+            $table->json('primary_adverts')->nullable();
+            $table->json('secondary_adverts')->nullable();
+
             $table->timestamps();
         });
     }
