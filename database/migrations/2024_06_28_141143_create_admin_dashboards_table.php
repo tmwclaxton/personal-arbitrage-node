@@ -72,6 +72,8 @@ return new class extends Migration
             $table->string('server_public_key')->nullable();
 
             $table->boolean('adverts_enabled')->default(true);
+            $table->boolean('looking_for_advertisers')->default(false);
+            $table->text('contact_instructions')->nullable();
             $table->json('primary_adverts')->nullable();
             $table->json('secondary_adverts')->nullable();
 
