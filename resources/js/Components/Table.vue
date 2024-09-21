@@ -6,7 +6,7 @@
                 <th v-for="heading in headings" class="px-4 py-2 border-b-2 border-slate-800">{{ heading }}</th>
             </tr>
             </thead>
-            <tbody>
+            <tbody class=" ">
             <tr v-for="row in rows" :key="row.id">
                 <td v-for="(value, key) in row" :key="key" class="border px-4 py-2 border-slate-800" >
                     <!-- if the key is "id", render a link to the endpoint -->
@@ -48,7 +48,7 @@
                     </template>
                     <!-- otherwise, render the value as plain text -->
                     <template v-else class="">
-                        <p class="max-w-64 break-words text-center mx-auto">{{ value }}</p>
+                        <p class="max-w-64 break-words text-center mx-auto max-h-24 overflow-y-scroll">{{ value }}</p>
                     </template>
                 </td>
             </tr>

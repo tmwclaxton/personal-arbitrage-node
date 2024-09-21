@@ -128,6 +128,8 @@ class OfferController extends Controller
 
         return Inertia::render('OfferPage', [
             'offer' => $offer,
+            'robots' => $offer->robots,
+            'transaction' => $offer->transaction,
             'chatMessages' => $chatMessages
         ]);
     }

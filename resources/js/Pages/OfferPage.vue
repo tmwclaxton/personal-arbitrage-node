@@ -238,8 +238,18 @@
 						</div>
 					</div>
 				</div>
-			
 				
+				<div class="w mx-auto sm:px-6 lg:px-8">
+					<div class=" overflow-hidden shadow-sm sm:rounded-lg">
+						<div class="flex flex-col items-center" v-if="robots && robots.length > 0">
+							<p class="text-center text-2xl font-bold mb-2">Robots</p>
+							<Table class="" endpoint="" :rows="robots" />
+						</div>
+						<div class="flex flex-col items-center" v-if="transaction && transaction.length > 0">
+							<Table class="" endpoint="" :rows="transaction" />
+						</div>
+					</div>
+				</div>
 
 
 				
@@ -259,9 +269,11 @@ import DangerButton from "@/Components/DangerButton.vue";
 import SecondaryButton from "@/Components/SecondaryButton.vue";
 import { useOfferActionStore } from "@/Stores/OfferActionStore.js";
 import GuestLayout from "@/Layouts/GuestLayout.vue";
+import Pagination from "@/Components/Pagination.vue";
+import Table from "@/Components/Table.vue";
 
 const offerStore = useOfferActionStore();
-const props = defineProps(['offer', 'chatMessages']);
+const props = defineProps(['offer', 'chatMessages', 'transaction', 'robots']);
 
 const message = ref('');
 const chatContainer = ref(null);
