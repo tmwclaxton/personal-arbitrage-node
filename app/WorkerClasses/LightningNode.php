@@ -114,12 +114,17 @@ class LightningNode
             return 'Panic button is on';
         }
 
-        $response = Http::timeout(300)->withHeaders($this->getHeaders())->post($url, [
-            'paymentRequest' => $invoice,
-            'amt' => 0,
-        ]);
-        $response = json_decode($response->body(), true);
-        Log::info('payInvoice response: ' . json_encode($response));
+        try {
+            $response = Http::timeout(300)->withHeaders($this->getHeaders())->post($url, [
+                'paymentRequest' => $invoice,
+                'amt' => 0,
+            ]);
+            $response = json_decode($response->body(), true);
+            Log::info('payInvoice response: ' . json_encode($response));
+        } catch (\Exception $e) {
+            Log::info('payInvoice exception: ' . $e->getMessage());
+            return "Error: " . $e->getMessage();
+        }
         return "done";
     }
 

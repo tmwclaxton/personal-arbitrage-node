@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\PayBond;
+use App\Jobs\PayEscrow;
 use App\Models\AdminDashboard;
 use App\Models\BtcFiat;
 use App\Models\Offer;
@@ -16,6 +18,7 @@ use App\WorkerClasses\RobosatsStatus;
 use Carbon\CarbonInterval;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Bus;
 use Inertia\Inertia;
 
@@ -122,7 +125,8 @@ class OfferController extends Controller
     public function getOffer($offerId)
     {
         $offer = Offer::find($offerId);
-        $offers = [$offer];
+        $offers = new Collection();
+        $offers->push($offer);
         $offer = $this->prepareOffer($offers, $offer, null);
         $chatMessages = RobosatsChatMessage::where('offer_id', $offerId)->get();
 
@@ -413,11 +417,11 @@ class OfferController extends Controller
 
     public function payBond(Request $request) {
         $offerId = request('offer_id');
-        $transaction = Transaction::where('offer_id', $offerId)->first();
-        $invoice = $transaction->bond_invoice;
-        $lightningNode = new LightningNode();
-        $response = $lightningNode->payInvoice($invoice);
-        return $response;
+        $offer = Offer::find($offerId);
+        $adminDashboard = AdminDashboard::all()->first();
+        PayBond::dispatch($offer, $adminDashboard);
+
+        return response()->json(['message' => 'Bond payment being processed']);
     }
 
     public function updateInvoice(Request $request) {
@@ -431,12 +435,10 @@ class OfferController extends Controller
     public function payEscrow(Request $request) {
         // grab offer_id and transaction_id
         $offerId = request('offer_id');
+        $offer = Offer::find($offerId);
         $transaction = Transaction::where('offer_id', $offerId)->first();
-        $escrowInvoice = $transaction->escrow_invoice;
-        // dd($escrowInvoice);
-        $lightningNode = new LightningNode();
-        $response = $lightningNode->payInvoice($escrowInvoice);
-        return $response;
+        PayEscrow::dispatch($offer, $transaction);
+        return response()->json(['message' => 'Escrow payment being processed']);
     }
 
     public function confirmPayment(Request $request) {

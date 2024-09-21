@@ -1131,6 +1131,14 @@ class Robosats
             'latitude' => $latitute,
             'longitude' => $longitude
         ];
+
+        // if latitude and longitude == 0 then remove them
+        if ($latitute == 0 && $longitude == 0) {
+            $array['latitude'] = null;
+            $array['longitude'] = null;
+        }
+
+
         // add min amount if it is a range
         if ($isRange) {
             $array['min_amount'] = $minAmount;
