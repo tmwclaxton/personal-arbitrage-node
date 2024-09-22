@@ -106,9 +106,26 @@ const collapse = ref(true);
 			<div class="flex flex-col gap-y-2 mb-1">
 				<div class="flex flex-row ">
 					<div class="flex flex-col mr-2 w-1/3 min-w-52">
-						<p class="block mt-1  leading-tight font-bold underline dark:text-zinc-200">
-							Offer #{{ offer.robosatsId }} ({{ offer.my_offer ? 'Maker' : 'Taker' }})
-						</p>
+						<div class="flex flex-row gap-x-1">
+							<div
+							  class="inline-flex rounded-full overflow-hidden w-10 h-10 flex items-center justify-center">
+								<img v-if="offer.provider === 'lake'" src="/images/lake.jpg" alt="Lake"
+									 class="w-full h-full">
+								<img v-if="offer.provider === 'satstralia'" src="/images/satstralia.png"
+									 alt="Satstralia"
+									 class="w-full h-full">
+								<img v-if="offer.provider === 'temple'" src="/images/temple.png" alt="Temple"
+									 class="w-full h-full">
+								<img v-if="offer.provider === 'veneto'" src="/images/veneto.png" alt="Veneto"
+									 class="w-full h-full">
+							</div>
+							<p class="block my-auto leading-tight font-bold underline dark:text-zinc-200">
+								Offer #{{ offer.robosatsId }} ({{ offer.my_offer ? 'Maker' : 'Taker' }})
+							</p>
+						</div>
+						<p v-if="!['lake', 'satstralia', 'temple', 'veneto'].includes(offer.provider)"
+						   class="text-zinc-500 dark:text-zinc-200 font-bold">Provider: {{ offer.provider }}</p>
+						
 						<!--<p class="mt-2 text-zinc-500 dark:text-zinc-200 font-bold">Currency: {{ offer.currency }}</p>-->
 						<p class="text-zinc-500 dark:text-zinc-200 font-bold">Price: {{ offer.price }} {{
 								offer.currency
