@@ -45,12 +45,13 @@ class AutoJobs extends Command
             if ($offer->job_last_status != null && ($offer->job_last_status >= $offer->status)) {
                 $stop = true;
             }
-            if ($offer->status == 0 && $offer->my_offer === false) {
+            if ($offer->status == 0 && !$offer->my_offer) {
                 $stop = true;
             }
             if ($stop) {
                 continue;
             }
+
             // don't run the job again from auto job
             $offer->job_last_status = $offer->status;
             $offer->save();
