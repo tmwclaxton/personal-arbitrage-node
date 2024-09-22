@@ -426,8 +426,8 @@ class OfferController extends Controller
         // grab offer_id and transaction_id
         $offerId = request('offer_id');
         $offer = Offer::find($offerId);
-        $transaction = Transaction::where('offer_id', $offerId)->first();
-        PayEscrow::dispatch($offer, $transaction);
+        $adminDashboard = AdminDashboard::all()->first();
+        PayEscrow::dispatch($offer, $adminDashboard);
         return response()->json(['message' => 'Escrow payment being processed']);
     }
 
