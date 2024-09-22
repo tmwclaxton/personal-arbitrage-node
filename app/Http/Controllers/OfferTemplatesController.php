@@ -104,7 +104,8 @@ class OfferTemplatesController extends Controller
         $template->ttl = $request->ttl;
         $template->escrow_time = $request->escrow_time;
         $template->custom_message = $request->custom_message;
-        $template->disable_all_messages = $request->disable_all_messages;
+        // if disable_all_messages is not set, set it to false
+        $template->disable_all_messages = $request->disable_all_messages ?? false;
         $template->save();
 
         return [

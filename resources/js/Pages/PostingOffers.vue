@@ -40,6 +40,8 @@ const create = () => {
         cooldown: offerTemplate.value.cooldown,
         ttl: offerTemplate.value.ttl,
 		escrow_time: offerTemplate.value.escrow_time,
+		custom_message: offerTemplate.value.custom_message,
+		disable_all_messages: offerTemplate.value.disable_all_messages,
     }).then(response => {
         console.log(response.data);
 		refreshPage();
