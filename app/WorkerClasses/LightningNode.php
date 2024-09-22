@@ -115,7 +115,7 @@ class LightningNode
         }
 
         try {
-            $response = Http::timeout(60)->withHeaders($this->getHeaders())->post($url, [
+            $response = Http::timeout(90)->withHeaders($this->getHeaders())->post($url, [
                 'paymentRequest' => $invoice,
                 'amt' => 0,
             ]);

@@ -21,7 +21,7 @@ const collapse = ref(true);
 		<div v-if="offer.status">
 		    <p class="bg-zinc-700 text-white dark:text-zinc-200 font-bold break-words p-2.5"
 		       :class="{
-					'dark:bg-green-800': offer.my_offer,
+					'dark:bg-purple-900/50': offer.my_offer,
 				   'dark:bg-red-700': !offer.my_offer
 				   }">
 		        Status: {{offer.status_message}} · ({{offer.status}})

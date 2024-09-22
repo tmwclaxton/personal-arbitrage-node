@@ -130,13 +130,13 @@ class SendPaymentHandle implements ShouldQueue
                 // Plural case: "My handles are: Revolut: ... - Wise: ..."
                 $formattedHandles = [];
                 foreach ($paymentMethods as $paymentMethod) {
-                    if ($paymentMethod->custom_sell_message === '' && ($paymentMethod->name === '' && $paymentMethod->handle === '')) {
+                    if (!$paymentMethod->custom_sell_message && !($paymentMethod->name && $paymentMethod->handle)) {
                         $slackService->sendMessage("*Missing both custom message / name and handle for payment method " . $paymentMethod->name . "*");
                         $slackService->sendMessage("*Failed to send payment handle for offer with ID " . $this->offer->robosatsId . "*", $this->offer->slack_channel_id);
                         return ['', ''];
                     }
                     if ($paymentMethod->custom_sell_message) {
-                        $formattedHandles[] = $paymentMethod->custom_sell_message;
+                        $formattedHandles[] = $paymentMethod->custom_sell_message . "\n";
                     } else {
                         $formattedHandles[] = "$paymentMethod->name: $paymentMethod->handle \n";
                     }
