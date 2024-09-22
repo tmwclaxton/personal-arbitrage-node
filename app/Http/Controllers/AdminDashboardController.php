@@ -16,7 +16,11 @@ class AdminDashboardController extends Controller
         return Inertia::render('AdminDashboardIndex', [
             'adminDashboard' => AdminDashboard::all()->first(),
             'btcFiats' => $btcFiats,
-            'paymentMethods' => PaymentMethod::orderByDesc('handle')->orderByDesc('custom_message')->orderByDesc('logo_url')->get(),
+            'paymentMethods' => PaymentMethod::orderByDesc('preference', 'desc')
+                ->orderByDesc('handle')
+                ->orderByDesc('custom_buy_message')
+                ->orderByDesc('custom_sell_message')
+                ->orderByDesc('logo_url')->get(),
             'paymentMethodList' => PaymentMethod::all()->pluck('name'),
             'currencies' => $btcFiats->pluck('currency'),
         ]);
@@ -32,7 +36,9 @@ class AdminDashboardController extends Controller
             'specific_sell_premium' => 'nullable',
             'allowed_currencies' => 'array|nullable',
             'ask_for_reference' => 'boolean|nullable',
-            'custom_message' => 'nullable',
+            'custom_buy_message' => 'nullable',
+            'custom_sell_message' => 'nullable',
+            'preference' => 'integer|nullable',
         ]);
         // convert array to json
         $request->merge(['allowed_currencies' => json_encode($request->allowed_currencies)]);
@@ -52,7 +58,9 @@ class AdminDashboardController extends Controller
             'specific_sell_premium' => 'nullable',
             'allowed_currencies' => 'array|nullable',
             'ask_for_reference' => 'boolean|nullable',
-            'custom_message' => 'nullable',
+            'custom_buy_message' => 'nullable',
+            'custom_sell_message' => 'nullable',
+            'preference' => 'integer|nullable',
         ]);
         // convert array to json
         $request->merge(['allowed_currencies' => json_encode($request->allowed_currencies)]);

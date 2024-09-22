@@ -48,6 +48,8 @@ const offerEditTemplate = ref({
     cooldown: props.template.cooldown,
     ttl: props.template.ttl,
 	escrow_time: props.template.escrow_time,
+	custom_message: props.template.custom_message,
+	disable_all_messages: props.template.disable_all_messages,
 });
 
 const update = (refreshPage = false) => {
@@ -67,6 +69,8 @@ const update = (refreshPage = false) => {
         cooldown: offerEditTemplate.value.cooldown,
         ttl: offerEditTemplate.value.ttl,
 		escrow_time: offerEditTemplate.value.escrow_time,
+		custom_message: offerEditTemplate.value.custom_message,
+		disable_all_messages: offerEditTemplate.value.disable_all_messages,
     }).then(response => {
         console.log(response.data);
 		if (refreshPage) {
@@ -170,6 +174,12 @@ offerEditTemplate.value.providers = JSON.parse(offerEditTemplate.value.provider)
 		</td>
 		<td class="px-1 py-4 whitespace-nowrap text-center">
 			<text-input v-model="offerEditTemplate.escrow_time" label="Escrow Time" class="w-16"/>
+		</td>
+		<td class="px-1 py-4 whitespace-nowrap text-center">
+			<textarea v-model="offerEditTemplate.custom_message" class="w-96 h-20 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+		</td>
+		<td class="px-1 py-4 whitespace-nowrap text-center">
+			<toggle-button v-model="offerEditTemplate.disable_all_messages" label="Disable All Messages" />
 		</td>
 		<td class="px-1 py-4 whitespace-nowrap text-center">
 			<text-input v-model="offerEditTemplate.quantity" label="Quantity" class="w-12"/>

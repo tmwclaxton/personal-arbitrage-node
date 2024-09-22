@@ -64,9 +64,10 @@ const paymentMethodNew = ref({
     logo_url: '',
     specific_buy_premium: '',
     specific_sell_premium: '',
-    custom_message: '',
-    ask_for_reference: false,
     allowed_currencies: [],
+	custom_buy_message: '',
+	custom_sell_message: '',
+	preference: '',
 });
 
 const addPaymentMethod = () => {
@@ -76,9 +77,10 @@ const addPaymentMethod = () => {
         logo_url: paymentMethodNew.value.logo_url,
         specific_buy_premium: paymentMethodNew.value.specific_buy_premium,
         specific_sell_premium: paymentMethodNew.value.specific_sell_premium,
-        custom_message: paymentMethodNew.value.custom_message,
-        ask_for_reference: paymentMethodNew.value.ask_for_reference,
         allowed_currencies: paymentMethodNew.value.allowed_currencies,
+		custom_buy_message: paymentMethodNew.value.custom_buy_message,
+		custom_sell_message: paymentMethodNew.value.custom_sell_message,
+		preference: paymentMethodNew.value.preference,
     }).then(response => {
         console.log(response.data);
     }).catch(error => {
@@ -264,16 +266,18 @@ const refreshKey = ref(0);
                                 <TextInput class="w-full text-left" v-model="paymentMethodNew.name"/>
                                 <label for="handle">Handle</label>
                                 <TextInput class="w-full text-left" v-model="paymentMethodNew.handle"/>
-                                <label for="logo_url">Logo URL</label>
+								<label for="handle">Priority (Not required)</label>
+								<input type="number" class="w-full text-left" v-model="paymentMethodNew.preference"/>
+								<label for="logo_url">Logo URL</label>
                                 <TextInput class="w-full text-left" v-model="paymentMethodNew.logo_url"/>
                                 <label for="specific_buy_premium">Specific Buy Premium (Not required)</label>
                                 <TextInput class="w-full text-left" v-model="paymentMethodNew.specific_buy_premium"/>
                                 <label for="specific_sell_premium">Specific Sell Premium (Not required)</label>
                                 <TextInput class="w-full text-left" v-model="paymentMethodNew.specific_sell_premium"/>
-                                <label for="custom_message">Custom Message</label>
-                                <TextInput class="w-full text-left" v-model="paymentMethodNew.custom_message"/>
-                                <label for="ask_for_reference">Ask for Reference</label>
-                                <ToggleButton v-model="paymentMethodNew.ask_for_reference"/>
+                                <label for="custom_message">Custom Buy Message (Not required; takes precedence over handle)</label>
+                                <textarea class="w-full h-20 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" v-model="paymentMethodNew.custom_buy_message"></textarea>
+								<label for="custom_message">Custom Sell Message (Not required; takes precedence over handle)</label>
+								<textarea class="w-full h-20 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" v-model="paymentMethodNew.custom_sell_message"></textarea>
                                 <label for="allowed_currencies">Currencies (Not required)</label>
                                 <CurrenciesInput v-model="paymentMethodNew.allowed_currencies" :currencies="tempAdminDashboard.payment_currencies"
                                                  :key="'new'"/>

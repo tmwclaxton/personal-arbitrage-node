@@ -16,13 +16,13 @@ return new class extends Migration
             $table->string('name')->unique();
             $table->text('handle')->nullable();
             $table->boolean('ask_for_reference')->default(true);
+            $table->integer('preference')->default(0);
             $table->text('custom_buy_message')->nullable();
             $table->text('custom_sell_message')->nullable();
-            $table->integer('preference')->default(0);
-            $table->string('logo_url')->nullable();
             $table->json('allowed_currencies')->nullable();
             $table->decimal('specific_buy_premium', 5, 2)->nullable();
             $table->decimal('specific_sell_premium', 5, 2)->nullable();
+            $table->string('logo_url')->nullable();
             $table->timestamps();
         });
     }

@@ -58,10 +58,6 @@ class UpdateOffers implements ShouldQueue
             $adminDashboard = new AdminDashboard();
         }
 
-        // $negativeBuyOffers = $robosats->getNegativePremiumBuyOffers($response['buyOffers'],  $adminDashboard->buy_premium);
-        // $positiveSellOffers = $robosats->getPositivePremiumSellOffers($response['sellOffers'],  $adminDashboard->sell_premium);
-        // $allOffers = $positiveSellOffers;
-
         $allOffers = $robosats->getAllOffers($response['buyOffers'], $response['sellOffers']);
 
 

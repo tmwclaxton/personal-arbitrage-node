@@ -84,6 +84,8 @@ class OfferTemplatesController extends Controller
             'cooldown' => 'required|numeric|min:0',
             'ttl' => 'required|numeric|min:0',
             'escrow_time' => 'required|numeric|min:0',
+            'custom_message' => 'nullable',
+            'disable_all_messages' => 'nullable|boolean',
         ]);
 
         $template->type = $request->type;
@@ -101,6 +103,8 @@ class OfferTemplatesController extends Controller
         $template->longitude = $request->longitude;
         $template->ttl = $request->ttl;
         $template->escrow_time = $request->escrow_time;
+        $template->custom_message = $request->custom_message;
+        $template->disable_all_messages = $request->disable_all_messages;
         $template->save();
 
         return [
