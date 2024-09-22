@@ -41,72 +41,8 @@ class SendPaymentHandle implements ShouldQueue
             $robosats = new Robosats();
 
             $robot = $this->offer->robots()->first();
-            $message = '';
 
-
-
-            if (!$this->offer->my_offer) {
-                // depending on what payment methods are available change the message, preference order is revolut, wise, paypal friends & family, strike
-                $preferredPaymentMethods = PaymentMethod::where([['name', '!=', null], ['handle', '!=', null]])->get();
-                // shuffle the preferred payment methods
-                $preferredPaymentMethods->shuffle();
-                foreach ($preferredPaymentMethods as $paymentMethod) {
-                    if (in_array($paymentMethod->name, json_decode($robot->offer->payment_methods))) {
-                        $pseudonym = $paymentMethod->name;
-                        $tag = $paymentMethod->handle;
-
-                        $message = 'Hey! My ' . $pseudonym . ' is ' . $tag . ' - If possible, please put this number somewhere in the payment reference (' . $this->offer->id . '). '.
-                            'This is just to help me to match your payment to your order, but is totally optional. Cheers!';
-                        break;
-                    }
-                }
-            } else {
-
-                // if it's our offer then we need to send all the payment methods that the buyer can use
-                $paymentMethods = json_decode($robot->offer->payment_methods);
-
-                // Fetching the available handles for the payment methods
-                $handles = PaymentMethod::whereIn('name', $paymentMethods)->pluck('handle', 'name')->toArray();
-                $handleParts = [];
-
-                // Building the list of available handles
-                foreach ($handles as $method => $handle) {
-                    if (in_array($method, $paymentMethods)) {
-                        $handleParts[$method] = $handle;
-                    }
-                }
-
-                if (empty($handleParts)) {
-                    // If no payment methods match, we can return or handle the case accordingly
-                    $slackService = new SlackService();
-                    $slackService->sendMessage('Error: No matching payment methods found for the offer with ID ' . $this->offer->robosatsId);
-                } else {
-                    // Building the final message
-                    $handleCount = count($handleParts);
-                    if ($handleCount == 1) {
-                        // Singular case: "My Revolut is..."
-                        $method = key($handleParts);
-                        $message = "Hey! My $method is " . $handleParts[$method];
-                    } else {
-                        // Plural case: "My handles are: Revolut: ... - Wise: ..."
-                        $formattedHandles = [];
-                        foreach ($handleParts as $method => $handle) {
-                            $formattedHandles[] = "$method: $handle \n";
-                        }
-                        $message = "Hey! My handles are: \n\n" . implode("\n", $formattedHandles);
-                    }
-
-                    // Append the order ID reference
-                    $message .= "\nIf possible, please put this number somewhere in the payment reference (" . $this->offer->id . "). " .
-                        "This is just to help me match your payment to your order, but is totally optional. Cheers!";
-
-                    if ($handleCount > 1) {
-                        // Add a final note if there are multiple handles
-                        $secondaryMessage = "Also kindly state which payment method you will be using. Thanks!";
-                    }
-                }
-
-            }
+            [$message, $secondaryMessage] = $this->createMessageContent();
 
             $robosats->webSocketCommunicate($this->offer, $robot, $message);
             if (isset($secondaryMessage)) {
@@ -114,9 +50,6 @@ class SendPaymentHandle implements ShouldQueue
                 $robosats->webSocketCommunicate($this->offer, $robot, $secondaryMessage);
             }
 
-            (new SlackService)->sendMessage('Expect a payment for ' . round($robot->offer->accepted_offer_amount, 2) . ' ' . $robot->offer->currency
-                . ' from one of these payment methods: ' . $robot->offer->payment_methods .
-                ' soon! Once received, confirm the payment by typing !confirm ' . $this->offer->robosatsId . ' in the chat.', $this->offer->slack_channel_id);
 
         } else {
             // throw an exception
@@ -219,6 +152,11 @@ class SendPaymentHandle implements ShouldQueue
                 $secondaryMessage = "Also kindly state which payment method you will be using. Thanks!";
             }
 
+            (new SlackService)->sendMessage('Expect a payment for ' . round($robot->offer->accepted_offer_amount, 2) . ' ' . $robot->offer->currency
+                . ' from one of these payment methods: ' . $robot->offer->payment_methods .
+                ' soon! Once received, confirm the payment by typing !confirm ' . $this->offer->robosatsId . ' in the chat.', $this->offer->slack_channel_id);
+
+
             return [$message, $secondaryMessage];
 
         } else if ($this->offer->type === 'buy') {
@@ -227,11 +165,11 @@ class SendPaymentHandle implements ShouldQueue
             foreach ($paymentMethods as $paymentMethod) {
                 if ($paymentMethod->custom_buy_message) {
                     $message = $paymentMethod->custom_buy_message;
-                    break;
                 } else {
                     $message = 'Hello! I would like to use ' . $paymentMethod->name . ' - Thanks!';
-                    break;
                 }
+                $slackService->sendMessage('*You will need to send a payment to ' . $paymentMethod->name . ' ' . $paymentMethod->handle . ' for ' . $robot->offer->accepted_offer_amount . ' ' . $robot->offer->currency . ' soon!*', $this->offer->slack_channel_id);
+                break;
             }
 
             return [$message, ''];
