@@ -49,6 +49,7 @@ return new class extends Migration
             $table->json('provider_statuses')->nullable();
 
             $table->string('primary_currency')->default('USD');
+            $table->integer('language')->default(0);
 
             $table->string('slack_app_id')->nullable();
             $table->string('slack_client_id')->nullable();
