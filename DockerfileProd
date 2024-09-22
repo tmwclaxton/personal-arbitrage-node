@@ -1,6 +1,6 @@
 FROM ubuntu:22.04
 
-LABEL maintainer="Lightning Arbitrage Solutions"
+LABEL maintainer="Taylor Otwell"
 
 ARG WWWGROUP
 ARG NODE_VERSION=20
@@ -10,13 +10,15 @@ ARG POSTGRES_VERSION=15
 WORKDIR /var/www/html
 
 ENV DEBIAN_FRONTEND noninteractive
-ENV TZ=Europe/London
+ENV TZ=UTC
+
 ENV SUPERVISOR_PHP_COMMAND="/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan serve --host=0.0.0.0 --port=80"
 ENV SUPERVISOR_PHP_USER="sail"
 
-# Install tzdata and configure timezone
-RUN apt-get update && apt-get install -y tzdata \
-    && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+# Install tzdata before configuring timezone
+RUN apt-get update && apt-get install -y tzdata
+
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN apt-get update \
     && mkdir -p /etc/apt/keyrings \
@@ -98,3 +100,5 @@ RUN chmod +x /usr/local/bin/start-container
 EXPOSE 8000
 
 ENTRYPOINT ["start-container"]
+
+# . venv/bin/activate && uvicorn main:app --host 0.0.0.0 --port 8001 & disown
