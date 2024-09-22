@@ -150,11 +150,13 @@ const hideSidebar = ref(false);
                         <label class="text-sm text-gray-500 mt-5">Active</label>
                         <toggle-button v-model="offerTemplate.autoCreate" label="Auto Create" />
 						<label class="text-sm text-gray-500 mt-5">Custom Message (keep empty for default message handling)</label>
-						<textarea v-model="offerTemplate.custom_message" class="w-96 h-20 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+						<textarea v-model="offerTemplate.custom_message"
+								  class="w-96 h-20 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+						
 						<label class="text-sm text-gray-500 mt-5">Disable All Automated Messages</label>
-						<toggle-button v-model="offerTemplate.disable_all_messages" label="Disable All Messages" />
-                        <primary-button class="mt-4" @click="create">Create</primary-button>
-					
+							<toggle-button v-model="offerTemplate.disable_all_messages" label="Disable All Messages" />
+							<primary-button class="mt-4" @click="create">Create</primary-button>
+						
 
                 </div>
             </div>

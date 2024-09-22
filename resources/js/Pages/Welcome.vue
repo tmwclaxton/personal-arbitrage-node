@@ -214,11 +214,11 @@ const showSidebar = ref(true);
                     Graphs
                 </primary-button>
             </Link>
-            <Link :href="route('graphs.index')" >
-                <primary-button class="h-12">
-                    Tabulated Data
-                </primary-button>
-            </Link>
+            <!--<Link :href="route('graphs.index')" >-->
+            <!--    <primary-button class="h-12">-->
+            <!--        Tabulated Data-->
+            <!--    </primary-button>-->
+            <!--</Link>-->
         </div>
         <div class="my-5 border-b-2 border-gray-300 dark:border-zinc-700"></div>
 

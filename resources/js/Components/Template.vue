@@ -176,7 +176,8 @@ offerEditTemplate.value.providers = JSON.parse(offerEditTemplate.value.provider)
 			<text-input v-model="offerEditTemplate.escrow_time" label="Escrow Time" class="w-16"/>
 		</td>
 		<td class="px-1 py-4 whitespace-nowrap text-center">
-			<textarea v-model="offerEditTemplate.custom_message" class="w-96 h-20 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+			<textarea v-model="offerEditTemplate.custom_message"
+					  class="w-96 h-20 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
 		</td>
 		<td class="px-1 py-4 whitespace-nowrap text-center">
 			<toggle-button v-model="offerEditTemplate.disable_all_messages" label="Disable All Messages" />
