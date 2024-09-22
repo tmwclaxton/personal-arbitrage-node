@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\PayBond;
 use App\Jobs\PayEscrow;
+use App\Jobs\SendPaymentHandle;
 use App\Models\AdminDashboard;
 use App\Models\BtcFiat;
 use App\Models\Offer;
@@ -50,15 +51,6 @@ class OfferController extends Controller
         $btcFiats = BtcFiat::where('currency', 'USD')->orWhere('currency', 'GBP')->orWhere('currency', 'EUR')->get();
         $allFiats = BtcFiat::all();
         $adminDashboard = AdminDashboard::all()->first();
-        if (!$adminDashboard) {
-            $adminDashboard = new AdminDashboard();
-            $lightningNode = new LightningNode();
-            $balanceArray = $lightningNode->getLightningWalletBalance();
-            $adminDashboard->localBalance = $balanceArray['localBalance'];
-            $adminDashboard->remoteBalance = $balanceArray['remoteBalance'];
-            $adminDashboard->channelBalances = json_encode($balanceArray['channelBalances']);
-            $adminDashboard->save();
-        }
 
 
         $offers = $this->getOffersInternal($adminDashboard);
@@ -96,15 +88,13 @@ class OfferController extends Controller
 
         $helpFunction = new HelperFunctions();
 
-        $satsInTransit = $helpFunction->calcSatsInTransit();
+
 
 
         return Inertia::render('Welcome', [
             'btcPrices' => $btcFiats,
             'offers' => $offers,
             'adminDashboard' => $adminDashboard,
-            'satsInTransit' => $satsInTransit
-
         ]);
     }
 
@@ -133,7 +123,7 @@ class OfferController extends Controller
         return Inertia::render('OfferPage', [
             'offer' => $offer,
             'robots' => $offer->robots,
-            'transaction' => $offer->transaction,
+            'transactions' => Transaction::where('offer_id', $offerId)->get(),
             'chatMessages' => $chatMessages
         ]);
     }
@@ -465,8 +455,11 @@ class OfferController extends Controller
     public function sendPaymentHandle(Request $request) {
         $offerId = request('offer_id');
         $offer = Offer::find($offerId);
-        $robosats = new Robosats();
-        $robosats->sendHandle($offer);
+        $adminDashboard = AdminDashboard::all()->first();
+        // SendPaymentHandle::dispatch($offer, $adminDashboard);
+
+        $job = new \App\Jobs\SendPaymentHandle($offer, $adminDashboard);
+        $job->handle();
     }
 
     public function autoAccept(Request $request) {

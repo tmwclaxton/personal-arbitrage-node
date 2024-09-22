@@ -62,7 +62,7 @@ class GetRobosatsMessages implements ShouldQueue
             ]));
 
             $startTime = time();
-            $duration = 15; // Duration in seconds
+            $duration = 10; // Duration in seconds
 
             try {
                 while (true) {

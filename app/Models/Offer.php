@@ -22,9 +22,9 @@ class Offer extends Model
         return $this->hasMany(Robot::class);
     }
 
-    public function templates(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function templates()
     {
-        return $this->belongsTo(PostedOfferTemplate::class);
+        return PostedOfferTemplate::where('slug', $this->posted_offer_template_slug);
     }
 
 

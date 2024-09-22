@@ -15,7 +15,7 @@
                     <!--</template>-->
 
                     <!-- if the key is "value" or "status", render a colored dot -->
-                    <template v-if="value != null && ['value', 'status', 'ft value', 't&a value', 'h t&a', 'h ft'].includes(key.toLowerCase()) ">
+                    <template v-if="value != null && ['value', 'ft value', 't&a value', 'h t&a', 'h ft'].includes(key.toLowerCase()) ">
 <!--                        check if not array-->
                         <div v-if="!Array.isArray(value)">
                             <div v-if="['no', 'never ran'].includes(value.toLowerCase())" class="flex items-center justify-between space-x-2">

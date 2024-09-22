@@ -13,6 +13,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class SendPaymentHandle implements ShouldQueue
 {
@@ -44,8 +45,10 @@ class SendPaymentHandle implements ShouldQueue
 
             [$message, $secondaryMessage] = $this->createMessageContent();
 
-            $robosats->webSocketCommunicate($this->offer, $robot, $message);
-            if (isset($secondaryMessage)) {
+            if (isset($message) && $message !== '') {
+                $robosats->webSocketCommunicate($this->offer, $robot, $message);
+            }
+            if (isset($secondaryMessage) && $secondaryMessage !== '') {
                 sleep(5);
                 $robosats->webSocketCommunicate($this->offer, $robot, $secondaryMessage);
             }
@@ -66,11 +69,13 @@ class SendPaymentHandle implements ShouldQueue
             // check if disable_all_messages is set to true
             if ($template->disable_all_messages) {
                 // if it is then we don't send any messages
+                (new SlackService)->sendMessage('Automated messages are disabled for template ' . $template->slug, $this->offer->slack_channel_id, 'bold');
                 return ['', ''];
             }
 
             // check if there is a custom message for the template
             if ($template->custom_message) {
+                (new SlackService)->sendMessage('Sending custom message using template ' . $template->slug, $this->offer->slack_channel_id, 'blockquotes');
                 $message = $template->custom_message;
                 return [$message, ''];
             }
@@ -100,7 +105,7 @@ class SendPaymentHandle implements ShouldQueue
         if ($paymentMethods->isEmpty() || $paymentMethods->count() === 0) {
             // If no payment methods match, we can return or handle the case accordingly
             $slackService = new SlackService();
-            $slackService->sendMessage('Error: No matching payment methods found for the offer with ID ' . $this->offer->robosatsId, $this->offer->slack_channel_id);
+            $slackService->sendMessage('Error: No matching payment methods found for the offer with ID ' . $this->offer->robosatsId, $this->offer->slack_channel_id, 'bold');
         }
 
         $message = '';
@@ -110,9 +115,9 @@ class SendPaymentHandle implements ShouldQueue
             if ($paymentMethods->count() == 1) {
                 $paymentMethod = $paymentMethods->first();
                 // check if there is either a custom message || name and handle
-                if ($paymentMethod->custom_sell_message === null && ($paymentMethod->name === null && $paymentMethod->handle === null)) {
-                    $slackService->sendMessage('Missing custom message / name and handle for payment method ' . $paymentMethod->name);
-                    $slackService->sendMessage('Failed to send payment handle for offer with ID ' . $this->offer->robosatsId, $this->offer->slack_channel_id);
+                if (!$paymentMethod->custom_sell_message && !($paymentMethod->name && $paymentMethod->handle)) {
+                    $slackService->sendMessage("*Missing both custom message / name and handle for payment method " . $paymentMethod->name . "*");
+                    $slackService->sendMessage("*Failed to send payment handle for offer with ID " . $this->offer->robosatsId . "*", $this->offer->slack_channel_id);
                     return ['', ''];
                 }
 
@@ -125,9 +130,9 @@ class SendPaymentHandle implements ShouldQueue
                 // Plural case: "My handles are: Revolut: ... - Wise: ..."
                 $formattedHandles = [];
                 foreach ($paymentMethods as $paymentMethod) {
-                    if ($paymentMethod->custom_sell_message === null && ($paymentMethod->name === null && $paymentMethod->handle === null)) {
-                        $slackService->sendMessage('Missing custom message / name and handle for payment method ' . $paymentMethod->name);
-                        $slackService->sendMessage('Failed to send payment handle for offer with ID ' . $this->offer->robosatsId, $this->offer->slack_channel_id);
+                    if ($paymentMethod->custom_sell_message === '' && ($paymentMethod->name === '' && $paymentMethod->handle === '')) {
+                        $slackService->sendMessage("*Missing both custom message / name and handle for payment method " . $paymentMethod->name . "*");
+                        $slackService->sendMessage("*Failed to send payment handle for offer with ID " . $this->offer->robosatsId . "*", $this->offer->slack_channel_id);
                         return ['', ''];
                     }
                     if ($paymentMethod->custom_sell_message) {
@@ -152,9 +157,9 @@ class SendPaymentHandle implements ShouldQueue
                 $secondaryMessage = "Also kindly state which payment method you will be using. Thanks!";
             }
 
-            (new SlackService)->sendMessage('Expect a payment for ' . round($robot->offer->accepted_offer_amount, 2) . ' ' . $robot->offer->currency
-                . ' from one of these payment methods: ' . $robot->offer->payment_methods .
-                ' soon! Once received, confirm the payment by typing !confirm ' . $this->offer->robosatsId . ' in the chat.', $this->offer->slack_channel_id);
+            (new SlackService)->sendMessage("Expect a payment for " . round($robot->offer->accepted_offer_amount, 2) . " " . $robot->offer->currency
+                . " from one of these payment methods: " . $robot->offer->payment_methods .
+                " soon! Once received, confirm the payment by typing !confirm " . $this->offer->robosatsId . " in the chat.", $this->offer->slack_channel_id);
 
 
             return [$message, $secondaryMessage];
@@ -168,7 +173,8 @@ class SendPaymentHandle implements ShouldQueue
                 } else {
                     $message = 'Hello! I would like to use ' . $paymentMethod->name . ' - Thanks!';
                 }
-                $slackService->sendMessage('*You will need to send a payment to ' . $paymentMethod->name . ' ' . $paymentMethod->handle . ' for ' . $robot->offer->accepted_offer_amount . ' ' . $robot->offer->currency . ' soon!*', $this->offer->slack_channel_id);
+                $slackService->sendMessage(">You will need to send a payment to this counterparty on " . $paymentMethod->name . " " . " for " . round($robot->offer->accepted_offer_amount, 2)
+                    . " " . $robot->offer->currency . " soon!", $this->offer->slack_channel_id);
                 break;
             }
 

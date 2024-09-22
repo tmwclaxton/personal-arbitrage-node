@@ -109,17 +109,29 @@ class SlackService
     /**
      * @throws \Exception
      */
-    public function sendMessage(string $message, string $channelId = null): void
+    public function sendMessage(string $message, string $channelId = null, string $format = 'text'): void
     {
         if (!$channelId) {
             $adminDashboard = AdminDashboard::all()->first();
             $channelId = $adminDashboard->slack_main_channel_id;
         }
 
+        if ($format === 'bold') {
+            $message = '*' . $message . '*';
+        }
+
+        if ($format === 'italic') {
+            $message = '_' . $message . '_';
+        }
+
+        if ($format === 'blockquotes') {
+            $message = '>' . $message;
+        }
+
         $this->retry(function () use ($message, $channelId) {
             $this->client->chatPostMessage([
-                'channel' => $channelId,
-                'text' => $message,
+                "channel" => $channelId,
+                "text" => $message,
             ]);
         });
     }

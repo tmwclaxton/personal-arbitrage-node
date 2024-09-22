@@ -245,8 +245,9 @@
 							<p class="text-center text-2xl font-bold mb-2">Robots</p>
 							<Table class="" endpoint="" :rows="robots" />
 						</div>
-						<div class="flex flex-col items-center" v-if="transaction && transaction.length > 0">
-							<Table class="" endpoint="" :rows="transaction" />
+						<div class="flex flex-col items-center" v-if="transactions && transactions.length > 0">
+							<p class="text-center text-2xl font-bold my-2">Transaction</p>
+							<Table class="" endpoint="" :rows="transactions" />
 						</div>
 					</div>
 				</div>
@@ -273,7 +274,7 @@ import Pagination from "@/Components/Pagination.vue";
 import Table from "@/Components/Table.vue";
 
 const offerStore = useOfferActionStore();
-const props = defineProps(['offer', 'chatMessages', 'transaction', 'robots']);
+const props = defineProps(['offer', 'chatMessages', 'transactions', 'robots']);
 
 const message = ref('');
 const chatContainer = ref(null);

@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\AdminDashboard;
+use App\WorkerClasses\HelperFunctions;
 use App\WorkerClasses\LightningNode;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -37,9 +38,11 @@ class UpdateDashboard implements ShouldQueue
         $balanceArray = $lightningNode->getLightningWalletBalance();
         $adminDashboard->localBalance = $balanceArray['localBalance'];
         $adminDashboard->remoteBalance = $balanceArray['remoteBalance'];
-
-
         $adminDashboard->channelBalances = json_encode($balanceArray['channelBalances']);
+        $helpFunction = new HelperFunctions();
+        $calculations = $helpFunction->calcSatsInTransit();
+        $adminDashboard->bond_sats = $calculations['bondSatoshis'];
+        $adminDashboard->escrow_sats = $calculations['escrowSatoshis'];
         $adminDashboard->save();
     }
 }

@@ -113,8 +113,7 @@ class HelperFunctions
             }
         }
 
-        $satsInTransit = $bondSatoshis + $escrowSatoshis;
 
-        return $satsInTransit;
+        return ['bondSatoshis' => $bondSatoshis, 'escrowSatoshis' => $escrowSatoshis];
     }
 }

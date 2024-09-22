@@ -349,7 +349,9 @@ const showSidebar = ref(true);
                             <!--<p class=""><span class="font-bold">Revolut Balance:</span></p>-->
                             <!--<p class=""><span class="font-bold">Wise Balance:</span></p>-->
 							<p class=""><span class="font-bold">Kraken Balance:</span> {{ tempAdminDashboard.kraken_btc_balance }} </p>
-							<p class=""><span class="font-bold">Bond & Escrow Balance:</span> {{ satsInTransit }} </p>
+							<p class=""><span class="font-bold">Bond Balance:</span> {{ tempAdminDashboard.bond_sats }} </p>
+							<p class=""><span class="font-bold">Escrow Balance:</span> {{ tempAdminDashboard.escrow_sats }} </p>
+							
 							
                             <p class=""><span class="font-bold">Remote Balance:</span> {{ tempAdminDashboard.remoteBalance }} </p>
                             <div class="border-b border-zinc-300 dark:border-zinc-700"></div>

@@ -83,7 +83,7 @@ if (Schema::hasTable('admin_dashboards')) {
         // get:robosats-messages
         Schedule::command('get:robosats-messages')
             ->description('get robosats messages')
-            ->everyMinute()->withoutOverlapping(1);
+            ->everyTwentySeconds();
 
         // auto confirm final
         Schedule::command('auto:confirm-final')

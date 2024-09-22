@@ -28,6 +28,8 @@ return new class extends Migration
 
             $table->integer('localBalance')->default(0);
             $table->integer('remoteBalance')->default(0);
+            $table->integer('bond_sats')->default(0);
+            $table->integer('escrow_sats')->default(0);
             $table->json('channelBalances')->nullable();
 
             $table->decimal('sell_premium', 5, 2)->default(2);
