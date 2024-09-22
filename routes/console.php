@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Schema;
 
 // check if db is available && check if the admin dashboard table exists first
 // check if env
-if (env('APP_BUILT') !== null && Schema::hasTable('admin_dashboards')) {
+if (config('app.built') !== null && Schema::hasTable('admin_dashboards')) {
     $adminDashboard = AdminDashboard::all()->first();
     if (!$adminDashboard) {
         $adminDashboard = new AdminDashboard();

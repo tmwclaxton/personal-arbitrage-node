@@ -13,7 +13,8 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Laravel'),
+    'name' => env('APP_NAME', 'Lightning Arbitrage Solution'),
+    'built' => env('APP_BUILT', 'false'),
 
     /*
     |--------------------------------------------------------------------------
