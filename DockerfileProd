@@ -18,83 +18,102 @@ ENV SUPERVISOR_PHP_USER="sail"
 RUN apt-get update && apt-get install -y tzdata \
     && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
+# Install dependencies and tools
 RUN apt-get update \
     && mkdir -p /etc/apt/keyrings \
-    && apt-get install -y gnupg gosu curl ca-certificates zip unzip git supervisor sqlite3 libcap2-bin libpng-dev python2 dnsutils librsvg2-bin fswatch ffmpeg nano  \
+    && apt-get install -y gnupg gosu curl ca-certificates zip unzip git supervisor sqlite3 libcap2-bin libpng-dev python2 dnsutils librsvg2-bin fswatch ffmpeg nano \
     && curl -sS 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x14aa40ec0831756756d7f66c4f4ea0aae5267a6c' | gpg --dearmor | tee /etc/apt/keyrings/ppa_ondrej_php.gpg > /dev/null \
     && echo "deb [signed-by=/etc/apt/keyrings/ppa_ondrej_php.gpg] https://ppa.launchpadcontent.net/ondrej/php/ubuntu jammy main" > /etc/apt/sources.list.d/ppa_ondrej_php.list \
     && apt-get update \
-    && apt-get install -y php8.3-cli php8.3-dev \
-       php8.3-pgsql php8.3-sqlite3 php8.3-gd \
-       php8.3-curl \
-       php8.3-imap php8.3-mysql php8.3-mbstring \
-       php8.3-xml php8.3-zip php8.3-bcmath php8.3-soap \
-       php8.3-intl php8.3-readline \
-       php8.3-ldap \
-       php8.3-msgpack php8.3-igbinary php8.3-redis php8.3-swoole \
-       php8.3-memcached php8.3-pcov php8.3-imagick php8.3-xdebug \
+    && apt-get install -y php8.3-cli php8.3-dev php8.3-pgsql php8.3-sqlite3 php8.3-gd php8.3-curl php8.3-imap php8.3-mysql php8.3-mbstring php8.3-xml php8.3-zip php8.3-bcmath php8.3-soap php8.3-intl php8.3-readline php8.3-ldap php8.3-msgpack php8.3-igbinary php8.3-redis php8.3-swoole php8.3-memcached php8.3-pcov php8.3-imagick php8.3-xdebug \
     && curl -sLS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --filename=composer \
     && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
     && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_VERSION.x nodistro main" > /etc/apt/sources.list.d/nodesource.list \
     && apt-get update \
     && apt-get install -y nodejs \
-    && npm install -g npm \
-    && npm install -g pnpm \
-    && npm install -g bun \
+    && npm install -g npm pnpm bun \
     && curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | tee /etc/apt/keyrings/yarn.gpg >/dev/null \
     && echo "deb [signed-by=/etc/apt/keyrings/yarn.gpg] https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list \
     && curl -sS https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor | tee /etc/apt/keyrings/pgdg.gpg >/dev/null \
     && echo "deb [signed-by=/etc/apt/keyrings/pgdg.gpg] http://apt.postgresql.org/pub/repos/apt jammy-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
     && apt-get update \
-    && apt-get install -y yarn \
-    && apt-get install -y $MYSQL_CLIENT \
-    && apt-get install -y postgresql-client-$POSTGRES_VERSION \
+    && apt-get install -y yarn $MYSQL_CLIENT postgresql-client-$POSTGRES_VERSION \
     && apt-get -y autoremove \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN setcap "cap_net_bind_service=+ep" /usr/bin/php8.3
+# Adjust permissions
+RUN setcap "cap_net_bind_service=+ep" /usr/bin/php8.3 \
+    && groupadd --force -g $WWWGROUP sail \
+    && useradd -ms /bin/bash --no-user-group -g $WWWGROUP -u 1337 sail \
+    && mkdir -p /etc/supervisor/logs \
+    && mkdir -p /var/www/html/storage/logs \
+    && mkdir -p /var/www/html/storage/framework/cache \
+    && mkdir -p /var/www/html/storage/framework/data \
+    && mkdir -p /var/www/html/storage/framework/sessions \
+    && mkdir -p /var/www/html/storage/framework/views \
+    && mkdir -p /var/www/html/vendor \
+    && touch /etc/supervisor/logs/worker.log \
+    && touch /var/www/html/storage/logs/laravel.log \
+    && touch /var/www/html/storage/logs/worker.log
 
-RUN groupadd --force -g $WWWGROUP sail
-RUN useradd -ms /bin/bash --no-user-group -g $WWWGROUP -u 1337 sail
+# Install YAK Pro - PHP Obfuscator
+#RUN git clone https://github.com/pk-fr/yakpro-po.git /usr/local/yakpro-po \
+#    && cd /usr/local/yakpro-po \
+#    && git clone https://github.com/nikic/PHP-Parser.git --branch 4.x \
+#    && chmod a+x yakpro-po.php \
+#    && ln -s /usr/local/yakpro-po/yakpro-po.php /usr/local/bin/yakpro-po
 
-RUN mkdir /etc/supervisor/logs
-RUN touch /etc/supervisor/logs/worker.log
-
+# Copy configuration files
 COPY docker/8.3/start-container /usr/local/bin/start-container
 COPY docker/8.3/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/8.3/php.ini /etc/php/8.3/cli/conf.d/99-sail.ini
 COPY docker/8.3/workers /etc/supervisor/conf.d/workers
 
+
+# COPY the obfuscator configuration file somewhere easily accessible
+#COPY obfuscator/yakpro-po.cnf /usr/local/yakpro-po/yakpro-po.cnf
+
+# Copy source code
 COPY . /var/www/html
 
-# check storage folder and logs folder exists
-RUN if [ ! -d "/var/www/html/storage" ]; then mkdir /var/www/html/storage; fi
-RUN if [ ! -d "/var/www/html/storage/logs" ]; then mkdir /var/www/html/storage/logs; fi
-RUN if [ ! -d "/var/www/html/storage/framework" ]; then mkdir /var/www/html/storage/framework; fi
-RUN if [ ! -d "/var/www/html/storage/framework/cache" ]; then mkdir /var/www/html/storage/framework/cache; fi
-RUN if [ ! -d "/var/www/html/storage/framework/cache/data" ]; then mkdir /var/www/html/storage/framework/cache/data; fi
-RUN if [ ! -d "/var/www/html/storage/framework/sessions" ]; then mkdir /var/www/html/storage/framework/sessions; fi
-RUN if [ ! -d "/var/www/html/storage/framework/views" ]; then mkdir /var/www/html/storage/framework/views; fi
 
-# create laravel log file
-RUN touch /var/www/html/storage/logs/laravel.log
-RUN touch /var/www/html/storage/logs/worker.log
-
-# if vendor directory does not exist, create it
-RUN if [ ! -d "/var/www/html/vendor" ]; then mkdir /var/www/html/vendor; fi
-# run composer install
-RUN composer install --no-interaction --no-plugins --no-scripts --prefer-dist --optimize-autoloader
-
+# Create symbolic link for storage
 RUN php artisan storage:link
 
-# run npm install
-RUN npm install --no-audit --no-progress
-# npm run build
-RUN npm run build
+#yakpro-po source_filename -o target_filename
+# source directory is /var/www/html/app
+# target directory is /var/www/html/app-obfuscated
+#RUN yakpro-po /var/www/html/app -o /var/www/html/app-obfuscated
 
+# remove the original app directory
+#RUN rm -rf /var/www/html/app
+
+# rename the obfuscated directory to app
+#RUN mv /var/www/html/app-obfuscated /var/www/html/app
+
+# Install PHP dependencies
+RUN composer install --no-interaction --no-plugins --no-scripts --prefer-dist --optimize-autoloader
+
+
+# Install and build JavaScript assets
+RUN npm install --no-audit --no-progress \
+    && npm run build
+
+# remove unnecessary files
+RUN rm -rf /var/www/html/database \
+    && rm -rf /var/www/html/resources \
+    && rm -rf /var/www/html/.github \
+    && rm -rf /var/www/html/mitm_certs \
+    && rm -rf /var/www/html/DockerfileProd \
+    && rm -rf /var/www/html/Dockerfile
+
+
+# Set file permissions
 RUN chmod +x /usr/local/bin/start-container
 
+# Expose port
 EXPOSE 8000
 
+# Define entrypoint
 ENTRYPOINT ["start-container"]
