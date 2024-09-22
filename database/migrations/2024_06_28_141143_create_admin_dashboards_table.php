@@ -41,7 +41,7 @@ return new class extends Migration
             $table->decimal('latitude', 10, 8)->nullable();
             $table->decimal('longitude', 11, 8)->nullable();
 
-
+            $table->boolean('ask_for_reference')->default(false);
             $table->json('payment_currencies')->nullable();
             $table->json('payment_methods')->nullable();
             $table->integer('kraken_btc_balance')->default(0);

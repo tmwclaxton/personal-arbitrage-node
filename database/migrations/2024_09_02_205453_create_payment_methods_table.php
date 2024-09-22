@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('name')->unique();
             $table->text('handle')->nullable();
-            $table->boolean('ask_for_reference')->default(true);
             $table->integer('preference')->default(0);
             $table->text('custom_buy_message')->nullable();
             $table->text('custom_sell_message')->nullable();
