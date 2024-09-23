@@ -78,8 +78,15 @@ class AutoJobs extends Command
                     $offer->save();
 
                     // send a message to the channel describing the offer
-                    $slackService->sendMessage("A " . $offer->type . " offer has been created with a premium of " . $offer->premium . " " . $offer->currency
-                        , $channel_id);
+                    $message = "This " . $offer->type . " offer is ";
+
+                    if ($offer->has_range) {
+                        $message .= 'between ' . round($offer->min_amount,2) . ' and ' . round($offer->max_amount,2) . ' ' . $offer->currency . ' with a premium of ' . $offer->premium . '%';
+                    } else {
+                        $message .= 'for ' . round($offer->min_amount,2) . ' ' . $offer->currency . ' with a premium of ' . $offer->premium . '%';
+                    }
+                    $slackService->sendMessage($message, $channel_id);
+
                 }
             }
 

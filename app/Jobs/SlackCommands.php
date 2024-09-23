@@ -277,8 +277,13 @@ use Illuminate\Support\Facades\Redis;
 
                         }
                     }
+                    else {
+                        $slackService->sendMessage('Command not recognized', $channelId);
+                    }
 
                 }
+
+
             }
             sleep(3);
         }
