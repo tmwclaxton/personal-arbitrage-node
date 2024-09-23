@@ -55,7 +55,7 @@ class AutoAccept extends Command
         $sellPremium = $adminDashboard->sell_premium;
 
         // where status != 14, 12, 17, 18, 99, 4, 5, 2
-        $offers = Offer::where([['accepted', '=', false],['premium', '>=', $sellPremium], ['type', 'sell'], ['expires_at', '>', now()]])
+        $offers = Offer::where([['accepted', '=', false],['premium', '>=', $sellPremium], ['type', 'sell'], ['my_offer', '=', false], ['expires_at', '>', now()]])
             ->orderBy('accepted', 'desc')
             ->orderBy('max_satoshi_amount_profit', 'desc')
             ->orderBy('satoshi_amount_profit', 'desc')
