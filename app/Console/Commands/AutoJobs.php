@@ -76,6 +76,10 @@ class AutoJobs extends Command
                         $providerSub . "-order-" . strval($offer->robosatsId));
                     $offer->slack_channel_id = $channel_id;
                     $offer->save();
+
+                    // send a message to the channel describing the offer
+                    $slackService->sendMessage("A " . $offer->type . " offer has been created with a premium of " . $offer->premium . " " . $offer->currency
+                        , $channel_id);
                 }
             }
 
