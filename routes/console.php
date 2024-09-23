@@ -88,7 +88,7 @@ Schedule::command('btc:purchase-detailer')
 
 Schedule::command('refresh:slack-commands')
     ->description('refresh slack commands')
-    ->everyTenSeconds()->withoutOverlapping(1);
+    ->everyMinute()->withoutOverlapping(1);
 
 
 // app:warning-system
