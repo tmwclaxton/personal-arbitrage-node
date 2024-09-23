@@ -90,6 +90,12 @@ class AutoJobs extends Command
             }
             if ($offer->status > 3) {
                 $offer->accepted = true;
+                // if there is a template then update the last_accepted field
+                if ($offer->templates()->first()) {
+                    $template = $offer->templates()->first();
+                    $template->last_accepted = now();
+                    $template->save();
+                }
                 $offer->save();
             }
 
