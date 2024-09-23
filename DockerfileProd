@@ -77,9 +77,11 @@ COPY docker/8.3/workers /etc/supervisor/conf.d/workers
 # Copy source code
 COPY . /var/www/html
 
+# Install PHP dependencies
+RUN composer install --no-interaction --no-plugins --no-scripts --prefer-dist --optimize-autoloader
 
 # Create symbolic link for storage
-#RUN #php artisan storage:link
+RUN php artisan storage:link
 
 #yakpro-po source_filename -o target_filename
 # source directory is /var/www/html/app
@@ -92,8 +94,6 @@ COPY . /var/www/html
 # rename the obfuscated directory to app
 #RUN mv /var/www/html/app-obfuscated /var/www/html/app
 
-# Install PHP dependencies
-RUN composer install --no-interaction --no-plugins --no-scripts --prefer-dist --optimize-autoloader
 
 
 # Install and build JavaScript assets
