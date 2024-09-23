@@ -79,7 +79,7 @@ COPY . /var/www/html
 
 
 # Create symbolic link for storage
-RUN #php artisan storage:link
+#RUN #php artisan storage:link
 
 #yakpro-po source_filename -o target_filename
 # source directory is /var/www/html/app
