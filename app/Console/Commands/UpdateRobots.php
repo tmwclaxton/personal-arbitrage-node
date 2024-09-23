@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Offer;
 use App\Models\Robot;
+use App\WorkerClasses\HelperFunctions;
 use App\WorkerClasses\Robosats;
 use Illuminate\Console\Command;
 
@@ -28,8 +29,10 @@ class UpdateRobots extends Command
      */
     public function handle()
     {
-        // kick off the job
-        $job = new \App\Jobs\UpdateRobots();
-        $job->handle();
+        if ((new HelperFunctions())->normalUmbrelCommandCheck()) {
+            // kick off the job
+            $job = new \App\Jobs\UpdateRobots();
+            $job->handle();
+        }
     }
 }

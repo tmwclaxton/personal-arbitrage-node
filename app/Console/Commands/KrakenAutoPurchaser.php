@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\WorkerClasses\HelperFunctions;
 use Illuminate\Console\Command;
 
 class KrakenAutoPurchaser extends Command
@@ -25,6 +26,9 @@ class KrakenAutoPurchaser extends Command
      */
     public function handle()
     {
+        if (!(new HelperFunctions())->krakenCommandCheck()) {
+            return;
+        }
         $job = new \App\Jobs\KrakenAutoPurchaser();
         $job->handle();
     }

@@ -9,6 +9,7 @@ use App\Jobs\SendPaymentHandle;
 use App\Models\AdminDashboard;
 use App\Models\Offer;
 use App\Services\SlackService;
+use App\WorkerClasses\HelperFunctions;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Console\Command;
 
@@ -34,6 +35,9 @@ class AutoJobs extends Command
      */
     public function handle()
     {
+        if (!(new HelperFunctions())->normalUmbrelCommandCheck()) {
+            return;
+        }
 
         // every second check status of offer
         $adminDashboard = AdminDashboard::all()->first();

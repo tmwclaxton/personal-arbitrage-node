@@ -8,6 +8,7 @@ use App\Models\AdminDashboard;
 use App\Models\Offer;
 use App\Models\Transaction;
 use App\Services\SlackService;
+use App\WorkerClasses\HelperFunctions;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
@@ -33,7 +34,9 @@ class AutoAccept extends Command
      */
     public function handle()
     {
-
+        if (!(new HelperFunctions())->normalUmbrelCommandCheck()) {
+            return 0;
+        }
         $adminDashboard = AdminDashboard::all()->first();
         if (!$adminDashboard->autoAccept) {
             return 0;

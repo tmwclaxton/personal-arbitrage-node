@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Transaction;
+use App\WorkerClasses\HelperFunctions;
 use App\WorkerClasses\Robosats;
 use Illuminate\Console\Command;
 
@@ -27,8 +28,10 @@ class UpdateTransactions extends Command
      */
     public function handle()
     {
-        // kick off the job
-        $job = new \App\Jobs\UpdateTransactions();
-        $job->handle();
+        if ((new HelperFunctions())->normalUmbrelCommandCheck()) {
+            // kick off the job
+            $job = new \App\Jobs\UpdateTransactions();
+            $job->handle();
+        }
     }
 }

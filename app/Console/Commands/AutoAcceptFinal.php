@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\WorkerClasses\HelperFunctions;
 use Illuminate\Console\Command;
 
 class AutoAcceptFinal extends Command
@@ -25,6 +26,9 @@ class AutoAcceptFinal extends Command
      */
     public function handle()
     {
+        if (!(new HelperFunctions())->normalUmbrelCommandCheck()) {
+            return;
+        }
         $job = new \App\Jobs\AutoAcceptFinal();
         $job->handle();
     }

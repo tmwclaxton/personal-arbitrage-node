@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Services\UmbrelService;
+use App\WorkerClasses\HelperFunctions;
 use Illuminate\Console\Command;
 
 class PingUmbrelCheck extends Command
@@ -26,7 +27,11 @@ class PingUmbrelCheck extends Command
      */
     public function handle()
     {
-        $umbrelService = new UmbrelService();
-        $umbrelService->resetProxyToken();
+        if ((new HelperFunctions())->refreshUmbrelCommandCheck()) {
+            $umbrelService = new UmbrelService();
+            $umbrelService->resetProxyToken();
+        } else {
+            $this->error('Umbrel IP or password not set');
+        }
     }
 }

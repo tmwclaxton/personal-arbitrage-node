@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\AdminDashboard;
+use App\WorkerClasses\HelperFunctions;
 use App\WorkerClasses\LightningNode;
 use Illuminate\Console\Command;
 
@@ -28,7 +29,13 @@ class UpdateDashboard extends Command
     public function handle()
     {
         // kick off the job
-        $job = new \App\Jobs\UpdateDashboard();
-        $job->handle();
+        $adminDashboard = AdminDashboard::all()->first();
+        if (!$adminDashboard) {
+            $adminDashboard = new AdminDashboard();
+        }
+        if ((new HelperFunctions())->normalUmbrelCommandCheck()) {
+            $job = new \App\Jobs\UpdateDashboard();
+            $job->handle();
+        }
     }
 }

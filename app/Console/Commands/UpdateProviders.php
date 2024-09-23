@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\WorkerClasses\HelperFunctions;
 use Illuminate\Console\Command;
 
 class UpdateProviders extends Command
@@ -25,7 +26,9 @@ class UpdateProviders extends Command
      */
     public function handle()
     {
-        $job = new \App\Jobs\UpdateProviders();
-        $job->handle();
+        if ((new HelperFunctions())->normalUmbrelCommandCheck()) {
+            $job = new \App\Jobs\UpdateProviders();
+            $job->handle();
+        }
     }
 }

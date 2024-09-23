@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\BtcFiat;
+use App\WorkerClasses\HelperFunctions;
 use App\WorkerClasses\Robosats;
 use Illuminate\Console\Command;
 
@@ -27,6 +28,9 @@ class UpdateFiats extends Command
      */
     public function handle()
     {
+        if (!(new HelperFunctions())->normalUmbrelCommandCheck()) {
+            return;
+        }
         // kick off the job
         $job = new \App\Jobs\UpdateFiats();
         $job->handle();

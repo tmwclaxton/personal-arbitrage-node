@@ -6,6 +6,7 @@ use App\Http\Controllers\OfferController;
 use App\Models\AdminDashboard;
 use App\Models\BtcFiat;
 use App\Models\Offer;
+use App\WorkerClasses\HelperFunctions;
 use App\WorkerClasses\Robosats;
 use Illuminate\Console\Command;
 
@@ -31,6 +32,9 @@ class UpdateOffers extends Command
      */
     public function handle()
     {
+        if (!(new HelperFunctions())->normalUmbrelCommandCheck()) {
+            return;
+        }
         // kick off the job
         $job = new \App\Jobs\UpdateOffers();
         $job->handle();

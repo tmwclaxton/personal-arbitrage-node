@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\AdminDashboard;
+use App\WorkerClasses\HelperFunctions;
 use Illuminate\Console\Command;
 
 class UpdateKrakenBtcBalance extends Command
@@ -26,6 +27,9 @@ class UpdateKrakenBtcBalance extends Command
      */
     public function handle()
     {
+        if (!(new HelperFunctions())->krakenCommandCheck()) {
+            return;
+        }
         $adminDashboard = AdminDashboard::all()->first();
         $krakenService = new \App\Services\KrakenService();
         $btcBalance = $krakenService->getBTCBalance();

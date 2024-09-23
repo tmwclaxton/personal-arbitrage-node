@@ -7,6 +7,7 @@ use App\Models\AdminDashboard;
 use App\Models\SlackMessage;
 use App\Models\Offer;
 use App\Services\SlackService;
+use App\WorkerClasses\HelperFunctions;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 
@@ -31,7 +32,9 @@ class SlackCommands extends Command
      */
     public function handle()
     {
-
+        if (!(new HelperFunctions())->slackCommandCheck()) {
+            return;
+        }
         // kick off the job
         $job = new \App\Jobs\SlackCommands();
         $job->handle();

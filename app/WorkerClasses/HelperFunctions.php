@@ -116,4 +116,42 @@ class HelperFunctions
 
         return ['bondSatoshis' => $bondSatoshis, 'escrowSatoshis' => $escrowSatoshis];
     }
+
+    public function refreshUmbrelCommandCheck() {
+        $adminDashboard = AdminDashboard::all()->first();
+        if (isset($adminDashboard, $adminDashboard->umbrel_ip, $adminDashboard->umbrel_password)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function normalUmbrelCommandCheck() {
+        $adminDashboard = AdminDashboard::all()->first();
+        if (isset($adminDashboard, $adminDashboard->umbrel_ip, $adminDashboard->umbrel_token)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function krakenCommandCheck() {
+        $adminDashboard = AdminDashboard::all()->first();
+        if (isset($adminDashboard, $adminDashboard->kraken_api_key, $adminDashboard->kraken_private_key)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function slackCommandCheck() {
+        $adminDashboard = AdminDashboard::all()->first();
+        if (isset($adminDashboard, $adminDashboard->slack_app_id, $adminDashboard->slack_client_id, $adminDashboard->slack_client_secret, $adminDashboard->slack_signing_secret, $adminDashboard->slack_bot_token)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
 }
