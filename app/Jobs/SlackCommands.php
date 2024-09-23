@@ -253,10 +253,9 @@ use Illuminate\Support\Facades\Redis;
                                     }
                                 }
                                 $helpFunction = new \App\WorkerClasses\HelperFunctions();
-                                $satsInTransit = $helpFunction->calcSatsInTransit();
-
+                                $satsInTransitArray = $helpFunction->calcSatsInTransit();
                                 // we need to remove the sats in transit from the satoshis
-                                $satoshis -= $satsInTransit;
+                                $satoshis -= $satsInTransitArray['bondSatoshis'] + $satsInTransitArray['escrowSatoshis'];
 
 
                                 // if the satoshis is less than 2000, don't create an invoice
