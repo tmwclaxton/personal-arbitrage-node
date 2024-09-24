@@ -56,6 +56,15 @@ class AutoJobs extends Command
                 continue;
             }
 
+            // rename slack channel
+            if (isset($offer->slack_channel_id)) {
+                $slackService = new SlackService();
+                $sub = substr($offer->provider, 0, 3);
+                $statusMessage = str_replace(' ', '-', $offer->status_message);
+                $name = $sub . "-order-" . strval($offer->robosatsId) . "-" . $statusMessage;
+                $slackService->renameChannel($name , $offer->slack_channel_id);
+            }
+
             // don't run the job again from auto job
             $offer->job_last_status = $offer->status;
             $offer->save();
@@ -69,11 +78,12 @@ class AutoJobs extends Command
             if (($offer->status < 3 && $offer->my_offer  || (!$offer->my_offer && ($offer->status == 3 || $offer->status > 6 && $offer->status < 14)))) {
                 // we want to create a Slack channel for the offer if it doesn't exist
                 $slackService = new SlackService();
-                if ($offer->slack_channel_id === null && $offer->robosatsId < 200000) {
+                if ($offer->slack_channel_id === null && $offer->robosatsId < 200000 && isset($offer->currency)) {
                     // first 3 letters of the provider then the robosatsId
                     $providerSub = substr($offer->provider, 0, 3);
+                    $statusWithoutSpaces = str_replace(' ', '-', $offer->status_message);
                     $channel_id = $slackService->createChannel(
-                        $providerSub . "-order-" . strval($offer->robosatsId));
+                        $providerSub . "-order-" . strval($offer->robosatsId) . "-" . $statusWithoutSpaces);
                     $offer->slack_channel_id = $channel_id;
                     $offer->save();
 

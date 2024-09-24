@@ -55,6 +55,8 @@ class SlackService
      */
     public function createChannel($channelName): ?string
     {
+        // lowercase the channel name
+        $channelName = strtolower($channelName);
         $slackService = new SlackService();
 
         // Retry the channel creation
@@ -91,6 +93,18 @@ class SlackService
         }
 
         return $channelID;
+    }
+
+    public function renameChannel($newName, $channelId): void
+    {
+        // lowercase the channel name
+        $newName = strtolower($newName);
+        $this->retry(function () use ($channelId, $newName) {
+            $this->client->conversationsRename([
+                'channel' => $channelId,
+                'name' => $newName,
+            ]);
+        });
     }
 
     /**

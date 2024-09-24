@@ -37,7 +37,7 @@ class AutoCreate implements ShouldQueue
         foreach ($templates as $template) {
             // check if last_created is set and cooldown is set and if the cooldown has passed
             $count = Offer::where([['status', '<=', 3], ['posted_offer_template_slug', $template->slug]])->get()->count();
-            if ($count >= $template->quantity || $count >= $template->quantity && $template->last_accepted && $template->cooldown && Carbon::parse($template->last_accepted)->addSeconds($template->cooldown)->isFuture()) {
+            if ($count >= $template->quantity || $template->last_accepted && $template->cooldown && Carbon::parse($template->last_accepted)->addSeconds($template->cooldown)->isFuture()) {
                 continue;
             }
 
