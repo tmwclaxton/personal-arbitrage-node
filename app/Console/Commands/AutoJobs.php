@@ -46,7 +46,7 @@ class AutoJobs extends Command
         foreach ($offers as $offer) {
             // if status is 0 and robosatsIdStorage is not null then continue
             $stop = false;
-            if ($offer->job_last_status != null && ($offer->job_last_status >= $offer->status)) {
+            if ($offer->job_last_status != null && ($offer->job_last_status == $offer->status)) {
                 $stop = true;
             }
             if ($offer->status == 0 && !$offer->my_offer) {
