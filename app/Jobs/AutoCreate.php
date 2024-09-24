@@ -43,6 +43,7 @@ class AutoCreate implements ShouldQueue
 
             # check if the template is active
             if ($template->auto_create) {
+                $ttl = $template->ttl;
 
                 // if $adminDashboard->scheduler is enabled, then we should adapt the ttl to when end time is if it goes over the end time
                 if ($adminDashboard->scheduler) {
@@ -57,9 +58,8 @@ class AutoCreate implements ShouldQueue
                     }
 
                     if ($diff < $template->ttl) {
-                        $template->ttl = $diff;
                         // round to nearest hour in seconds with a minimum of 1 hour
-                        $template->ttl = max(3600, round($template->ttl / 3600) * 3600);
+                        $ttl = max(3600, round($template->ttl / 3600) * 3600);
                     }
                 }
 
@@ -88,7 +88,7 @@ class AutoCreate implements ShouldQueue
                         $template->min_amount,
                         $template->payment_methods,
                         $template->bond_size,
-                        $template->ttl,
+                        $ttl,
                         $template->escrow_time,
                         (int) $template->latitude == 0 ? null : $template->latitude,
                         (int) $template->longitude == 0 ? null : $template->longitude,
