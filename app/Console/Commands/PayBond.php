@@ -38,7 +38,10 @@ class PayBond extends Command
             return;
         }
 
-        $offers = Offer::where([['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14]])->get();
+        $offers = Offer::where([
+            ['status', '!=', 99], ['status', '!=', 5],
+            ['status', '!=', 14], ['expires_at', '>', now()]
+        ])->get();
         foreach ($offers as $offer) {
 
             // if status is 3 then dispatch a bond job
