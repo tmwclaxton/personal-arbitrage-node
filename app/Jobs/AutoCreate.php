@@ -51,6 +51,11 @@ class AutoCreate implements ShouldQueue
                     $end = Carbon::parse($adminDashboard->auto_accept_end_time);
                     $now = Carbon::now();
                     $diff = $now->diffInSeconds($end);
+                    // if diff is less than an hour skip
+                    if ($diff < 3600) {
+                        continue;
+                    }
+
                     if ($diff < $template->ttl) {
                         $template->ttl = $diff;
                         // round to nearest hour in seconds with a minimum of 1 hour
