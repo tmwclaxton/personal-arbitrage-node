@@ -41,6 +41,7 @@ const offerEditTemplate = ref({
     currency: props.template.currency,
     paymentMethods: props.template.payment_methods,
     provider: props.template.provider,
+	randomise_provider: props.template.randomise_provider,
     bondSize: props.template.bond_size,
     autoCreate: props.template.auto_create,
     providers: [],
@@ -63,6 +64,7 @@ const update = (refreshPage = false) => {
         currency: offerEditTemplate.value.currency,
         payment_methods: offerEditTemplate.value.paymentMethods,
         provider: offerEditTemplate.value.providers,
+		randomise_provider: offerEditTemplate.value.randomise_provider,
         bond_size: parseInt(offerEditTemplate.value.bondSize),
         auto_create: offerEditTemplate.value.autoCreate,
         quantity: offerEditTemplate.value.quantity,
@@ -164,7 +166,9 @@ offerEditTemplate.value.providers = JSON.parse(offerEditTemplate.value.provider)
 			<providers-input :key="template.id + 'provider'"
 				:providers="offerEditTemplate.providers"
 				:options="providers"  v-model="offerEditTemplate.providers" label="Provider" class="w-full "/>
-
+		</td>
+		<td class="px-1 py-4 whitespace-nowrap text-center">
+			<toggle-button v-model="offerEditTemplate.randomise_provider" label="Randomise Provider" />
 		</td>
 		<td class="px-1 py-4 whitespace-nowrap text-center">
 			<text-input v-model="offerEditTemplate.cooldown" label="Cooldown" class="w-14"/>

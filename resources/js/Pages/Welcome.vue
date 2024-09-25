@@ -21,7 +21,12 @@ const props = defineProps({
 });
 
 const accessOffers = ref(props.offers);
-const channelBalances = ref(JSON.parse(props.adminDashboard.channelBalances));
+const channelBalances = ref([]);
+if (props.adminDashboard.channelBalances !== undefined) {
+	channelBalances.value = JSON.parse(props.adminDashboard.channelBalances);
+} else {
+	channelBalances.value = [];
+}
 const refreshKey = ref(0);
 const sellOffers = ref([]);
 const buyOffers = ref([]);

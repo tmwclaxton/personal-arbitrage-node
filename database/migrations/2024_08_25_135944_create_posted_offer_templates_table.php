@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->enum('type', ['buy', 'sell'])->default('sell');
             $table->json('provider');
+            $table->boolean('randomise_provider')->default(false);
             $table->string('currency');
             $table->decimal('premium', 10, 2);
             $table->decimal('min_amount', 10, 2);

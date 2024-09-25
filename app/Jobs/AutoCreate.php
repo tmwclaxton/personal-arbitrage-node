@@ -74,7 +74,11 @@ class AutoCreate implements ShouldQueue
                     $online_providers = json_decode($adminDashboard->provider_statuses, true);
                     $chosen_provider = [];
                     $providers = json_decode($template->provider, true);
-                    // dd($providers,$online_providers);
+
+                    if ($template->randomise_provider) {
+                        shuffle($providers);
+                    }
+
                     foreach ($providers as $provider) {
                         if (array_key_exists($provider, $online_providers) && $online_providers[$provider] !== "false") {
                             $chosen_provider = $provider;
@@ -106,7 +110,7 @@ class AutoCreate implements ShouldQueue
 
                 }
                 $template->last_created = Carbon::now();
-                $template->last_accepted = Carbon::now()->addSeconds(600);
+                $template->last_accepted = Carbon::now()->addSeconds(0);
                 $template->save();
 
 

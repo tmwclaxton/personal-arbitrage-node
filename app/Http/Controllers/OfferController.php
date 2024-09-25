@@ -27,6 +27,10 @@ class OfferController extends Controller
 {
     public function getOffersInternal($adminDashboard)
     {
+        if ($adminDashboard == null) {
+            $adminDashboard = new AdminDashboard();
+            $adminDashboard->save();
+        }
         $sellPremium = $adminDashboard->sell_premium;
         $buyPremium = $adminDashboard->buy_premium;
 

@@ -71,6 +71,7 @@ class OfferTemplatesController extends Controller
         $request->validate([
             'type' => 'required|in:buy,sell',
             'provider' => 'required|array',
+            'randomise_provider' => 'required|boolean',
             'currency' => 'required|size:3|alpha',
             'premium' => 'required',
             'min_amount' => 'required|numeric|min:0|gt:0',
@@ -90,6 +91,7 @@ class OfferTemplatesController extends Controller
 
         $template->type = $request->type;
         $template->provider = json_encode($request->provider);
+        $template->randomise_provider = $request->randomise_provider;
         $template->currency = $request->currency;
         $template->premium = (float) $request->premium;
         $template->min_amount = $request->min_amount;

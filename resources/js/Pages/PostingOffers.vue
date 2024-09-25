@@ -34,6 +34,7 @@ const create = () => {
         currency: offerTemplate.value.currency,
         payment_methods: offerTemplate.value.paymentMethods,
         provider: offerTemplate.value.provider,
+		randomise_provider: false,
         bond_size: parseInt(offerTemplate.value.bondSize),
         auto_create: offerTemplate.value.autoCreate,
         quantity: offerTemplate.value.quantity,
@@ -68,6 +69,7 @@ const offerTemplate = ref({
     currency: 'GBP',
     paymentMethods: ['Revolut'],
     provider: ['satstralia'],
+	randomise_provider: false,
     bondSize: 3,
     autoCreate: true,
     quantity: 1,
@@ -141,6 +143,8 @@ const hideSidebar = ref(false);
                         <payments-input class="mx-16 col-span-4" v-model="offerTemplate.paymentMethods" label="Payment Methods" :options="paymentMethods" />
 						<label class="text-sm text-gray-500">Providers</label>
                         <providers-input class="mx-16 col-span-4" :options="providers" v-model="offerTemplate.provider" label="Provider" />
+						<label class="text-sm text-gray-500">Randomise Provider</label>
+						<toggle-button v-model="offerTemplate.randomise_provider" label="Randomise Provider" />
                         <label class="text-sm text-gray-500">Cooldown</label>
                         <text-input v-model="offerTemplate.cooldown" label="Cooldown" />
                         <label class="text-sm text-gray-500">TTL</label>
@@ -205,6 +209,9 @@ const hideSidebar = ref(false);
 								</th>
 								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
 									Provider
+								</th>
+								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
+									Randomise Provider
 								</th>
 								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
 									Cooldown

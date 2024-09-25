@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Schedule;
 // ping umbrel check
 Schedule::command('app:umbrel-token-reset')
     ->description('reset umbrel token')
-    ->everyFiveMinutes()->withoutOverlapping(1);
+    ->everyMinute()->withoutOverlapping(1);
 
 Schedule::command('refresh:dashboard')
     ->description('refresh dashboard')
