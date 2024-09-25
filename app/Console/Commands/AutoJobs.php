@@ -108,6 +108,7 @@ class AutoJobs extends Command
             if ($offer->accepted === false && $offer->status > 3 && $offer->my_offer === true) {
                 $template = $offer->templates()->first();
                 $template->last_created = now();
+                $template->save();
             }
             if ($offer->status > 3) {
                 $offer->accepted = true;
