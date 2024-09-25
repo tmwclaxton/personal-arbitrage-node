@@ -15,6 +15,12 @@ class AutoCreate implements ShouldQueue
 {
     use Queueable;
 
+    use Dispatchable;
+
+    use InteractsWithQueue;
+
+    public int $timeout = 1500;
+
     /**
      * Create a new job instance.
      */
@@ -95,6 +101,8 @@ class AutoCreate implements ShouldQueue
                         $template->slug,
                         $template->max_amount == 0 ? null : $template->max_amount,
                     );
+
+                    sleep(5);
 
                 }
                 $template->last_created = Carbon::now();

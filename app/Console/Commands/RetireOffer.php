@@ -3,9 +3,11 @@
 namespace App\Console\Commands;
 
 use App\Models\Offer;
+use App\Models\PostedOfferTemplate;
 use App\Services\SlackService;
 use App\WorkerClasses\HelperFunctions;
 use Illuminate\Console\Command;
+use Illuminate\Support\Carbon;
 
 class RetireOffer extends Command
 {
@@ -37,6 +39,12 @@ class RetireOffer extends Command
                 $offer->robosatsIdStorage = $offer->robosatsId;
                 $offer->robosatsId = $randomNumber;
                 $offer->save();
+                // check if offer has posted_offer_template_slug
+                if (isset($offer->posted_offer_template_slug)) {
+                    $template = PostedOfferTemplate::where('slug', $offer->posted_offer_template_slug)->first();
+                    $template->last_accepted =  Carbon::now()->subSeconds($template->cooldown);
+                    $template->save();
+                }
 
                 // if there is a slack channel associated with the offer, archive it
                 $slackService = new SlackService();
