@@ -106,7 +106,7 @@ class AutoCreate implements ShouldQueue
 
                 }
                 $template->last_created = Carbon::now();
-                $template->last_accepted = Carbon::now()->addSeconds($template->ttl - $template->cooldown);
+                $template->last_accepted = Carbon::now()->addSeconds(600);
                 $template->save();
 
 
