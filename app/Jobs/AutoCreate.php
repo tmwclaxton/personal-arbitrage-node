@@ -65,7 +65,7 @@ class AutoCreate implements ShouldQueue
 
                     if ($diff < $template->ttl) {
                         // round to nearest hour in seconds with a minimum of 1 hour
-                        $ttl = max(3600, round($template->ttl / 3600) * 3600);
+                        $ttl = max(3600, round($diff / 3600) * 3600);
                     }
                 }
 
