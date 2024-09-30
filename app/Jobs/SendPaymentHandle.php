@@ -166,18 +166,22 @@ class SendPaymentHandle implements ShouldQueue
 
         } else if ($this->offer->type === 'buy') {
 
-            // grab the first payment method
-            foreach ($paymentMethods as $paymentMethod) {
-                if ($paymentMethod->custom_buy_message) {
-                    $message = $paymentMethod->custom_buy_message;
-                } else {
-                    $message = 'Hello! I would like to use ' . $paymentMethod->name . ' - Thanks!';
+            if ($this->offer->my_offer) {
+                $message = 'Hello! What payment method do you wish to receive payment on and what is your handle?';
+            } else {
+                // grab the first payment method
+                foreach ($paymentMethods as $paymentMethod) {
+                    if ($paymentMethod->custom_buy_message) {
+                        $message = $paymentMethod->custom_buy_message;
+                    } else {
+                        $message = 'Hello! I would like to use ' . $paymentMethod->name . ' - Thanks!';
+                    }
+                    break;
                 }
-                $slackService->sendMessage(">You will need to send a payment to this counterparty on " . $paymentMethod->name . " " . " for " . round($robot->offer->accepted_offer_amount, 2)
-                    . " " . $robot->offer->currency . " soon!", $this->offer->slack_channel_id);
-                break;
             }
 
+            $slackService->sendMessage(">You will need to send a payment to this counterparty on " . $paymentMethod->name . " " . " for " . round($robot->offer->accepted_offer_amount, 2)
+                . " " . $robot->offer->currency . " soon!", $this->offer->slack_channel_id);
             return [$message, ''];
 
         }
