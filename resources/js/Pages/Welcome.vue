@@ -360,7 +360,7 @@ const showSidebar = ref(true);
 							
                             <p class=""><span class="font-bold">Remote Balance:</span> {{ tempAdminDashboard.remoteBalance }} </p>
                             <div class="border-b border-zinc-300 dark:border-zinc-700"></div>
-                            <div v-if="channelBalances.length > 0"
+                            <div v-if="channelBalances && channelBalances.length > 0"
                                 class="flex flex-col gap-y-1 text-xs pt-2">
                                 <div v-for="channelBalance in channelBalances"
                                      class="flex flex-row gap-x-2">
