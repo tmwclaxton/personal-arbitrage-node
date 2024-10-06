@@ -20,7 +20,14 @@ const props = defineProps({
 
         <div class="py-12">
             <div class=" mx-auto sm:px-6 lg:px-8">
-                <div class=" overflow-hidden shadow-sm sm:rounded-lg">
+				<div v-if="purchases.data && purchases.data.length === 0" class="my-24 border-purple-500 overflow-hidden border-2 shadow-sm sm:rounded-lg w-52 mx-auto">
+					<div class="flex flex-col items-center my-auto p-2">
+						<div class="text-center  text-2xl  text-gray-500 dark:text-gray-400">
+							No BTC purchases found
+						</div>
+					</div>
+				</div>
+                <div v-else class=" overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="flex flex-col items-center">
                         <Table class="" endpoint="/purchases" :rows="purchases.data" />
                     </div>

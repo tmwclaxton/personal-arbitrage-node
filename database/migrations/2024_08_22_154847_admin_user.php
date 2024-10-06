@@ -14,7 +14,7 @@ return new class extends Migration
         // make a new item in user table for the admin
         \App\Models\User::create([
             'name' => 'Admin',
-            'email' => 'tmwclaxton@gmail.com',
+            'email' => 'admin@gmail.com',
             'password' => \Illuminate\Support\Facades\Hash::make('MLZ6+IOM5+dDMD12nU9uqk'),
         ]);
     }

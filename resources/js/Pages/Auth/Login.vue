@@ -17,7 +17,6 @@ defineProps({
 });
 
 const form = useForm({
-    email: '',
     password: '',
     remember: false,
 });
@@ -37,26 +36,34 @@ const submit = () => {
             <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
                 {{ status }}
             </div>
-
+			<a href="#" class="flex items-center justify-center text-2xl font-semibold text-gray-900 dark:text-white">
+				<img src="/images/logoLight.png" class="h-24 block dark:hidden" alt="Lightning Arbitrage Solutions">
+				<img src="/images/logoDark.png" class="h-24 hidden dark:block" alt="Lightning Arbitrage Solutions">
+			</a>
+			<p class="text-center font-semibold text-gray-900 dark:text-white mb-5">
+				Support Number: +447837370669 <br>
+				<span class="mt-1">Telegram: @t918273</span>
+			</p>
+				
             <form @submit.prevent="submit">
-                <div>
-                    <InputLabel for="email" value="Email"/>
-
-                    <TextInput
-                        id="email"
-                        type="email"
-                        class="mt-1 block w-full"
-                        v-model="form.email"
-                        required
-                        autofocus
-                        autocomplete="username"
-                    />
-
-                    <InputError class="mt-2" :message="form.errors.email"/>
-                </div>
+                <!--<div>-->
+                <!--    <InputLabel for="username" value="Username"/>-->
+				
+                <!--    <TextInput-->
+                <!--        id="email"-->
+                <!--        type="email"-->
+                <!--        class="mt-1 block w-full"-->
+                <!--        v-model="form.email"-->
+                <!--        required-->
+                <!--        autofocus-->
+                <!--        autocomplete="username"-->
+                <!--    />-->
+				
+                <!--    <InputError class="mt-2" :message="form.errors.email"/>-->
+                <!--</div>-->
 
                 <div class="mt-4">
-                    <InputLabel for="password" value="Password"/>
+                    <InputLabel for="password" value="Passcode"/>
 
                     <TextInput
                         id="password"
@@ -73,18 +80,20 @@ const submit = () => {
                 <div class="block mt-4">
                     <label class="flex items-center">
                         <Checkbox name="remember" v-model:checked="form.remember"/>
-                        <span class="ms-2 text-sm text-gray-600">Remember me</span>
+                        <span class="ms-2 text-sm text-gray-600 dark:text-gray-300">
+							Remember me
+						</span>
                     </label>
                 </div>
 
                 <div class="flex items-center justify-end mt-4">
-                    <Link
-                        v-if="canResetPassword"
-                        :href="route('password.request')"
-                        class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    >
-                        Forgot your password?
-                    </Link>
+                    <!--<Link-->
+                    <!--    v-if="canResetPassword"-->
+                    <!--    :href="route('password.request')"-->
+                    <!--    class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"-->
+                    <!--&gt;-->
+                    <!--    Forgot your password?-->
+                    <!--</Link>-->
 
                     <PrimaryButton class="ms-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                         Log in

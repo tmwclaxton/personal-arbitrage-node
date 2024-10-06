@@ -125,13 +125,13 @@ const refreshKey = ref(0);
 						</select>
 					</div>
 					
-					<div class="flex flex-row justify-between items-center">
-						<span class="font-bold mr-1">Language: <span class="text-red-500"></span></span>
-						<select v-model="tempAdminDashboard.language"
-								class="w-max pr-6 block  bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-							<option v-for="language in ['en', 'de', 'es', 'fr', 'it', 'nl', 'pt', 'ru', 'zh']" :value="language" v-text="language"></option>
-						</select>
-					</div>
+					<!--<div class="flex flex-row justify-between items-center">-->
+					<!--	<span class="font-bold mr-1">Language: <span class="text-red-500"></span></span>-->
+					<!--	<select v-model="tempAdminDashboard.language"-->
+					<!--			class="w-max pr-6 block  bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">-->
+					<!--		<option v-for="language in ['en', 'de', 'es', 'fr', 'it', 'nl', 'pt', 'ru', 'zh']" :value="language" v-text="language"></option>-->
+					<!--	</select>-->
+					<!--</div>-->
 					
 					<div class="border-b border-gray-300 dark:border-zinc-700 "/>
                     <!--<div class="flex flex-row justify-between items-center"><span-->
