@@ -136,204 +136,212 @@ Route::middleware('auth')->group(function () {
             'laravelLogs' => $laravelLogs,
         ];
     })->name('logs');
+
+    // create robot
+    Route::get('create-robots', function () {
+        $robot = new Robosats();
+        return $robot->createRobots();
+    });
+
+    // route for displaying error messages
+    Route::get('errors', function () {
+        return Inertia::render('Errors');
+    })->name('errors');
+
 });
 
 // route to get code from gmail for suave container
-Route::get('/get-gmail-code/', function () {
-    // grab start
-    if (isset(request()->start)) {
-        $start = request()->start;
-    } else {
-        $start = 'https://www.kraken.com/new-device-sign-in/web?code=';
-    }
-    $gmailService = new \App\Services\GmailService();
-    return $gmailService->getLinkFromLastEmail($start);
-});
-
-
-Route::get('/test-revolut-login', function () {
-    $url = 'http://'  . env('SUAVE_HOST', 'suave-py') .':' .  env('SUAVE_PORT', 8000) . '/revolut-login?' . http_build_query(['auto_bal_flag' => true]);
-    Http::post($url);
-});
-
-Route::get('grab-transactions', function () {
-    $mitmService = new \App\Services\MitmService();
-    $transactions = $mitmService->grabTransactions();
-    return $transactions;
-});
-
-// create robot
-Route::get('create-robots', function () {
-    $robot = new Robosats();
-    return $robot->createRobots();
-});
-
-
-Route::get('pgp-test', function () {
-    $pgpService = new PgpService();
-    $helper = new \App\WorkerClasses\HelperFunctions();
-    $highEntropyToken = $helper->generateSlug(16);
-    $keypair = $pgpService->generate_keypair($highEntropyToken);
-    // return $keypair;
-
-    $message = "Hello World";
-    $encrypted = $pgpService->encryptAndSign($keypair['public_key'], $keypair['public_key'],$message, $highEntropyToken);
-    $decrypted = $pgpService->decrypt($keypair['private_key'], $encrypted, $highEntropyToken);
-    $signed = $pgpService->sign($keypair['private_key'],$message, $highEntropyToken, $keypair['public_key']);
-    $verified = $pgpService->verify($keypair['public_key'],$signed);
-
-    return [
-        'message' => $message,
-        'encrypted' => $encrypted,
-        'decrypted' => $decrypted,
-        'signed' => $signed,
-        'verified' => $verified
-    ];
-
-});
-
-Route::get('test-kraken', function () {
-    $kraken = new \App\Services\KrakenService();
-    // kraken get BTC balance
-    $btcBalance = $kraken->getBTCBalance();
-    // return $btcBalance;
-    // if BTC balance greater than 0 send to lightning node
-    if ($btcBalance->isGreaterThan(BigDecimal::of('0.02'))) {
-        return "greater than 0.01";
-    }
-    return "less than 0.01";
-});
+// Route::get('/get-gmail-code/', function () {
+//     // grab start
+//     if (isset(request()->start)) {
+//         $start = request()->start;
+//     } else {
+//         $start = 'https://www.kraken.com/new-device-sign-in/web?code=';
+//     }
+//     $gmailService = new \App\Services\GmailService();
+//     return $gmailService->getLinkFromLastEmail($start);
+// });
+//
+//
+// Route::get('/test-revolut-login', function () {
+//     $url = 'http://'  . env('SUAVE_HOST', 'suave-py') .':' .  env('SUAVE_PORT', 8000) . '/revolut-login?' . http_build_query(['auto_bal_flag' => true]);
+//     Http::post($url);
+// });
+//
+// Route::get('grab-transactions', function () {
+//     $mitmService = new \App\Services\MitmService();
+//     $transactions = $mitmService->grabTransactions();
+//     return $transactions;
+// });
 
 
 
-Route::get('/wise-alternative', function() {
-    $wiseService = new \App\Services\WiseService();
-    $balanaces = $wiseService->getBalances();
-    // dd($balanaces);
-    $balStatement = $wiseService->getBalanceStatement('93380830');
-
-    dd($balStatement);
-});
-
-
-
-Route::get('/testing', function () {
-
-    $robosats = new Robosats();
-    $offer = Offer::where('robosatsId', '18227')->first();
-    $response = $robosats->updateInvoice($offer);
-    dd($response);
-
-    $slackService = new SlackService();
-    $channelId = 'C07L754M6TY';
-    for ($i = 0; $i < 1; $i++) {
-        $slackService->sendMessage('Test message ' . $i, $channelId);
-    }
-    $messages = $slackService->getLatestMessages($channelId);
-    dd($messages);
-
-    dd('done');
-
-    $mitmService = new \App\Services\MitmService();
-    $transactions = $mitmService->grabTransactions();
-
-    // iterate through the transactions and create a payment object for each
-    foreach ($transactions as $transaction) {
-        if ($transaction['state'] !== 'COMPLETED'
-            || Carbon::createFromTimestamp($transaction['completedDate'])->lt(Carbon::now()->subHour(1))
-            || $transaction['amount'] < 0) {
-            continue;
-        }
-        // check if transfer / topup
-        if (!in_array($transaction['type'], ['TRANSFER', 'TOPUP'])) {
-            continue;
-        }
-
-        $payment = new \App\Models\Payment();
-        $payment->payment_method = 'Revolut';
-        $payment->platform_transaction_id = $transaction['id'];
-        $payment->payment_reference = $transaction['comment'];
-
-        if (Payment::where('platform_transaction_id', $payment->platform_transaction_id)->exists()) {
-            continue;
-        }
-
-        $payment->payment_currency = $transaction['currency'];
-        $payment->payment_amount = $transaction['amount'] / 100;
-        $payment->platform_account_id = $transaction['account']['id'];
-        $payment->platform_description = $transaction['description'];
-        $payment->platform_entity = json_encode($transaction);
+//
+// Route::get('pgp-test', function () {
+//     $pgpService = new PgpService();
+//     $helper = new \App\WorkerClasses\HelperFunctions();
+//     $highEntropyToken = $helper->generateSlug(16);
+//     $keypair = $pgpService->generate_keypair($highEntropyToken);
+//     // return $keypair;
+//
+//     $message = "Hello World";
+//     $encrypted = $pgpService->encryptAndSign($keypair['public_key'], $keypair['public_key'],$message, $highEntropyToken);
+//     $decrypted = $pgpService->decrypt($keypair['private_key'], $encrypted, $highEntropyToken);
+//     $signed = $pgpService->sign($keypair['private_key'],$message, $highEntropyToken, $keypair['public_key']);
+//     $verified = $pgpService->verify($keypair['public_key'],$signed);
+//
+//     return [
+//         'message' => $message,
+//         'encrypted' => $encrypted,
+//         'decrypted' => $decrypted,
+//         'signed' => $signed,
+//         'verified' => $verified
+//     ];
+//
+// });
+//
+// Route::get('test-kraken', function () {
+//     $kraken = new \App\Services\KrakenService();
+//     // kraken get BTC balance
+//     $btcBalance = $kraken->getBTCBalance();
+//     // return $btcBalance;
+//     // if BTC balance greater than 0 send to lightning node
+//     if ($btcBalance->isGreaterThan(BigDecimal::of('0.02'))) {
+//         return "greater than 0.01";
+//     }
+//     return "less than 0.01";
+// });
+//
+//
+//
+// Route::get('/wise-alternative', function() {
+//     $wiseService = new \App\Services\WiseService();
+//     $balanaces = $wiseService->getBalances();
+//     // dd($balanaces);
+//     $balStatement = $wiseService->getBalanceStatement('93380830');
+//
+//     dd($balStatement);
+// });
 
 
-        $payment->save();
 
-        $slackService = new SlackService();
-        $slackService->sendMessage('Payment received: ' . $payment->payment_amount . ' ' . $payment->payment_currency . ' on Revolut');
-
-
-        return response()->json(['message' => 'Payments created']);
-    }
-
-//      //!:TODO we need to figure out how to set the accepted amount and other shit inorder for auto accept to work
-    //     $robosats = new Robosats();
-    //     $providers = ['satstralia','lake']; //veneto  'temple',
-    //     $response = $robosats->createSellOffer(
-    //         "EUR",
-    //         20,
-    //         $providers[array_rand($providers)],
-    //         false,
-    //         20,
-    //         "Revolut",
-    //         2,
-    //         null
-    //     );
-    //
-    //     dd($response);
-    //
-    //
-    //
-    //     dd('testing');
-    //     $payment = null;
-    //     $wiseService = new \App\Services\WiseService();
-    //
-    //     // $gbpAccount = $wiseService->getGBPAccount();
-    //     // dd($gbpAccount);
-    //
-    //     // grab accounts
-    //     $accounts = $wiseService->getBalances();
-    //     $gbpAccount = null;
-    //     foreach ($accounts as $account) {
-    //         if ($account['currency'] == 'GBP') {
-    //             $gbpAccount = $account;
-    //         }
-    //     }
-    //
-    //     //wise delete all transfers
-    //     $transfers = $wiseService->getClient()->transfers->list(['offset' => 0, 'limit' => 100]);
-    //
-    //     foreach ($transfers as $transfer) {
-    //         if ($transfer['reference'] == "Send to Revolut" && $transfer['status'] != "cancelled") {
-    //             $wiseService->getClient()->transfers->cancel($transfer['id']);
-    //         }
-    //     }
-    //     // dd($transfers);
-    //
-    //
-    //     $recipients = $wiseService->getRecipientAccounts("GBP");
-    //
-    //     foreach ($recipients['content'] as $account) {
-    //         if ($account['id'] == env('WISE_RECIPIENT_ID_FOR_REVOLUT')) {
-    //
-    //             // $quote = $wiseService->createQuote("GBP", $wiseService->getGBPBalance(), $gbpAccount['id'], "GBP", $account['id'], "MOVING_MONEY_BETWEEN_OWN_ACCOUNTS");
-    //             $quote = $wiseService->createQuote("GBP", 4, $gbpAccount['id'], "GBP", $account['id'], "", "BANK_TRANSFER");
-    //             $transfer = $wiseService->transferToRecipient($quote['id'], $account['id'], "Send to Revolut");
-    //             $fundTransfer = $wiseService->fundTransfer($transfer['id']);
-    //             dd($fundTransfer);
-    //         }
-    //     }
-
-})->name('testing');
-
+// Route::get('/testing', function () {
+//
+//     $robosats = new Robosats();
+//     $offer = Offer::where('robosatsId', '18227')->first();
+//     $response = $robosats->updateInvoice($offer);
+//     dd($response);
+//
+//     $slackService = new SlackService();
+//     $channelId = 'C07L754M6TY';
+//     for ($i = 0; $i < 1; $i++) {
+//         $slackService->sendMessage('Test message ' . $i, $channelId);
+//     }
+//     $messages = $slackService->getLatestMessages($channelId);
+//     dd($messages);
+//
+//     dd('done');
+//
+//     $mitmService = new \App\Services\MitmService();
+//     $transactions = $mitmService->grabTransactions();
+//
+//     // iterate through the transactions and create a payment object for each
+//     foreach ($transactions as $transaction) {
+//         if ($transaction['state'] !== 'COMPLETED'
+//             || Carbon::createFromTimestamp($transaction['completedDate'])->lt(Carbon::now()->subHour(1))
+//             || $transaction['amount'] < 0) {
+//             continue;
+//         }
+//         // check if transfer / topup
+//         if (!in_array($transaction['type'], ['TRANSFER', 'TOPUP'])) {
+//             continue;
+//         }
+//
+//         $payment = new \App\Models\Payment();
+//         $payment->payment_method = 'Revolut';
+//         $payment->platform_transaction_id = $transaction['id'];
+//         $payment->payment_reference = $transaction['comment'];
+//
+//         if (Payment::where('platform_transaction_id', $payment->platform_transaction_id)->exists()) {
+//             continue;
+//         }
+//
+//         $payment->payment_currency = $transaction['currency'];
+//         $payment->payment_amount = $transaction['amount'] / 100;
+//         $payment->platform_account_id = $transaction['account']['id'];
+//         $payment->platform_description = $transaction['description'];
+//         $payment->platform_entity = json_encode($transaction);
+//
+//
+//         $payment->save();
+//
+//         $slackService = new SlackService();
+//         $slackService->sendMessage('Payment received: ' . $payment->payment_amount . ' ' . $payment->payment_currency . ' on Revolut');
+//
+//
+//         return response()->json(['message' => 'Payments created']);
+//     }
+//
+// //      //!:TODO we need to figure out how to set the accepted amount and other shit inorder for auto accept to work
+//     //     $robosats = new Robosats();
+//     //     $providers = ['satstralia','lake']; //veneto  'temple',
+//     //     $response = $robosats->createSellOffer(
+//     //         "EUR",
+//     //         20,
+//     //         $providers[array_rand($providers)],
+//     //         false,
+//     //         20,
+//     //         "Revolut",
+//     //         2,
+//     //         null
+//     //     );
+//     //
+//     //     dd($response);
+//     //
+//     //
+//     //
+//     //     dd('testing');
+//     //     $payment = null;
+//     //     $wiseService = new \App\Services\WiseService();
+//     //
+//     //     // $gbpAccount = $wiseService->getGBPAccount();
+//     //     // dd($gbpAccount);
+//     //
+//     //     // grab accounts
+//     //     $accounts = $wiseService->getBalances();
+//     //     $gbpAccount = null;
+//     //     foreach ($accounts as $account) {
+//     //         if ($account['currency'] == 'GBP') {
+//     //             $gbpAccount = $account;
+//     //         }
+//     //     }
+//     //
+//     //     //wise delete all transfers
+//     //     $transfers = $wiseService->getClient()->transfers->list(['offset' => 0, 'limit' => 100]);
+//     //
+//     //     foreach ($transfers as $transfer) {
+//     //         if ($transfer['reference'] == "Send to Revolut" && $transfer['status'] != "cancelled") {
+//     //             $wiseService->getClient()->transfers->cancel($transfer['id']);
+//     //         }
+//     //     }
+//     //     // dd($transfers);
+//     //
+//     //
+//     //     $recipients = $wiseService->getRecipientAccounts("GBP");
+//     //
+//     //     foreach ($recipients['content'] as $account) {
+//     //         if ($account['id'] == env('WISE_RECIPIENT_ID_FOR_REVOLUT')) {
+//     //
+//     //             // $quote = $wiseService->createQuote("GBP", $wiseService->getGBPBalance(), $gbpAccount['id'], "GBP", $account['id'], "MOVING_MONEY_BETWEEN_OWN_ACCOUNTS");
+//     //             $quote = $wiseService->createQuote("GBP", 4, $gbpAccount['id'], "GBP", $account['id'], "", "BANK_TRANSFER");
+//     //             $transfer = $wiseService->transferToRecipient($quote['id'], $account['id'], "Send to Revolut");
+//     //             $fundTransfer = $wiseService->fundTransfer($transfer['id']);
+//     //             dd($fundTransfer);
+//     //         }
+//     //     }
+//
+// })->name('testing');
+//
 
 
 require __DIR__.'/auth.php';
