@@ -3,12 +3,12 @@
         <table class="p-6 overflow-hidden w-full">
             <thead>
             <tr>
-                <th v-for="heading in headings" class="px-4 py-2 border-b-2 border-slate-800">{{ heading }}</th>
+                <th v-for="heading in headings" class="px-4 py-2 border-b-2 border-zinc-700">{{ heading }}</th>
             </tr>
             </thead>
             <tbody class=" ">
             <tr v-for="row in rows" :key="row.id">
-                <td v-for="(value, key) in row" :key="key" class="border px-4 py-2 border-slate-800" >
+                <td v-for="(value, key) in row" :key="key" class="border px-4 py-2 border-zinc-700" >
                     <!-- if the key is "id", render a link to the endpoint -->
                     <!--<template v-if="['id', 'paper id'].includes(key.toLowerCase())">-->
                     <!--    <BlueLink class="font-mono" v-if="value" :href="`${endpoint}/${value}`">{{ value }}</BlueLink>-->
