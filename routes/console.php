@@ -101,7 +101,15 @@ Schedule::command('app:scheduler')
     ->description('scheduler')
     ->everyMinute()->withoutOverlapping(1);
 
+// paybond
+// Schedule::command('pay:bond')
+//     ->description('pay bond')
+//     ->everyMinute()->withoutOverlapping(1);
 
+// pay bonds when they are due
+// Schedule::call(function () {
+//     $offers = \App\Models\Offer::where('status', 3)->get();
+// })->everyMinute()->withoutOverlapping(1);
 
 
 // !! DO NOT REMOVE THIS JOB || NOR CHANGE THE FREQUENCY

@@ -9,6 +9,7 @@ use App\Models\BtcFiat;
 use App\Models\Offer;
 use App\Models\PaymentMethod;
 use App\Models\PostedOfferTemplate;
+use App\Models\RobosatsChatMessage;
 use App\Models\Robot;
 use App\Models\Transaction;
 use App\Services\SlackService;
@@ -694,6 +695,15 @@ class Robosats
                     'nick' => $robot->nickname
                 ]);
                 $client->text($json);
+
+                $chatMessage = new RobosatsChatMessage();
+                $chatMessage->offer_id = $offer->id;
+                $chatMessage->user_nick = "Automated Message";
+                $chatMessage->index = 0;
+                $chatMessage->message = $messageContent;
+                $chatMessage->sent_at = Carbon::now();
+                $chatMessage->sent_to_slack = true;
+                $chatMessage->save();
 
                 // shutdown the client
                 $client->close();

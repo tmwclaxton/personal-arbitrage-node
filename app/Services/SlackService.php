@@ -126,6 +126,10 @@ class SlackService
      */
     public function sendMessage(string $message, string $channelId = null, string $format = 'text', string $messageType = "message"): void
     {
+        // if message is empty, return
+        if (empty($message)) {
+            return;
+        }
 
         $kitMessage = new KitMessage();
         $kitMessage->message = $message;

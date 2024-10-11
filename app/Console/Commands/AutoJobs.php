@@ -46,9 +46,9 @@ class AutoJobs extends Command
         foreach ($offers as $offer) {
             // if status is 0 and robosatsIdStorage is not null then continue
             $stop = false;
-            if ($offer->job_last_status != null && ($offer->job_last_status == $offer->status)) {
-                $stop = true;
-            }
+            // if ($offer->job_last_status != null && ($offer->job_last_status == $offer->status)) {
+            //     $stop = true;
+            // }
             if ($offer->status == 0 && !$offer->my_offer) {
                 $stop = true;
             }
@@ -76,26 +76,30 @@ class AutoJobs extends Command
             }
 
             if (($offer->status < 3 && $offer->my_offer  || (!$offer->my_offer && ($offer->status == 3 || $offer->status > 6 && $offer->status < 14)))) {
-                // we want to create a Slack channel for the offer if it doesn't exist
-                $slackService = new SlackService();
-                if ($offer->slack_channel_id === null && $offer->robosatsId < 200000 && isset($offer->currency)) {
-                    // first 3 letters of the provider then the robosatsId
-                    $providerSub = substr($offer->provider, 0, 3);
-                    $statusWithoutSpaces = str_replace(' ', '-', $offer->status_message);
-                    $channel_id = $slackService->createChannel(
-                        $providerSub . "-order-" . strval($offer->robosatsId) . "-" . $statusWithoutSpaces);
-                    $offer->slack_channel_id = $channel_id;
-                    $offer->save();
 
-                    // send a message to the channel describing the offer
-                    $message = "This " . $offer->type . " offer is ";
+                if ($offer->job_last_status !== $offer->status) {
+                    // we want to create a Slack channel for the offer if it doesn't exist
+                    $slackService = new SlackService();
+                    if ($offer->slack_channel_id === null && $offer->robosatsId < 200000 && isset($offer->currency)) {
+                        // first 3 letters of the provider then the robosatsId
+                        $providerSub = substr($offer->provider, 0, 3);
+                        $statusWithoutSpaces = str_replace(' ', '-', $offer->status_message);
+                        $channel_id = $slackService->createChannel(
+                            $providerSub . "-order-" . strval($offer->robosatsId) . "-" . $statusWithoutSpaces);
+                        $offer->slack_channel_id = $channel_id;
+                        $offer->save();
 
-                    if ($offer->has_range) {
-                        $message .= 'between ' . round($offer->min_amount,2) . ' and ' . round($offer->max_amount,2) . ' ' . $offer->currency . ' with a premium of ' . $offer->premium . '%';
-                    } else {
-                        $message .= 'for ' . round($offer->min_amount,2) . ' ' . $offer->currency . ' with a premium of ' . $offer->premium . '%';
+                        // send a message to the channel describing the offer
+                        $message = "This " . $offer->type . " offer is ";
+
+                        if ($offer->has_range) {
+                            $message .= 'between ' . round($offer->min_amount,2) . ' and ' . round($offer->max_amount,2) . ' ' . $offer->currency . ' with a premium of ' . $offer->premium . '%';
+                        } else {
+                            $message .= 'for ' . round($offer->min_amount,2) . ' ' . $offer->currency . ' with a premium of ' . $offer->premium . '%';
+                        }
+                        $slackService->sendMessage($message, $channel_id);
+
                     }
-                    $slackService->sendMessage($message, $channel_id);
 
                 }
             }
