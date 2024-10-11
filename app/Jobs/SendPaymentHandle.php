@@ -192,7 +192,7 @@ class SendPaymentHandle implements ShouldQueue
                     if ($paymentMethod->custom_buy_message) {
                         $message = $paymentMethod->custom_buy_message;
                     } else {
-                        $message = 'Hello! I would like to use ' . $paymentMethod->name . ' for payment. What is your handle / details?';
+                        $message = 'Hello! I would like to use ' . $paymentMethod->name . ' for payment. What are your details / handle?';
                     }
                     break;
                 }
