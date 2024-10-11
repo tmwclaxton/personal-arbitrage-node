@@ -57,12 +57,15 @@ class AutoJobs extends Command
             }
 
             // rename slack channel
-            if (isset($offer->slack_channel_id)) {
-                $slackService = new SlackService();
-                $sub = substr($offer->provider, 0, 3);
-                $statusMessage = str_replace(' ', '-', $offer->status_message);
-                $name = $sub . "-order-" . strval($offer->robosatsId) . "-" . $statusMessage;
-                $slackService->renameChannel($name , $offer->slack_channel_id);
+            if ($offer->job_last_status !== $offer->status) {
+
+                if (isset($offer->slack_channel_id)) {
+                    $slackService = new SlackService();
+                    $sub = substr($offer->provider, 0, 3);
+                    $statusMessage = str_replace(' ', '-', $offer->status_message);
+                    $name = $sub . "-order-" . strval($offer->robosatsId) . "-" . $statusMessage;
+                    $slackService->renameChannel($name, $offer->slack_channel_id);
+                }
             }
 
             // don't run the job again from auto job
@@ -77,7 +80,6 @@ class AutoJobs extends Command
 
             if (($offer->status < 3 && $offer->my_offer  || (!$offer->my_offer && ($offer->status == 3 || $offer->status > 6 && $offer->status < 14)))) {
 
-                if ($offer->job_last_status !== $offer->status) {
                     // we want to create a Slack channel for the offer if it doesn't exist
                     $slackService = new SlackService();
                     if ($offer->slack_channel_id === null && $offer->robosatsId < 200000 && isset($offer->currency)) {
@@ -95,11 +97,11 @@ class AutoJobs extends Command
                         if ($offer->has_range) {
                             $message .= 'between ' . round($offer->min_amount,2) . ' and ' . round($offer->max_amount,2) . ' ' . $offer->currency . ' with a premium of ' . $offer->premium . '%';
                         } else {
-                            $message .= 'for ' . round($offer->min_amount,2) . ' ' . $offer->currency . ' with a premium of ' . $offer->premium . '%';
+                            $message .= 'for ' . round($offer->amount,2) . ' ' . $offer->currency . ' with a premium of ' . $offer->premium . '%';
                         }
                         $slackService->sendMessage($message, $channel_id);
 
-                    }
+
 
                 }
             }

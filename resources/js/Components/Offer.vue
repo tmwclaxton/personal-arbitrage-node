@@ -42,7 +42,7 @@ const collapse = ref(true);
 			
 			        <danger-button v-on:click="offerStore.autoRun(offer.id)"
 								   v-if="!offer.accepted && !offer.my_offer"
-			                       :disabled="offer.job_locked || offer.accepted"
+			                       :disabled="offer.job_locked || offer.accepted || (offer.robots && offer.robots.length > 0)"
 			                       class="w-full text-center  h-10 break-words disabled:opacity-50">
 			            <p class="text-center w-full">Auto Run</p>
 			        </danger-button>
