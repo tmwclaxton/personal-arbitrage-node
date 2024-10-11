@@ -45,8 +45,7 @@ class PayBond extends Command
         foreach ($offers as $offer) {
 
             // if status is 3 then dispatch a bond job
-            if (($offer->status == 3 || ($offer->my_offer && $offer->status == 0))
-                && $adminDashboard->autoBond) {
+            if ( ((!$offer->my_offer && $offer->status == 3) || ($offer->my_offer && $offer->status == 0)) && $adminDashboard->autoBond) {
                 $job = new \App\Jobs\PayBond($offer, $adminDashboard);
                 $job->handle();
             }

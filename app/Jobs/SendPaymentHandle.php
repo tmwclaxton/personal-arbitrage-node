@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\AdminDashboard;
 use App\Models\Offer;
 use App\Models\PaymentMethod;
+use App\Models\RobosatsChatMessage;
 use App\Models\Transaction;
 use App\Services\SlackService;
 use App\WorkerClasses\Robosats;
@@ -38,7 +39,24 @@ class SendPaymentHandle implements ShouldQueue
      */
     public function handle(): void
     {
+
         if (!$this->adminDashboard->panicButton) {
+
+            if (!($this->offer->status == 9 && $this->adminDashboard->autoMessage)) {
+                return;
+            }
+
+            // grab all robosats_chat_messages and see if there are any messages with the same user_nick as the robot nickname
+            // if there are, we don't send the payment handle
+            $messages = RobosatsChatMessage::where('offer_id', $this->offer->id)->get();
+            $robot = $this->offer->robots()->first();
+            $robotNickname = $robot->nickname;
+            $robotMessages = $messages->where('user_nick', $robotNickname);
+            if ($robotMessages->count() > 0) {
+                return;
+            }
+
+
             $robosats = new Robosats();
 
             $robot = $this->offer->robots()->first();

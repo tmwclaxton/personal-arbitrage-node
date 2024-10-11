@@ -121,7 +121,7 @@ class AutoJobs extends Command
                 $offer->save();
             }
 
-
+            // these jobs are best effort, they can't be guaranteed to run again if they fail, so there are backup jobs in console.php
             if ($offer->type === "sell" && ($offer->status == 6 || $offer->status == 7) && $adminDashboard->autoEscrow) {
                 PayEscrow::dispatch($offer, $adminDashboard);
             }

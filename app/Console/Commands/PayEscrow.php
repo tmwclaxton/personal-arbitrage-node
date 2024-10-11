@@ -39,7 +39,7 @@ class PayEscrow extends Command
         foreach ($offers as $offer) {
 
             // if status is 6 or 7 then pay escrow
-            if ( ($offer->status === 6 || $offer->status === 7)) {
+            if ($offer->type === "sell" && ($offer->status == 6 || $offer->status == 7) && $adminDashboard->autoEscrow) {
                 $job = new \App\Jobs\PayEscrow($offer, $adminDashboard);
                 $job->handle();
             }
