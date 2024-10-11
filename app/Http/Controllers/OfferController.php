@@ -470,6 +470,8 @@ class OfferController extends Controller
         $adminDashboard = AdminDashboard::all()->first();
         $offerId = request('offer_id');
         $offer = Offer::where('id', $offerId)->first();
+
+
         Bus::chain([
             new \App\Jobs\CreateRobots($offer, $adminDashboard),
             new \App\Jobs\AcceptSellOffer($offer, $adminDashboard)

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\AdminDashboard;
+use App\Models\KitMessage;
 use GuzzleHttp\Exception\GuzzleException;
 use JoliCode\Slack\Api\Client;
 use JoliCode\Slack\ClientFactory;
@@ -123,8 +124,14 @@ class SlackService
     /**
      * @throws \Exception
      */
-    public function sendMessage(string $message, string $channelId = null, string $format = 'text'): void
+    public function sendMessage(string $message, string $channelId = null, string $format = 'text', string $messageType = "message"): void
     {
+
+        $kitMessage = new KitMessage();
+        $kitMessage->message = $message;
+        $kitMessage->type = $messageType;
+        $kitMessage->save();
+
         if (!$channelId) {
             $adminDashboard = AdminDashboard::all()->first();
             $channelId = $adminDashboard->slack_main_channel_id;

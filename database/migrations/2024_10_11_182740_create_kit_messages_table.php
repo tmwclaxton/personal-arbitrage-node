@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('kit_errors', function (Blueprint $table) {
+        Schema::create('kit_messages', function (Blueprint $table) {
             $table->id();
-            $table->string('error_code');
-            $table->text('error_message');
+            $table->string('type');
+            $table->text('message');
             $table->timestamps();
         });
     }
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('kit_errors');
+        Schema::dropIfExists('kit_messages');
     }
 };

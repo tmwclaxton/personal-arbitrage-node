@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\AdminDashboard;
 use App\Models\Offer;
+use App\Services\SlackService;
 use App\WorkerClasses\Robosats;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
@@ -36,7 +37,10 @@ class AcceptSellOffer implements ShouldQueue
     public function handle(): void
     {
         if (!$this->adminDashboard->panicButton) {
+            $slackService = new SlackService();
+
             $robosats = new Robosats();
+            $slackService->sendMessage('Auto Accepting Offer: ' . $this->offer->robosatsId);
             $robosats->acceptOffer($this->offer->robosatsId);
         } else {
             // throw an exception

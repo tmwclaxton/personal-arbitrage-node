@@ -574,8 +574,14 @@ class Robosats
             (new SlackService)->sendMessage('Error: Offer has no allowed payment methods');
             return 'Offer has no allowed payment methods';
         }
+
         // // check if offer has the allowed currency
         $allowedCurrencies = json_decode($adminDashboard->payment_currencies, true);
+        // check if there are any payment currencies in admin dashboard
+        if (empty($allowedCurrencies)) {
+            (new SlackService)->sendMessage('Error: No allowed currencies in admin dashboard');
+            return 'No allowed currencies in admin dashboard';
+        }
         if (!in_array($offer->currency, $allowedCurrencies)) {
             (new SlackService)->sendMessage('Error: Offer has no allowed currency');
             return 'Offer has no allowed currency';
@@ -608,6 +614,7 @@ class Robosats
 
         // last chance to back out
         if ($adminDashboard->panicButton) {
+            (new SlackService)->sendMessage('Panic button is on so cannot accept offer');
             return 'Panic button is on';
         }
 
