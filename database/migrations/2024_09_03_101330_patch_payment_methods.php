@@ -19,7 +19,7 @@ return new class extends Migration
             ],
             [
                 'name' => 'Wise',
-                'logo_url' => 'https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/7872d023-61c9-4b09-a280-f0e8e89e441f',
+                'logo_url' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ1ezrZuci7EfRA8sPUrW_ZGpbSmi-UKg2fn-P4Q_nktbAenhdDXotdYcjhTiJIjEbi9pY&usqp=CAU',
             ],
             [
                 'name' => 'Strike',
