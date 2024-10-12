@@ -72,6 +72,7 @@ const submit = () => {
                         v-model="form.password"
                         required
                         autocomplete="current-password"
+						:confidential="true"
                     />
 
                     <InputError class="mt-2" :message="form.errors.password"/>

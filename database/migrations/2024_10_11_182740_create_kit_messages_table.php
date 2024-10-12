@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('kit_messages', function (Blueprint $table) {
             $table->id();
+            $table->string('channel_id')->nullable();
             $table->string('type');
             $table->text('message');
             $table->timestamps();

@@ -132,6 +132,7 @@ class SlackService
         }
 
         $kitMessage = new KitMessage();
+        $kitMessage->channel_id = $channelId;
         $kitMessage->message = $message;
         $kitMessage->type = $messageType;
         $kitMessage->save();

@@ -147,15 +147,15 @@ const refreshKey = ref(0);
                   
                     <div class="flex flex-row justify-between items-center"><span
                         class="font-bold mr-1">Umbrel Server IP: <span class="text-red-500"></span></span>
-                        <TextInput v-model="tempAdminDashboard.umbrel_ip"/>
+                        <TextInput :confidential="true" v-model="tempAdminDashboard.umbrel_ip"/>
                     </div>
                     <div class="flex flex-row justify-between items-center"><span
                         class="font-bold mr-1">Umbrel Server Password: <span class="text-red-500"></span></span>
-                        <TextInput v-model="tempAdminDashboard.umbrel_password"/>
+                        <TextInput :confidential="true" v-model="tempAdminDashboard.umbrel_password"/>
                     </div>
                     <div class="flex flex-row justify-between items-center"><span
                         class="font-bold mr-1">Umbrel OTP Secret: <span class="text-red-500">(Only if 2FA is set)</span></span>
-                        <TextInput v-model="tempAdminDashboard.umbrel_totp_key"/>
+                        <TextInput :confidential="true" v-model="tempAdminDashboard.umbrel_totp_key"/>
                     </div>
 
                     <div class="border-b border-gray-300 dark:border-zinc-700 "/>
@@ -176,11 +176,11 @@ const refreshKey = ref(0);
                     </div>
 					<div class="flex flex-row justify-between items-center"><span
 						class="font-bold mr-1">Kraken API Key: <span class="text-red-500"></span></span>
-						<TextInput v-model="tempAdminDashboard.kraken_api_key"/>
+						<TextInput :confidential="true" v-model="tempAdminDashboard.kraken_api_key"/>
 					</div>
                     <div class="flex flex-row justify-between items-center"><span
                         class="font-bold mr-1">Kraken Private Key: <span class="text-red-500"></span></span>
-                        <TextInput v-model="tempAdminDashboard.kraken_private_key"/>
+                        <TextInput :confidential="true" v-model="tempAdminDashboard.kraken_private_key"/>
                     </div>
 					<div class="flex flex-row justify-between items-center" :key="refreshKey">
 					  <span class="font-bold mr-1">Kraken Action:
@@ -200,27 +200,27 @@ const refreshKey = ref(0);
 					
 					<div class="flex flex-row justify-between items-center"><span
 						class="font-bold mr-1">Slack App ID: <span class="text-red-500"></span></span>
-						<TextInput v-model="tempAdminDashboard.slack_app_id"/>
+						<TextInput :confidential="true" v-model="tempAdminDashboard.slack_app_id"/>
 					</div>
 					<div class="flex flex-row justify-between items-center"><span
 						class="font-bold mr-1">Slack Client ID: <span class="text-red-500"></span></span>
-						<TextInput v-model="tempAdminDashboard.slack_client_id"/>
+						<TextInput :confidential="true" v-model="tempAdminDashboard.slack_client_id"/>
 					</div>
 					<div class="flex flex-row justify-between items-center"><span
 						class="font-bold mr-1">Slack Client Secret: <span class="text-red-500"></span></span>
-						<TextInput v-model="tempAdminDashboard.slack_client_secret"/>
+						<TextInput :confidential="true" v-model="tempAdminDashboard.slack_client_secret"/>
 					</div>
 					<div class="flex flex-row justify-between items-center"><span
 						class="font-bold mr-1">Slack Signing Secret: <span class="text-red-500"></span></span>
-						<TextInput v-model="tempAdminDashboard.slack_signing_secret"/>
+						<TextInput :confidential="true" v-model="tempAdminDashboard.slack_signing_secret"/>
 					</div>
 					<div class="flex flex-row justify-between items-center"><span
 					  class="font-bold mr-1">Slack Bot Token: <span class="text-red-500"></span></span>
-						<TextInput v-model="tempAdminDashboard.slack_bot_token"/>
+						<TextInput :confidential="true" v-model="tempAdminDashboard.slack_bot_token"/>
 					</div>
 					<div class="flex flex-row justify-between items-center"><span
 					  class="font-bold mr-1">Slack Main Channel ID: <span class="text-red-500"></span></span>
-						<TextInput v-model="tempAdminDashboard.slack_main_channel_id"/>
+						<TextInput :confidential="true" v-model="tempAdminDashboard.slack_main_channel_id"/>
 					</div>
 					
 					<div class="border-b border-gray-300 dark:border-zinc-700 mb-4"/>
