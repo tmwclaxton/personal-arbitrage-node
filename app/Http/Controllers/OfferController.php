@@ -515,7 +515,7 @@ class OfferController extends Controller
         $actualSatoshis = $this->convertToSatoshis($amount, $btcPrice);
         $calculation = $actualSatoshis - $satoshis;
 
-        if ($existingOffer && $existingOffer->type == "buy") {
+        if ($existingOffer && $existingOffer->type == "buy" && $existingOffer->my_offer) {
             $calculation = $calculation * -1;
         }
 
