@@ -148,6 +148,12 @@ class AutoJobs extends Command
                 $slackService->sendMessage("Offer " . $offer->robosatsId . " is in dispute", $offer->slack_channel_id);
             }
 
+            // if status 15 and it is a buy offer then it means Lightning Routing Failed and we need to update the invoice
+            if ($offer->status == 15 && $offer->type === 'buy' && now()->minute % 2 == 0) {
+                $slackService->sendMessage("Lightning routing failed for offer " . $offer->robosatsId . ". Updating invoice.", $offer->slack_channel_id);
+                GenerateInvoice::dispatch($offer, $adminDashboard);
+            }
+
             $offer->save();
         }
     }
