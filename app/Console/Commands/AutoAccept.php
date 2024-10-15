@@ -53,16 +53,24 @@ class AutoAccept extends Command
         // $offers = (new \App\Http\Controllers\OfferController)->getOffersInternal($adminDashboard);
 
         $sellPremium = $adminDashboard->sell_premium;
+        $buyPremium = $adminDashboard->buy_premium;
 
         // where status != 14, 12, 17, 18, 99, 4, 5, 2
-        $offers = Offer::where([['accepted', '=', false],['premium', '>=', $sellPremium], ['type', 'sell'], ['my_offer', '=', false], ['expires_at', '>', now()]])
+        $sellOffers = Offer::where([['accepted', '=', false],['premium', '>=', $sellPremium], ['type', 'sell'], ['my_offer', '=', false], ['expires_at', '>', now()]])
             ->orderBy('accepted', 'desc')
             ->orderBy('max_satoshi_amount_profit', 'desc')
             ->orderBy('satoshi_amount_profit', 'desc')
             ->orderBy('premium', 'desc')
             ->get();
 
+        $buyOffers = Offer::where([['accepted', '=', false],['premium', '<=', $buyPremium], ['type', 'buy'], ['my_offer', '=', false], ['expires_at', '>', now()]])
+            ->orderBy('accepted', 'desc')
+            ->orderBy('max_satoshi_amount_profit', 'desc')
+            ->orderBy('satoshi_amount_profit', 'desc')
+            ->orderBy('premium', 'desc')
+            ->get();
 
+        $offers = $sellOffers->merge($buyOffers);
 
         $paymentMethods = json_decode($adminDashboard->payment_methods);
         // remove Cash F2F from payment methods
@@ -119,20 +127,20 @@ class AutoAccept extends Command
             }
         }
 
-        // grab ongoing transactions
-        $transactions = Transaction::where('status', '<', 14)->get();
-        // grab offer ids from ongoing transactions
-        $offerIds = $transactions->pluck('offer_id')->toArray();
-        // we don't want to accept any offers that are for the same amount & currency as an ongoing transaction
-        $onGoingOffers = Offer::whereIn('id', $offerIds)->get();
-        foreach ($onGoingOffers as $onGoingOffer) {
-            $onGoingOfferAmount = $onGoingOffer->accepted_offer_amount;
-            $onGoingOfferCurrency = $onGoingOffer->currency;
-            // remove the any offers that are for the same amount & currency as an ongoing transaction
-            $offers = $offers->filter(function ($value, $key) use ($onGoingOfferAmount, $onGoingOfferCurrency) {
-                return $value->estimated_offer_amount != $onGoingOfferAmount || $value->currency != $onGoingOfferCurrency;
-            });
-        }
+        // // grab ongoing transactions
+        // $transactions = Transaction::where('status', '<', 14)->get();
+        // // grab offer ids from ongoing transactions
+        // $offerIds = $transactions->pluck('offer_id')->toArray();
+        // // we don't want to accept any offers that are for the same amount & currency as an ongoing transaction
+        // $onGoingOffers = Offer::whereIn('id', $offerIds)->get();
+        // foreach ($onGoingOffers as $onGoingOffer) {
+        //     $onGoingOfferAmount = $onGoingOffer->accepted_offer_amount;
+        //     $onGoingOfferCurrency = $onGoingOffer->currency;
+        //     // remove the any offers that are for the same amount & currency as an ongoing transaction
+        //     $offers = $offers->filter(function ($value, $key) use ($onGoingOfferAmount, $onGoingOfferCurrency) {
+        //         return $value->estimated_offer_amount != $onGoingOfferAmount || $value->currency != $onGoingOfferCurrency;
+        //     });
+        // }
 
 
 
