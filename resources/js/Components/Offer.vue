@@ -40,11 +40,11 @@ const collapse = ref(true);
 		<div class="p-2">
 			    <div class="grid grid-cols-3  gap-1 p-1">
 			
-			        <danger-button v-on:click="offerStore.autoRun(offer.id)"
+			        <danger-button v-on:click="offerStore.autoRun(offer)"
 								   v-if="!offer.accepted && !offer.my_offer"
 			                       :disabled="offer.job_locked || offer.accepted || (offer.robots && offer.robots.length > 0)"
 			                       class="w-full text-center  h-10 break-words disabled:opacity-50">
-			            <p class="text-center w-full">Auto Run</p>
+			            <p class="text-center w-full">Robots & Accept</p>
 			        </danger-button>
 			
 			        <primary-button v-on:click="offerStore.uniqueRobot(offer.id)"
@@ -53,8 +53,8 @@ const collapse = ref(true);
 			            <p class="text-center w-full">Create Robots</p>
 			        </primary-button>
 			
-			        <primary-button v-on:click="offerStore.acceptOffer(offer.id)"
-			                        v-if="(!offer.accepted && !offer.my_offer) || (offer.status === 1 && !offer.my_offer)"
+			        <primary-button v-on:click="offerStore.acceptOffer(offer)"
+			                        v-if="((!offer.accepted && !offer.my_offer) || (offer.status === 1 && !offer.my_offer)) && (offer.robots && offer.robots.length > 0)"
 			                        class="w-full text-center  h-10 break-words ">
 			            <p class="text-center w-full">Accept</p>
 			        </primary-button>

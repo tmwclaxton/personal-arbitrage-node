@@ -61,10 +61,11 @@ class OfferController extends Controller
 
         $paymentMethods = json_decode($adminDashboard->payment_methods);
 
+        $currencies = json_decode($adminDashboard->payment_currencies);
 
         // change the expires_at to a human readable format
         foreach ($offers as $offer) {
-            $this->prepareOffer($offers, $offer, $paymentMethods);
+            $this->prepareOffer($offers, $offer, $paymentMethods, $currencies);
         }
 
         // convert the offers to an array
@@ -121,7 +122,7 @@ class OfferController extends Controller
         $offer = Offer::find($offerId);
         $offers = new Collection();
         $offers->push($offer);
-        $offer = $this->prepareOffer($offers, $offer, null);
+        $offer = $this->prepareOffer($offers, $offer, null, null);
         $chatMessages = RobosatsChatMessage::where('offer_id', $offerId)->get();
 
         return Inertia::render('OfferPage', [
@@ -276,32 +277,36 @@ class OfferController extends Controller
         return $offer;
     }
 
-    public function calculateLargestAmount($offer, $channelBalances) {
+    public function calculateLargestAmount($offer, $channelBalances, $specificAmount = null) {
         // grab the offer price amount or max amount
-        if ($offer->has_range) {
-            if (!isset($offer->min_satoshi_amount) || !isset($offer->max_satoshi_amount)) {
-                // this error can happen when we are creating an offer but it hasn't been updated just yet
-                //(new SlackService)->sendMessage('Error: Offer has range but no min or max amount');
-                return 'Offer has range but no min or max amount';
+        if (!$specificAmount) {
+            if ($offer->has_range) {
+                if (!isset($offer->min_satoshi_amount) || !isset($offer->max_satoshi_amount)) {
+                    // this error can happen when we are creating an offer but it hasn't been updated just yet
+                    //(new SlackService)->sendMessage('Error: Offer has range but no min or max amount');
+                    return 'Offer has range but no min or max amount';
+                }
+                $variationAmounts = [
+                    $offer->min_satoshi_amount,
+                    $offer->min_satoshi_amount + ($offer->max_satoshi_amount - $offer->min_satoshi_amount) / 8,
+                    $offer->min_satoshi_amount + ($offer->max_satoshi_amount - $offer->min_satoshi_amount) / 4,
+                    $offer->min_satoshi_amount + ($offer->max_satoshi_amount - $offer->min_satoshi_amount) * 3 / 8,
+                    $offer->min_satoshi_amount + ($offer->max_satoshi_amount - $offer->min_satoshi_amount) / 2,
+                    $offer->min_satoshi_amount + ($offer->max_satoshi_amount - $offer->min_satoshi_amount) * 5 / 8,
+                    $offer->min_satoshi_amount +  ($offer->max_satoshi_amount - $offer->min_satoshi_amount) * 3 / 4,
+                    $offer->min_satoshi_amount + ($offer->max_satoshi_amount - $offer->min_satoshi_amount) * 7 / 8,
+                    $offer->max_satoshi_amount
+                ];
+            } else {
+                if (!isset($offer->satoshis_now)) {
+                    // this error can happen when we are creating an offer but it hasn't been updated just yet
+                    // (new SlackService)->sendMessage('Error: Offer has no amount');
+                    return 'Offer has no amount';
+                }
+                $variationAmounts = [$offer->satoshis_now];
             }
-            $variationAmounts = [
-                $offer->min_satoshi_amount,
-                $offer->min_satoshi_amount + ($offer->max_satoshi_amount - $offer->min_satoshi_amount) / 8,
-                $offer->min_satoshi_amount + ($offer->max_satoshi_amount - $offer->min_satoshi_amount) / 4,
-                $offer->min_satoshi_amount + ($offer->max_satoshi_amount - $offer->min_satoshi_amount) * 3 / 8,
-                $offer->min_satoshi_amount + ($offer->max_satoshi_amount - $offer->min_satoshi_amount) / 2,
-                $offer->min_satoshi_amount + ($offer->max_satoshi_amount - $offer->min_satoshi_amount) * 5 / 8,
-                $offer->min_satoshi_amount +  ($offer->max_satoshi_amount - $offer->min_satoshi_amount) * 3 / 4,
-                $offer->min_satoshi_amount + ($offer->max_satoshi_amount - $offer->min_satoshi_amount) * 7 / 8,
-                $offer->max_satoshi_amount
-            ];
         } else {
-            if (!isset($offer->satoshis_now)) {
-                // this error can happen when we are creating an offer but it hasn't been updated just yet
-//                (new SlackService)->sendMessage('Error: Offer has no amount');
-                return 'Offer has no amount';
-            }
-            $variationAmounts = [$offer->satoshis_now];
+            $variationAmounts = [$specificAmount];
         }
 
         // THIS FILTERS OUT ANY VARIATION AMOUNTS THAT ARE GREATER THAN THE MAX SATOSHI AMOUNT
@@ -359,10 +364,17 @@ class OfferController extends Controller
         // check estimated profit
         if ($offer->has_range) {
             $currentRealPrice = $btcFiat->price;
-            $estimated_profit_sats = -$estimated_offer_amount_sat * (($currentRealPrice - $offer->price) / $currentRealPrice);
+            // $estimated_profit_sats = $estimated_offer_amount_sat * (($offer->price - $currentRealPrice) / $currentRealPrice);
+            $estimated_profit_sats = $this->calculateProfit($estimated_offer_amount, $offer->price, $currentRealPrice, $offer);
+
         } else {
             $estimated_profit_sats = $offer->satoshi_amount_profit;
         }
+
+
+
+        // if
+
 
         return [
             'estimated_offer_amount_sats' =>  $estimated_offer_amount_sat,
@@ -402,10 +414,19 @@ class OfferController extends Controller
     }
 
     public function acceptOffer(Request $request) {
+        // grab amount
+        //validate the request
+        $request->validate([
+            'offer_id' => 'required',
+            'amount' => 'nullable|numeric',
+        ]);
+        $amount = request('amount');
+
         $robosats = new Robosats();
         $offerId = request('offer_id');
         $offer = Offer::find($offerId);
-        $response = $robosats->acceptOffer($offer->robosatsId);
+
+        $response = $robosats->acceptOffer($offer->robosatsId, $amount);
         return $response;
     }
 
@@ -467,14 +488,22 @@ class OfferController extends Controller
     }
 
     public function autoAccept(Request $request) {
-        $adminDashboard = AdminDashboard::all()->first();
+        // validate the request
+        $request->validate([
+            'offer_id' => 'required',
+            'amount' => 'nullable|numeric',
+        ]);
+
+        $amount = request('amount');
         $offerId = request('offer_id');
+        $adminDashboard = AdminDashboard::all()->first();
         $offer = Offer::where('id', $offerId)->first();
+
 
 
         Bus::chain([
             new \App\Jobs\CreateRobots($offer, $adminDashboard),
-            new \App\Jobs\AcceptSellOffer($offer, $adminDashboard)
+            new \App\Jobs\AcceptSellOffer($offer, $adminDashboard, $amount),
         ])->dispatch();
     }
 
@@ -525,7 +554,8 @@ class OfferController extends Controller
 
     private function prepareOffer(mixed &$offers,
                                   mixed $offer,
-                                  mixed $paymentMethods)
+                                  mixed $paymentMethods,
+                                    mixed $currencies): mixed
     {
         $offer->expires_at = Carbon::parse($offer->expires_at)->diffForHumans();
         $offer->updated_at_readable = Carbon::parse($offer->updated_at)->diffForHumans();
@@ -561,6 +591,22 @@ class OfferController extends Controller
         }
         foreach ($offer->payment_methods as $paymentMethod) {
             if (in_array($paymentMethod, $paymentMethods) || $offer->my_offer) {
+                $found = true;
+            }
+        }
+        if (!$found) {
+            $offers = $offers->filter(function ($value, $key) use ($offer) {
+                return $value->id != $offer->id;
+            });
+        }
+
+        // check if currency is in the admin dashboard currencies, if not remove the offer
+        $found = false;
+        if ($currencies == null) {
+            $currencies = [];
+        }
+        foreach ($currencies as $currency) {
+            if ($currency == $offer->currency) {
                 $found = true;
             }
         }

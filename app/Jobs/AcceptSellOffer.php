@@ -21,13 +21,17 @@ class AcceptSellOffer implements ShouldQueue
 
     protected AdminDashboard $adminDashboard;
 
+    protected mixed $amount;
+
     /**
      * Create a new job instance.
      */
-    public function __construct(Offer $offer, AdminDashboard $adminDashboard)
+    public function __construct(Offer $offer, AdminDashboard $adminDashboard, $amount = null)
     {
         $this->offer = $offer;
         $this->adminDashboard = $adminDashboard;
+        $this->amount = $amount;
+
     }
 
     /**
@@ -41,7 +45,7 @@ class AcceptSellOffer implements ShouldQueue
 
             $robosats = new Robosats();
             $slackService->sendMessage('Auto Accepting Offer: ' . $this->offer->robosatsId);
-            $robosats->acceptOffer($this->offer->robosatsId);
+            $robosats->acceptOffer($this->offer->robosatsId, $this->amount);
         } else {
             // throw an exception
             throw new \Exception('Panic button is enabled - AcceptSellOffer.php');

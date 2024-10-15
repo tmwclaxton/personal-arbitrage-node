@@ -517,15 +517,25 @@ class Robosats
     //
     // 1. POST http://192.168.0.18:12596/mainnet/temple/api/order/?order_id=6984
 
-    public function acceptOffer($robosatsId) {
+    public function acceptOffer($robosatsId, $amount = null) {
         $offer = Offer::where('robosatsId', $robosatsId)->first();
 
         // grab admin dashboard
         $adminDashboard = AdminDashboard::all()->first();
         $channelBalances = json_decode($adminDashboard->channelBalances, true);
 
+        // if amount is set use the currnency of the offer to convert to sats
+        $specificAmountSats = null;
+        if ($amount) {
+            $helpers = new HelperFunctions();
+            $specificAmountSats = $helpers->convertCurrency($amount, $offer->currency, 'BTC');
+            $specificAmountSats = $helpers->btcToSatoshi($specificAmountSats);
+            // round satoshi to 0 decimal places
+            $specificAmountSats = round($specificAmountSats, 0);
+        }
+
         // grab the largest amount we can accept whether it is range or not
-        $calculations = (new OfferController())->calculateLargestAmount($offer, $channelBalances);
+        $calculations = (new OfferController())->calculateLargestAmount($offer, $channelBalances, $specificAmountSats);
         if (is_array($calculations) && $calculations['estimated_offer_amount'] > 0) {
             $offer->accepted_offer_amount_sat = $calculations['estimated_offer_amount_sats'];
             $offer->accepted_offer_amount = $calculations['estimated_offer_amount'];
@@ -538,6 +548,9 @@ class Robosats
             $slackService->sendMessage('Error: Failed to accept offer: ' . $robosatsId . ' because the calculations failed');
             return 'Failed to accept offer: ' . $robosatsId . ' because the calculations failed';
         }
+
+
+
         $offer->accepted = true;
 
 
@@ -838,7 +851,11 @@ class Robosats
         if (isset($response['status']) && $response['status'] > 3) {
             $offer->accepted_offer_amount = $response['amount'];
             $offer->accepted_offer_amount_sat = $response['satoshis_now'];
-            $offer->accepted_offer_profit_sat = round($response['satoshis_now'] * ($response['premium'] / 100), 0);
+            $premium = $response['premium'];
+            if (!$offer->my_offer && $offer->type == "buy") {
+                $premium = -1 * $premium;
+            }
+            $offer->accepted_offer_profit_sat = round($response['satoshis_now'] * ($premium / 100), 0);
         }
         if (isset($response['status_message'])) {
             $offer->status_message = $response['status_message'];
@@ -887,7 +904,6 @@ class Robosats
             $offer->chat_last_index = $response['chat_last_index'];
         }
         $offer->save();
-        $offer->fixProfitSigns();
 
         if (isset($response['escrow_invoice'])) {
             $transaction->escrow_invoice = $response['escrow_invoice'];

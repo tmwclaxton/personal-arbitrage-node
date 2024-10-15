@@ -5,6 +5,7 @@
  import {useConfirmModalStore} from "@/Stores/ConfirmModelStore";
  import SecondaryButton from "@/Components/SecondaryButton.vue";
  import PrimaryButton from "@/Components/PrimaryButton.vue";
+ import TextInput from "@/Components/TextInput.vue";
  const confirmModalStore = useConfirmModalStore();
  const name = 'ConfirmModal';
 
@@ -15,7 +16,8 @@
 <template>
 
     <div v-show="confirmModalStore.show" class="z-50 absolute left-1/2 right-1/2 flex-grow h-max flex flex-row justify-center">
-        <div class="fixed my-auto inset-y-0 h-max bg-zinc-100 dark:bg-vidgaze-blue-dropdown rounded-xl select-none w-96">
+        <div class="fixed my-auto inset-y-0 h-max bg-zinc-100 dark:bg-zinc-800
+        rounded-xl select-none w-96">
             <!--Close modal-->
             <button @click="confirmModalStore.show = false" type="button" class="absolute top-3 right-2.5  p-1.5 ml-auto inline-flex items-center
             text-sm text-zinc-400 hover:text-zinc-900 dark:hover:text-white
@@ -27,7 +29,23 @@
                 <!--<font-awesome-icon :icon="['fass', 'circle-exclamation']"  class="mx-auto mb-4 text-zinc-400 w-14 h-14 dark:text-zinc-200" />-->
                 <h3 class="  text-lg font-normal text-zinc-500 dark:text-zinc-400" v-text="confirmModalStore.title"/>
             </div>
-            <div class="flex flex-row justify-center gap-2 px-5 pb-5">
+			
+			<!-- Amount -->
+			<div v-if="confirmModalStore.slider === true" class="flex flex-col gap-y-1 mx-5 mb-2">
+				<input
+				  v-model="confirmModalStore.amount"
+				  type="range"
+				  :min="confirmModalStore.sliderMin"
+				  :max="confirmModalStore.sliderMax"
+				  class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
+				<div class="flex flex-row justify-between px-5">
+					<p class="text-sm text-zinc-500 dark:text-zinc-400 w-full my-auto"  v-text="confirmModalStore.sliderMin"/>
+					<text-input v-if="confirmModalStore.amount" v-model="confirmModalStore.amount" class=" w-40 flex-shrink h-8 text-center mx-auto " />
+					<p class="text-sm text-zinc-500 dark:text-zinc-400 w-full text-right my-auto" v-text="confirmModalStore.sliderMax"/>
+				</div>
+			</div>
+			
+			<div class="flex flex-row justify-center gap-2 px-5 pb-5">
                 <SecondaryButton class="w-full" @click="confirmModalStore.clickButtonOne">
                     <p class="mx-auto font-bold" v-text="confirmModalStore.buttonOneText"/>
                 </SecondaryButton>

@@ -10,16 +10,32 @@ export const useOfferActionStore = defineStore('OfferActionStore', {
         }
     },
     actions: {
-        async autoRun(id) {
+        async autoRun(offer) {
             useConfirmModalStore().buttonOneText = 'Cancel';
             useConfirmModalStore().buttonTwoText = 'Auto Run';
             useConfirmModalStore().title = 'Confirm Auto Run';
+            // remove , from string
+            const tempMin = offer.min_amount.replace(/,/g, '');
+            const tempMax = offer.max_amount.replace(/,/g, '');
+            const min = parseInt(tempMin);
+            const max = parseInt(tempMax);
+            if (min === 0 || max === 0) {
+                useConfirmModalStore().slider = false;
+            } else {
+                useConfirmModalStore().slider = true;
+                useConfirmModalStore().sliderMin = min;
+                useConfirmModalStore().sliderMax = max;
+                // convert string to number
+                useConfirmModalStore().amount = Math.round(min + (max - min) / 2);
+
+            }
             useConfirmModalStore().show = true;
-            useConfirmModalStore().continue = async () => {
+            useConfirmModalStore().continue = async (amount) => {
                 console.log('auto run');
                 try {
                     const response = await axios.post(route('auto-accept'), {
-                        offer_id: id
+                        offer_id: offer.id,
+                        amount: amount
                     });
                     toastStore.add({
                         message: 'Auto Run Started',
@@ -55,16 +71,30 @@ export const useOfferActionStore = defineStore('OfferActionStore', {
                 console.log(error);
             }
         },
-        async acceptOffer(id) {
+        async acceptOffer(offer) {
             useConfirmModalStore().buttonOneText = 'Cancel';
             useConfirmModalStore().buttonTwoText = 'Accept Offer';
             useConfirmModalStore().title = 'Are you sure you want to accept the offer?';
+            // remove , from string
+            const tempMin = offer.min_amount.replace(/,/g, '');
+            const tempMax = offer.max_amount.replace(/,/g, '');
+            const min = parseInt(tempMin);
+            const max = parseInt(tempMax);
+            if (min === 0 || max === 0) {
+                useConfirmModalStore().slider = false;
+            } else {
+                useConfirmModalStore().slider = true;
+                useConfirmModalStore().sliderMin = min;
+                useConfirmModalStore().sliderMax = max;
+                useConfirmModalStore().amount = Math.round(min + (max - min) / 2);
+            }
             useConfirmModalStore().show = true;
-            useConfirmModalStore().continue = async () => {
+            useConfirmModalStore().continue = async (amount) => {
                 console.log('accepting offer');
                 try {
                     const response = await axios.post(route('accept-offer'), {
-                        offer_id: id
+                        offer_id: offer.id,
+                        amount: amount,
                     });
                     toastStore.add({
                         message: 'Offer Accepted',
