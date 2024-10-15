@@ -107,7 +107,7 @@ class AutoJobs extends Command
             }
 
             // if status is 3 then dispatch a bond job
-            if ( ((!$offer->my_offer && $offer->status == 3) || ($offer->my_offer && $offer->status == 0)) && $adminDashboard->autoBond) {
+            if ( ((!$offer->my_offer && $offer->status == 3) || ($offer->my_offer && $offer->status == 0)) && $adminDashboard->autoBond && now()->minute % 2 == 0) {
                 PayBond::dispatch($offer, $adminDashboard);
             }
 
@@ -128,11 +128,11 @@ class AutoJobs extends Command
             }
 
             // these jobs are best effort, they can't be guaranteed to run again if they fail, so there are backup jobs in console.php
-            if ($offer->type === "sell" && ($offer->status == 6 || $offer->status == 7) && $adminDashboard->autoEscrow) {
+            if ($offer->type === "sell" && ($offer->status == 6 || $offer->status == 7) && $adminDashboard->autoEscrow && now()->minute % 2 == 0) {
                 PayEscrow::dispatch($offer, $adminDashboard);
             }
 
-            if ($offer->type === "buy" && ($offer->status == 6 || $offer->status == 8) && $adminDashboard->autoInvoice) {
+            if ($offer->type === "buy" && ($offer->status == 6 || $offer->status == 8 || $offer->status == 15) && $adminDashboard->autoInvoice && now()->minute % 2 == 0) {
                 GenerateInvoice::dispatch($offer, $adminDashboard);
             }
 
@@ -146,12 +146,6 @@ class AutoJobs extends Command
             if ($offer->status == 11  && $offer->job_last_status != 11 || $offer->status == 16 && $offer->job_last_status != 16) {
                 // send discord message or check programmatically
                 $slackService->sendMessage("Offer " . $offer->robosatsId . " is in dispute", $offer->slack_channel_id);
-            }
-
-            // if status 15 and it is a buy offer then it means Lightning Routing Failed and we need to update the invoice
-            if ($offer->status == 15 && $offer->type === 'buy' && now()->minute % 2 == 0) {
-                $slackService->sendMessage("Lightning routing failed for offer " . $offer->robosatsId . ". Updating invoice.", $offer->slack_channel_id);
-                GenerateInvoice::dispatch($offer, $adminDashboard);
             }
 
             $offer->save();
