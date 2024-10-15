@@ -136,7 +136,8 @@ class AutoJobs extends Command
                 GenerateInvoice::dispatch($offer, $adminDashboard);
             }
 
-            if ($offer->status == 9 && $adminDashboard->autoMessage) {
+            // only run payment handle every other minute
+            if ($offer->status == 9 && $adminDashboard->autoMessage && now()->minute % 2 == 0) {
                 SendPaymentHandle::dispatch($offer, $adminDashboard);
             }
             if ($offer->status == 10) {
