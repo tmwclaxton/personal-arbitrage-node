@@ -140,10 +140,10 @@ class AutoJobs extends Command
             if ($offer->status == 9 && $adminDashboard->autoMessage && now()->minute % 2 == 0) {
                 SendPaymentHandle::dispatch($offer, $adminDashboard);
             }
-            if ($offer->status == 10) {
+            if ($offer->status == 10 && $offer->job_last_status != 10) {
                 $slackService->sendMessage("Counterparty claims to have sent fiat. Please confirm.", $offer->slack_channel_id);
             }
-            if ($offer->status == 11 || $offer->status == 16) {
+            if ($offer->status == 11  && $offer->job_last_status != 11 || $offer->status == 16 && $offer->job_last_status != 16) {
                 // send discord message or check programmatically
                 $slackService->sendMessage("Offer " . $offer->robosatsId . " is in dispute", $offer->slack_channel_id);
             }
