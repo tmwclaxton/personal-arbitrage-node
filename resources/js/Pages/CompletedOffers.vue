@@ -30,7 +30,7 @@ const props = defineProps({
 				<div v-else
 				  class=" overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="flex flex-col items-center">
-                        <Table class="" endpoint="/offers" :rows="offers.data" />
+                        <Table class="" endpoint="/offer" :rows="offers.data" />
                     </div>
                     <div class="flex flex-col items-center mt-6">
                         <Pagination :links="offers.links"/>

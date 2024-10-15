@@ -10,12 +10,12 @@
             <tr v-for="row in rows" :key="row.id">
                 <td v-for="(value, key) in row" :key="key" class="border px-4 py-2 border-zinc-700" >
                     <!-- if the key is "id", render a link to the endpoint -->
-                    <!--<template v-if="['id', 'paper id'].includes(key.toLowerCase())">-->
-                    <!--    <BlueLink class="font-mono" v-if="value" :href="`${endpoint}/${value}`">{{ value }}</BlueLink>-->
-                    <!--</template>-->
+                    <template v-if="['id', 'paper id'].includes(key.toLowerCase())">
+                        <BlueLink class="font-mono" v-if="value" :href="`${endpoint}/${value}`">{{ value }}</BlueLink>
+                    </template>
 
                     <!-- if the key is "value" or "status", render a colored dot -->
-                    <template v-if="value != null && ['value', 'ft value', 't&a value', 'h t&a', 'h ft'].includes(key.toLowerCase()) ">
+                    <template v-else-if="value != null && ['value', 'ft value', 't&a value', 'h t&a', 'h ft'].includes(key.toLowerCase()) ">
 <!--                        check if not array-->
                         <div v-if="!Array.isArray(value)">
                             <div v-if="['no', 'never ran'].includes(value.toLowerCase())" class="flex items-center justify-between space-x-2">
@@ -58,8 +58,11 @@
 </template>
 
 <script>
+import BlueLink from "@/Components/BlueLink.vue";
+
 export default {
     name: "Table",
+	components: {BlueLink},
     props: {
         rows: {
             type: Array,

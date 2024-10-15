@@ -491,6 +491,7 @@ class OfferController extends Controller
         $offers = Offer::where('status', '=' , 14)->orderByDesc('created_at');
         return Inertia::render('CompletedOffers', [
             'offers' => $offers->paginate(25)->setPath(route('offers.completed'))->through(fn($offer)=>[
+                "id" => $offer->id,
                 "Token Backup" => $offer->robotTokenBackup,
                 "Accepted Offer Amount" => round($offer->accepted_offer_amount, 2),
                 "Accepted Offer Amount Satoshis" => $offer->accepted_offer_amount_sat,
