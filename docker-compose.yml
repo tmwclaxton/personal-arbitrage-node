@@ -63,6 +63,15 @@ services:
                 - ping
             retries: 3
             timeout: 5s
+    umbrel:
+        image: dockurr/umbrel
+        container_name: umbrel
+        ports:
+            - 81:80
+        volumes:
+            - "sail-umbrel:/data"
+            - "/var/run/docker.sock:/var/run/docker.sock"
+        stop_grace_period: 1m
 #    selenium:
 #        image: selenium/standalone-firefox
 #        ports:
@@ -118,5 +127,7 @@ volumes:
     sail-mysql:
         driver: local
     sail-redis:
+        driver: local
+    sail-umbrel:
         driver: local
 #    sslkeylog:
