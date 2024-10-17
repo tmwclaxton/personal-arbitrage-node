@@ -1207,7 +1207,7 @@ class Robosats
         } else {
             // set payment_invoice attribute in transaction
             $transaction = $offer->transaction()->first();
-            $transaction->payment_invoice = $response->json('payment_invoice');
+            $transaction->lightning_payout_invoice = $response->json('payment_invoice');
         }
 
         return json_decode($response->body(), true);
