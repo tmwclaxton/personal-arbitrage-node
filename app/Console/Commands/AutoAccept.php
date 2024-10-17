@@ -70,6 +70,11 @@ class AutoAccept extends Command
             ->orderBy('premium', 'desc')
             ->get();
 
+        // temporarily flip the premium for buy offers
+        foreach ($buyOffers as $buyOffer) {
+            $buyOffer->premium = $buyOffer->premium * -1;
+        }
+
         $offers = $sellOffers->merge($buyOffers);
 
         $paymentMethods = json_decode($adminDashboard->payment_methods);
@@ -183,6 +188,20 @@ class AutoAccept extends Command
 
         // grab the first $difference offers
         $offers = $offers->take($difference);
+
+        // dump 'id', 'score', 'estimated_profit_sats', 'premium', 'estimated_offer_amount', 'type', 'currency'));
+        // $dump = $offers->map(function ($offer) {
+        //     return [
+        //         'id' => $offer->id,
+        //         'score' => $offer->score,
+        //         'estimated_profit_sat' => $offer->estimated_profit_sat,
+        //         'premium' => $offer->premium,
+        //         'estimated_offer_amount' => $offer->estimated_offer_amount,
+        //         'type' => $offer->type,
+        //         'currency' => $offer->currency,
+        //     ];
+        // });
+        // dd($dump);
 
         // chain 2 jobs, one to create the robots and one to accept the offers
         foreach ($offers as $offer) {
