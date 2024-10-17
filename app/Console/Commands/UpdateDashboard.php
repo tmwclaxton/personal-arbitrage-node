@@ -37,11 +37,10 @@ class UpdateDashboard extends Command
             $adminDashboard->name = $helperFunctions->generateSlug(14);
             $adminDashboard->save();
         }
-        // check if connected to Orchestrator
-        // if ($adminDashboard->orchestrator) {
+        // check if keys for communication with orchestrator exist
+        // if not, reach out to orchestrator to get them
 
         // }
-        //
 
         if ((new HelperFunctions())->normalUmbrelCommandCheck()) {
             $job = new \App\Jobs\UpdateDashboard();
