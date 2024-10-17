@@ -32,7 +32,17 @@ class UpdateDashboard extends Command
         $adminDashboard = AdminDashboard::all()->first();
         if (!$adminDashboard) {
             $adminDashboard = new AdminDashboard();
+            // set name to random string
+            $helperFunctions = new HelperFunctions();
+            $adminDashboard->name = $helperFunctions->generateSlug(14);
+            $adminDashboard->save();
         }
+        // check if connected to Orchestrator
+        // if ($adminDashboard->orchestrator) {
+
+        // }
+        //
+
         if ((new HelperFunctions())->normalUmbrelCommandCheck()) {
             $job = new \App\Jobs\UpdateDashboard();
             $job->handle();

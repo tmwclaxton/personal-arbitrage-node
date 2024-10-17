@@ -63,17 +63,17 @@ services:
                 - ping
             retries: 3
             timeout: 5s
-    umbrel:
-        image: dockurr/umbrel
-        container_name: umbrel
-        networks:
-            - sail
-        ports:
-            - 81:80
-        volumes:
-            - "/home/umbrel:/data"
-            - "/var/run/docker.sock:/var/run/docker.sock"
-        stop_grace_period: 1m
+#    umbrel:
+#        image: dockurr/umbrel
+#        container_name: umbrel
+#        networks:
+#            - sail
+#        ports:
+#            - 81:80
+#        volumes:
+#            - "/home/umbrel:/data"
+#            - "/var/run/docker.sock:/var/run/docker.sock"
+#        stop_grace_period: 1m
 networks:
     sail:
         driver: bridge
