@@ -22,7 +22,7 @@ class GraphController extends Controller
         // Loop through each offer
         foreach ($offers as $offer) {
             // Get the offer's date and currency
-            $date = $offer->created_at->format('Y-m-d');
+            $date = $offer->created_at->format('d-m-Y');
             $currency = $offer->currency;
 
             // Add the date to the list of dates if not already added
@@ -82,14 +82,26 @@ class GraphController extends Controller
             $dailyFiatProfit[$date] = $helper->convertCurrency($helper->satoshiToBtc($profit), 'BTC', $primaryCurrency);
         }
 
-        $dailyPremium = [];
+        $dailyBuyPremium = [];
+        $dailySellPremium = [];
         foreach ($offers as $offer) {
-            $dailyPremium[$offer->created_at->format('Y-m-d')][] = $offer->accepted_offer_profit_sat / $offer->accepted_offer_amount_sat * 100;
+            // $dailyPremium[$offer->created_at->format('Y-m-d')][] = $offer->accepted_offer_profit_sat / $offer->accepted_offer_amount_sat * 100;
+            if ($offer->type === 'buy') {
+                $dailyBuyPremium[$offer->created_at->format('Y-m-d')][] = $offer->accepted_offer_profit_sat / $offer->accepted_offer_amount_sat * 100;
+            } else {
+                $dailySellPremium[$offer->created_at->format('Y-m-d')][] = $offer->accepted_offer_profit_sat / $offer->accepted_offer_amount_sat * 100;
+            }
         }
 
-        foreach ($dailyPremium as $date => $volumes) {
-            $dailyPremium[$date] = array_sum($volumes) / count($volumes);
+        foreach ($dailyBuyPremium as $date => $volumes) {
+            $dailyBuyPremium[$date] = array_sum($volumes) / count($volumes);
         }
+
+        foreach ($dailySellPremium as $date => $volumes) {
+            $dailySellPremium[$date] = array_sum($volumes) / count($volumes);
+        }
+
+
 
         // Calculate the ratio between make and take i.e. the flag of my_offer
         $dailyRatioBetweenMakeAndTake = [];
@@ -117,7 +129,12 @@ class GraphController extends Controller
         }
 
 
-
+        // dd([
+        //     'dailyBuyPremium' => $dailyBuyPremium,
+        //     'dailySellPremium' => $dailySellPremium,
+        //     array_values($dailyBuyPremium),
+        //     array_values($dailySellPremium),
+        // ]);
 
 
         return inertia('Graphs', [
@@ -126,7 +143,14 @@ class GraphController extends Controller
             'profits' => array_values($dailySatProfit),
             'profitsInFiat' => array_values($dailyFiatProfit),
             'primaryCurrency' => $primaryCurrency,
-            'averagePremiums' => array_values($dailyPremium),
+            'averageSellPremiums' => [
+                'dates' => array_keys($dailySellPremium),
+                'values' => array_values($dailySellPremium),
+            ],
+            'averageBuyPremiums' => [
+                'dates' => array_keys($dailyBuyPremium),
+                'values' => array_values($dailyBuyPremium),
+            ],
             'ratiosBetweenMakeAndTake' => array_values($dailyRatioBetweenMakeAndTake),
             'templateIds' => $templateSlugs,
             'templatePopularity' => array_values($templatePopularityForBarChart),
