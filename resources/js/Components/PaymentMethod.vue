@@ -103,22 +103,23 @@ const editPaymentMethod = () => {
             <label for="handle">Handle</label>
             <TextInput class="w-full text-left" v-model="tempPaymentMethod.handle"/>
 			<label for="preference">Priority (Not required)</label>
-			<input type="number" class="w-full text-left" v-model="tempPaymentMethod.preference"/>
-            <label for="specific_buy_premium">Specific Buy Premium (Not required)</label>
-            <TextInput class="w-full text-left" v-model="tempPaymentMethod.specific_buy_premium"/>
-            <label for="specific_sell_premium">Specific Sell Premium (Not required)</label>
-            <TextInput class="w-full text-left" v-model="tempPaymentMethod.specific_sell_premium"/>
+			<input type="number" class="w-full text-left border border-gray-300 dark:border-gray-700 dark:bg-gray-900 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+				   v-model="tempPaymentMethod.preference"/>
+            <!--<label for="specific_buy_premium">Specific Buy Premium (Not required)</label>-->
+            <!--<TextInput class="w-full text-left" v-model="tempPaymentMethod.specific_buy_premium"/>-->
+            <!--<label for="specific_sell_premium">Specific Sell Premium (Not required)</label>-->
+            <!--<TextInput class="w-full text-left" v-model="tempPaymentMethod.specific_sell_premium"/>-->
 			<label for="custom_message">Custom Buy Message (Not required; takes precedence over handle)</label>
-			<textarea class="w-full h-20 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" v-model="tempPaymentMethod.custom_buy_message"></textarea>
+			<textarea class="w-full h-20 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" v-model="tempPaymentMethod.custom_buy_message"></textarea>
 			<label for="custom_message">Custom Sell Message (Not required; takes precedence over handle)</label>
-			<textarea class="w-full h-20 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" v-model="tempPaymentMethod.custom_sell_message"></textarea>
+			<textarea class="w-full h-20 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" v-model="tempPaymentMethod.custom_sell_message"></textarea>
             <label for="logo_url">Logo URL</label>
             <TextInput class="w-full text-left" v-model="tempPaymentMethod.logo_url"/>
-            <label for="allowed_currencies">Currencies (Not required)</label>
-            <CurrenciesInput :payment_methods="tempPaymentMethod.allowed_currencies"
-                             @update:model-value="tempPaymentMethod.allowed_currencies = $event"
-                             :currencies="currencies"
-                             :key="'edit-currencies' + paymentMethod.id"/>
+            <!--<label for="allowed_currencies">Currencies (Not required)</label>-->
+            <!--<CurrenciesInput :payment_methods="tempPaymentMethod.allowed_currencies"-->
+            <!--                 @update:model-value="tempPaymentMethod.allowed_currencies = $event"-->
+            <!--                 :currencies="currencies"-->
+            <!--                 :key="'edit-currencies' + paymentMethod.id"/>-->
             <div class="col-span-2 flex ">
                 <primary-button class=" ml-auto w-max mt-2 text-center" @click="editPaymentMethod">
                     <span class="mx-auto">Save Changes</span>

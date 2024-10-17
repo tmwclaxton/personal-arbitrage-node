@@ -267,20 +267,21 @@ const refreshKey = ref(0);
                                 <label for="handle">Handle</label>
                                 <TextInput class="w-full text-left" v-model="paymentMethodNew.handle"/>
 								<label for="handle">Priority (Not required)</label>
-								<input type="number" class="w-full text-left" v-model="paymentMethodNew.preference"/>
+								<input type="number" class="w-full text-left dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+									   v-model="paymentMethodNew.preference"/>
 								<label for="logo_url">Logo URL</label>
                                 <TextInput class="w-full text-left" v-model="paymentMethodNew.logo_url"/>
-                                <label for="specific_buy_premium">Specific Buy Premium (Not required)</label>
-                                <TextInput class="w-full text-left" v-model="paymentMethodNew.specific_buy_premium"/>
-                                <label for="specific_sell_premium">Specific Sell Premium (Not required)</label>
-                                <TextInput class="w-full text-left" v-model="paymentMethodNew.specific_sell_premium"/>
+                                <!--<label for="specific_buy_premium">Specific Buy Premium (Not required)</label>-->
+                                <!--<TextInput class="w-full text-left" v-model="paymentMethodNew.specific_buy_premium"/>-->
+                                <!--<label for="specific_sell_premium">Specific Sell Premium (Not required)</label>-->
+                                <!--<TextInput class="w-full text-left" v-model="paymentMethodNew.specific_sell_premium"/>-->
                                 <label for="custom_message">Custom Buy Message (Not required; takes precedence over handle)</label>
-                                <textarea class="w-full h-20 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" v-model="paymentMethodNew.custom_buy_message"></textarea>
+                                <textarea class="w-full h-20 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" v-model="paymentMethodNew.custom_buy_message"></textarea>
 								<label for="custom_message">Custom Sell Message (Not required; takes precedence over handle)</label>
-								<textarea class="w-full h-20 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" v-model="paymentMethodNew.custom_sell_message"></textarea>
-                                <label for="allowed_currencies">Currencies (Not required)</label>
-                                <CurrenciesInput v-model="paymentMethodNew.allowed_currencies" :currencies="tempAdminDashboard.payment_currencies"
-                                                 :key="'new'"/>
+								<textarea class="w-full h-20 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" v-model="paymentMethodNew.custom_sell_message"></textarea>
+                                <!--<label for="allowed_currencies">Currencies (Not required)</label>-->
+                                <!--<CurrenciesInput v-model="paymentMethodNew.allowed_currencies" :currencies="tempAdminDashboard.payment_currencies"-->
+                                <!--                 :key="'new'"/>-->
                             </div>
                             <PrimaryButton class="mt-2 mb-10" @click="addPaymentMethod" v-if="showAddPaymentMethod">Add Payment Method</PrimaryButton>
                         </div>
