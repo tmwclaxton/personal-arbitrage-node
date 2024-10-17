@@ -46,6 +46,8 @@ class PayBond implements ShouldQueue
             $invoice = $transaction->bond_invoice;
             $lightningNode = new LightningNode();
             if ($invoice && ($this->offer->status === 3 && !$this->offer->my_offer || ($this->offer->my_offer && $this->offer->status === 0))) {
+                $transaction->bond_attempts += 1;
+                $transaction->save();
                 (new SlackService)->sendMessage('Paid bond for offer ' . $this->offer->robosatsId, $this->offer->slack_channel_id);
                 $lightningNode->payInvoice($invoice);
             }

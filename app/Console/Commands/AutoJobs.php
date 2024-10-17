@@ -8,6 +8,7 @@ use App\Jobs\GenerateInvoice;
 use App\Jobs\SendPaymentHandle;
 use App\Models\AdminDashboard;
 use App\Models\Offer;
+use App\Models\Transaction;
 use App\Services\SlackService;
 use App\WorkerClasses\HelperFunctions;
 use GuzzleHttp\Exception\GuzzleException;
@@ -108,7 +109,15 @@ class AutoJobs extends Command
 
             // if status is 3 then dispatch a bond job
             if ( ((!$offer->my_offer && $offer->status == 3) || ($offer->my_offer && $offer->status == 0)) && $adminDashboard->autoBond && now()->minute % 2 == 0) {
-                PayBond::dispatch($offer, $adminDashboard);
+                // PayBond::dispatch($offer, $adminDashboard);
+                if (Transaction::where('offer_id', $offer->id)->first() && $offer->transaction()->first()->bond_attempts > 1) {
+                    $slackService->sendMessage("Don't worry! It's perfectly okay for the bond to retry :) ", $offer->slack_channel_id);
+                    if (now()->minute % 5 == 0) {
+                        PayBond::dispatch($offer, $adminDashboard);
+                    }
+                } else {
+                    PayBond::dispatch($offer, $adminDashboard);
+                }
             }
 
             if ($offer->accepted === false && $offer->status > 3 && $offer->my_offer === true) {
@@ -129,11 +138,25 @@ class AutoJobs extends Command
 
             // these jobs are best effort, they can't be guaranteed to run again if they fail, so there are backup jobs in console.php
             if ($offer->type === "sell" && ($offer->status == 6 || $offer->status == 7) && $adminDashboard->autoEscrow && now()->minute % 2 == 0) {
-                PayEscrow::dispatch($offer, $adminDashboard);
+                if ($offer->transaction()->first()->escrow_attempts > 1) {
+                    $slackService->sendMessage("Don't worry! It's perfectly okay for the escrow to retry :) ", $offer->slack_channel_id);
+                    if (now()->minute % 5 == 0) {
+                        PayEscrow::dispatch($offer, $adminDashboard);
+                    }
+                } else {
+                    PayEscrow::dispatch($offer, $adminDashboard);
+                }
             }
 
             if ($offer->type === "buy" && ($offer->status == 6 || $offer->status == 8 || $offer->status == 15) && $adminDashboard->autoInvoice && now()->minute % 2 == 0) {
-                GenerateInvoice::dispatch($offer, $adminDashboard);
+                if ($offer->transaction()->first()->invoice_attempts > 1) {
+                    $slackService->sendMessage("Don't worry! It's perfectly okay for the invoice to retry :) ", $offer->slack_channel_id);
+                    if (now()->minute % 5 == 0) {
+                        GenerateInvoice::dispatch($offer, $adminDashboard);
+                    }
+                } else {
+                    GenerateInvoice::dispatch($offer, $adminDashboard);
+                }
             }
 
             // only run payment handle every other minute

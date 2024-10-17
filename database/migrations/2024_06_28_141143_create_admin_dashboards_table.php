@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('admin_dashboards', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
             $table->boolean('panicButton')->default(false);
             $table->boolean('autoReward')->default(false);
             $table->boolean('autoAccept')->default(false);
@@ -71,10 +72,9 @@ return new class extends Migration
             // the umbrel token is set automatically
             $table->string('umbrel_token')->nullable();
 
-            $table->string('client_private_key')->nullable();
-            $table->string('server_public_key')->nullable();
-            $table->boolean('auto_dividend_payments')->default(false);
 
+            $table->boolean('auto_dividend_payments')->default(false);
+            $table->timestamp('last_pinged_orchestrator');
             $table->boolean('adverts_enabled')->default(true);
             $table->boolean('looking_for_advertisers')->default(false);
             $table->text('contact_instructions')->nullable();

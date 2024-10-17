@@ -518,125 +518,132 @@ class Robosats
     // 1. POST http://192.168.0.18:12596/mainnet/temple/api/order/?order_id=6984
 
     public function acceptOffer($robosatsId, $amount = null) {
-        $offer = Offer::where('robosatsId', $robosatsId)->first();
+        try {
+            $offer = Offer::where('robosatsId', $robosatsId)->first();
 
-        // grab admin dashboard
-        $adminDashboard = AdminDashboard::all()->first();
-        $channelBalances = json_decode($adminDashboard->channelBalances, true);
+            // grab admin dashboard
+            $adminDashboard = AdminDashboard::all()->first();
+            $channelBalances = json_decode($adminDashboard->channelBalances, true);
 
-        // if amount is set use the currnency of the offer to convert to sats
-        $specificAmountSats = null;
-        if ($amount) {
-            $helpers = new HelperFunctions();
-            $specificAmountSats = $helpers->convertCurrency($amount, $offer->currency, 'BTC');
-            $specificAmountSats = $helpers->btcToSatoshi($specificAmountSats);
-            // round satoshi to 0 decimal places
-            $specificAmountSats = round($specificAmountSats, 0);
-        }
-
-        // grab the largest amount we can accept whether it is range or not
-        $calculations = (new OfferController())->calculateLargestAmount($offer, $channelBalances, $specificAmountSats);
-        if (is_array($calculations) && $calculations['estimated_offer_amount'] > 0) {
-            $offer->accepted_offer_amount_sat = $calculations['estimated_offer_amount_sats'];
-            $offer->accepted_offer_amount = $calculations['estimated_offer_amount'];
-            $offer->accepted_offer_profit_sat = $calculations['estimated_profit_sats'];
-            // round satoshi to 0 decimal places
-            $offer->accepted_offer_profit_sat = round($offer->accepted_offer_profit_sat, 0);
-            $offer->accepted_offer_amount_sat = round($offer->accepted_offer_amount_sat, 0);
-        } else {
-            $slackService = new SlackService();
-            $slackService->sendMessage('Error: Failed to accept offer: ' . $robosatsId . ' because the calculations failed');
-            return 'Failed to accept offer: ' . $robosatsId . ' because the calculations failed';
-        }
-
-
-
-        $offer->accepted = true;
-
-
-        // $transaction = new Transaction();
-        if (Transaction::where('offer_id', $offer->id)->first()) {
-            $transaction = Transaction::where('offer_id', $offer->id)->first();
-        } else {
-            $transaction = new Transaction();
-        }
-        $transaction->offer_id = $offer->id;
-
-
-        // round to 0 decimal places
-        // if ($offer->accepted_offer_profit_sat < 0) {
-        //     (new SlackService)->sendMessage('Error: trying to accept offer with a negative profit');
-        //     return 'Offer has a negative profit';
-        // }
-        // round to 0 decimal places
-        if ($offer->accepted_offer_profit_sat < $adminDashboard->min_satoshi_profit) {
-            (new SlackService)->sendMessage('Error: trying to accept offer with less than ' . $adminDashboard->min_satoshi_profit . ' sats profit');
-            return 'Offer has less than ' . $adminDashboard->min_satoshi_profit . ' sats profit';
-        }
-
-        // // check if offer has the allowed payment methods
-        $allowedPaymentMethods = json_decode($adminDashboard->payment_methods, true);
-        $paymentMethods = json_decode($offer->payment_methods, true);
-        $allowed = false;
-        foreach ($paymentMethods as $paymentMethod) {
-            if (in_array($paymentMethod, $allowedPaymentMethods)) {
-                $allowed = true;
-                break;
+            // if amount is set use the currnency of the offer to convert to sats
+            $specificAmountSats = null;
+            if ($amount) {
+                $helpers = new HelperFunctions();
+                $specificAmountSats = $helpers->convertCurrency($amount, $offer->currency, 'BTC');
+                $specificAmountSats = $helpers->btcToSatoshi($specificAmountSats);
+                // round satoshi to 0 decimal places
+                $specificAmountSats = round($specificAmountSats, 0);
             }
+
+            // grab the largest amount we can accept whether it is range or not
+            $calculations = (new OfferController())->calculateLargestAmount($offer, $channelBalances, $specificAmountSats);
+            if (is_array($calculations) && $calculations['estimated_offer_amount'] > 0) {
+                $offer->accepted_offer_amount_sat = $calculations['estimated_offer_amount_sats'];
+                $offer->accepted_offer_amount = $calculations['estimated_offer_amount'];
+                $offer->accepted_offer_profit_sat = $calculations['estimated_profit_sats'];
+                // round satoshi to 0 decimal places
+                $offer->accepted_offer_profit_sat = round($offer->accepted_offer_profit_sat, 0);
+                $offer->accepted_offer_amount_sat = round($offer->accepted_offer_amount_sat, 0);
+            } else {
+                $slackService = new SlackService();
+                $slackService->sendMessage('Error: Failed to accept offer: ' . $robosatsId . ' because the calculations failed');
+                return 'Failed to accept offer: ' . $robosatsId . ' because the calculations failed';
+            }
+
+
+            $offer->accepted = true;
+
+
+            // $transaction = new Transaction();
+            if (Transaction::where('offer_id', $offer->id)->first()) {
+                $transaction = Transaction::where('offer_id', $offer->id)->first();
+            } else {
+                $transaction = new Transaction();
+            }
+            $transaction->offer_id = $offer->id;
+
+
+            // round to 0 decimal places
+            // if ($offer->accepted_offer_profit_sat < 0) {
+            //     (new SlackService)->sendMessage('Error: trying to accept offer with a negative profit');
+            //     return 'Offer has a negative profit';
+            // }
+            // round to 0 decimal places
+            if ($offer->accepted_offer_profit_sat < $adminDashboard->min_satoshi_profit) {
+                (new SlackService)->sendMessage('Error: trying to accept offer with less than ' . $adminDashboard->min_satoshi_profit . ' sats profit');
+                return 'Offer has less than ' . $adminDashboard->min_satoshi_profit . ' sats profit';
+            }
+
+            // // check if offer has the allowed payment methods
+            $allowedPaymentMethods = json_decode($adminDashboard->payment_methods, true);
+            $paymentMethods = json_decode($offer->payment_methods, true);
+            $allowed = false;
+            foreach ($paymentMethods as $paymentMethod) {
+                if (in_array($paymentMethod, $allowedPaymentMethods)) {
+                    $allowed = true;
+                    break;
+                }
+            }
+            if (!$allowed) {
+                (new SlackService)->sendMessage('Error: Offer has no allowed payment methods');
+                return 'Offer has no allowed payment methods';
+            }
+
+            // // check if offer has the allowed currency
+            $allowedCurrencies = json_decode($adminDashboard->payment_currencies, true);
+            // check if there are any payment currencies in admin dashboard
+            if (empty($allowedCurrencies)) {
+                (new SlackService)->sendMessage('Error: No allowed currencies in admin dashboard');
+                return 'No allowed currencies in admin dashboard';
+            }
+            if (!in_array($offer->currency, $allowedCurrencies)) {
+                (new SlackService)->sendMessage('Error: Offer has no allowed currency');
+                return 'Offer has no allowed currency';
+            }
+
+            // // check when the offer and btcFiat was last updated if too old, could suggest out of date prices
+            $now = Carbon::now();
+            // if the offer was last updated more than 10 minutes ago
+            $offerUpdated = Carbon::parse($offer->updated_at);
+            if ($now->diffInMinutes($offerUpdated) > 10) {
+                (new SlackService)->sendMessage('Error: Offer is suspiciously old');
+                return 'Offer is suspiciously old';
+            }
+
+            // if the btcFiat was last updated more than 10 minutes ago
+            $btcFiat = BtcFiat::all()->first();
+            $btcFiatUpdated = Carbon::parse($btcFiat->updated_at);
+            if ($now->diffInMinutes($btcFiatUpdated) > 10) {
+                (new SlackService)->sendMessage('Error: BtcFiat item is suspiciously old');
+                return 'BtcFiat is suspiciously old';
+            }
+
+
+            // check if offer satoshi amount is above adminDashboard->max_satoshi_amount
+            if ($offer->accepted_offer_amount_sat > $adminDashboard->max_satoshi_amount) {
+                (new SlackService)->sendMessage('Error: Offer accepted amount is above max_satoshi_amount in admin dashboard');
+                return 'Offer accepted amount is above max_satoshi_amount in admin dashboard';
+            }
+
+
+            // last chance to back out
+            if ($adminDashboard->panicButton) {
+                (new SlackService)->sendMessage('Panic button is on so cannot accept offer');
+                return 'Panic button is on';
+            }
+
+            // post request
+            $url = $this->getHost() . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $robosatsId;
+            // (new SlackService)->sendMessage($offer->accepted_offer_amount . ' ' . $offer->currency . '.  RoboSats ID: ' . $robosatsId);
+            Log::info($offer->accepted_offer_amount . ' ' . $offer->currency . '.  RoboSats ID: ' . $robosatsId);
+        } catch (\Exception $e) {
+            (new SlackService)->sendMessage('Error: ' . $e->getMessage());
+            // unaccept the offer and delete the transaction
+            $offer->accepted = false;
+            $transaction->delete();
+            $offer->save();
+            return 'Error: ' . $e->getMessage();
         }
-        if (!$allowed) {
-            (new SlackService)->sendMessage('Error: Offer has no allowed payment methods');
-            return 'Offer has no allowed payment methods';
-        }
-
-        // // check if offer has the allowed currency
-        $allowedCurrencies = json_decode($adminDashboard->payment_currencies, true);
-        // check if there are any payment currencies in admin dashboard
-        if (empty($allowedCurrencies)) {
-            (new SlackService)->sendMessage('Error: No allowed currencies in admin dashboard');
-            return 'No allowed currencies in admin dashboard';
-        }
-        if (!in_array($offer->currency, $allowedCurrencies)) {
-            (new SlackService)->sendMessage('Error: Offer has no allowed currency');
-            return 'Offer has no allowed currency';
-        }
-
-        // // check when the offer and btcFiat was last updated if too old, could suggest out of date prices
-        $now = Carbon::now();
-        // if the offer was last updated more than 10 minutes ago
-        $offerUpdated = Carbon::parse($offer->updated_at);
-        if ($now->diffInMinutes($offerUpdated) > 10) {
-            (new SlackService)->sendMessage('Error: Offer is suspiciously old');
-            return 'Offer is suspiciously old';
-        }
-
-        // if the btcFiat was last updated more than 10 minutes ago
-        $btcFiat = BtcFiat::all()->first();
-        $btcFiatUpdated = Carbon::parse($btcFiat->updated_at);
-        if ($now->diffInMinutes($btcFiatUpdated) > 10) {
-            (new SlackService)->sendMessage('Error: BtcFiat item is suspiciously old');
-            return 'BtcFiat is suspiciously old';
-        }
-
-
-        // check if offer satoshi amount is above adminDashboard->max_satoshi_amount
-        if ($offer->accepted_offer_amount_sat > $adminDashboard->max_satoshi_amount) {
-            (new SlackService)->sendMessage('Error: Offer accepted amount is above max_satoshi_amount in admin dashboard');
-            return 'Offer accepted amount is above max_satoshi_amount in admin dashboard';
-        }
-
-
-        // last chance to back out
-        if ($adminDashboard->panicButton) {
-            (new SlackService)->sendMessage('Panic button is on so cannot accept offer');
-            return 'Panic button is on';
-        }
-
-        // post request
-        $url = $this->getHost() . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $robosatsId;
-        // (new SlackService)->sendMessage($offer->accepted_offer_amount . ' ' . $offer->currency . '.  RoboSats ID: ' . $robosatsId);
-        Log::info($offer->accepted_offer_amount . ' ' . $offer->currency . '.  RoboSats ID: ' . $robosatsId);
-
         if (!$offer->has_range) {
             $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'take', 'amount' => $offer->accepted_offer_amount]);
         } else {
@@ -1197,6 +1204,10 @@ class Robosats
             $slackService = new SlackService();
             $slackService->sendMessage('Invoice updated for ' . $offer->robosatsId, $offer->slack_channel_id);
             return $this->updateInvoice($offer, $routingBudgetPpm, $correctedAmount);
+        } else {
+            // set payment_invoice attribute in transaction
+            $transaction = $offer->transaction()->first();
+            $transaction->lightning_payout_invoice = $response->json('payment_invoice');
         }
 
         return json_decode($response->body(), true);

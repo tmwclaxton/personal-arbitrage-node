@@ -56,19 +56,24 @@ class AutoAccept extends Command
         $buyPremium = $adminDashboard->buy_premium;
 
         // where status != 14, 12, 17, 18, 99, 4, 5, 2
-        $sellOffers = Offer::where([['accepted', '=', false],['premium', '>=', $sellPremium], ['type', 'sell'], ['my_offer', '=', false], ['expires_at', '>', now()]])
+        $sellOffers = Offer::where([['accepted', '=', false],['premium', '>=', $sellPremium], ['type', 'sell'], ['my_offer', '=', false], ['expires_at', '>', now()], ['auto_accept_at', '=', null]])
             ->orderBy('accepted', 'desc')
             ->orderBy('max_satoshi_amount_profit', 'desc')
             ->orderBy('satoshi_amount_profit', 'desc')
             ->orderBy('premium', 'desc')
             ->get();
 
-        $buyOffers = Offer::where([['accepted', '=', false],['premium', '<=', $buyPremium], ['type', 'buy'], ['my_offer', '=', false], ['expires_at', '>', now()]])
+        $buyOffers = Offer::where([['accepted', '=', false],['premium', '<=', $buyPremium], ['type', 'buy'], ['my_offer', '=', false], ['expires_at', '>', now()], ['auto_accept_at', '=', null]])
             ->orderBy('accepted', 'desc')
             ->orderBy('max_satoshi_amount_profit', 'desc')
             ->orderBy('satoshi_amount_profit', 'desc')
             ->orderBy('premium', 'desc')
             ->get();
+
+        // temporarily flip the premium for buy offers
+        foreach ($buyOffers as $buyOffer) {
+            $buyOffer->premium = $buyOffer->premium * -1;
+        }
 
         $offers = $sellOffers->merge($buyOffers);
 
@@ -184,18 +189,32 @@ class AutoAccept extends Command
         // grab the first $difference offers
         $offers = $offers->take($difference);
 
+        // dump 'id', 'score', 'estimated_profit_sats', 'premium', 'estimated_offer_amount', 'type', 'currency'));
+        // $dump = $offers->map(function ($offer) {
+        //     return [
+        //         'id' => $offer->id,
+        //         'score' => $offer->score,
+        //         'estimated_profit_sat' => $offer->estimated_profit_sat,
+        //         'premium' => $offer->premium,
+        //         'estimated_offer_amount' => $offer->estimated_offer_amount,
+        //         'type' => $offer->type,
+        //         'currency' => $offer->currency,
+        //     ];
+        // });
+        // dd($dump);
+
         // chain 2 jobs, one to create the robots and one to accept the offers
         foreach ($offers as $offer) {
             $adminDashboard = AdminDashboard::all()->first();
 
-            if ($offer->job_locked) {
-                continue;
-            }
+            // if ($offer->job_locked) {
+            //     continue;
+            // }
             $slackService = new SlackService();
             $slackService->sendMessage('Auto accepting offer ' . $offer->robosatsId . ' in 1 minutes for ' . $offer->estimated_offer_amount . ' ' . $offer->currency . ' at ' . $offer->premium . '% premium', $adminDashboard->slack_main_channel_id);
             // reset offer
             $offer = Offer::find($offer->id);
-            $offer->job_locked = true;
+            // $offer->job_locked = true;
             // 2 minutes from now
             $offer->auto_accept_at = Carbon::now()->addMinutes(1);
             $offer->save();
