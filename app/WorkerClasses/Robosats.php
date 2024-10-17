@@ -1197,6 +1197,10 @@ class Robosats
             $slackService = new SlackService();
             $slackService->sendMessage('Invoice updated for ' . $offer->robosatsId, $offer->slack_channel_id);
             return $this->updateInvoice($offer, $routingBudgetPpm, $correctedAmount);
+        } else {
+            // set payment_invoice attribute in transaction
+            $transaction = $offer->transaction()->first();
+            $transaction->payment_invoice = $response->json('payment_invoice');
         }
 
         return json_decode($response->body(), true);

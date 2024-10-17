@@ -16,11 +16,13 @@ return new class extends Migration
             $table->foreignId('offer_id')->constrained();
             $table->text('bond_invoice')->nullable();
             $table->text('escrow_invoice')->nullable();
-
+            $table->text('payment_invoice')->nullable();
+            $table->integer('bond_attempts')->default(0);
+            $table->integer('escrow_attempts')->default(0);
+            $table->integer('payment_attempts')->default(0);
             $table->integer('status')->default(0);
             $table->string('status_message')->default('');
             $table->integer('fees')->default(0);
-
             $table->timestamps();
         });
     }

@@ -56,14 +56,14 @@ class AutoAccept extends Command
         $buyPremium = $adminDashboard->buy_premium;
 
         // where status != 14, 12, 17, 18, 99, 4, 5, 2
-        $sellOffers = Offer::where([['accepted', '=', false],['premium', '>=', $sellPremium], ['type', 'sell'], ['my_offer', '=', false], ['expires_at', '>', now()]])
+        $sellOffers = Offer::where([['accepted', '=', false],['premium', '>=', $sellPremium], ['type', 'sell'], ['my_offer', '=', false], ['expires_at', '>', now()], ['auto_accept_at', '=', null]])
             ->orderBy('accepted', 'desc')
             ->orderBy('max_satoshi_amount_profit', 'desc')
             ->orderBy('satoshi_amount_profit', 'desc')
             ->orderBy('premium', 'desc')
             ->get();
 
-        $buyOffers = Offer::where([['accepted', '=', false],['premium', '<=', $buyPremium], ['type', 'buy'], ['my_offer', '=', false], ['expires_at', '>', now()]])
+        $buyOffers = Offer::where([['accepted', '=', false],['premium', '<=', $buyPremium], ['type', 'buy'], ['my_offer', '=', false], ['expires_at', '>', now()], ['auto_accept_at', '=', null]])
             ->orderBy('accepted', 'desc')
             ->orderBy('max_satoshi_amount_profit', 'desc')
             ->orderBy('satoshi_amount_profit', 'desc')
@@ -207,14 +207,14 @@ class AutoAccept extends Command
         foreach ($offers as $offer) {
             $adminDashboard = AdminDashboard::all()->first();
 
-            if ($offer->job_locked) {
-                continue;
-            }
+            // if ($offer->job_locked) {
+            //     continue;
+            // }
             $slackService = new SlackService();
             $slackService->sendMessage('Auto accepting offer ' . $offer->robosatsId . ' in 1 minutes for ' . $offer->estimated_offer_amount . ' ' . $offer->currency . ' at ' . $offer->premium . '% premium', $adminDashboard->slack_main_channel_id);
             // reset offer
             $offer = Offer::find($offer->id);
-            $offer->job_locked = true;
+            // $offer->job_locked = true;
             // 2 minutes from now
             $offer->auto_accept_at = Carbon::now()->addMinutes(1);
             $offer->save();
