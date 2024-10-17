@@ -41,6 +41,8 @@ class GenerateInvoice implements ShouldQueue
     {
         if (!$this->adminDashboard->panicButton) {
             if ($this->offer->type === "buy" && ($this->offer->status == 6 || $this->offer->status == 8 || $this->offer->status == 15) && $this->adminDashboard->autoInvoice) {
+                $this->offer->transaction()->first()->invoice_attempts += 1;
+                $this->offer->transaction()->first()->save();
                 $robosats = new Robosats();
                 $response = $robosats->updateInvoice($this->offer);
             }
