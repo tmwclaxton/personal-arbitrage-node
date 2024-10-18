@@ -782,6 +782,20 @@ class Robosats
         return $response;
     }
 
+    public function advertise($offer)
+    {
+        $robot = $offer->robots()->first();
+        // send message into the chat
+        $messageContent = "This trade was automated by Lightning Arbitrage Solutions 
+        (https://www.lightningarbitragesolutions.com).  Reach out to join the waitlist! - This trade will be confirmed shortly.";
+        // remove line breaks
+        $messageContent = str_replace("\n", '', $messageContent);
+        // rmeove tabs
+        $messageContent = str_replace("\t", '', $messageContent);
+        $this->webSocketCommunicate($offer, $robot, $messageContent);
+
+    }
+
 
     public function updateOfferStatus($offer): Offer
     {

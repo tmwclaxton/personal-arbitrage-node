@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ConfirmPayment;
 use App\Jobs\PayBond;
 use App\Jobs\PayEscrow;
 use App\Jobs\SendPaymentHandle;
@@ -459,10 +460,16 @@ class OfferController extends Controller
     public function confirmPayment(Request $request) {
         $offerId = request('offer_id');
         $offer = Offer::find($offerId);
-        $transaction = Transaction::where('offer_id', $offerId)->first();
-        $robosats = new Robosats();
-        $response = $robosats->confirmReceipt($offer, $transaction);
-        return $response;
+        // $transaction = Transaction::where('offer_id', $offerId)->first();
+        // $robosats = new Robosats();
+        // $response = $robosats->confirmReceipt($offer, $transaction);
+
+        $adminDashboard = AdminDashboard::all()->first();
+        ConfirmPayment::dispatch($offer, $adminDashboard);
+
+        // return $response;
+
+        return response()->json(['message' => 'Payment confirmation being processed']);
     }
 
     public function claimRewards() {

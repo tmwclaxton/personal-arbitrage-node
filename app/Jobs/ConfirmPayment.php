@@ -11,6 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Carbon;
 
 class ConfirmPayment implements ShouldQueue
 {
@@ -38,7 +39,12 @@ class ConfirmPayment implements ShouldQueue
         if (!$this->adminDashboard->panicButton) {
             $transaction = Transaction::where('offer_id', $this->offer->id)->first();
             $robosats = new Robosats();
-            $robosats->confirmReceipt($this->offer, $transaction);
+            // set the auto_confirm_at to 5 minutes from now
+            $this->offer->auto_confirm_at = Carbon::now()->addMinutes(5);
+            $this->offer->save();
+
+            // send advert to the counterparty
+            $robosats->advertise($this->offer);
         } else {
             // throw an exception
             throw new \Exception('Panic button is enabled - ConfirmPayment.php');
