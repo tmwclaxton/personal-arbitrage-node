@@ -787,7 +787,7 @@ class Robosats
         $robot = $offer->robots()->first();
         // send message into the chat
         $messageContent = "This trade was automated by Lightning Arbitrage Solutions 
-        (https://www.lightningarbitragesolutions.com).  Reach out to join the waitlist! - This trade will be confirmed shortly.";
+        (https://www.lightningarbitragesolutions.com).  Reach out on Telegram (@las_2024) or Signal (@las.24) to join the waitlist! - This trade will be confirmed shortly.";
         // remove line breaks
         $messageContent = str_replace("\n", '', $messageContent);
         // rmeove tabs
