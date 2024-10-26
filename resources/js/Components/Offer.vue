@@ -58,13 +58,27 @@ const collapse = ref(true);
 			                        class="w-full text-center  h-10 break-words ">
 			            <p class="text-center w-full">Accept</p>
 			        </primary-button>
-			
-			        <primary-button class="w-full text-center  h-10 break-words "
-			                        v-on:click="offerStore.payBond(offer.id)"
-			                        v-if="(!offer.my_offer && offer.status === 3 && offer.accepted || offer.my_offer && offer.status === 0)">
-			            <p class="text-center w-full">Bond</p>
-			        </primary-button>
 					
+					<primary-button class="w-full text-center  h-10 break-words "
+									v-on:click="offerStore.payBond(offer.id)"
+									v-if="(!offer.my_offer && offer.status === 3 && offer.accepted || offer.my_offer && offer.status === 0)">
+						<p class="text-center w-full">Bond</p>
+					</primary-button>
+					<primary-button class="w-full text-center  h-10 break-words "
+									v-on:click="offerStore.pause(offer.id)"
+									v-if="(offer.my_offer && offer.status < 3)">
+						<p class="text-center w-full">Pause</p>
+					</primary-button>
+					<primary-button class="w-full text-center  h-10 break-words "
+									v-on:click="offerStore.unpause(offer.id)"
+									v-if="(offer.my_offer && offer.status === 2)">
+						<p class="text-center w-full">Unpause</p>
+					</primary-button>
+					<primary-button class="w-full text-center  h-10 break-words "
+									v-on:click="offerStore.unpause(offer.id)"
+									v-if="(!offer.my_offer && offer.status >= 3 && offer.accepted || offer.my_offer && offer.status >= 0)">
+						<p class="text-center w-full">Cancel</p>
+					</primary-button>
 					<primary-button v-on:click="offerStore.payEscrow(offer.id)"
 									v-if="offer.type === 'sell' && (offer.accepted && (offer.status === 6 || offer.status === 7))"
 									class="w-full text-center  h-10 break-words ">
@@ -88,6 +102,8 @@ const collapse = ref(true);
 			                        v-on:click="offerStore.confirmPayment(offer.id)">
 			            <p class="text-center w-full">Confirm</p>
 			        </primary-button>
+
+					
 			        <Link :href="route('offers.show', {offer_id: offer.id})">
 						<secondary-button class="w-full text-center p-0  h-10 break-words"
 										  v-if="offer.accepted && (offer.status === 9 || offer.status === 10)"
@@ -102,6 +118,12 @@ const collapse = ref(true);
 			                       class="w-full text-center  h-10 break-words ">
 			            <p class="text-center w-full">Collaborative Cancel</p>
 			        </danger-button>
+					
+					
+					
+					<danger-button class="w-full text-center p-0  h-10 break-words">
+						<p class="text-center w-full">Manual Edits</p>
+					</danger-button>
 			</div>
 			<div class="flex flex-col gap-y-2 mb-1">
 				<div class="flex flex-row ">

@@ -742,19 +742,19 @@ class Robosats
         }
 
         // post request
-        $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'confirm']);
+        try {
+            $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'confirm']);
+        } catch (\Exception $e) {
+            (new SlackService)->sendMessage('Error attempting to confirm receipt: ' . $e->getMessage() . ' - ' . $offer->robosatsId . ' - requires manual intervention');
+            return 'Error: ' . $e->getMessage();
+        }
 
         $transaction->status_message = "Confirmed";
         $transaction->save();
 
         // convert response to json
         $response = json_decode($response->body(), true);
-
         $adminDashboard = AdminDashboard::all()->first();
-//        $adminDashboard->trade_volume_satoshis += $transaction->offer->accepted_offer_amount_sat;
-//        $adminDashboard->satoshi_profit += $transaction->offer->accepted_offer_profit_sat;
-
-
 
         // grab the lightning node
         $lightningNode = new LightningNode();
@@ -770,8 +770,6 @@ class Robosats
         $transaction->fees = $fees;
         $transaction->save();
 
-//        $adminDashboard->satoshi_fees += $fees;
-
 
         $adminDashboard->save();
         (new SlackService)->sendMessage('Trade completed: ' .
@@ -781,6 +779,7 @@ class Robosats
 
         return $response;
     }
+
 
     public function advertise($offer)
     {
