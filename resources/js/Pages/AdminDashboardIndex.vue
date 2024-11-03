@@ -46,7 +46,7 @@ const clicked = () => {
 			type: "error",
 		});
 	});
-	
+
 	setTimeout(() => {
 		router.reload()
 	}, 500);
@@ -113,10 +113,16 @@ const refreshKey = ref(0);
 
                 <div class="text-left pl-5 flex flex-col gap-y-1 pr-5 mx-auto max-w-6xl">
 
-                    <div class="flex flex-row justify-between items-center">
-                        <span class="font-bold text-3xl mx-auto mb-2">Settings</span>
+                    <div class="flex flex-row justify-center mx-auto gap-x-2 items-center mb-2">
+                        <span class="font-bold text-3xl ">Trading Kit Settings</span>
+
+                        <span class="border-r border-gray-300 dark:border-zinc-700 h-10"/>
+                        <!-- profile settings -->
+                        <Link :href="route('profile.edit')" :active="route().current('profile.edit')">
+                            <primary-button class="font-bold  flex-shrink-0 w-max" v-text="'Profile Settings'"/>
+                        </Link>
                     </div>
-					
+
 					<div class="flex flex-row justify-between items-center">
 						<span class="font-bold mr-1">Primary Currency: <span class="text-red-500"></span></span>
 						<select v-model="tempAdminDashboard.primary_currency"
@@ -124,7 +130,7 @@ const refreshKey = ref(0);
 							<option v-for="currency in currencies" :value="currency" v-text="currency"></option>
 						</select>
 					</div>
-					
+
 					<!--<div class="flex flex-row justify-between items-center">-->
 					<!--	<span class="font-bold mr-1">Language: <span class="text-red-500"></span></span>-->
 					<!--	<select v-model="tempAdminDashboard.language"-->
@@ -132,19 +138,19 @@ const refreshKey = ref(0);
 					<!--		<option v-for="language in ['en', 'de', 'es', 'fr', 'it', 'nl', 'pt', 'ru', 'zh']" :value="language" v-text="language"></option>-->
 					<!--	</select>-->
 					<!--</div>-->
-					
+
 					<div class="border-b border-gray-300 dark:border-zinc-700 "/>
                     <!--<div class="flex flex-row justify-between items-center"><span-->
                     <!--    class="font-bold mr-1">Umbrel Token: <span class="text-red-500">(Should automatically be set once below values filled in)</span></span>-->
                     <!--    <TextInput v-model="tempAdminDashboard.umbrel_token"/>-->
                     <!--</div>-->
-	                
-		                
+
+
 					<div class="mt-5 flex flex-row justify-between items-center">
 						<span class="font-bold text-2xl mx-auto mb-2">Umbrel Settings</span>
 					</div>
-                  
-                  
+
+
                     <div class="flex flex-row justify-between items-center"><span
                         class="font-bold mr-1">Umbrel Server IP: <span class="text-red-500"></span></span>
                         <TextInput :confidential="true" v-model="tempAdminDashboard.umbrel_ip"/>
@@ -159,14 +165,14 @@ const refreshKey = ref(0);
                     </div>
 
                     <div class="border-b border-gray-300 dark:border-zinc-700 "/>
-                    
-	                
+
+
 					<div class="mt-5 flex flex-row justify-between items-center">
 						<span class="font-bold text-2xl mx-auto mb-2">Kraken Settings
 							<span class="text-red-500">(Only fill in if you want to automate rebuying on Kraken)</span>
 						</span>
 				    </div>
-	                
+
                     <!--kraken details-->
                     <div class="flex flex-row justify-between items-center" :key="refreshKey">
                         <span class="font-bold mr-1">Kraken Auto Topup:
@@ -188,16 +194,16 @@ const refreshKey = ref(0);
                       </span>
 					 <ToggleButton v-model="tempAdminDashboard.kraken_action" @update:modelValue="refreshKey++"/>
 					</div>
-                  
+
                     <div class="border-b border-gray-300 dark:border-zinc-700 mb-4"/>
-                  
+
                     <div class="mt-5 flex flex-row justify-between items-center">
                         <span class="font-bold text-2xl mx-auto mb-2">
 							Slack Settings (Or use Internal Messaging)
                           <span class="text-red-500"></span>
                         </span>
                     </div>
-					
+
 					<div class="flex flex-row justify-between items-center"><span
 						class="font-bold mr-1">Slack App ID: <span class="text-red-500"></span></span>
 						<TextInput :confidential="true" v-model="tempAdminDashboard.slack_app_id"/>
@@ -222,9 +228,9 @@ const refreshKey = ref(0);
 					  class="font-bold mr-1">Slack Main Channel ID: <span class="text-red-500"></span></span>
 						<TextInput :confidential="true" v-model="tempAdminDashboard.slack_main_channel_id"/>
 					</div>
-					
+
 					<div class="border-b border-gray-300 dark:border-zinc-700 mb-4"/>
-					
+
 
 					<p class="font-bold mb-2">Payment Methods</p>
                     <PaymentsInput :payment_methods="tempAdminDashboard.payment_methods"
