@@ -74,7 +74,7 @@ return new class extends Migration
 
 
             $table->boolean('auto_dividend_payments')->default(false);
-            $table->timestamp('last_pinged_orchestrator');
+            $table->timestamp('last_pinged_orchestrator')->default(now());
             $table->boolean('adverts_enabled')->default(true);
             $table->boolean('looking_for_advertisers')->default(false);
             $table->text('contact_instructions')->nullable();
