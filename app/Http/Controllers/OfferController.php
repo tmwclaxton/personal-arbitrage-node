@@ -32,14 +32,26 @@ class OfferController extends Controller
             $adminDashboard = new AdminDashboard();
             $adminDashboard->save();
         }
+
         $sellPremium = $adminDashboard->sell_premium;
         $buyPremium = $adminDashboard->buy_premium;
+        $excludedStatuses = [99, 5, 14];
 
-        // where status != 14, 12, 17, 18, 99, 4, 5, 2, 13, 15
-        $offers = Offer::where([['accepted', '=', true], ['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14]])
-            ->orWhere([['accepted', '=', false],['premium', '>=', $sellPremium], ['type', 'sell'], ['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14]])
-            ->orWhere([['accepted', '=', false],['premium', '<=', $buyPremium], ['type', 'buy'], ['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14]])
-            ->orWhere([['my_offer', '=', true], ['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14]])
+        $offers = Offer::whereNotIn('status', $excludedStatuses)
+            ->where(function ($query) use ($sellPremium, $buyPremium) {
+                $query->where('accepted', true)
+                    ->orWhere(function ($subQuery) use ($sellPremium) {
+                        $subQuery->where('accepted', false)
+                            ->where('premium', '>=', $sellPremium)
+                            ->where('type', 'sell');
+                    })
+                    ->orWhere(function ($subQuery) use ($buyPremium) {
+                        $subQuery->where('accepted', false)
+                            ->where('premium', '<=', $buyPremium)
+                            ->where('type', 'buy');
+                    })
+                    ->orWhere('my_offer', true);
+            })
             ->orderBy('accepted', 'desc')
             ->orderBy('my_offer', 'desc')
             ->orderBy('max_satoshi_amount_profit', 'desc')
@@ -49,6 +61,7 @@ class OfferController extends Controller
 
         return $offers;
     }
+
 
     public function getInfo()
     {
