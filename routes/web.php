@@ -67,6 +67,9 @@ Route::middleware('auth')->group(function () {
                 }
             }
         }
+        // remove name from the request
+        unset($adminDashboard->name);
+
         // set the payment methods separately
         $adminDashboard->payment_methods = json_encode(request()->adminDashboard["payment_methods"]);
         $adminDashboard->save();

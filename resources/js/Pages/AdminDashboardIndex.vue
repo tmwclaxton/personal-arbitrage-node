@@ -82,9 +82,18 @@ const addPaymentMethod = () => {
 		custom_sell_message: paymentMethodNew.value.custom_sell_message,
 		preference: paymentMethodNew.value.preference,
     }).then(response => {
-        console.log(response.data);
+        toastStore.add({
+            message: 'Payment Method added',
+            type: "success",
+        });
+        // refresh the page
+        router.reload();
     }).catch(error => {
         console.log(error);
+        toastStore.add({
+            message: 'Error adding Payment Method',
+            type: "error",
+        });
     });
 }
 

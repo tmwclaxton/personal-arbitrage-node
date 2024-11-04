@@ -41,14 +41,18 @@ const submit = () => {
 				<img src="/images/logoDark.png" class="h-24 hidden dark:block" alt="Lightning Arbitrage Solutions">
 			</a>
 			<p class="text-center font-semibold text-gray-900 dark:text-white mb-5">
-				Support Number: +447837370669 <br>
-				<span class="mt-1">Telegram: @t918273</span>
+				Support
+                <span class="mt-1">Number: +447837370669</span>
+                <br>
+                <span class="mt-1">Telegram: @las_2024</span>
+                <br>
+                <span class="mt-1">Signal: @las.24</span>
 			</p>
-				
+
             <form @submit.prevent="submit">
                 <!--<div>-->
                 <!--    <InputLabel for="username" value="Username"/>-->
-				
+
                 <!--    <TextInput-->
                 <!--        id="email"-->
                 <!--        type="email"-->
@@ -58,7 +62,7 @@ const submit = () => {
                 <!--        autofocus-->
                 <!--        autocomplete="username"-->
                 <!--    />-->
-				
+
                 <!--    <InputError class="mt-2" :message="form.errors.email"/>-->
                 <!--</div>-->
 
