@@ -286,5 +286,33 @@ export const useOfferActionStore = defineStore('OfferActionStore', {
                 }
             }
         },
+
+        async updateOffer(id, offer) {
+            useConfirmModalStore().buttonOneText = 'Cancel';
+            useConfirmModalStore().buttonTwoText = 'Update Offer';
+            useConfirmModalStore().title = 'Are you sure you want to update the offer?';
+            useConfirmModalStore().show = true;
+            useConfirmModalStore().continue = async () => {
+                console.log('updating offer');
+                try {
+                    const response = await axios.post(route('offers.update'), {
+                        offer_id: id,
+                        offer: offer
+                    });
+                    toastStore.add({
+                        message: 'Offer Updated',
+                        type: "success",
+                    });
+                    console.log(response);
+
+                } catch (error) {
+                    toastStore.add({
+                        message: 'Failed to Update Offer',
+                        type: "error",
+                    });
+                    console.log(error);
+                }
+            }
+        }
     }
 });

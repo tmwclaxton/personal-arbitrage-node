@@ -77,9 +77,7 @@ return new class extends Migration
             $table->timestamp('auto_accept_at')->nullable();
             $table->timestamp('auto_confirm_at')->nullable();
 
-//            $table->string('slack_channel_id')->nullable();
             $table->boolean('my_offer')->default(false);
-            // $table->foreignIdFor(\App\Models\PostedOfferTemplate::class)->nullable();
             $table->string('posted_offer_template_slug')->nullable();
 
             $table->string('slack_channel_id')->nullable();

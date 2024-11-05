@@ -1,12 +1,12 @@
 <template>
-	
+
 	<Head title="Graphs"/>
-	
+
 	<GuestLayout class="px-5">
-		
+
 		<div class="w-full bg-white dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700 dark:shadow-lg
     			rounded-xl shadow-md overflow-hidden "  >
-			
+
 			<div v-if="offer.status">
 				<p class=" text-zinc-500 dark:text-zinc-200 font-bold break-words p-4"
 				   :class="{'bg-blue-200 dark:bg-blue-800': offer.my_offer, 'bg-red-200 dark:bg-red-700': !offer.my_offer}">
@@ -34,32 +34,32 @@
 				<!--        class="border border-gray-200 dark:border-zinc-700 "></div>-->
 				<div class="flex flex-row gap-x-2">
 					<div class="flex flex-col w-max  gap-1 p-1">
-						
+
 						<danger-button v-on:click="offerStore.autoRun(offer.id)"
 									   v-if="!offer.accepted && !offer.my_offer"
 									   :disabled="offer.job_locked || offer.accepted"
 									   class="w-full text-center  h-10 break-words disabled:opacity-50">
 							<p class="text-center w-full">Auto Run</p>
 						</danger-button>
-						
+
 						<primary-button v-on:click="offerStore.uniqueRobot(offer.id)"
 										v-if="!offer.robots || offer.robots.length === 0"
 										class="w-full text-center  h-10 break-words ">
 							<p class="text-center w-full">Create Robots</p>
 						</primary-button>
-						
+
 						<primary-button v-on:click="offerStore.acceptOffer(offer.id)"
 										v-if="(!offer.accepted && !offer.my_offer) || (offer.status === 1 && !offer.my_offer)"
 										class="w-full text-center  h-10 break-words ">
 							<p class="text-center w-full">Accept</p>
 						</primary-button>
-						
+
 						<primary-button class="w-full text-center  h-10 break-words "
 										v-on:click="offerStore.payBond(offer.id)"
 										v-if="offer.type === 'sell' && (!offer.my_offer && offer.status === 3 && offer.accepted || offer.my_offer && offer.status === 0)">
 							<p class="text-center w-full">Bond</p>
 						</primary-button>
-						
+
 						<primary-button v-on:click="offerStore.payEscrow(offer.id)"
 										v-if="offer.type === 'sell' && (offer.accepted && (offer.status === 6 || offer.status === 7))"
 										class="w-full text-center  h-10 break-words ">
@@ -70,14 +70,14 @@
 										class="w-full text-center  h-10 break-words ">
 							<p class="text-center w-full">Invoice</p>
 						</primary-button>
-						
-						
+
+
 						<primary-button class="w-full text-center p-0  h-10 break-words"
 										v-if="offer.accepted && (offer.status === 9 || offer.status === 10)"
 										v-on:click="offerStore.sendPaymentHandle(offer.id)">
 							<p class="text-center w-full">Auto Chat</p>
 						</primary-button>
-						
+
 						<primary-button class="w-full text-center p-0  h-10 break-words"
 										v-if="offer.accepted && (offer.status === 9 || offer.status === 10)"
 										v-on:click="offerStore.confirmPayment(offer.id)">
@@ -88,19 +88,24 @@
 										  v-on:click="">
 							<p class="text-center w-full">View Chat</p>
 						</secondary-button>
-						
-						
+
+
 						<danger-button v-on:click="offerStore.collaborativeCancel(offer.id)"
 									   v-if="offer.accepted && (offer.status === 9 || offer.status === 10)"
 									   class="w-full text-center  h-10 break-words ">
 							<p class="text-center w-full">Collaborative Cancel</p>
 						</danger-button>
+
+                        <secondary-button v-on:click="editMode = !editMode"
+                                       class="w-full text-center  h-10 break-words ">
+                            <p class="text-center w-full">Edit</p>
+                        </secondary-button>
 					</div>
 					<div   class="border-r border-gray-200 dark:border-zinc-700 "></div>
-					
+
 					<div class=" flex flew-row gap-4">
-						
-						
+
+
 						<div class="flex flex-col max-w-44 flex-shrink-0">
 							<div class="mt-0.5 uppercase tracking-wide text-sm text-indigo-500 font-semibold">
 								<span v-text="offer.provider"></span>
@@ -108,7 +113,7 @@
 								<span class="mt-2 text-zinc-500 dark:text-zinc-200 font-bold">{{
 										offer.accepted && offer.taker ? ' · Accepted' : ''
 									}}</span>
-							
+
 							</div>
 							<p class="block mt-1  leading-tight font-bold underline dark:text-zinc-200">
 								Offer #{{ offer.robosatsId }}
@@ -155,8 +160,8 @@
 								<p class="text-zinc-500 dark:text-zinc-200 text-xs">Profit:
 									{{ offer.accepted_offer_profit_sat ?? 'N/A' }}</p>
 							</div>
-						
-						
+
+
 						</div>
 						<div class="flex flex-col"><p class="text-zinc-500 dark:text-zinc-200 italic">Expires at:
 							{{ offer.expires_at }}</p>
@@ -179,17 +184,17 @@
 							<p class="text-zinc-500 dark:text-zinc-200">Premium: {{ offer.premium }}</p>
 							<p class="text-zinc-500 dark:text-zinc-200 font-medium ">Payment Methods: <br><span
 							  class="break-words font-bold">{{ offer.payment_methods }}</span></p>
-							
+
 							<p v-if="offer.status === 9 || offer.status === 10"
 							   class="text-zinc-500 dark:text-zinc-200 font-medium mt-2">Expected Reference ID: <br><span
 							  class="break-words font-bold">{{ offer.id }}</span></p>
-						
-						
+
+
 						</div>
-						
-						
+
+
 						<div v-if="offer.robots && offer.robots.length > 0" class="border-r border-gray-200 dark:border-zinc-700 "></div>
-						
+
 						<div class="flex flex-col gap-2">
 							<div v-if="offer.robots && offer.robots.length > 0">
 								<p class="  text-zinc-500 dark:text-zinc-200 "><span class="font-bold">Nickname</span>: <br>{{
@@ -201,7 +206,7 @@
 									<p class="mt-2 text-zinc-500 dark:text-zinc-200">Provider: {{ robot.provider }}</p>
 								</div>
 							</div>
-						
+
 						</div>
 					</div>
 					<!--chatbox with message input-->
@@ -229,16 +234,16 @@
 							</div>
 						</div>
 						<div class="flex flex-row p-2">
-          <textarea
-			v-model="message"
-			class="w-full h-32 border border-gray-200 dark:border-zinc-700 rounded-lg p-2 bg-gray-100 dark:bg-zinc-800 dark:text-zinc-200"
-			placeholder="Type your message here"
-		  ></textarea>
+                              <textarea
+                                v-model="message"
+                                class="w-full h-32 border border-gray-200 dark:border-zinc-700 rounded-lg p-2 bg-gray-100 dark:bg-zinc-800 dark:text-zinc-200"
+                                placeholder="Type your message here"
+                              ></textarea>
 							<primary-button @click="sendChatMessage" class="ml-2">Send</primary-button>
 						</div>
 					</div>
 				</div>
-				
+
 				<div class="w mx-auto sm:px-6 lg:px-8">
 					<div class=" overflow-hidden shadow-sm sm:rounded-lg">
 						<div class="flex flex-col items-center" v-if="robots && robots.length > 0">
@@ -252,13 +257,52 @@
 					</div>
 				</div>
 
+                <div class="border-t border-gray-200 dark:border-zinc-700" v-if="editMode"/>
+                <p v-if="editMode"  class="border-2 border-dashed rounded-xl border-red-500
+                 m-1 text-red-500 dark:text-red-300 font-bold text-lg text-center ">Changing offer values manually can lead to unexpected results, leading to loss of funds. Please be careful and ideally consult us first!</p>
 
-				
+                <div v-if="editMode" class="flex flex-col gap-2 w-full overflow-x-scroll h-[6rem]">
+
+                    <table class="divide-y divide-gray-200 ">
+                        <thead class="bg-gray-50 px-10">
+                        <tr>
+                            <th scope="col"
+                                v-for="(value, key) in offer"
+                                class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
+                                {{ key }}
+
+                            </th>
+
+                        </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td class="min-w-20 w-full"
+                                    v-for="(value, key) in tempOffer" :key="key" >
+                                    <input
+                                        v-model="tempOffer[key]"
+                                        :type="typeof value === 'number' ? 'number' : 'text'"
+                                        class="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg dark:bg-gray-800 dark:text-white"
+                                    />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+
+                <danger-button
+                                v-if="editMode"
+                                v-on:click="offerStore.updateOffer(props.offer.id, tempOffer);"
+                                class="  text-center mt-5 h-10 break-words ">
+                    Save
+                </danger-button>
+
 			</div>
-		
-		
-		
-		
+
+
+
+
 		</div>
 	</GuestLayout>
 </template>
@@ -272,12 +316,18 @@ import { useOfferActionStore } from "@/Stores/OfferActionStore.js";
 import GuestLayout from "@/Layouts/GuestLayout.vue";
 import Pagination from "@/Components/Pagination.vue";
 import Table from "@/Components/Table.vue";
+import Template from "@/Components/Template.vue";
+import TextInput from "@/Components/TextInput.vue";
 
 const offerStore = useOfferActionStore();
-const props = defineProps(['offer', 'chatMessages', 'transactions', 'robots']);
+const props = defineProps(['offer', 'chatMessages', 'transactions', 'robots', 'unadulteratedOffer']);
+const tempOffer = ref(props.unadulteratedOffer);
+
 
 const message = ref('');
 const chatContainer = ref(null);
+
+const editMode = ref(false);
 
 const sendChatMessage = () => {
 	offerStore.sendChatMessage(props.offer.id, message.value);
@@ -290,4 +340,5 @@ onMounted(() => {
 		chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
 	}
 });
+
 </script>

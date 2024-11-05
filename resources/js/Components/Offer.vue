@@ -28,7 +28,7 @@ const collapse = ref(true);
 		        <span v-if="offer.posted_offer_template_slug" class="text-blue-500 dark:text-blue-300">
 		            · Template {{ offer.posted_offer_template_slug }}
 		        </span>
-		    <!--    asked_for_cancel-->
+		        <!--    asked_for_cancel-->
 		        <span v-if="offer.pending_cancel" class="text-red-500 dark:text-red-300">
 		            · Counterparty asked for cancel!
 		        </span>
@@ -39,26 +39,26 @@ const collapse = ref(true);
 		</div>
 		<div class="p-2">
 			    <div class="grid grid-cols-3  gap-1 p-1">
-			
+
 			        <danger-button v-on:click="offerStore.autoRun(offer)"
 								   v-if="!offer.accepted && !offer.my_offer"
 			                       :disabled="offer.job_locked || offer.accepted || (offer.robots && offer.robots.length > 0)"
 			                       class="w-full text-center  h-10 break-words disabled:opacity-50">
 			            <p class="text-center w-full">Robots & Accept</p>
 			        </danger-button>
-			
+
 			        <primary-button v-on:click="offerStore.uniqueRobot(offer.id)"
 			                        v-if="!offer.robots || offer.robots.length === 0"
 			                        class="w-full text-center  h-10 break-words ">
 			            <p class="text-center w-full">Create Robots</p>
 			        </primary-button>
-			
+
 			        <primary-button v-on:click="offerStore.acceptOffer(offer)"
 			                        v-if="((!offer.accepted && !offer.my_offer) || (offer.status === 1 && !offer.my_offer)) && (offer.robots && offer.robots.length > 0)"
 			                        class="w-full text-center  h-10 break-words ">
 			            <p class="text-center w-full">Accept</p>
 			        </primary-button>
-					
+
 					<primary-button class="w-full text-center  h-10 break-words "
 									v-on:click="offerStore.payBond(offer.id)"
 									v-if="(!offer.my_offer && offer.status === 3 && offer.accepted || offer.my_offer && offer.status === 0)">
@@ -89,21 +89,21 @@ const collapse = ref(true);
 									class="w-full text-center  h-10 break-words ">
 						<p class="text-center w-full">Invoice</p>
 					</primary-button>
-			
-			
+
+
 			        <primary-button class="w-full text-center p-0  h-10 break-words"
 			                        v-if="offer.accepted && (offer.status === 9 || offer.status === 10)"
 			                        v-on:click="offerStore.sendPaymentHandle(offer.id)">
 			            <p class="text-center w-full">Auto Chat</p>
 			        </primary-button>
-			
+
 			        <primary-button class="w-full text-center p-0  h-10 break-words"
 			                        v-if="offer.accepted && (offer.status === 9 || offer.status === 10)"
 			                        v-on:click="offerStore.confirmPayment(offer.id)">
 			            <p class="text-center w-full">Confirm</p>
 			        </primary-button>
 
-					
+
 			        <Link :href="route('offers.show', {offer_id: offer.id})">
 						<secondary-button class="w-full text-center p-0  h-10 break-words"
 										  v-if="offer.accepted && (offer.status === 9 || offer.status === 10)"
@@ -112,18 +112,15 @@ const collapse = ref(true);
 						</secondary-button>
 					</Link>
 
-			
+
 			        <danger-button v-on:click="offerStore.collaborativeCancel(offer.id)"
 			                       v-if="offer.accepted && (offer.status === 9 || offer.status === 10)"
 			                       class="w-full text-center  h-10 break-words ">
 			            <p class="text-center w-full">Collaborative Cancel</p>
 			        </danger-button>
-					
-					
-					
-					<danger-button class="w-full text-center p-0  h-10 break-words">
-						<p class="text-center w-full">Manual Edits</p>
-					</danger-button>
+
+
+
 			</div>
 			<div class="flex flex-col gap-y-2 mb-1">
 				<div class="flex flex-row ">
@@ -147,7 +144,7 @@ const collapse = ref(true);
 						</div>
 						<p v-if="!['lake', 'satstralia', 'temple', 'veneto'].includes(offer.provider)"
 						   class="text-zinc-500 dark:text-zinc-200 font-bold">Provider: {{ offer.provider }}</p>
-						
+
 						<!--<p class="mt-2 text-zinc-500 dark:text-zinc-200 font-bold">Currency: {{ offer.currency }}</p>-->
 						<p class="text-zinc-500 dark:text-zinc-200 font-bold">Price: {{ offer.price }} {{
 								offer.currency
@@ -156,7 +153,7 @@ const collapse = ref(true);
 						{{ offer.premium }}</span>
 							<span class="text-zinc-500 dark:text-zinc-200 font-normal">B{{ offer.bond_size }}</span>
 							<span class=" text-zinc-500 dark:text-zinc-200 font-normal mx-1">E: {{ offer.escrow_duration }}H</span>
-							
+
 						</p>
 						<p class="text-zinc-500 dark:text-zinc-200 italic">Updated {{
 								offer.updated_at_readable
@@ -198,7 +195,7 @@ const collapse = ref(true);
 									}}</p>
 								<p class="text-zinc-500 dark:text-zinc-200 text-xs">Profit:
 									{{ offer.min_satoshi_amount_profit ?? 'N/A' }}</p>
-							
+
 							</div>
 							<div class="flex flex-col">
 								<p class="text-zinc-500 dark:text-zinc-200">Max Amount: {{
@@ -210,7 +207,7 @@ const collapse = ref(true);
 								<p class="text-zinc-500 dark:text-zinc-200 text-xs">Profit:
 									{{ offer.max_satoshi_amount_profit ?? 'N/A' }}</p>
 							</div>
-						
+
 						</div>
 						<div v-if="offer.accepted">
 							<!--    accepted_offer_amount, accepted_offer_amount_sat, accepted_offer_profit_sat-->
@@ -221,8 +218,8 @@ const collapse = ref(true);
 							<p class="text-zinc-500 dark:text-zinc-200 text-xs">Profit:
 								{{ offer.accepted_offer_profit_sat ?? 'N/A' }}</p>
 						</div>
-					
-					
+
+
 					</div>
 				</div>
 				<div class="flex flex-row gap-1 flex-wrap justify-between">
@@ -240,10 +237,10 @@ const collapse = ref(true);
 					</Link>
 				</div>
 			</div>
-			
+
 
 		</div>
-	
+
         <!--<div v-if="offer.status">-->
         <!--    <p class=" text-zinc-500 dark:text-zinc-200 font-bold break-words p-4"-->
         <!--       :class="{'bg-blue-200 dark:bg-blue-800': offer.my_offer, 'bg-red-200 dark:bg-red-700': !offer.my_offer}">-->
@@ -266,26 +263,26 @@ const collapse = ref(true);
         <!--<div v-else class="mt-4">   </div>-->
         <!--<div class="p-4 pt-0">-->
         <!--    <div class="grid grid-cols-3  gap-1 p-1">-->
-		
+
         <!--        <danger-button v-on:click="offerStore.autoRun(offer.id)"-->
 		<!--					   v-if="!offer.accepted && !offer.my_offer"-->
         <!--                       :disabled="offer.job_locked || offer.accepted"-->
         <!--                       class="w-full text-center  h-10 break-words disabled:opacity-50">-->
         <!--            <p class="text-center w-full">Auto Run</p>-->
         <!--        </danger-button>-->
-		
+
         <!--        <primary-button v-on:click="offerStore.uniqueRobot(offer.id)"-->
         <!--                        v-if="!offer.robots || offer.robots.length === 0"-->
         <!--                        class="w-full text-center  h-10 break-words ">-->
         <!--            <p class="text-center w-full">Create Robots</p>-->
         <!--        </primary-button>-->
-		
+
         <!--        <primary-button v-on:click="offerStore.acceptOffer(offer.id)"-->
         <!--                        v-if="(!offer.accepted && !offer.my_offer) || (offer.status === 1 && !offer.my_offer)"-->
         <!--                        class="w-full text-center  h-10 break-words ">-->
         <!--            <p class="text-center w-full">Accept</p>-->
         <!--        </primary-button>-->
-		
+
         <!--        <primary-button class="w-full text-center  h-10 break-words "-->
         <!--                        v-on:click="offerStore.payBond(offer.id)"-->
         <!--                        v-if="offer.type === 'sell' && (!offer.my_offer && offer.status === 3 && offer.accepted || offer.my_offer && offer.status === 0)">-->
@@ -302,14 +299,14 @@ const collapse = ref(true);
 		<!--						class="w-full text-center  h-10 break-words ">-->
 		<!--			<p class="text-center w-full">Invoice</p>-->
 		<!--		</primary-button>-->
-		
-		
+
+
         <!--        <primary-button class="w-full text-center p-0  h-10 break-words"-->
         <!--                        v-if="offer.accepted && (offer.status === 9 || offer.status === 10)"-->
         <!--                        v-on:click="offerStore.sendPaymentHandle(offer.id)">-->
         <!--            <p class="text-center w-full">Auto Chat</p>-->
         <!--        </primary-button>-->
-		
+
         <!--        <primary-button class="w-full text-center p-0  h-10 break-words"-->
         <!--                        v-if="offer.accepted && (offer.status === 9 || offer.status === 10)"-->
         <!--                        v-on:click="offerStore.confirmPayment(offer.id)">-->
@@ -322,19 +319,19 @@ const collapse = ref(true);
 		<!--				<p class="text-center w-full">View Chat</p>-->
 		<!--			</secondary-button>-->
 		<!--		</Link>-->
-		
-		
+
+
         <!--        <danger-button v-on:click="offerStore.collaborativeCancel(offer.id)"-->
         <!--                       v-if="offer.accepted && (offer.status === 9 || offer.status === 10)"-->
         <!--                       class="w-full text-center  h-10 break-words ">-->
         <!--            <p class="text-center w-full">Collaborative Cancel</p>-->
         <!--        </danger-button>-->
         <!--    </div>-->
-		
+
         <!--    <div class="border-b border-gray-200 dark:border-zinc-700 mb-2 "></div>-->
         <!--    <div class=" flex flew-row gap-4">-->
-		
-		
+
+
         <!--        <div class="flex flex-col max-w-44 flex-shrink-0">-->
         <!--            <div class="mt-0.5 uppercase tracking-wide text-sm text-indigo-500 font-semibold">-->
         <!--                <span v-text="offer.provider"></span>-->
@@ -342,7 +339,7 @@ const collapse = ref(true);
         <!--                <span class="mt-2 text-zinc-500 dark:text-zinc-200 font-bold">{{-->
         <!--                        offer.accepted && offer.taker ? ' · Accepted' : ''-->
         <!--                    }}</span>-->
-		
+
         <!--            </div>-->
         <!--            <p class="block mt-1  leading-tight font-bold underline dark:text-zinc-200">-->
         <!--                Offer #{{ offer.robosatsId }}-->
@@ -389,8 +386,8 @@ const collapse = ref(true);
         <!--                <p class="text-zinc-500 dark:text-zinc-200 text-xs">Profit:-->
         <!--                    {{ offer.accepted_offer_profit_sat ?? 'N/A' }}</p>-->
         <!--            </div>-->
-		
-		
+
+
         <!--        </div>-->
         <!--        <div class="flex flex-col">-->
 		<!--			<p class="text-zinc-500 dark:text-zinc-200 italic">Expires at:-->
@@ -414,14 +411,14 @@ const collapse = ref(true);
         <!--            <p class="text-zinc-500 dark:text-zinc-200">Premium: {{ offer.premium }}</p>-->
         <!--            <p class="text-zinc-500 dark:text-zinc-200 font-medium ">Payment Methods: <br><span-->
         <!--                class="break-words font-bold">{{ offer.payment_methods }}</span></p>-->
-		
-		
-		
+
+
+
         <!--        </div>-->
-		
-		
+
+
         <!--        <div v-if="offer.robots && offer.robots.length > 0" class="border-r border-gray-200  "></div>-->
-		
+
         <!--        <div class="flex flex-col gap-2">-->
         <!--            <div v-if="offer.robots && offer.robots.length > 0">-->
         <!--                <p class="  text-zinc-500 dark:text-zinc-200 "><span class="font-bold">Nickname</span>: <br>{{-->
@@ -437,7 +434,7 @@ const collapse = ref(true);
 		<!--				  class="break-words font-bold">{{ offer.id }}</span></p>-->
 		<!--			-->
 		<!--			</div>-->
-		
+
         <!--        </div>-->
         <!--    </div>-->
 

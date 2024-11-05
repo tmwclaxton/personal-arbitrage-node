@@ -33,11 +33,11 @@ class Robosats
 
     // list of different providers [satstralia, temple, lake, veneto]
     public array $providers = [
-        'satstralia' => 'satstralia',
+//        'satstralia' => 'satstralia',
         'temple' => 'temple',
         'lake' => 'lake',
         'veneto' => 'veneto',
-        'exp' => 'exp'
+//        'exp' => 'exp'
     ];
 
     public function getWsHost() {
@@ -785,7 +785,7 @@ class Robosats
     {
         $robot = $offer->robots()->first();
         // send message into the chat
-        $messageContent = "This trade was automated by Lightning Arbitrage Solutions 
+        $messageContent = "This trade was automated by Lightning Arbitrage Solutions
         (https://www.lightningarbitragesolutions.com).  Reach out on Telegram (@las_2024) or Signal (@las.24) to join the waitlist! - This trade will be confirmed shortly.";
         // remove line breaks
         $messageContent = str_replace("\n", '', $messageContent);

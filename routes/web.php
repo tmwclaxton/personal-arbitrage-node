@@ -51,7 +51,7 @@ use WebSocket\Middleware\PingResponder;
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    // Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 Route::middleware('auth')->group(function () {
     Route::post('/updateAdminDashboard', function () {
@@ -84,6 +84,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/offers', [\App\Http\Controllers\OfferController::class, 'getOffers'])->name('offers.index');
     Route::get('/offer/{offer_id}', [\App\Http\Controllers\OfferController::class, 'getOffer'])->name('offers.show');
     Route::get('/completed-offers', [\App\Http\Controllers\OfferController::class, 'completedOffers'])->name('offers.completed');
+    Route::post('/update-offer', [OfferController::class, 'manuallyUpdateOffer'])->name('offers.update');
     // Route::get('/offer/{offer_id}/chat', [\App\Http\Controllers\OfferController::class, 'chatRoom'])->name('offers.chat');
     // Route::post('/offer/{offer_id}/chat', [\App\Http\Controllers\OfferController::class, 'sendMessage'])->name('offers.chat');
     Route::post('/create-robot', [OfferController::class, 'createRobot'])->name('create-robot');

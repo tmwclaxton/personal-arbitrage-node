@@ -134,13 +134,19 @@ class OfferController extends Controller
     public function getOffer($offerId)
     {
         $offer = Offer::find($offerId);
+        if ($offer == null) {
+            return response()->json(['message' => 'Offer not found'], 404);
+        }
         $offers = new Collection();
         $offers->push($offer);
+        // set the unadulterated to the value of the offer
+        $unadulteratedOffer = json_decode(json_encode($offer));
         $offer = $this->prepareOffer($offers, $offer, null, null);
         $chatMessages = RobosatsChatMessage::where('offer_id', $offerId)->get();
 
         return Inertia::render('OfferPage', [
             'offer' => $offer,
+            'unadulteratedOffer' => $unadulteratedOffer,
             'robots' => $offer->robots,
             'transactions' => Transaction::where('offer_id', $offerId)->get(),
             'chatMessages' => $chatMessages
@@ -577,12 +583,16 @@ class OfferController extends Controller
                                   mixed $paymentMethods,
                                     mixed $currencies): mixed
     {
-        $offer->expires_at = Carbon::parse($offer->expires_at)->diffForHumans();
-        $offer->updated_at_readable = Carbon::parse($offer->updated_at)->diffForHumans();
-        if ($offer->auto_accept_at) {
+        if (isset($offer->expires_at)) {
+            $offer->expires_at = Carbon::parse($offer->expires_at)->diffForHumans();
+        }
+        if (isset($offer->updated_at)) {
+            $offer->updated_at_readable = Carbon::parse($offer->updated_at)->diffForHumans();
+        }
+        if (isset($offer->auto_accept_at)) {
             $offer->auto_accept_at = Carbon::parse($offer->auto_accept_at)->diffForHumans();
         }
-        if ($offer->auto_confirm_at) {
+        if (isset($offer->auto_confirm_at)) {
             $offer->auto_confirm_at = Carbon::parse($offer->auto_confirm_at)->diffForHumans();
         }
         // round amount to 2 decimal places
@@ -650,6 +660,29 @@ class OfferController extends Controller
         $offer->robots = $offer->robots()->get();
 
         return $offer;
+    }
+
+    public function manuallyUpdateOffer(Request $request) {
+        $offer = $request->offer;
+        $offer_id = $request->offer_id;
+
+        // iterate through each key in the offer and set corresponding attributes
+        $oldOffer = Offer::find($offer_id);
+
+        // remove id from the offer
+        unset($offer['id']);
+        // remove robosatsId from the offer
+        unset($offer['robosatsId']);
+
+        // iterate through each key in oldOffer and set corresponding attributes
+        foreach ($offer as $key => $value) {
+            // check if key does exist
+            if (key_exists($key, $offer)) {
+                $oldOffer->$key = $value;
+            }
+        }
+        $oldOffer->save();
+
     }
 
 
