@@ -341,6 +341,10 @@ const showSidebar = ref(true);
                         class="font-bold mr-1">Max Sat Amount: </span>
                         <TextInput class="w-36 h-6" v-model="tempAdminDashboard.max_satoshi_amount"/>
                     </div>
+                    <div class="flex flex-row justify-between items-center opacity-50 pointer-events-none"><span
+                        class="font-bold mr-1">Max Daily Fiat: </span>
+                        <TextInput class="w-36 h-6" v-model="tempAdminDashboard.max_daily_fiat"/>
+                    </div>
 
                     <primary-button class="h-8 mt-4 mx-auto" @click="clicked">Save Changes</primary-button>
 
