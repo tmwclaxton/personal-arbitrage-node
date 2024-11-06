@@ -96,9 +96,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/claim-rewards', [OfferController::class, 'claimRewards'])->name('claim-rewards');
     Route::post('/send-payment-handle', [OfferController::class, 'sendPaymentHandle'])->name('send-payment-handle');
     Route::post('/send-message', [OfferController::class, 'sendMessage'])->name('send-message');
-    Route::post('auto-accept', [OfferController::class, 'autoAccept'])->name('auto-accept');
-    Route::post('collaborative-cancel', [OfferController::class, 'collaborativeCancel'])->name('collaborative-cancel');
-
+    Route::post('/auto-accept', [OfferController::class, 'autoAccept'])->name('auto-accept');
+    Route::post('/collaborative-cancel', [OfferController::class, 'collaborativeCancel'])->name('collaborative-cancel');
+    Route::post('/toggle-pause-offer', [OfferController::class, 'togglePauseOffer'])->name('offers.pause.toggle');
+//    Route::post('/resume-offer', [OfferController::class, 'resumeOffer'])->name('offers.resume');
+    Route::post('/cancel-offer', [OfferController::class, 'cancelOffer'])->name('offers.cancel');
 
     Route::get('/transactions', [\App\Http\Controllers\TransactionController::class, 'index'])->name('transactions.index');
     Route::get('/purchases', [\App\Http\Controllers\BtcPurchaseController::class, 'index'])->name('purchases.index');

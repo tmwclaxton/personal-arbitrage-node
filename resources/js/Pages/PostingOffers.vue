@@ -68,7 +68,7 @@ const offerTemplate = ref({
     premium: 20,
     currency: 'GBP',
     paymentMethods: ['Revolut'],
-    provider: ['satstralia'],
+    provider: ['temple'],
 	randomise_provider: false,
     bondSize: 3,
     autoCreate: true,

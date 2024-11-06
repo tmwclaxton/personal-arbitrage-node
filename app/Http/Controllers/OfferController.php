@@ -685,5 +685,26 @@ class OfferController extends Controller
 
     }
 
+    public function togglePauseOffer(Request $request) {
+        $offer = Offer::find($request->offer_id);
+        $robosats = new Robosats();
+        $response = $robosats->togglePauseOffer($offer);
+        return $response;
+    }
+
+//    public function resumeOffer(Request $request) {
+//        $offer = Offer::find($request->offer_id);
+//        $robosats = new Robosats();
+//        $response = $robosats->resumeOffer($offer);
+//        return $response;
+//    }
+
+    public function cancelOffer(Request $request) {
+        $offer = Offer::find($request->offer_id);
+        $robosats = new Robosats();
+        $response = $robosats->cancelOffer($offer);
+        return $response;
+    }
+
 
 }

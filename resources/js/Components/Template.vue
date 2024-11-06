@@ -21,7 +21,7 @@ const props = defineProps({
     },
     providers: {
         type: Array,
-        default: ['satstralia', 'temple', 'lake', 'veneto']
+        default: ['temple', 'lake', 'veneto']
     },
 	currencies: {
 		type: Array,
@@ -121,7 +121,7 @@ offerEditTemplate.value.providers = JSON.parse(offerEditTemplate.value.provider)
 
 <template>
 
-	
+
 	<tr  :key="template.id" class="bg-white dark:bg-zinc-900">
 		<td class="px-1 py-4 whitespace-nowrap text-center">
 			<div class="text-sm font-bold text-gray-900 dark:text-gray-200">{{ template.slug }}</div>

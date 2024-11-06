@@ -10,7 +10,7 @@ const props = defineProps({
 	},
 	options: {
 		type: Array,
-		default: ['satstralia', 'temple', 'lake', 'veneto']
+		default: ['temple', 'lake', 'veneto']
 	}
 });
 
@@ -43,7 +43,7 @@ const submit = () => {
 				  v-model="providersLocal"
 				  :checked="providersLocal.includes(option)"
 				  class="w-4 h-4 text-blue-600 bg-zinc-100 border-zinc-300 dark:bg-zinc-700 dark:border-zinc-600">
-				
+
 				<!-- Label showing option name and its position in the providersLocal array -->
 				<label :for="option" class="flex flex-row gap-x-2 align-middle items-center">
 					<span class="font-semibold text-sm">{{ option }}</span>

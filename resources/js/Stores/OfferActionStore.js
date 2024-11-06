@@ -338,6 +338,84 @@ export const useOfferActionStore = defineStore('OfferActionStore', {
                     console.log(error);
                 }
             }
+        },
+
+        async pause(id) {
+            useConfirmModalStore().buttonOneText = 'Cancel';
+            useConfirmModalStore().buttonTwoText = 'Pause Offer';
+            useConfirmModalStore().title = 'Are you sure you want to pause the offer?';
+            useConfirmModalStore().show = true;
+            useConfirmModalStore().continue = async () => {
+                console.log('pausing offer');
+                try {
+                    const response = await axios.post(route('offers.pause.toggle'), {
+                        offer_id: id
+                    });
+                    toastStore.add({
+                        message: 'Offer Paused',
+                        type: "success",
+                    });
+                    console.log(response);
+                } catch (error) {
+                    toastStore.add({
+                        message: 'Failed to Pause Offer',
+                        type: "error",
+                    });
+                    console.log(error);
+                }
+            }
+        },
+
+        async unpause(id) {
+            useConfirmModalStore().buttonOneText = 'Cancel';
+            useConfirmModalStore().buttonTwoText = 'Resume Offer';
+            useConfirmModalStore().title = 'Are you sure you want to resume the offer?';
+            useConfirmModalStore().show = true;
+            useConfirmModalStore().continue = async () => {
+                console.log('resuming offer');
+                try {
+                    const response = await axios.post(route('offers.pause.toggle'), {
+                        offer_id: id
+                    });
+                    toastStore.add({
+                        message: 'Offer Resumed',
+                        type: "success",
+                    });
+                    console.log(response);
+                } catch (error) {
+                    toastStore.add({
+                        message: 'Failed to Resume Offer',
+                        type: "error",
+                    });
+                    console.log(error);
+                }
+            }
+        },
+
+        async cancel(id) {
+            useConfirmModalStore().buttonOneText = 'Cancel';
+            useConfirmModalStore().buttonTwoText = 'Cancel Offer';
+            useConfirmModalStore().title = 'Are you sure you want to cancel the offer?';
+            useConfirmModalStore().show = true;
+            useConfirmModalStore().continue = async () => {
+                console.log('cancelling offer');
+                try {
+                    const response = await axios.post(route('offers.cancel'), {
+                        offer_id: id
+                    });
+                    toastStore.add({
+                        message: 'Offer Cancelled',
+                        type: "success",
+                    });
+                    console.log(response);
+                } catch (error) {
+                    toastStore.add({
+                        message: 'Failed to Cancel Offer',
+                        type: "error",
+                    });
+                    console.log(error);
+                }
+            }
         }
     }
 });

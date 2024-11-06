@@ -37,7 +37,8 @@ const collapse = ref(true);
 		        </span>
 		    </p>
 		</div>
-		<div class="p-2">
+		<div class="p-2 w-full flex flex-col">
+            <p class="text-xs text-zinc-500 dark:text-zinc-200 font-bold mx-auto opacity-70">Offer actions may take a few seconds to complete</p>
 			    <div class="grid grid-cols-3  gap-1 p-1">
 
 			        <danger-button v-on:click="offerStore.autoRun(offer)"
@@ -66,7 +67,7 @@ const collapse = ref(true);
 					</primary-button>
 					<primary-button class="w-full text-center  h-10 break-words "
 									v-on:click="offerStore.pause(offer.id)"
-									v-if="(offer.my_offer && offer.status < 3)">
+									v-if="(offer.my_offer && offer.status < 3 && offer.status !== 2)">
 						<p class="text-center w-full">Pause</p>
 					</primary-button>
 					<primary-button class="w-full text-center  h-10 break-words "
@@ -74,11 +75,11 @@ const collapse = ref(true);
 									v-if="(offer.my_offer && offer.status === 2)">
 						<p class="text-center w-full">Unpause</p>
 					</primary-button>
-					<primary-button class="w-full text-center  h-10 break-words "
-									v-on:click="offerStore.unpause(offer.id)"
+					<danger-button class="w-full text-center  h-10 break-words "
+									v-on:click="offerStore.cancel(offer.id)"
 									v-if="(!offer.my_offer && offer.status >= 3 && offer.accepted || offer.my_offer && offer.status >= 0)">
 						<p class="text-center w-full">Cancel</p>
-					</primary-button>
+					</danger-button>
 					<primary-button v-on:click="offerStore.payEscrow(offer.id)"
 									v-if="offer.type === 'sell' && (offer.accepted && (offer.status === 6 || offer.status === 7))"
 									class="w-full text-center  h-10 break-words ">
