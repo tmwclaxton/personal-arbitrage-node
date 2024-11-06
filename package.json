@@ -22,6 +22,7 @@
         "chart.js": "^4.4.4",
         "inertia": "github:inertiajs/inertia",
         "leaflet": "^1.9.4",
+        "lodash": "^4.17.21",
         "pinia": "^2.2.2",
         "vue-chartjs": "^5.3.1"
     }

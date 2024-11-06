@@ -128,7 +128,7 @@ const refreshKey = ref(0);
                         <span class="border-r border-gray-300 dark:border-zinc-700 h-10"/>
                         <!-- profile settings -->
                         <Link :href="route('profile.edit')" :active="route().current('profile.edit')">
-                            <primary-button class="font-bold  flex-shrink-0 w-max" v-text="'Profile Settings'"/>
+                            <primary-button @prevent.submit class="font-bold  flex-shrink-0 w-max" v-text="'Profile Settings'"/>
                         </Link>
                     </div>
 

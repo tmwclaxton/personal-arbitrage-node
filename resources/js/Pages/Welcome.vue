@@ -12,6 +12,7 @@ import DangerButton from "@/Components/DangerButton.vue";
 import ToastList from "@/Components/Toast/ToastList.vue";
 import ConfirmModal from "@/Modals/ConfirmModal.vue";
 import toastStore from "@/Stores/ToastStore.js";
+import InternalMessagingPopup from "@/Modals/MiniPlayers/InternalMessagingPopup.vue";
 
 const props = defineProps({
     offers: Array,
@@ -131,6 +132,7 @@ const showSidebar = ref(true);
 <template>
     <Head title="Offers" />
 	<ConfirmModal />
+    <InternalMessagingPopup />
 	<ToastList/>
     <div class="min-h-screen">
 
@@ -141,7 +143,7 @@ const showSidebar = ref(true);
 				<!--<img src="/images/logo.png" alt="Lightning Arbitrage Solutions" class="w-32 mx-auto"/>-->
 				<img src="/images/logoLight.png" alt="Lightning Arbitrage Solutions" class="w-72 mx-auto dark:hidden"/>
 				<img src="/images/logoDark.png" alt="Lightning Arbitrage Solutions" class="w-72 mx-auto hidden dark:block"/>
-				
+
 			</a>
             <div class="w-full flex flex-row gap-x-8 mx-auto  justify-center ">
                 <div v-if="btcPrices.length > 0" v-for="btcPrice in btcPrices" :key="btcPrice.id">
@@ -160,7 +162,7 @@ const showSidebar = ref(true);
         <!--<div class="flex flex-row gap-x-2 absolute top-0 w-full">-->
         <!--    <div class="flex flex-col flex-grow opacity-0 h-20">-->
         <!--    </div>-->
-		
+
         <!--    <div class="flex-shrink-0 my-auto mx-10">-->
         <!--        &lt;!&ndash;<Link :href="route('simple')">&ndash;&gt;-->
         <!--        &lt;!&ndash;    <secondary-button class="h-10 my-auto">&ndash;&gt;-->
@@ -356,8 +358,8 @@ const showSidebar = ref(true);
 							<p class=""><span class="font-bold">Kraken Balance:</span> {{ tempAdminDashboard.kraken_btc_balance }} </p>
 							<p class=""><span class="font-bold">Bond Balance:</span> {{ tempAdminDashboard.bond_sats }} </p>
 							<p class=""><span class="font-bold">Escrow Balance:</span> {{ tempAdminDashboard.escrow_sats }} </p>
-							
-							
+
+
                             <p class=""><span class="font-bold">Remote Balance:</span> {{ tempAdminDashboard.remoteBalance }} </p>
                             <div class="border-b border-zinc-300 dark:border-zinc-700"></div>
                             <div v-if="channelBalances && channelBalances.length > 0"
@@ -435,7 +437,7 @@ const showSidebar = ref(true);
 							   :key="offer.robosatsId"
 							:showSidebar="showSidebar"/>
 					</div>
-				
+
                 </div>
                 <div class="mx-auto" v-else>
                     <p class="text-lg">No offers available</p>

@@ -53,23 +53,48 @@ export const useOfferActionStore = defineStore('OfferActionStore', {
 
         },
         async uniqueRobot(id) {
-            console.log('creating unique robot');
-            try {
-                const response = await axios.post(route('create-robot'), {
-                    offer_id: id
-                });
-                toastStore.add({
-                    message: 'Unique Robot Created',
-                    type: "success",
-                });
-                console.log(response);
-            } catch (error) {
-                toastStore.add({
-                    message: 'Failed to Create Unique Robot',
-                    type: "error",
-                });
-                console.log(error);
+            // console.log('creating unique robot');
+            // try {
+            //     const response = await axios.post(route('create-robot'), {
+            //         offer_id: id
+            //     });
+            //     toastStore.add({
+            //         message: 'Unique Robot Created',
+            //         type: "success",
+            //     });
+            //     console.log(response);
+            // } catch (error) {
+            //     toastStore.add({
+            //         message: 'Failed to Create Unique Robot',
+            //         type: "error",
+            //     });
+            //     console.log(error);
+            // }
+
+            useConfirmModalStore().buttonOneText = 'Cancel';
+            useConfirmModalStore().buttonTwoText = 'Create Unique Robot';
+            useConfirmModalStore().title = 'This will create a unique robot for this offer.';
+            useConfirmModalStore().show = true;
+            useConfirmModalStore().continue = async () => {
+                console.log('creating unique robot');
+                try {
+                    const response = await axios.post(route('create-robot'), {
+                        offer_id: id
+                    });
+                    toastStore.add({
+                        message: 'Unique Robot Created',
+                        type: "success",
+                    });
+                    console.log(response);
+                } catch (error) {
+                    toastStore.add({
+                        message: 'Failed to Create Unique Robot',
+                        type: "error",
+                    });
+                    console.log(error);
+                }
             }
+
         },
         async acceptOffer(offer) {
             useConfirmModalStore().buttonOneText = 'Cancel';
