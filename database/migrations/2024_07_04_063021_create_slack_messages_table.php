@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('slack_id')->unique();
             $table->string('channel_id');
             $table->string('content');
+            $table->boolean('internally_read')->default(false);
             $table->timestamps();
         });
     }

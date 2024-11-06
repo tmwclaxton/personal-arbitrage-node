@@ -2,6 +2,8 @@
 import {onMounted, onUnmounted, ref, watch} from "vue";
 
 import {debounce, round} from "lodash";
+import {useInternalMessagingStore} from "@/Stores/InternalMessagingStore.js";
+import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 // const internalMessagingStore = useInternalMessagingStore();
 const expandMessagingPopup = ref(false);
 const name = "InternalMessagingPopup";
@@ -122,15 +124,15 @@ const toggleexpandMessagingPopup = () => {
 <template>
     <div ref="draggableDiv"   class="z-40 fixed shadow-md dark:shadow-zinc-600
     bg-white dark:bg-zinc-900 border-2 border-purple-200 dark:border-purple-500
-    rounded-xl overflow-hidden flex flex-col w-96" >
-<!--         v-bind:class="useQueueStore().showMiniPlayer ? '' : 'opacity-0 w-0 h-0 pointer-events-none' "-->
+    rounded-xl overflow-hidden flex flex-col w-96"
+         v-bind:class="useInternalMessagingStore().expandedInternalMessaging ? 'h-96' : 'h-16' ">
 
 <!--        <div class="my-0.5 border border-zinc-200 dark:border-zinc-800" v-if="expandMessagingPopup"/>-->
 <!--        <div  id="miniPlayerItemsHolder" class="relative flex flex-col pb-1 max-h-48 overflow-y-auto" v-if="expandMessagingPopup">-->
 <!--        </div>-->
         <div>
             <p class="text-center text-lg text-gray-500 dark:text-gray-400 font-bold">Internal Messaging</p>
-
+            <font-awesome-icon :icon="['fas', 'chevron-down']" class="w-5 text-center text-gray-500 dark:text-gray-400 cursor-pointer" @click="toggleexpandMessagingPopup"/>
         </div>
         <div v-if="expandMessagingPopup" class="flex flex-row gap-x-2">
             <div class="flex flex-col">
