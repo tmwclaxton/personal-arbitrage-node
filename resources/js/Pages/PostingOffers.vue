@@ -46,7 +46,7 @@ const create = () => {
     }).then(response => {
         console.log(response.data);
 		refreshPage();
-		
+
 		toastStore.add({
 			message: 'Template created',
 			type: "success",
@@ -85,14 +85,14 @@ const refreshPage = () => {
 }
 
 const updateAll = () => {
-	
+
 	// foreach click button using id :id="'update' + template.id"
 	for (let template of props.templates) {
 	 	document.getElementById('update' + template.id).click();
  	}
-	
+
 	refreshPage();
-	
+
 	toastStore.add({
 		message: 'All templates updated',
 		type: "success",
@@ -112,9 +112,9 @@ const hideSidebar = ref(false);
 		</div>
         <div class=" min-h-screen flex flex-row w-screen">
             <div v-if="!hideSidebar"
-			  class="border-r border-gray-200 w-1/4">
+			  class="border-r border-gray-200 w-1/4 min-w-96 ">
 				<h1 class="text-2xl font-bold underline mb-1 text-center">Create an offer template</h1>
-                <div class="flex flex-col flex-wrap items-center mx-auto gap-2 max-w-xl ">
+                <div class="flex flex-col flex-wrap items-center mx-auto gap-2 max-w-xl px-2">
                         <label class="text-sm text-gray-500">Offer Type</label>
                         <select v-model="offerTemplate.type" class="w-36 block  bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             <option value="buy">Buy</option>
@@ -130,6 +130,7 @@ const hideSidebar = ref(false);
 						<text-input v-model="offerTemplate.longitude" label="Longitude" />
                         <label class="text-sm text-gray-500">Premium</label>
                         <text-input v-model="offerTemplate.premium" label="Premium" />
+                        <p class="text-xs text-gray-500 w-52">To make profit for sell offers set a positive premium, for buy offers set a negative premium</p>
                         <label class="text-sm text-gray-500">Bond Size</label>
                         <text-input v-model="offerTemplate.bondSize" label="Bond Size" />
                         <label class="text-sm text-gray-500">Currency (GBP, USD, EUR)</label>
@@ -155,12 +156,12 @@ const hideSidebar = ref(false);
                         <toggle-button v-model="offerTemplate.autoCreate" label="Auto Create" />
 						<label class="text-sm text-gray-500 mt-5">Custom Message (keep empty for default message handling)</label>
 						<textarea v-model="offerTemplate.custom_message"
-								  class="w-96 h-20 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
-						
+								  class="w-full h-20 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+
 						<label class="text-sm text-gray-500 mt-5">Disable All Automated Messages</label>
 							<toggle-button v-model="offerTemplate.disable_all_messages" label="Disable All Messages" />
 							<primary-button class="mt-4" @click="create">Create</primary-button>
-						
+
 
                 </div>
             </div>
@@ -171,8 +172,8 @@ const hideSidebar = ref(false);
 					<secondary-button @click="updateAll">Update All</secondary-button>
 				</div>
 				<div class="w-full overflow-x-scroll mx-5  flex flex-col rounded border">
-					
-					
+
+
 					<table class="divide-y divide-gray-200">
 						<thead class="bg-gray-50 px-10">
 							<tr>
@@ -182,7 +183,7 @@ const hideSidebar = ref(false);
 								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
 									Type
 								</th>
-								
+
 								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
 									Min
 								</th>
@@ -237,7 +238,7 @@ const hideSidebar = ref(false);
 								<th scope="col" class="px-1 py-3  border-r text-center text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-800 dark:border-gray-700">
 									Actions
 								</th>
-								
+
 							</tr>
 						</thead>
 						<tbody class="bg-white divide-y divide-gray-200">
@@ -251,8 +252,8 @@ const hideSidebar = ref(false);
 							/>
 						</tbody>
 					</table>
-					
-					
+
+
 
 				</div>
 			</div>

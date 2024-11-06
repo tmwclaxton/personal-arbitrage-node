@@ -3,7 +3,7 @@ import {onMounted, onUnmounted, ref, watch} from "vue";
 
 import {debounce, round} from "lodash";
 // const internalMessagingStore = useInternalMessagingStore();
-const expandQueue = ref(false);
+const expandMessagingPopup = ref(false);
 const name = "InternalMessagingPopup";
 
 const draggableDiv = ref(null);
@@ -99,8 +99,8 @@ const checkIfInViewport = debounce(() => {
 
 
 
-const toggleExpandQueue = () => {
-    expandQueue.value = !expandQueue.value;
+const toggleexpandMessagingPopup = () => {
+    expandMessagingPopup.value = !expandMessagingPopup.value;
     // wait for the animation to finish
     checkIfInViewport();
 };
@@ -120,16 +120,28 @@ const toggleExpandQueue = () => {
 </script>
 
 <template>
-    <div ref="draggableDiv"   class="z-40 fixed shadow-md bg-white dark:bg-zinc-900 border-2 border-purple-200 dark:border-purple-500
+    <div ref="draggableDiv"   class="z-40 fixed shadow-md dark:shadow-zinc-600
+    bg-white dark:bg-zinc-900 border-2 border-purple-200 dark:border-purple-500
     rounded-xl overflow-hidden flex flex-col w-96" >
 <!--         v-bind:class="useQueueStore().showMiniPlayer ? '' : 'opacity-0 w-0 h-0 pointer-events-none' "-->
 
-<!--        <div class="my-0.5 border border-zinc-200 dark:border-zinc-800" v-if="expandQueue"/>-->
-<!--        <div  id="miniPlayerItemsHolder" class="relative flex flex-col pb-1 max-h-48 overflow-y-auto" v-if="expandQueue">-->
+<!--        <div class="my-0.5 border border-zinc-200 dark:border-zinc-800" v-if="expandMessagingPopup"/>-->
+<!--        <div  id="miniPlayerItemsHolder" class="relative flex flex-col pb-1 max-h-48 overflow-y-auto" v-if="expandMessagingPopup">-->
 <!--        </div>-->
+        <div>
+            <p class="text-center text-lg text-gray-500 dark:text-gray-400 font-bold">Internal Messaging</p>
 
-        <p class="text-center text-lg text-gray-500 dark:text-gray-400 font-bold">Internal Messaging</p>
+        </div>
+        <div v-if="expandMessagingPopup" class="flex flex-row gap-x-2">
+            <div class="flex flex-col">
 
+            </div>
+
+            <div class="flex flex-col">
+
+            </div>
+
+        </div>
     </div>
 
 </template>
