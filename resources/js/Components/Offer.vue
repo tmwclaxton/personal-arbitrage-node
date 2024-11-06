@@ -77,7 +77,7 @@ const collapse = ref(true);
 					</primary-button>
 					<danger-button class="w-full text-center  h-10 break-words "
 									v-on:click="offerStore.cancel(offer.id)"
-									v-if="(!offer.my_offer && offer.status >= 3 && offer.accepted || offer.my_offer && offer.status >= 0)">
+									v-if="(!offer.my_offer && offer.status >= 3 && offer.accepted || offer.my_offer && offer.status >= 0) && offer.status <= 7">
 						<p class="text-center w-full">Cancel</p>
 					</danger-button>
 					<primary-button v-on:click="offerStore.payEscrow(offer.id)"
