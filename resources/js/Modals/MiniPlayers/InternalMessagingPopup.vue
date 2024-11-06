@@ -101,8 +101,8 @@ const checkIfInViewport = debounce(() => {
 
 
 
-const toggleexpandMessagingPopup = () => {
-    expandMessagingPopup.value = !expandMessagingPopup.value;
+const toggleExpandMessagingPopup = () => {
+    useInternalMessagingStore().expandedInternalMessaging = !useInternalMessagingStore().expandedInternalMessaging;
     // wait for the animation to finish
     checkIfInViewport();
 };
@@ -122,17 +122,19 @@ const toggleexpandMessagingPopup = () => {
 </script>
 
 <template>
-    <div ref="draggableDiv"   class="z-40 fixed shadow-md dark:shadow-zinc-600
+    <div ref="draggableDiv"   class="hidden z-40 fixed shadow-md dark:shadow-zinc-600
     bg-white dark:bg-zinc-900 border-2 border-purple-200 dark:border-purple-500
-    rounded-xl overflow-hidden flex flex-col w-96"
-         v-bind:class="useInternalMessagingStore().expandedInternalMessaging ? 'h-96' : 'h-16' ">
+    rounded-xl overflow-hidden flex flex-col "
+         v-bind:class="useInternalMessagingStore().expandedInternalMessaging ? 'h-96 w-96' : 'h-16 w-64' ">
 
 <!--        <div class="my-0.5 border border-zinc-200 dark:border-zinc-800" v-if="expandMessagingPopup"/>-->
 <!--        <div  id="miniPlayerItemsHolder" class="relative flex flex-col pb-1 max-h-48 overflow-y-auto" v-if="expandMessagingPopup">-->
 <!--        </div>-->
-        <div>
+        <div class="mx-auto flex flex-row justify-center items-center p-2 cursor-pointer select-none gap-x-2"
+             @click="toggleExpandMessagingPopup">
             <p class="text-center text-lg text-gray-500 dark:text-gray-400 font-bold">Internal Messaging</p>
-            <font-awesome-icon :icon="['fas', 'chevron-down']" class="w-5 text-center text-gray-500 dark:text-gray-400 cursor-pointer" @click="toggleexpandMessagingPopup"/>
+            <font-awesome-icon :icon="['fas', 'chevron-down']" class="mt-1 w-5 text-center text-gray-500 dark:text-gray-400 cursor-pointer" v-if="!useInternalMessagingStore().expandedInternalMessaging"/>
+            <font-awesome-icon :icon="['fas', 'chevron-up']" class="my-auto w-5 text-center text-gray-500 dark:text-gray-400 cursor-pointer" v-if="useInternalMessagingStore().expandedInternalMessaging"/>
         </div>
         <div v-if="expandMessagingPopup" class="flex flex-row gap-x-2">
             <div class="flex flex-col">

@@ -1230,4 +1230,37 @@ class Robosats
     public function computeInvoiceAmount(int $sats, int $ppm = 1000): int {
         return floor($sats - ($sats * ($ppm / 1000000)));
     }
+
+    public function pauseOffer($offer) {
+        $url = $this->getHost() . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
+        $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'pause']);
+        $response = json_decode($response->body(), true);
+
+        $slackService = new SlackService();
+        $slackService->sendMessage('Paused offer ' . $offer->robosatsId, $offer->slack_channel_id);
+
+        return $response;
+    }
+
+    public function resumeOffer($offer) {
+        $url = $this->getHost() . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
+        $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'unpause']);
+        $response = json_decode($response->body(), true);
+
+        $slackService = new SlackService();
+        $slackService->sendMessage('Resumed offer ' . $offer->robosatsId, $offer->slack_channel_id);
+
+        return $response;
+    }
+
+    public function cancelOffer($offer) {
+        $url = $this->getHost() . '/mainnet/' . $offer->provider . '/api/order/?order_id=' . $offer->robosatsId;
+        $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'cancel']);
+        $response = json_decode($response->body(), true);
+
+        $slackService = new SlackService();
+        $slackService->sendMessage('Cancelled offer ' . $offer->robosatsId, $offer->slack_channel_id);
+
+        return $response;
+    }
 }
