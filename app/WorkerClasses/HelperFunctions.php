@@ -97,8 +97,7 @@ class HelperFunctions
         }
 
         // grab all offers where escrow_locked is true and status is less than 14
-        $escrowLockedOffers = Offer::where([['status', '<', 14], ['status', '>', 6],['status', '!=', 11],['status', '!=', 12],])
-            ->orWhere([['status', '<', 14], ['status', '>', 6],['status', '!=', 11],['status', '!=', 12],['accepted', '=', true]])
+        $escrowLockedOffers = Offer::where([['status', '<', 14], ['status', '>', 6],['status', '!=', 11],['status', '!=', 12],['status', '!=', 13],['accepted', '=', true]])
             ->get();
         foreach ($escrowLockedOffers as $escrowLockedOffer) {
             $transaction = $transactions->where('offer_id', $escrowLockedOffer->id)->first();
