@@ -520,17 +520,17 @@ class Robosats
     public function acceptOffer($robosatsId, $amount = null) {
         try {
             $offer = Offer::where('robosatsId', $robosatsId)->first();
+//            dd($offer);
 
             // grab admin dashboard
             $adminDashboard = AdminDashboard::all()->first();
             $channelBalances = json_decode($adminDashboard->channelBalances, true);
 
-            // if amount is set use the currnency of the offer to convert to sats
+            // if amount is set use the currency of the offer to convert to sats
             $specificAmountSats = null;
             if ($amount) {
                 $helpers = new HelperFunctions();
-                $specificAmountSats = $helpers->convertCurrency($amount, $offer->currency, 'BTC');
-                $specificAmountSats = $helpers->btcToSatoshi($specificAmountSats);
+                $specificAmountSats = $helpers->fiatToSatoshi($amount, $offer->price);
                 // round satoshi to 0 decimal places
                 $specificAmountSats = round($specificAmountSats, 0);
             }
