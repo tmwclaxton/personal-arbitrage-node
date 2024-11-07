@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('admin_dashboards', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->default('');
+            $table->string('tk_name')->default('');
             $table->boolean('panicButton')->default(false);
             $table->boolean('autoReward')->default(false);
             $table->boolean('autoAccept')->default(false);

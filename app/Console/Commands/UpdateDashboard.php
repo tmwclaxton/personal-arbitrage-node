@@ -34,7 +34,7 @@ class UpdateDashboard extends Command
             $adminDashboard = new AdminDashboard();
             // set name to random string
             $helperFunctions = new HelperFunctions();
-            $adminDashboard->name = $helperFunctions->generateSlug(14);
+            $adminDashboard->tk_name = $helperFunctions->generateSlug(14);
             $adminDashboard->save();
         }
         // check if keys for communication with orchestrator exist
