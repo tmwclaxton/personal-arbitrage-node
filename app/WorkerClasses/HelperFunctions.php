@@ -80,8 +80,8 @@ class HelperFunctions
         $bondSatoshis = 0;
         $escrowSatoshis = 0;
         // grab all offers where bond_locked is true and status is less than 14
-        $bondLockedOffers = Offer::where([['status', '<', 14], ['status', '>', 0], ['status', '!=', 4],['status', '!=', 5],['my_offer', '=', true]])
-            ->orWhere([['status', '<', 14], ['status', '>', 2], ['status', '!=', 4],['status', '!=', 5],['accepted', '=', true]])
+        $bondLockedOffers = Offer::where([['status', '<', 14], ['status', '>', 0], ['status', '!=', 4],['status', '!=', 5],['status', '!=', 11],['status', '!=', 12],['my_offer', '=', true]])
+            ->orWhere([['status', '<', 14], ['status', '>', 2], ['status', '!=', 4],['status', '!=', 5],['status', '!=', 11],['status', '!=', 12],['accepted', '=', true]])
             ->get();
         foreach ($bondLockedOffers as $bondLockedOffer) {
             $transaction = $transactions->where('offer_id', $bondLockedOffer->id)->first();
@@ -97,8 +97,8 @@ class HelperFunctions
         }
 
         // grab all offers where escrow_locked is true and status is less than 14
-        $escrowLockedOffers = Offer::where([['status', '<', 14], ['status', '>', 0], ['status', '!=', 5]])
-            ->orWhere([['status', '<', 14], ['status', '>', 2], ['status', '!=', 5],['accepted', '=', true]])
+        $escrowLockedOffers = Offer::where([['status', '<', 14], ['status', '>', 6],['status', '!=', 11],['status', '!=', 12],])
+            ->orWhere([['status', '<', 14], ['status', '>', 6],['status', '!=', 11],['status', '!=', 12],['accepted', '=', true]])
             ->get();
         foreach ($escrowLockedOffers as $escrowLockedOffer) {
             $transaction = $transactions->where('offer_id', $escrowLockedOffer->id)->first();
