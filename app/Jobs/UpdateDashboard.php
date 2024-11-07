@@ -39,6 +39,8 @@ class UpdateDashboard implements ShouldQueue
         $adminDashboard->localBalance = $balanceArray['localBalance'];
         $adminDashboard->remoteBalance = $balanceArray['remoteBalance'];
         $adminDashboard->channelBalances = json_encode($balanceArray['channelBalances']);
+        $adminDashboard->save();
+
         $helpFunction = new HelperFunctions();
         $calculations = $helpFunction->calcSatsInTransit();
         $adminDashboard->bond_sats = $calculations['bondSatoshis'];
