@@ -117,36 +117,43 @@ Route::middleware('auth')->group(function () {
     Route::post('/edit-template', [\App\Http\Controllers\OfferTemplatesController::class, 'editTemplate'])->name('edit-template');
     Route::get('/delete-template/{id}', [\App\Http\Controllers\OfferTemplatesController::class, 'deleteTemplate'])->name('delete-template');
 
+    Route::get('/tax-returns', [\App\Http\Controllers\TaxReturnController::class, 'index'])->name('tax-returns.index');
+    Route::get('/guide', [\App\Http\Controllers\GuideController::class, 'index'])->name('guide.index');
+    Route::get('/logs', [\App\Http\Controllers\LogsController::class, 'index'])->name('logs.index');
+    // route for displaying error messages
+
+
+
     Route::get('/simple', function () {
         return Inertia::render('Simple');
     })->name('simple');
 
 
-    Route::get('/logs', function () {
-        // Get worker logs //
-        $logPath = storage_path('logs/worker.log');
-        $log = file_get_contents($logPath);
-        $logSegments = explode("\n", $log);
-        $workerLogs = array_filter($logSegments, 'strlen');
-
-        // Get laravel logs //
-        $logPath = storage_path('logs/laravel.log');
-        $log = file_get_contents($logPath);
-        $logSegments = explode("\n", $log);
-        $laravelLogs = array_filter($logSegments, 'strlen');
-
-        // reverse the logs so the newest is at the top //
-        $workerLogs = array_reverse($workerLogs);
-        $laravelLogs = array_reverse($laravelLogs);
-
-        // trim to 1000 lines
-        $workerLogs = array_slice($workerLogs, 0, 1000);
-        $laravelLogs = array_slice($laravelLogs, 0, 1000);
-        return [
-            'workerLogs' => $workerLogs,
-            'laravelLogs' => $laravelLogs,
-        ];
-    })->name('logs');
+//    Route::get('/logs', function () {
+//        // Get worker logs //
+//        $logPath = storage_path('logs/worker.log');
+//        $log = file_get_contents($logPath);
+//        $logSegments = explode("\n", $log);
+//        $workerLogs = array_filter($logSegments, 'strlen');
+//
+//        // Get laravel logs //
+//        $logPath = storage_path('logs/laravel.log');
+//        $log = file_get_contents($logPath);
+//        $logSegments = explode("\n", $log);
+//        $laravelLogs = array_filter($logSegments, 'strlen');
+//
+//        // reverse the logs so the newest is at the top //
+//        $workerLogs = array_reverse($workerLogs);
+//        $laravelLogs = array_reverse($laravelLogs);
+//
+//        // trim to 1000 lines
+//        $workerLogs = array_slice($workerLogs, 0, 1000);
+//        $laravelLogs = array_slice($laravelLogs, 0, 1000);
+//        return [
+//            'workerLogs' => $workerLogs,
+//            'laravelLogs' => $laravelLogs,
+//        ];
+//    })->name('logs');
 
     // create robot
     Route::get('create-robots', function () {
@@ -154,10 +161,7 @@ Route::middleware('auth')->group(function () {
         return $robot->createRobots();
     });
 
-    // route for displaying error messages
-    Route::get('errors', function () {
-        return Inertia::render('Errors');
-    })->name('errors');
+
 
 });
 
