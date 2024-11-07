@@ -129,7 +129,7 @@ Route::middleware('auth')->group(function () {
     })->name('simple');
 
 
-    Route::get('/logs', function () {
+    Route::get('/basic-logs', function () {
         // Get worker logs //
         $logPath = storage_path('logs/worker.log');
         $log = file_get_contents($logPath);
@@ -153,7 +153,7 @@ Route::middleware('auth')->group(function () {
             'workerLogs' => $workerLogs,
             'laravelLogs' => $laravelLogs,
         ];
-    })->name('logs');
+    })->name('basic.logs');
 
     // create robot
     Route::get('create-robots', function () {
