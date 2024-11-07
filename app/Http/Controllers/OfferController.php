@@ -234,10 +234,11 @@ class OfferController extends Controller
         // if offer doesn't exist then it's obviously not our offer so we can just set the type normally, otherwise if it is the type is flipped
         if ($existingOffer) {
             if ($existingOffer->my_offer) {
-                $existingOffer->type = $offerDTO["type"] == 0 ? "buy" : "sell";
+                $offerDTO["type"] = $offerDTO["type"] == 0 ? "buy" : "sell";
             } else {
-                $existingOffer->type = $offerDTO["type"] == 1 ? "buy" : "sell";
+                $offerDTO["type"] = $offerDTO["type"] == 1 ? "buy" : "sell";
             }
+            $existingOffer->type = $offerDTO["type"];
             $existingOffer->save();
             $type = $existingOffer->type;
         } else {
@@ -302,20 +303,7 @@ class OfferController extends Controller
             $newOffer->save();
         }
 
-        $offer = Offer::where('robosatsId', $offerDTO['robosatsId'])->first();
-        // if the offer is a buy offer (will show up as sell for the counterparty)
-        // and it is our offer, then we need to change the profit to a negative number
-        // $offer->fixProfitSigns();
-
-        // buy is 1 and sell is 2 // if we are the taker
-        if ($offer->my_offer) {
-            $offer->type = $offer["type"] == 0 ? "buy" : "sell";
-        } else {
-            $offer->type = $offer["type"] == 1 ? "buy" : "sell";
-        }
-        $offer->save();
-
-        return $offer;
+        return Offer::where('robosatsId', $offerDTO['robosatsId'])->first();
     }
 
     public function calculateLargestAmount($offer, $channelBalances, $specificAmount = null) {
