@@ -67,7 +67,7 @@ return new class extends Migration
             $table->string('kraken_private_key')->nullable();
             $table->boolean('kraken_action')->default(true); // buy btc is false, sell btc is true
 
-            $table->string('umbrel_ip')->nullable();
+            $table->string('umbrel_ip')->nullable()->default('umbrel:80');
             $table->string('umbrel_password')->nullable();
             $table->string('umbrel_totp_key')->nullable();
             // the umbrel token is set automatically
