@@ -54,7 +54,13 @@ class UmbrelService
             $params['totpToken'] = $otp->now();
         }
 
-        $response = Http::post($this->ip . ':80/trpc/user.login', $params);
+        $url = $this->ip;
+        // remove the last slash if it exists
+        if (str_ends_with($url, '/')) {
+            $url = substr($url, 0, -1);
+        }
+
+        $response = Http::post($this->ip . '/trpc/user.login', $params);
 
         $proxyToken = $response->cookies()->getCookieByName('UMBREL_PROXY_TOKEN')->getValue();
 

@@ -37,6 +37,11 @@ class OfferController extends Controller
         $buyPremium = $adminDashboard->buy_premium;
         $excludedStatuses = [99, 5, 14];
 
+        // first check if there are any offers that are not in the excluded statuses
+        if (Offer::all()->count() == 0) {
+            return [];
+        }
+
         $offers = Offer::whereNotIn('status', $excludedStatuses)
             ->where(function ($query) use ($sellPremium, $buyPremium) {
                 $query->where('accepted', true)
