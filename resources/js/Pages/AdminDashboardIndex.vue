@@ -161,8 +161,12 @@ const refreshKey = ref(0);
 
 
                     <div class="flex flex-row justify-between items-center"><span
-                        class="font-bold mr-1">Umbrel Server Endpoint (IP:PORT): <span class="text-red-500"></span></span>
+                        class="font-bold mr-1">Umbrel Server IP: <span class="text-red-500"></span></span>
                         <TextInput :confidential="true" v-model="tempAdminDashboard.umbrel_ip"/>
+                    </div>
+                    <div class="flex flex-row justify-between items-center"><span
+                        class="font-bold mr-1">Umbrel Server Port: <span class="text-red-500"></span></span>
+                        <TextInput :confidential="true" v-model="tempAdminDashboard.umbrel_port"/>
                     </div>
                     <div class="flex flex-row justify-between items-center"><span
                         class="font-bold mr-1">Umbrel Server Password: <span class="text-red-500"></span></span>

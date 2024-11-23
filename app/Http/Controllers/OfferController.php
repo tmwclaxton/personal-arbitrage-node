@@ -75,6 +75,14 @@ class OfferController extends Controller
         $allFiats = BtcFiat::all();
         $adminDashboard = AdminDashboard::all()->first();
 
+        if ($adminDashboard == null) {
+            return [
+                'btcFiats' => $btcFiats,
+                'allFiats' => $allFiats,
+                'adminDashboard' => $adminDashboard,
+                'offers' => []
+            ];
+        }
 
         $offers = $this->getOffersInternal($adminDashboard);
 

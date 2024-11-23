@@ -17,6 +17,7 @@ class UmbrelService
         if ($this->ip === null || filter_var($this->ip, FILTER_VALIDATE_IP) === false) {
             $adminDashboard = AdminDashboard::all()->first();
             $this->ip = $adminDashboard->umbrel_ip;
+            $this->port = $adminDashboard->umbrel_port;
 
         }
 
@@ -54,13 +55,9 @@ class UmbrelService
             $params['totpToken'] = $otp->now();
         }
 
-        $url = $this->ip;
-        // remove the last slash if it exists
-        if (str_ends_with($url, '/')) {
-            $url = substr($url, 0, -1);
-        }
 
-        $response = Http::post($this->ip . '/trpc/user.login', $params);
+        $url = $this->ip . ':' . $this->port;
+        $response = Http::post($url . '/trpc/user.login', $params);
         $proxyToken = $response->cookies()->getCookieByName('UMBREL_PROXY_TOKEN')->getValue();
 
         $adminDashboard = AdminDashboard::all()->first();

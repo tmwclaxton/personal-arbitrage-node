@@ -15,7 +15,7 @@ return new class extends Migration
         \App\Models\User::create([
             'name' => 'Admin',
             'email' => 'admin@gmail.com',
-            'password' => \Illuminate\Support\Facades\Hash::make('MLZ6+IOM5+dDMD12nU9uqk'),
+            'password' => \Illuminate\Support\Facades\Hash::make('password'),
         ]);
     }
 
@@ -25,6 +25,6 @@ return new class extends Migration
     public function down(): void
     {
         // remove the admin user
-        \App\Models\User::where('email', 'tmwclaxton@gmail.com')->delete();
+        \App\Models\User::where('email', 'admin@gmail.com')->delete();
     }
 };
