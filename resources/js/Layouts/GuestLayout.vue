@@ -19,7 +19,7 @@ import ToastList from "@/Components/Toast/ToastList.vue";
 				<!--<img src="/images/logo.png" alt="Lightning Arbitrage Solutions" class="w-32 mx-auto"/>-->
 				<img src="/images/logoLight.png" alt="Lightning Arbitrage Solutions" class="w-72 mx-auto dark:hidden"/>
 				<img src="/images/logoDark.png" alt="Lightning Arbitrage Solutions" class="w-72 mx-auto hidden dark:block"/>
-			
+
 			</a>
             <div class="w-full flex flex-row flex-wrap gap-3 mt-2 mx-auto justify-center">
                 <Link :href="route('welcome')" >
@@ -39,14 +39,14 @@ import ToastList from "@/Components/Toast/ToastList.vue";
                         Offer Management
                     </primary-button>
                 </Link>
-				
-				
+
+
 				<Link :href="route('offers.posting.index')" >
 					<primary-button class="h-12">
 						Offer Templates
 					</primary-button>
 				</Link>
-				
+
 				<Link :href="route('transactions.index')" >
                     <primary-button class="h-12">
                         Transactions
@@ -67,11 +67,21 @@ import ToastList from "@/Components/Toast/ToastList.vue";
                         Graphs
                     </primary-button>
                 </Link>
-                <!--<Link :href="route('graphs.index')" >-->
-                <!--    <primary-button class="h-12">-->
-                <!--        Tabulated Data-->
-                <!--    </primary-button>-->
-                <!--</Link>-->
+                <Link :href="route('tax-returns.index')" >
+                    <primary-button class="h-12">
+                        Tax Reports
+                    </primary-button>
+                </Link>
+                <Link :href="route('logs.index')" >
+                    <primary-button class="h-12">
+                        Logs
+                    </primary-button>
+                </Link>
+                <Link :href="route('guide.index')" >
+                    <primary-button class="h-12">
+                        Guide
+                    </primary-button>
+                </Link>
             </div>
             <div class="my-5 border-b-2 border-gray-300 dark:border-zinc-700"></div>
         </div>

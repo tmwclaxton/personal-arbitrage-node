@@ -203,12 +203,12 @@ const showSidebar = ref(true);
             </Link>
             <Link :href="route('transactions.index')" >
                 <primary-button class="h-12">
-                    Transactions
+                    Crypto Transactions
                 </primary-button>
             </Link>
             <Link :href="route('payments.index')" class="opacity-50 pointer-events-none">
                 <primary-button class="h-12">
-                    Payments
+                    Fiat Payments
                 </primary-button>
             </Link>
             <Link :href="route('purchases.index')" >
@@ -219,6 +219,21 @@ const showSidebar = ref(true);
             <Link :href="route('graphs.index')" >
                 <primary-button class="h-12">
                     Graphs
+                </primary-button>
+            </Link>
+            <Link :href="route('tax-returns.index')" >
+                <primary-button class="h-12">
+                    Tax Reports
+                </primary-button>
+            </Link>
+            <Link :href="route('logs.index')" >
+                <primary-button class="h-12">
+                    Logs
+                </primary-button>
+            </Link>
+            <Link :href="route('guide.index')" >
+                <primary-button class="h-12">
+                    Guide
                 </primary-button>
             </Link>
             <!--<Link :href="route('graphs.index')" >-->

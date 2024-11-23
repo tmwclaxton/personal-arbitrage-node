@@ -158,19 +158,19 @@ class OfferController extends Controller
         ]);
     }
 
-    public function insertOffer($offer, $provider): Offer
+    public function insertOffer($offerDTO, $provider): Offer
     {
 
         $allFiats = BtcFiat::all();
 
         // change id in the offer to robosatsId
-        $offer['robosatsId'] = $offer['id'];
+        $offerDTO['robosatsId'] = $offerDTO['id'];
 
         // remove id from the offer
-        unset($offer['id']);
+        unset($offerDTO['id']);
 
         // change currency using Robosats::CURRENCIES
-        $offer['currency'] = Robosats::CURRENCIES[$offer['currency']];
+        $offerDTO['currency'] = Robosats::CURRENCIES[$offerDTO['currency']];
 
         // remove '/mainnet/' from the provider
         $provider = str_replace('Mainnet/', '', $provider);
@@ -180,18 +180,18 @@ class OfferController extends Controller
 
         // // remove the '/' at the end of the provider
         $provider = rtrim($provider, '/');
-        $offer['provider'] = $provider;
+        $offerDTO['provider'] = $provider;
 
         // convert the expires_at i.e. "2024-06-28T06:24:07.984166Z" to correct format
-        $offer['expires_at'] = date('Y-m-d H:i:s', strtotime($offer['expires_at']));
+        $offerDTO['expires_at'] = date('Y-m-d H:i:s', strtotime($offerDTO['expires_at']));
 
         // convert the created_at i.e. "2024-06-28T06:24:07.984166Z" to correct format
-        $offer['created_at'] = date('Y-m-d H:i:s', strtotime($offer['created_at']));
+        $offerDTO['created_at'] = date('Y-m-d H:i:s', strtotime($offerDTO['created_at']));
 
         // if payment_method is given, change to payment_methods
-        if (isset($offer['payment_method'])) {
-            $offer['payment_methods'] = [$offer['payment_method']];
-            unset($offer['payment_method']);
+        if (isset($offerDTO['payment_method'])) {
+            $offerDTO['payment_methods'] = [$offerDTO['payment_method']];
+            unset($offerDTO['payment_method']);
         }
 
         // Step 1: Fetch payment methods from the database
@@ -199,7 +199,7 @@ class OfferController extends Controller
         $paymentMethodsInternal = $paymentMethods->pluck('name')->toArray(); // List of all payment method names
 
         // Step 2: Combine the input payment methods into a single space-delimited string
-        $paymentMethodsString = implode(' ', $offer['payment_methods']);
+        $paymentMethodsString = implode(' ', $offerDTO['payment_methods']);
 
         // Step 3: Initialize an array for normalized payment methods
         $normalizedPaymentMethods = [];
@@ -219,37 +219,59 @@ class OfferController extends Controller
         $combinedPaymentMethods = array_merge($normalizedPaymentMethods, $paymentMethodsLeft);
         // remove any empty strings
         $combinedPaymentMethods = array_filter($combinedPaymentMethods, function($value) { return $value !== ''; });
-        $offer['payment_methods'] = $combinedPaymentMethods;
+        $offerDTO['payment_methods'] = $combinedPaymentMethods;
 
         // convert the payment_methods to a json array without a key
-        $offer['payment_methods'] = json_encode(array_values($offer['payment_methods']));
+        $offerDTO['payment_methods'] = json_encode(array_values($offerDTO['payment_methods']));
 
-        if (array_key_exists('price_now', $offer)) {
-            $offer['price'] = $offer['price_now'];
-            unset($offer['price_now']);
+        if (array_key_exists('price_now', $offerDTO)) {
+            $offerDTO['price'] = $offerDTO['price_now'];
+            unset($offerDTO['price_now']);
         }
 
 
-        if ($allFiats && $allFiats->count() > 0 && isset($offer['price']) && $offer['price'] > 0) {
+        $existingOffer = Offer::where('robosatsId', $offerDTO['robosatsId'])->first();
+        // if the offer is a buy offer (will show up as sell for the counterparty)
+        // and it is our offer, then we need to change the profit to a negative number
+
+        // buy is 1 and sell is 2 // if we are the taker
+
+        // if offer doesn't exist then it's obviously not our offer so we can just set the type normally, otherwise if it is the type is flipped
+        if ($existingOffer) {
+            if ($existingOffer->my_offer) {
+                $offerDTO["type"] = $offerDTO["type"] == 0 ? "buy" : "sell";
+            } else {
+                $offerDTO["type"] = $offerDTO["type"] == 1 ? "buy" : "sell";
+            }
+            $existingOffer->type = $offerDTO["type"];
+            $existingOffer->save();
+            $type = $existingOffer->type;
+        } else {
+            $offerDTO["type"] = $offerDTO["type"] == 1 ? "buy" : "sell";
+            $type = $offerDTO["type"];
+        }
+
+
+        if ($allFiats && $allFiats->count() > 0 && isset($offerDTO['price']) && $offerDTO['price'] > 0) {
             // grab currency from offer and find the price in btc using allFiats
-            $btcPrice = $allFiats->where('currency', $offer['currency'])->first();
+            $btcPrice = $allFiats->where('currency', $offerDTO['currency'])->first();
             // once a ranged offer is accepted, the amount is set to whatever we are selling
-            $existingOffer = Offer::where('robosatsId', $offer['robosatsId'])->first();
-            if ($offer['amount']) {
-                $offer['satoshis_now'] = $this->convertToSatoshis($offer['amount'], $offer['price']);
-                $offer['satoshi_amount_profit'] = $this->calculateProfit($offer['amount'], $offer['price'], $btcPrice->price, $existingOffer);
+            if ($offerDTO['amount']) {
+                $offerDTO['satoshis_now'] = $this->convertToSatoshis($offerDTO['amount'], $offerDTO['price']);
+                $offerDTO['satoshi_amount_profit'] = $this->calculateProfit($offerDTO['amount'], $offerDTO['price'], $btcPrice->price, $type);
             }
 
-            if ($offer['min_amount'] && $offer['max_amount']) {
-                $offer['min_satoshi_amount'] = $this->convertToSatoshis($offer['min_amount'], $offer['price']);
-                $offer['max_satoshi_amount'] = $this->convertToSatoshis($offer['max_amount'], $offer['price']);
+            if ($offerDTO['min_amount'] && $offerDTO['max_amount']) {
+                $offerDTO['min_satoshi_amount'] = $this->convertToSatoshis($offerDTO['min_amount'], $offerDTO['price']);
+                $offerDTO['max_satoshi_amount'] = $this->convertToSatoshis($offerDTO['max_amount'], $offerDTO['price']);
 
-                $offer['min_satoshi_amount_profit'] = $this->calculateProfit($offer['min_amount'], $offer['price'], $btcPrice->price, $existingOffer);
-                $offer['max_satoshi_amount_profit'] = $this->calculateProfit($offer['max_amount'], $offer['price'], $btcPrice->price, $existingOffer);
+                $offerDTO['min_satoshi_amount_profit'] = $this->calculateProfit($offerDTO['min_amount'], $offerDTO['price'], $btcPrice->price, $type);
+                $offerDTO['max_satoshi_amount_profit'] = $this->calculateProfit($offerDTO['max_amount'], $offerDTO['price'], $btcPrice->price, $type);
             }
+
 
             // // find offer if it exists
-            // $existingOffer = Offer::where('robosatsId', $offer['robosatsId'])->first();
+            // $existingOffer = Offer::where('robosatsId', $offerDTO['robosatsId'])->first();
             // // if my_offer is true and type is buy, then we need to change the profit to a absolute number
             // if ($existingOffer && $existingOffer->my_offer && $existingOffer->type == "buy") {
 
@@ -259,47 +281,34 @@ class OfferController extends Controller
 
 
 
-        if (array_key_exists('bond_invoice', $offer)) {
-            $bond_invoice = $offer['bond_invoice'];
+        if (array_key_exists('bond_invoice', $offerDTO)) {
+            $bond_invoice = $offerDTO['bond_invoice'];
             // remove the bond_invoice from the offer
-            unset($offer['bond_invoice']);
-            unset($offer['bond_satoshis']);
+            unset($offerDTO['bond_invoice']);
+            unset($offerDTO['bond_satoshis']);
         }
 
         // iterate through each key in the offer and set corresponding attributes
         $newOffer = new Offer();
 
-        foreach ($offer as $key => $value) {
+        foreach ($offerDTO as $key => $value) {
             $newOffer->$key = $value;
         }
 
         // save or update the offer
-        if (Offer::where('robosatsId', $offer['robosatsId'])->exists()) {
+        if (Offer::where('robosatsId', $offerDTO['robosatsId'])->exists()) {
             // if the offer has expired if the old offer's status is over 10, then give the offer 20 minutes before updating
             // so that we don't update a completed offer before it has been retired
-            if ($newOffer->status == 5 && $offer['status'] > 8 && $newOffer->updated_at->diffInMinutes(now()) > 20) {
+            if ($newOffer->status == 5 && $offerDTO['status'] > 8 && $newOffer->updated_at->diffInMinutes(now()) > 20) {
 
             } else {
-                Offer::where('robosatsId', $offer['robosatsId'])->update($offer);
+                Offer::where('robosatsId', $offerDTO['robosatsId'])->update($offerDTO);
             }
         } else {
             $newOffer->save();
         }
 
-        $offer = Offer::where('robosatsId', $offer['robosatsId'])->first();
-        // if the offer is a buy offer (will show up as sell for the counterparty)
-        // and it is our offer, then we need to change the profit to a negative number
-        // $offer->fixProfitSigns();
-
-        // buy is 1 and sell is 2 // if we are the taker
-        if ($offer->my_offer) {
-            $offer->type = $offer["type"] == 0 ? "buy" : "sell";
-        } else {
-            $offer->type = $offer["type"] == 1 ? "buy" : "sell";
-        }
-        $offer->save();
-
-        return $offer;
+        return Offer::where('robosatsId', $offerDTO['robosatsId'])->first();
     }
 
     public function calculateLargestAmount($offer, $channelBalances, $specificAmount = null) {
@@ -390,7 +399,7 @@ class OfferController extends Controller
         if ($offer->has_range) {
             $currentRealPrice = $btcFiat->price;
             // $estimated_profit_sats = $estimated_offer_amount_sat * (($offer->price - $currentRealPrice) / $currentRealPrice);
-            $estimated_profit_sats = $this->calculateProfit($estimated_offer_amount, $offer->price, $currentRealPrice, $offer);
+            $estimated_profit_sats = $this->calculateProfit($estimated_offer_amount, $offer->price, $currentRealPrice, $offer->type);
 
         } else {
             $estimated_profit_sats = $offer->satoshi_amount_profit;
@@ -570,13 +579,13 @@ class OfferController extends Controller
         return intval(str_replace(',', '', number_format((intval(str_replace(',', '', $amount)) / $price) * 100000000, 0)));
     }
 
-    function calculateProfit($amount, $price, $btcPrice, $existingOffer = null): int
+    function calculateProfit($amount, $price, $btcPrice, $type = null): int
     {
         $satoshis = $this->convertToSatoshis($amount, $price);
         $actualSatoshis = $this->convertToSatoshis($amount, $btcPrice);
         $calculation = $actualSatoshis - $satoshis;
 
-        if ($existingOffer && $existingOffer->type == "buy" && !$existingOffer->my_offer) {
+        if (isset($type) && $type == "buy" ) {
             $calculation = $calculation * -1;
         }
 
