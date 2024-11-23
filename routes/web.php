@@ -129,31 +129,31 @@ Route::middleware('auth')->group(function () {
     })->name('simple');
 
 
-//    Route::get('/logs', function () {
-//        // Get worker logs //
-//        $logPath = storage_path('logs/worker.log');
-//        $log = file_get_contents($logPath);
-//        $logSegments = explode("\n", $log);
-//        $workerLogs = array_filter($logSegments, 'strlen');
-//
-//        // Get laravel logs //
-//        $logPath = storage_path('logs/laravel.log');
-//        $log = file_get_contents($logPath);
-//        $logSegments = explode("\n", $log);
-//        $laravelLogs = array_filter($logSegments, 'strlen');
-//
-//        // reverse the logs so the newest is at the top //
-//        $workerLogs = array_reverse($workerLogs);
-//        $laravelLogs = array_reverse($laravelLogs);
-//
-//        // trim to 1000 lines
-//        $workerLogs = array_slice($workerLogs, 0, 1000);
-//        $laravelLogs = array_slice($laravelLogs, 0, 1000);
-//        return [
-//            'workerLogs' => $workerLogs,
-//            'laravelLogs' => $laravelLogs,
-//        ];
-//    })->name('logs');
+    Route::get('/basic-logs', function () {
+        // Get worker logs //
+        $logPath = storage_path('logs/worker.log');
+        $log = file_get_contents($logPath);
+        $logSegments = explode("\n", $log);
+        $workerLogs = array_filter($logSegments, 'strlen');
+
+        // Get laravel logs //
+        $logPath = storage_path('logs/laravel.log');
+        $log = file_get_contents($logPath);
+        $logSegments = explode("\n", $log);
+        $laravelLogs = array_filter($logSegments, 'strlen');
+
+        // reverse the logs so the newest is at the top //
+        $workerLogs = array_reverse($workerLogs);
+        $laravelLogs = array_reverse($laravelLogs);
+
+        // trim to 1000 lines
+        $workerLogs = array_slice($workerLogs, 0, 1000);
+        $laravelLogs = array_slice($laravelLogs, 0, 1000);
+        return [
+            'workerLogs' => $workerLogs,
+            'laravelLogs' => $laravelLogs,
+        ];
+    })->name('basic.logs');
 
     // create robot
     Route::get('create-robots', function () {
