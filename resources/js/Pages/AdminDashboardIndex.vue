@@ -188,9 +188,15 @@ const refreshKey = ref(0);
 
                     <!--kraken details-->
                     <div class="flex flex-row justify-between items-center" :key="refreshKey">
-                        <span class="font-bold mr-1">Kraken Auto Topup:
+                        <div class="flex flex-col gap-y-0.5">
+                            <span class="font-bold mr-1">Kraken Auto Topup:
                             <span class="text-red-500" v-text="tempAdminDashboard.autoTopup ? 'Enabled' : 'Disabled'"/>
                         </span>
+                            <p class="text-sm">
+                                Do you want to automatically buy BTC when you have fiat in your account?
+                            </p>
+
+                        </div>
                       <ToggleButton v-model="tempAdminDashboard.autoTopup" @update:modelValue="refreshKey++"/>
                     </div>
 					<div class="flex flex-row justify-between items-center"><span
@@ -201,7 +207,7 @@ const refreshKey = ref(0);
                         class="font-bold mr-1">Kraken Private Key: <span class="text-red-500"></span></span>
                         <TextInput :confidential="true" v-model="tempAdminDashboard.kraken_private_key"/>
                     </div>
-					<div class="flex flex-row justify-between items-center" :key="refreshKey">
+					<div class="flex flex-row justify-between items-center opacity-50 select-none pointer-events-none" :key="refreshKey">
 					  <span class="font-bold mr-1">Kraken Action:
 						  <span class="text-red-500" v-text="tempAdminDashboard.kraken_action ? 'Auto Buy BTC' : 'Auto Sell BTC'"/>
                       </span>
