@@ -12,7 +12,7 @@ class AutoConfirmFinal extends Command
      *
      * @var string
      */
-    protected $signature = 'auto:confirm-final';
+    protected $signature = 'app:auto-confirm-final';
 
     /**
      * The console command description.

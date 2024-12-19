@@ -21,7 +21,7 @@ class AutoJobs extends Command
      *
      * @var string
      */
-    protected $signature = 'auto:jobs';
+    protected $signature = 'app:auto-jobs';
 
     /**
      * The console command description.

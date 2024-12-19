@@ -17,7 +17,7 @@ class UpdateOffers extends Command
      *
      * @var string
      */
-    protected $signature = 'refresh:offers';
+    protected $signature = 'app:refresh-offers';
 
     /**
      * The console command description.

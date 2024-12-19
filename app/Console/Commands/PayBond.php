@@ -16,7 +16,7 @@ class PayBond extends Command
      *
      * @var string
      */
-    protected $signature = 'pay:bond';
+    protected $signature = 'app:pay-bond';
 
     /**
      * The console command description.

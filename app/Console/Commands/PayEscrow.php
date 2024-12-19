@@ -13,7 +13,7 @@ class PayEscrow extends Command
      *
      * @var string
      */
-    protected $signature = 'pay:escrow';
+    protected $signature = 'app:pay-escrow';
 
     /**
      * The console command description.

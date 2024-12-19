@@ -15,7 +15,7 @@ class UpdateRobots extends Command
      *
      * @var string
      */
-    protected $signature = 'refresh:robots';
+    protected $signature = 'app:refresh-robots';
 
     /**
      * The console command description.

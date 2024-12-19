@@ -16,7 +16,7 @@ class RetireOffer extends Command
      *
      * @var string
      */
-    protected $signature = 'retire:offers';
+    protected $signature = 'app:retire-offers';
 
     /**
      * The console command description.

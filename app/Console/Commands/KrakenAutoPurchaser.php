@@ -12,7 +12,7 @@ class KrakenAutoPurchaser extends Command
      *
      * @var string
      */
-    protected $signature = 'kraken:auto-purchaser';
+    protected $signature = 'app:kraken-auto-purchaser';
 
     /**
      * The console command description.

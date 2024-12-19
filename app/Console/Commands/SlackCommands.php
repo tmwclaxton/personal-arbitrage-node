@@ -18,7 +18,7 @@ class SlackCommands extends Command
      *
      * @var string
      */
-    protected $signature = 'refresh:slack-commands';
+    protected $signature = 'app:refresh-slack-commands';
 
     /**
      * The console command description.

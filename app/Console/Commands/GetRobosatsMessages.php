@@ -12,7 +12,7 @@ class GetRobosatsMessages extends Command
      *
      * @var string
      */
-    protected $signature = 'get:robosats-messages';
+    protected $signature = 'app:robosats-messages';
 
     /**
      * The console command description.

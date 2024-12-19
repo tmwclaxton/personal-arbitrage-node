@@ -7,86 +7,87 @@ Schedule::command('app:umbrel-token-reset')
     ->description('reset umbrel token')
     ->everyMinute()->withoutOverlapping(1);
 
-Schedule::command('refresh:dashboard')
+Schedule::command('app:refresh-dashboard')
     ->description('refresh dashboard')
     ->everyMinute()->withoutOverlapping(1);
 
-Schedule::command('update:providers')
+Schedule::command('app:refresh-providers')
     ->description('refresh providers')
     ->everyFiveMinutes()->withoutOverlapping(1);
 
-Schedule::command('refresh:transactions')
+Schedule::command('app:refresh-transactions')
     ->description('refresh transactions')
     ->everyMinute()->withoutOverlapping(1);
 
-Schedule::command('refresh:robots')
+Schedule::command('app:refresh-robots')
     ->description('refresh robots')
     ->hourly()->withoutOverlapping(1);
 
-Schedule::command('claim:compensation')
+Schedule::command('app:claim-compensation')
     ->description('claim compensation')
     ->hourly();
 
-Schedule::command('retire:offers')
+Schedule::command('app:retire-offers')
     ->description('retire offers')
     ->everyFiveMinutes()->withoutOverlapping(1);
 
-Schedule::command('auto:jobs')
+Schedule::command('app:auto-jobs')
     ->description('auto jobs')
     ->everyMinute()->withoutOverlapping(1);
 
 
-Schedule::command('refresh:offers')
+Schedule::command('app:refresh-offers')
     ->description('refresh robosat offers')
     ->everyMinute()->withoutOverlapping(1);
 
-Schedule::command('refresh:fiats')
+Schedule::command('app:refresh-fiats')
     ->description('refresh fiats')
     ->everyMinute()->withoutOverlapping(1);
 
-Schedule::command('auto:accept')
+// this job add a timestamp for when the auto accept final job should actually accept the offer
+Schedule::command('app:auto-accept')
     ->description('auto accept')
     ->everyMinute()->withoutOverlapping(1);
 
 // auto accept final
-Schedule::command('auto:accept-final')
+Schedule::command('app:auto-accept-final')
     ->description('auto accept final')
     ->everyMinute()->withoutOverlapping(1);
 
 
 // get:robosats-messages
-Schedule::command('get:robosats-messages')
+Schedule::command('app:refresh-robosats-messages')
     ->description('get robosats messages')
     ->everyTwentySeconds();
 
 // auto confirm final
-Schedule::command('auto:confirm-final')
+Schedule::command('app:auto-confirm-final')
     ->description('auto confirm final')
     ->everyMinute()->withoutOverlapping(1);
 
 
 
 // auto:create
-Schedule::command('auto:create')
+Schedule::command('app:auto-create')
     ->description('auto create')
     ->everyFiveMinutes()->withoutOverlapping(1);
 
 
-Schedule::command('update:kraken-btc-balance')
+Schedule::command('app:refresh-kraken-btc-balance')
     ->description('refresh kraken btc balance')
     ->everyFiveMinutes()->withoutOverlapping(1);
 
 // kraken auto purchaser
-Schedule::command('kraken:auto-purchaser')
+Schedule::command('app:kraken-auto-purchaser')
     ->description('kraken auto purchaser')
     ->everyTenMinutes()->withoutOverlapping(1);
 
-Schedule::command('btc:purchase-detailer')
+Schedule::command('app:btc-purchase-detailer')
     ->description('btc purchase detailer')
     ->everyTenMinutes()->withoutOverlapping(1);
 
 
-Schedule::command('refresh:slack-commands')
+Schedule::command('app:refresh-slack-commands')
     ->description('refresh slack commands')
     ->everyMinute()->withoutOverlapping(1);
 

@@ -14,7 +14,7 @@ class UpdateTransactions extends Command
      *
      * @var string
      */
-    protected $signature = 'refresh:transactions';
+    protected $signature = 'app:refresh-transactions';
 
     /**
      * The console command description.

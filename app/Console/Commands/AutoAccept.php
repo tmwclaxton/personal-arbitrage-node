@@ -20,7 +20,7 @@ class AutoAccept extends Command
      *
      * @var string
      */
-    protected $signature = 'auto:accept';
+    protected $signature = 'app:auto-accept';
 
     /**
      * The console command description.

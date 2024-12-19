@@ -14,7 +14,7 @@ class UpdateFiats extends Command
      *
      * @var string
      */
-    protected $signature = 'refresh:fiats';
+    protected $signature = 'app:refresh-fiats';
 
     /**
      * The console command description.

@@ -12,7 +12,7 @@ class AutoCreate extends Command
      *
      * @var string
      */
-    protected $signature = 'auto:create';
+    protected $signature = 'app:auto-create';
 
     /**
      * The console command description.

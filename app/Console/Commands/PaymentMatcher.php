@@ -11,7 +11,7 @@ class PaymentMatcher extends Command
      *
      * @var string
      */
-    protected $signature = 'payment:matcher';
+    protected $signature = 'app:payment-matcher';
 
     /**
      * The console command description.

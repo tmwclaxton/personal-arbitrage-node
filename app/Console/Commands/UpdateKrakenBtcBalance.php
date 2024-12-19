@@ -13,14 +13,14 @@ class UpdateKrakenBtcBalance extends Command
      *
      * @var string
      */
-    protected $signature = 'update:kraken-btc-balance';
+    protected $signature = 'app:refresh-kraken-btc-balance';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Update kraken btc balance';
 
     /**
      * Execute the console command.

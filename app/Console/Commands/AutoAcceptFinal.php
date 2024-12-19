@@ -12,7 +12,7 @@ class AutoAcceptFinal extends Command
      *
      * @var string
      */
-    protected $signature = 'auto:accept-final';
+    protected $signature = 'app:auto-accept-final';
 
     /**
      * The console command description.

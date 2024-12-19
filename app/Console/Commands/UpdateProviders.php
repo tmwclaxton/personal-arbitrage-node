@@ -12,7 +12,7 @@ class UpdateProviders extends Command
      *
      * @var string
      */
-    protected $signature = 'update:providers';
+    protected $signature = 'app:refresh-providers';
 
     /**
      * The console command description.

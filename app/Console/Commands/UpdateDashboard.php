@@ -14,7 +14,7 @@ class UpdateDashboard extends Command
      *
      * @var string
      */
-    protected $signature = 'refresh:dashboard';
+    protected $signature = 'app:refresh-dashboard';
 
     /**
      * The console command description.

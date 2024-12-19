@@ -18,7 +18,7 @@ class TabulateData extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Calculate tax owed for that day, combine various fees from Kraken and invoices and calculate total revenue and profit';
 
     /**
      * Execute the console command.

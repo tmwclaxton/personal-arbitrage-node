@@ -12,7 +12,7 @@ class BtcPurchaseDetailer extends Command
      *
      * @var string
      */
-    protected $signature = 'btc:purchase-detailer';
+    protected $signature = 'app:btc-purchase-detailer';
 
     /**
      * The console command description.
