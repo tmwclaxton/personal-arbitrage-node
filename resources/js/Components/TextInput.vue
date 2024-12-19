@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import {ref, onMounted, watch} from 'vue';
 
 // Define model and props
 const model = defineModel({
@@ -13,6 +13,13 @@ const props = defineProps({
 		type: Boolean,
 		default: false, // Confidential input by default
 	},
+});
+
+const tempValue = ref(model.value);
+
+// on change of tempValue, emit the updated value
+watch(tempValue, (value) => {
+    model.value = value;
 });
 
 // Refs
@@ -43,7 +50,7 @@ bg-white dark:bg-zinc-900 dark:text-white p-0 h-max my-0.5
 	>
 		<input
 		  :type="showPassword ? 'text' : (props.confidential ? 'password' : 'text')"
-		  v-model="model"
+		  v-model="tempValue"
 		  class="border-0 focus:ring-0 focus:outline-none  px-2 overflow-scroll
 		  bg-white dark:bg-zinc-900 dark:text-white w-full rounded-md m-0 py-0 "
 		  :disabled="props.disabled"
