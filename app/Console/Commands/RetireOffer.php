@@ -32,7 +32,7 @@ class RetireOffer extends Command
     {
         if ((new HelperFunctions())->slackCommandCheck()) {
             // retire all offers that have passed their expiration date and their robosatsId is less than 20000
-            $offers = Offer::where([['expires_at', '<', now()], ['robosatsIdStorage', '!=', null]])->orWhere([['status', '=', 14], ['robosatsIdStorage', '!=', null]])->get();
+            $offers = Offer::where([['expires_at', '<', now()], ['robosatsIdStorage', '=', null]])->orWhere([['status', '=', 14], ['robosatsIdStorage', '=', null]])->get();
             foreach ($offers as $offer) {
 
                 $randomNumber = rand(5000000, 10000000);
@@ -48,7 +48,10 @@ class RetireOffer extends Command
 
                 // if there is a slack channel associated with the offer, archive it
                 $slackService = new SlackService();
-                $slackService->deleteChannel($offer->slack_channel_id);
+                // if the offer has a slack channel, archive it
+                if ($offer->slack_channel_id) {
+                    $slackService->deleteChannel($offer->slack_channel_id);
+                }
 
                 $offer->slack_channel_id = null;
                 $offer->save();
