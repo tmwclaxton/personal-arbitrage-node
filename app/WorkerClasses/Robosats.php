@@ -783,6 +783,12 @@ class Robosats
 
     public function advertise($offer)
     {
+        // check if admin dashboard has adverts_enabled
+        $adminDashboard = AdminDashboard::all()->first();
+        if (!$adminDashboard->adverts_enabled) {
+            return null;
+        }
+
         $robot = $offer->robots()->first();
         // send message into the chat
         $messageContent = "This trade was automated by a trading kit created by Lightning Arbitrage Solutions
@@ -803,7 +809,9 @@ class Robosats
         $response = json_decode($response->body(), true);
 
         if (!$response || $response == null) {
-            return $response;
+            $slackService = new SlackService();
+            $slackService->sendMessage('Error: Failed to update offer status: ' . $offer->robosatsId . ' - no response');
+            return $offer;
         }
 
 

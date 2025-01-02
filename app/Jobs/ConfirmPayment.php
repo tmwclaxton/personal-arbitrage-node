@@ -40,7 +40,13 @@ class ConfirmPayment implements ShouldQueue
             $transaction = Transaction::where('offer_id', $this->offer->id)->first();
             $robosats = new Robosats();
             // set the auto_confirm_at to 5 minutes from now
-            $this->offer->auto_confirm_at = Carbon::now()->addMinutes(5);
+
+            // if adminDashboard->adverts_enabled is true, set auto_confirm_at to 5 minutes from now
+            if ($this->adminDashboard->adverts_enabled) {
+                $this->offer->auto_confirm_at = Carbon::now()->addMinutes(5);
+            } else {
+                $this->offer->auto_confirm_at = Carbon::now()->addSecond(15);
+            }
             $this->offer->save();
 
             // send advert to the counterparty
