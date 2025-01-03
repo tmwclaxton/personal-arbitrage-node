@@ -58,6 +58,8 @@ class SlackService
     {
         // lowercase the channel name
         $channelName = strtolower($channelName);
+        // add some random string to the channel name to avoid conflicts
+        $channelName .= '-' . substr(md5(uniqid()), 0, 5);
         $slackService = new SlackService();
 
         // Retry the channel creation
