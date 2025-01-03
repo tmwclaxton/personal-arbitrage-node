@@ -654,8 +654,9 @@ class Robosats
             // {"bad_request":"You are not a participant in this order"}
             if ($response->json('bad_request') == 'You are not a participant in this order') {
                 $offer->accepted = false;
-                $transaction->delete();
-                $offer->delete();
+                $offer->status = 99;
+                $offer->status_message = $response->json('bad_request');
+                $offer->save();
             } else {
                 (new SlackService)->sendMessage('For debugging here are the request parameters: Headers: ' . json_encode($this->getHeaders($offer)) . ' URL: ' . $url . ' Data: ' . json_encode(['action' => 'take', 'amount' => $offer->accepted_offer_amount]));
             }
@@ -1075,7 +1076,7 @@ class Robosats
             $robots = $this->createRobots($tempOffer);
         } catch (Exception $e) {
             $tempOffer->delete();
-            $slackService->sendMessage('Failed to create sell offer.  Error: ' . $e->getMessage());
+            $slackService->sendMessage('Failed to create robots for templated offer.  Error: ' . $e->getMessage());
             return $e->getMessage();
         }
 

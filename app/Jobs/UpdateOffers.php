@@ -33,22 +33,11 @@ class UpdateOffers implements ShouldQueue
      */
     public function handle(): void
     {
-        // delete any offers that are accepted equals false
-        // Offer::where('accepted', false)->delete();
-
-        // or if they are expired
-        // Offer::where('expires_at', '<', now())->delete(); and the transaction also was not accepted
-        // Offer::where('expires_at', '<', now())
-        //     ->where('accepted', false)
-        //     ->delete();
-
         // grab transactions
         $transactions = Transaction::all();
         // grab ids by plucking the id from the transactions
         $ids = $transactions->pluck('offer_id')->toArray();
         // grab offers that are not in the transactions / give expired offer 5 minutes leeway // used to have ['my_offer', '=', false]
-        Offer::whereNotIn('id', $ids)->where([['expires_at', '<', now()->subMinutes(5)], ['accepted', '=', false], ['status', '<', 3]])
-            ->delete();
 
         $robosats = new Robosats();
         $response = $robosats->getBookOffers();
@@ -89,7 +78,9 @@ class UpdateOffers implements ShouldQueue
                     $dbOffer->transaction->save();
                     continue;
                 }
-                $dbOffer->delete();
+                $dbOffer->status = 99;
+                $dbOffer->status_message = 'Offer expired';
+                $dbOffer->save();
             }
         }
 

@@ -36,6 +36,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use OTPHP\TOTP;
@@ -172,6 +173,14 @@ Route::middleware('auth')->group(function () {
             'laravelLogs' => $laravelLogs,
         ];
     })->name('basic.logs');
+
+    // test redis endpoint
+//    Route::get('/test-redis', function () {
+//        Redis::set('name', 'Taylor');
+//        $name = Redis::get('name');
+//        return $name;
+//    });
+
 
     // create robot
     Route::get('create-robots', function () {
