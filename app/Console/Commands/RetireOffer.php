@@ -31,8 +31,10 @@ class RetireOffer extends Command
     public function handle()
     {
         if ((new HelperFunctions())->slackCommandCheck()) {
-            // retire all offers that have passed their expiration date and their robosatsId is less than 20000
-            $offers = Offer::where([['expires_at', '<', now()->subMinutes(5)], ['robosatsIdStorage', '=', null]])->orWhere([['status', '=', 14], ['robosatsIdStorage', '=', null]])->get();
+            $offers = Offer::where('expires_at', '<', now()->subMinutes(5))->where('robosatsIdStorage', '=', null)->get();
+            $extraOffers = Offer::where('status', '=', 14)->where('robosatsIdStorage', '=', null)->get();
+            $offers = $offers->merge($extraOffers);
+
             foreach ($offers as $offer) {
 
                 $randomNumber = rand(5000000, 10000000);

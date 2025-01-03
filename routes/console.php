@@ -1,6 +1,18 @@
 <?php
 
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
+
+Artisan::command('logs:clear', function() {
+
+    exec('echo "" > ' . storage_path('logs/laravel.log'));
+
+    exec('echo "" > ' . storage_path('logs/worker.log'));
+
+    $this->comment('Logs have been cleared!');
+
+})->describe('Clear log files');
+
 
 // ping umbrel check
 Schedule::command('app:umbrel-token-reset')
