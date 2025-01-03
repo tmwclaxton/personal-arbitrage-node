@@ -101,7 +101,7 @@ class SlackService
     public function renameChannel($newName, $channelId): void
     {
         // lowercase the channel name
-        $newName = strtolower($newName);
+        $newName = strtolower($newName) . '-' . substr(md5(uniqid()), 0, 5);
         $this->retry(function () use ($channelId, $newName) {
             $this->client->conversationsRename([
                 'channel' => $channelId,
