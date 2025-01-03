@@ -57,6 +57,24 @@ Route::middleware('auth')->group(function () {
     Route::post('/updateAdminDashboard', function () {
         $adminDashboard = AdminDashboard::all()->first();
 
+        // if panic button has been enabled iterate through all offers and set them to paused
+        // if it was false and now true
+        if (!$adminDashboard->panicButton && request()->adminDashboard['panicButton']) {
+            $offers = Offer::where('status', '=', 1)->get();
+            foreach ($offers as $offer) {
+                $robosats = new Robosats();
+                $robosats->togglePauseOffer($offer);
+            }
+        }
+        // if it was true and now false
+        if ($adminDashboard->panicButton && !request()->adminDashboard['panicButton']) {
+            $offers = Offer::where('status', '=', 2)->get();
+            foreach ($offers as $offer) {
+                $robosats = new Robosats();
+                $robosats->togglePauseOffer($offer);
+            }
+        }
+
         foreach (request()->adminDashboard as $key => $value) {
             // check if key does exist
             if (key_exists($key, $adminDashboard->getAttributes())) {
@@ -67,6 +85,9 @@ Route::middleware('auth')->group(function () {
                 }
             }
         }
+
+
+
         // remove name from the request
         unset($adminDashboard->name);
 
@@ -76,6 +97,9 @@ Route::middleware('auth')->group(function () {
         // set payment currencies separately
         $adminDashboard->payment_currencies = json_encode(request()->adminDashboard["payment_currencies"]);
         $adminDashboard->save();
+
+
+
         return $adminDashboard;
     })->name('updateAdminDashboard');
 
