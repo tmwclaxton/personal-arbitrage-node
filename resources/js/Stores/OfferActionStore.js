@@ -26,7 +26,7 @@ export const useOfferActionStore = defineStore('OfferActionStore', {
                 useConfirmModalStore().sliderMin = min;
                 useConfirmModalStore().sliderMax = max;
                 // convert string to number
-                useConfirmModalStore().amount = Math.round(min + (max - min) / 2);
+                useConfirmModalStore().amount = Math.round(min + (max - min) / 2).toString();
 
             }
             useConfirmModalStore().show = true;
@@ -111,7 +111,7 @@ export const useOfferActionStore = defineStore('OfferActionStore', {
                 useConfirmModalStore().slider = true;
                 useConfirmModalStore().sliderMin = min;
                 useConfirmModalStore().sliderMax = max;
-                useConfirmModalStore().amount = Math.round(min + (max - min) / 2);
+                useConfirmModalStore().amount = Math.round(min + (max - min) / 2).toString();
             }
             useConfirmModalStore().show = true;
             useConfirmModalStore().continue = async (amount) => {
