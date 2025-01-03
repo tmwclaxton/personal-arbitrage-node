@@ -42,7 +42,8 @@ class RetireOffer extends Command
                 // check if offer has posted_offer_template_slug
                 if (isset($offer->posted_offer_template_slug)) {
                     $template = PostedOfferTemplate::where('slug', $offer->posted_offer_template_slug)->first();
-                    $template->last_accepted =  Carbon::now()->subSeconds($template->cooldown);
+                    $cooldown = $template->cooldown ?? 0;
+                    $template->last_accepted =  Carbon::now()->subSeconds($cooldown);
                     $template->save();
                 }
 
