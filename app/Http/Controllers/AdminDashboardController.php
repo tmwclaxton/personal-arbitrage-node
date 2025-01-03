@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AdminDashboard;
 use App\Models\BtcFiat;
+use App\Models\Offer;
 use App\Models\PaymentMethod;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
