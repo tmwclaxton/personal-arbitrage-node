@@ -60,19 +60,13 @@ Route::middleware('auth')->group(function () {
         // if panic button has been enabled iterate through all offers and set them to paused
         // if it was false and now true
         if (!$adminDashboard->panicButton && request()->adminDashboard['panicButton']) {
-            $offers = Offer::where('status', '=', 1)->get();
-            foreach ($offers as $offer) {
-                $robosats = new Robosats();
-                $robosats->togglePauseOffer($offer);
-            }
+            $adminDashboardController = new \App\Http\Controllers\AdminDashboardController();
+            $adminDashboardController->panic();
         }
         // if it was true and now false
         if ($adminDashboard->panicButton && !request()->adminDashboard['panicButton']) {
-            $offers = Offer::where('status', '=', 2)->get();
-            foreach ($offers as $offer) {
-                $robosats = new Robosats();
-                $robosats->togglePauseOffer($offer);
-            }
+            $adminDashboardController = new \App\Http\Controllers\AdminDashboardController();
+            $adminDashboardController->calm();
         }
 
         foreach (request()->adminDashboard as $key => $value) {

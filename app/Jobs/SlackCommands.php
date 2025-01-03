@@ -40,6 +40,7 @@ use Illuminate\Support\Facades\Redis;
             '!panic',
             '!calm',
             '!confirm',
+            '!togglePause',
             '!chat',
             '!viewChat',
             '!collaborativeCancel',
@@ -104,15 +105,26 @@ use Illuminate\Support\Facades\Redis;
                             case '!panic':
                                 $adminDashboard->panicButton = true;
                                 $adminDashboard->save();
+                                $adminDashboardController = new \App\Http\Controllers\AdminDashboardController();
+                                $adminDashboardController->panic();
                                 break;
                             case '!calm':
                                 $adminDashboard->panicButton = false;
                                 $adminDashboard->save();
+                                $adminDashboardController = new \App\Http\Controllers\AdminDashboardController();
+                                $adminDashboardController->calm();
                                 break;
                             case '!confirm':
                                 $secondWord = explode(' ', $slackMessage['content'])[1];
                                 $offer = Offer::where('robosatsId', $secondWord)->first();
                                 ConfirmPayment::dispatch($offer, $adminDashboard);
+                                break;
+                            case '!togglePause':
+                                // grab the offer id
+                                $offerId = explode(' ', $slackMessage['content'])[1];
+                                $offer = Offer::where('robosatsId', $offerId)->first();
+                                $robosats = new \App\WorkerClasses\Robosats();
+                                $robosats->togglePauseOffer($offer);
                                 break;
                             case '!toggleAutoSchedule':
                                 $adminDashboard->scheduler = !$adminDashboard->scheduler;

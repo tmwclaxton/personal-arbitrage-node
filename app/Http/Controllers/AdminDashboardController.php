@@ -75,4 +75,25 @@ class AdminDashboardController extends Controller
 
         return redirect()->route('dashboard.index');
     }
+
+    public function panic(): void
+    {
+        // if panic button has been pressed pause all offers
+        $offers = Offer::where('status', '=', 1)->get();
+        foreach ($offers as $offer) {
+            $robosats = new Robosats();
+            $robosats->togglePauseOffer($offer);
+        }
+
+    }
+
+    public function calm(): void
+    {
+        // unpause all offers
+        $offers = Offer::where('status', '=', 2)->get();
+        foreach ($offers as $offer) {
+            $robosats = new Robosats();
+            $robosats->togglePauseOffer($offer);
+        }
+    }
 }
