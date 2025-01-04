@@ -80,9 +80,15 @@ class HelperFunctions
         $bondSatoshis = 0;
         $escrowSatoshis = 0;
         // grab all offers where bond_locked is true and status is less than 14
-        $bondLockedOffers = Offer::where([['status', '<', 14], ['status', '>', 0], ['status', '!=', 4],['status', '!=', 5],['status', '!=', 11],['status', '!=', 12],['my_offer', '=', true]])
-            ->orWhere([['status', '<', 14], ['status', '>', 2], ['status', '!=', 4],['status', '!=', 5],['status', '!=', 11],['status', '!=', 12],['accepted', '=', true]])
-            ->get();
+//        $bondLockedOffers = Offer::where([['status', '<', 14], ['status', '>', 0], ['status', '!=', 4],['status', '!=', 5],['status', '!=', 11],['status', '!=', 12],['my_offer', '=', true]])
+//            ->orWhere([['status', '<', 14], ['status', '>', 2], ['status', '!=', 4],['status', '!=', 5],['status', '!=', 11],['status', '!=', 12],['accepted', '=', true]])
+//            ->get();
+
+        $firstBatch = Offer::where('status', '<', 14)->where('status', '>', 0)->where('status', '!=', 4)->where('status', '!=', 5)->where('status', '!=', 11)->where('status', '!=', 12)->where('my_offer', '=', true)->get();
+        $secondBatch = Offer::where('status', '<', 14)->where('status', '>', 2)->where('status', '!=', 4)->where('status', '!=', 5)->where('status', '!=', 11)->where('status', '!=', 12)->where('accepted', '=', true)->get();
+
+        $bondLockedOffers = $firstBatch->merge($secondBatch);
+
         foreach ($bondLockedOffers as $bondLockedOffer) {
             $transaction = $transactions->where('offer_id', $bondLockedOffer->id)->first();
             $bondInvoice = $transaction->bond_invoice;
