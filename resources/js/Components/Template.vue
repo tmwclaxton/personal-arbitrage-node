@@ -130,10 +130,6 @@ const profitable = computed(() => {
 
 
 	<tr  :key="template.id" class="bg-white dark:bg-zinc-900 relative">
-        <span v-bind:class="{'text-green-500': profitable, 'text-red-500': !profitable}"
-              class="absolute top-6 left-8 font-bold text-xs underline">
-            {{ profitable ? 'Profitable Trade' : 'This trade is not profitable!' }}
-        </span>
 		<td class="px-1 py-4 whitespace-nowrap text-center">
 			<div class="text-sm font-bold text-gray-900 dark:text-gray-200">{{ template.slug }}</div>
 		</td>
@@ -210,6 +206,10 @@ const profitable = computed(() => {
 				<danger-button @click="deleteTemplate" v-text="'Delete'"/>
 			</div>
 		</td>
+        <td v-bind:class="{'text-green-500': profitable, 'text-red-500': !profitable}"
+            class="absolute top-6 left-8 font-bold text-xs underline">
+            {{ profitable ? 'Profitable Trade' : 'This trade is not profitable!' }}
+        </td>
 	</tr>
 </template>
 
