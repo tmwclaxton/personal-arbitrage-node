@@ -647,9 +647,12 @@ class OfferController extends Controller
             }
         }
         if (!$found) {
-            $offers = $offers->filter(function ($value, $key) use ($offer) {
-                return $value->id != $offer->id;
-            });
+            // check if the offer is accepted or it is my_offer
+            if (!$offer->accepted && !$offer->my_offer) {
+                $offers = $offers->filter(function ($value, $key) use ($offer) {
+                    return $value->id != $offer->id;
+                });
+            }
         }
 
         // check if currency is in the admin dashboard currencies, if not remove the offer
@@ -663,9 +666,11 @@ class OfferController extends Controller
             }
         }
         if (!$found) {
-            $offers = $offers->filter(function ($value, $key) use ($offer) {
-                return $value->id != $offer->id;
-            });
+            if (!$offer->accepted && !$offer->my_offer) {
+                $offers = $offers->filter(function ($value, $key) use ($offer) {
+                    return $value->id != $offer->id;
+                });
+            }
         }
 
         // make human readable
