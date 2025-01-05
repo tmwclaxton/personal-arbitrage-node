@@ -46,16 +46,20 @@ class AutoCreate implements ShouldQueue
 
                 //         // if it is the weekend add to sell orders and subtract from buy orders to deal with forex market closure
                 //!TODO: we should add some configuration around weekend premiums
-                if (Carbon::now()->isWeekend() && $template->currency != 'GBP') {
-                    $total_premium += $template->type == 'sell' ? 0.5 : -0.5;
+//                if (Carbon::now()->isWeekend() && $template->currency != 'GBP') {
+//                    $total_premium += $template->type == 'sell' ? 0.5 : -0.5;
+//                }
+
+                // unpredicatability addition to avoid scalper bots when the market is slow
+                if ($surge_premium == 0) {
+                    // add or subtract 0.1 or do nothing
+                    $total_premium += rand(0, 2) == 0 ? 0 : (rand(0, 1) == 0 ? 0.1 : -0.1);
                 }
 
-                // unpredicatability addition to avoid scalper bots
-                // add or subtract 0.1 or do nothing
-                $total_premium += rand(0, 2) == 0 ? 0 : (rand(0, 1) == 0 ? 0.1 : -0.1);
 
                 // round to 2 decimal places
                 $total_premium = round($total_premium, 1);
+                dd($total_premium);
 
                 $robosats = new \App\WorkerClasses\Robosats();
                 $response = $robosats->createOffer(
@@ -134,39 +138,44 @@ class AutoCreate implements ShouldQueue
 
     private function calculateSurgePremium($template): float
     {
+        $maxSurgePercentage = 1.5;
+        $bucketSizeHours = 3; // Size of each time bucket (e.g., 3 hours)
+        $numBuckets = 8;      // Number of buckets to consider (8 * 3 = 24 hours)
+        $bucketWeights = [4, 2.9, 2.5, 1.5, 1, 0.7, 0.3, 0.1];
+        $bucket_multiplier = 1.25;
+
+        $bucketCounts = array_fill(0, $numBuckets, 0); // Initialize counts for each bucket
         $recentlyAccepted = Offer::where([
             ['status', '=', 14],
             ['posted_offer_template_slug', $template->slug],
-        ])->where('created_at', '>', Carbon::now()->subDay()) // Use subDay() for 24 hours
-        ->get();
+        ])->where('created_at', '>', Carbon::now()->subHours($bucketSizeHours * $numBuckets))
+            ->get();
 
-        // If no offers accepted in the last 24 hours, no surge
-        if ($recentlyAccepted->isEmpty()) {
-            return 0.0;
-        }
-
-        // the closer the each offer is to the current time, the higher the surge premium for that offer should be
-        $increases = [];
+        // Count the number of accepted offers in each bucket, check the array key for the bucket
         foreach ($recentlyAccepted as $offer) {
-            $timeDiff = round(Carbon::now()->diffInHours($offer->created_at)); // Get the difference in hours
-            // if timeDiff is 0 set to 1 to avoid division by zero
-            $timeDiff = $timeDiff == 0 ? 1 : $timeDiff;
-
-            // so the timediff will be negative, but less negative the closer the offer is to the current time,
-            // square removes the negative
-
-
-            // we need to make the punishment more severe for larger values so we divide by the square of the time difference
-            $increases[] = 1 / ($timeDiff * $timeDiff);
+            $bucketIndex = abs(floor((Carbon::now()->diffInHours($offer->created_at) / $bucketSizeHours)));
+            // if index is out of bounds, dd
+            $bucketCounts[$bucketIndex] += 1;
         }
 
-        // Sum all the increases to get the total surge premium
-        $surgePremium = array_sum($increases) / 1; // Sum all the increases to get the total surge premium
+        // example bucketCounts array for testing
+//         $bucketCounts = [1,0,1,0,1,0,0,1];
 
-        $surgePremium = $surgePremium * 2; // Double the surge premium cause too small
+        $weightedSum = 0;
+        $totalWeight = 0;
+        for ($i = 0; $i < $numBuckets; $i++) {
+            $weightedSum += $bucketCounts[$i] * $bucketWeights[$i] * pow($bucket_multiplier, $i);
+            $totalWeight += $bucketWeights[$i];
+        }
 
-        // Cap the surge premium at a maximum percentage (e.g., 250%), adjustable as needed
-        $maxSurgePercentage = 2.5; // 250%
+        if ($totalWeight > 0) {
+            $averageOrders = $weightedSum / $totalWeight;
+        } else {
+            $averageOrders = 0;
+        }
+
+        // Adjust sensitivity (0.5 reduces sensitivity)
+        $surgePremium = $averageOrders * 0.5;
         $maxSurgePremium = $template->premium * $maxSurgePercentage;
         $surgePremium = min($surgePremium, $maxSurgePremium); // Keep it within the cap
 
