@@ -1,7 +1,7 @@
 <script setup>
 
 
-import {ref} from "vue";
+import {computed, ref, watch} from "vue";
 import SecondaryButton from "@/Components/SecondaryButton.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import TextInput from "@/Components/TextInput.vue";
@@ -117,12 +117,23 @@ offerEditTemplate.value.paymentMethods = JSON.parse(offerEditTemplate.value.paym
 // convert the provider from json to array
 offerEditTemplate.value.providers = JSON.parse(offerEditTemplate.value.provider);
 
+const profitable = computed(() => {
+    // if premium is negative for buy offers or positive for sell offers
+    return (offerEditTemplate.value.type === 'buy' && offerEditTemplate.value.premium < 0) ||
+        (offerEditTemplate.value.type === 'sell' && offerEditTemplate.value.premium > 0);
+});
+
+
 </script>
 
 <template>
 
 
-	<tr  :key="template.id" class="bg-white dark:bg-zinc-900">
+	<tr  :key="template.id" class="bg-white dark:bg-zinc-900 relative">
+        <span v-bind:class="{'text-green-500': profitable, 'text-red-500': !profitable}"
+              class="absolute top-6 left-8 font-bold text-xs underline">
+            {{ profitable ? 'Profitable Trade' : 'This trade is not profitable!' }}
+        </span>
 		<td class="px-1 py-4 whitespace-nowrap text-center">
 			<div class="text-sm font-bold text-gray-900 dark:text-gray-200">{{ template.slug }}</div>
 		</td>
@@ -139,9 +150,9 @@ offerEditTemplate.value.providers = JSON.parse(offerEditTemplate.value.provider)
 		<td class="px-1 py-4 whitespace-nowrap text-center">
 			<text-input v-model="offerEditTemplate.max" label="Max" class="w-20"/>
 		</td>
-		<td class="px-1 py-4 whitespace-nowrap text-center">
-			<text-input v-model="offerEditTemplate.premium" label="Premium" class="w-20"/>
-		</td>
+        <td class="px-1 py-4 whitespace-nowrap text-center" >
+            <text-input v-model="offerEditTemplate.premium" label="Premium" class="w-20" />
+        </td>
 		<td class="px-1 py-4 whitespace-nowrap text-center">
 			<text-input v-model="offerEditTemplate.latitude" label="Latitude" class="w-24"/>
 		</td>
