@@ -42,17 +42,20 @@ class AutoCreate implements ShouldQueue
                 }
 
                 $surge_premium = $this->calculateSurgePremium($template);
-                $total_premium = round($template->premium + $surge_premium,1); // Add surge premium to base premium
+                $total_premium = $template->premium + $surge_premium; // Add surge premium to base premium
 
                 //         // if it is the weekend add to sell orders and subtract from buy orders to deal with forex market closure
                 //!TODO: we should add some configuration around weekend premiums
-                if (Carbon::now()->isWeekend()) {
+                if (Carbon::now()->isWeekend() && $template->currency != 'GBP') {
                     $total_premium += $template->type == 'sell' ? 0.5 : -0.5;
                 }
 
                 // unpredicatability addition to avoid scalper bots
                 // add or subtract 0.1 or do nothing
                 $total_premium += rand(0, 2) == 0 ? 0 : (rand(0, 1) == 0 ? 0.1 : -0.1);
+
+                // round to 2 decimal places
+                $total_premium = round($total_premium, 1);
 
                 $robosats = new \App\WorkerClasses\Robosats();
                 $response = $robosats->createOffer(

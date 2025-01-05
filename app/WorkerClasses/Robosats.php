@@ -1129,14 +1129,19 @@ class Robosats
         }
 
         try {
-            $response = Http::withHeaders($this->getHeaders($tempOffer))->timeout(30)->post($url, $array);
+            $response = Http::withHeaders($this->getHeaders($tempOffer))->timeout(60)->post($url, $array);
         } catch (\Exception $e) {
             // its okay to delete the temp offer and the robots here as the bond has not been paid
             $tempOffer->delete();
             foreach ($robots as $robot) {
                 $robot->delete();
             }
-            $slackService->sendMessage('Failed to create sell offer.  Error: ' . $e->getMessage());
+            if (!isset($e->getMessage)) {
+                $slackService->sendMessage('Failed to create sell offer.  Error: ' . json_encode($e));
+                return $e;
+            } else {
+                $slackService->sendMessage('Failed to create sell offer.  Error: ' . $e->getMessage());
+            }
             return $e->getMessage();
         }
         $response = json_decode($response->body(), true);
