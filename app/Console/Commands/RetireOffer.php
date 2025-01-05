@@ -35,6 +35,11 @@ class RetireOffer extends Command
             $extraOffers = Offer::where('status', '=', 14)->where('robosatsIdStorage', '=', null)->get();
             $offers = $offers->merge($extraOffers);
 
+            // remove any offers created within the last 5 minutes as their expiration date is not accurate till it has updated at least once
+            $offers = $offers->filter(function ($offer) {
+                return $offer->created_at->diffInMinutes(now()) > 5;
+            });
+
             foreach ($offers as $offer) {
 
                 $randomNumber = rand(5000000, 10000000);
