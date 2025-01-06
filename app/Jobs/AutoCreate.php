@@ -59,7 +59,7 @@ class AutoCreate implements ShouldQueue
 
                 // round to 2 decimal places
                 $total_premium = round($total_premium, 1);
-                dd($total_premium);
+//                dd($total_premium);
 
                 $robosats = new \App\WorkerClasses\Robosats();
                 $response = $robosats->createOffer(
