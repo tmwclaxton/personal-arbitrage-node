@@ -56,14 +56,14 @@ class AutoAccept extends Command
         $buyPremium = $adminDashboard->buy_premium;
 
         // where status != 14, 12, 17, 18, 99, 4, 5, 2
-        $sellOffers = Offer::where([['accepted', '=', false],['premium', '>=', $sellPremium], ['type', 'sell'], ['my_offer', '=', false], ['expires_at', '>', now()], ['auto_accept_at', '=', null]])
+        $sellOffers = Offer::where([['accepted', '=', false],['premium', '>=', $sellPremium], ['type', 'sell'], ['my_offer', '=', false], ['expires_at', '>', now()], ['auto_accept_at', '=', null], ['status', '=', 1]])
             ->orderBy('accepted', 'desc')
             ->orderBy('max_satoshi_amount_profit', 'desc')
             ->orderBy('satoshi_amount_profit', 'desc')
             ->orderBy('premium', 'desc')
             ->get();
 
-        $buyOffers = Offer::where([['accepted', '=', false],['premium', '<=', $buyPremium], ['type', 'buy'], ['my_offer', '=', false], ['expires_at', '>', now()], ['auto_accept_at', '=', null]])
+        $buyOffers = Offer::where([['accepted', '=', false],['premium', '<=', $buyPremium], ['type', 'buy'], ['my_offer', '=', false], ['expires_at', '>', now()], ['auto_accept_at', '=', null], ['status', '=', 1]])
             ->orderBy('accepted', 'desc')
             ->orderBy('max_satoshi_amount_profit', 'desc')
             ->orderBy('satoshi_amount_profit', 'desc')
