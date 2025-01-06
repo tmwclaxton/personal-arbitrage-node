@@ -154,9 +154,12 @@ class AutoCreate implements ShouldQueue
         // Count the number of accepted offers in each bucket, check the array key for the bucket
         foreach ($recentlyAccepted as $offer) {
             $bucketIndex = abs(floor((Carbon::now()->diffInHours($offer->created_at) / $bucketSizeHours)));
-            // if index is out of bounds, dd
+            // the max and min should be 0 and $numBuckets - 1
+            $bucketIndex = min($bucketIndex, $numBuckets - 1); // this step is as sometimes the index is calculated as 7. something
             $bucketCounts[$bucketIndex] += 1;
         }
+
+        dd($bucketCounts);
 
         // example bucketCounts array for testing
 //         $bucketCounts = [1,0,1,0,1,0,0,1];
