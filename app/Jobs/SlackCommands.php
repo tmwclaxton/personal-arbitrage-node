@@ -244,6 +244,7 @@ use Illuminate\Support\Facades\Redis;
                                 $slackService->sendMessage('Maximum satoshi amount set to ' . $adminDashboard->max_satoshi_amount, $channelId);
                                 break;
                             case '!generateDepositAddress':
+                                //!todo use the command GenerateInvoice and remove the code below
                                 $krakenService = new \App\Services\KrakenService();
                                 $btcBalance = $krakenService->getBTCBalance();
                                 $btc = $btcBalance->jsonSerialize();
