@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Aloha\Twilio\Twilio;
 use App\Models\Offer;
 use App\Services\SlackService;
+use App\WorkerClasses\Robosats;
 use App\WorkerClasses\RobosatsStatus;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Console\Command;
@@ -45,15 +46,26 @@ class WarningSystem extends Command
                 $data = json_decode(Redis::get($key), true);
                 $status = $data['status'];
                 $timestamp = $data['timestamp'];
-
                 if ($offer->status == $status) {
                     if (Carbon::parse($timestamp)->diffInMinutes(now()) >= 10) {
+                        $robosatsService = new Robosats();
+                        $adminDashboard = \App\Models\AdminDashboard::all()->first();
+                        $startTime = Carbon::parse($adminDashboard->start_time);
+                        $endTime = Carbon::parse($adminDashboard->end_time);
+                        $now = Carbon::now();
+
                         if (Redis::exists($warnKey)) {
                             $warnData = json_decode(Redis::get($warnKey), true);
                             $lastWarning = $warnData['last_warning'];
                             $warnCount = $warnData['warn_count'];
 
-                            if (Carbon::parse($lastWarning)->diffInMinutes(now()) >= 20 && $warnCount < 5) {
+                            // if warning count is 2 reassure the counterparty that the offer is still being monitored and the operator has been notified.
+                            if ($warnCount == 2 && $offer->status == 10 && $offer->type == 'sell' && $now->between($startTime, $endTime)) {
+                                $robosatsService->webSocketCommunicate($offer, $offer->robots()->first(),
+                                    'The operator of this machine is currently busy; however they have been notified. Please be patient and they will be with you shortly.');
+                            }
+
+                            if (Carbon::parse($lastWarning)->diffInMinutes(now()) >= 20) {
                                 $this->triggerWarning($offer, $data, $warnData);
                                 $warnData['last_warning'] = now();
                                 $warnData['warn_count'] += 1;
@@ -62,6 +74,13 @@ class WarningSystem extends Command
                         } else {
                             $this->triggerWarning($offer, $data, ['last_warning' => now(), 'warn_count' => 0]);
                             Redis::set($warnKey, json_encode(['last_warning' => now(), 'warn_count' => 1]));
+
+                            // check if status is 9 or 10, and if the adminDashboard start and end time is out of hours
+                            if (($offer->status == 9 || $offer->status == 10) && !$now->between($startTime, $endTime)) {
+                                    // send a message to the robosats chat room informing that an admin is not available to take action on the offer until x time
+                                $robosatsService->webSocketCommunicate($offer, $offer->robots()->first(),
+                                    'Unfortunately the operator of this machine is out of hours.  They have been pinged and will be back online in ' . Carbon::parse($adminDashboard->auto_accept_start_time)->diffForHumans() . '. Thank you for your patience.');
+                            }
                         }
                     }
                 } else {
