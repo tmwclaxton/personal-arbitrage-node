@@ -64,6 +64,11 @@ class OfferController extends Controller
             ->orderBy('premium', 'desc')
             ->get();
 
+        // remove expired offers
+        $offers = $offers->filter(function ($offer) {
+            return $offer->expires_at > now();
+        });
+
         return $offers;
     }
 
