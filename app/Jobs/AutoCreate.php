@@ -159,7 +159,6 @@ class AutoCreate implements ShouldQueue
             $bucketCounts[$bucketIndex] += 1;
         }
 
-        dd($bucketCounts);
 
         // example bucketCounts array for testing
 //         $bucketCounts = [1,0,1,0,1,0,0,1];
