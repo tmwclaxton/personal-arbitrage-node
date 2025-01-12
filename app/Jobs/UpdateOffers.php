@@ -79,6 +79,7 @@ class UpdateOffers implements ShouldQueue
                     continue;
                 }
                 $dbOffer->status = 99;
+                $dbOffer->expires_at = now();
                 $dbOffer->status_message = 'Offer expired';
                 $dbOffer->save();
             }

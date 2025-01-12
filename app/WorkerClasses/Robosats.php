@@ -655,6 +655,7 @@ class Robosats
             if ($response->json('bad_request') == 'You are not a participant in this order') {
                 $offer->accepted = false;
                 $offer->status = 99;
+                $offer->expires_at = now();
                 $offer->status_message = $response->json('bad_request');
                 $offer->save();
             } else {
