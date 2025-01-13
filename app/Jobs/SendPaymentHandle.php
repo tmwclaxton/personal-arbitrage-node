@@ -171,6 +171,8 @@ class SendPaymentHandle implements ShouldQueue
                         }
 
                         if ($message) {
+                            // to avoid the "kindly state which payment method you will be using" message we should set $paymentMethods to the first payment method that has a message
+                            $paymentMethods = collect([$paymentMethod]);
                             break;
                         }
                     }
