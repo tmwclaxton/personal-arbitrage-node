@@ -321,7 +321,16 @@ class OfferController extends Controller
             $newOffer->save();
         }
 
-        return Offer::where('robosatsId', $offerDTO['robosatsId'])->first();
+        $offer = Offer::where('robosatsId', $offerDTO['robosatsId'])->first();
+
+        // it looks like status has been removed from the orderbook, but it is always 1 if an offer is in the orderbook, unless it is our offer, or if we have it recorded as higher than 1
+        // then it needs updated from the transaction side (robot token in header) and the orderbook is probably out of date
+        if (!$offer->my_offer && $offer->status < 1) {
+            $offer->status = 1;
+            $offer->save();
+        }
+
+        return $offer;
     }
 
     public function calculateLargestAmount($offer, $channelBalances, $specificAmount = null, $ignoreMaxSatoshiAmount = false) {
