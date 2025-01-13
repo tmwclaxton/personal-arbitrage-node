@@ -43,6 +43,12 @@ class GenerateInvoice extends Command
             $satoshis = $remoteBalance - 200000;
         }
         $idealLightningNodeBalance = $adminDashboard->ideal_lightning_node_balance;
+
+        $helpFunction = new \App\WorkerClasses\HelperFunctions();
+        $satsInTransitArray = $helpFunction->calcSatsInTransit();
+        // we need to remove the sats in transit from the ideal balance
+        $idealLightningNodeBalance -= $satsInTransitArray['bondSatoshis'] + $satsInTransitArray['escrowSatoshis'];
+
         if ($localBalance + $satoshis > $idealLightningNodeBalance) {
             $satoshis = $idealLightningNodeBalance - $localBalance;
             if ($satoshis <= 0) {
@@ -50,11 +56,6 @@ class GenerateInvoice extends Command
                 return;
             }
         }
-        $helpFunction = new \App\WorkerClasses\HelperFunctions();
-        $satsInTransitArray = $helpFunction->calcSatsInTransit();
-        // we need to remove the sats in transit from the satoshis
-        $satoshis -= $satsInTransitArray['bondSatoshis'] + $satsInTransitArray['escrowSatoshis'];
-
 
         // if the satoshis is less than 2000, don't create an invoice
         if ($satoshis < 2000) {
@@ -62,9 +63,8 @@ class GenerateInvoice extends Command
             return;
         }
 
-
         $lightningNode = new LightningNode();
-        $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Withdrawal of ' . $btcBalance . ' BTC at ' . Carbon::now()->toDateTimeString());
+        $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Withdrawal of ' . $satoshis . ' sats at ' . Carbon::now()->toDateTimeString());
         $slackService->sendMessage($invoice);
     }
 }
