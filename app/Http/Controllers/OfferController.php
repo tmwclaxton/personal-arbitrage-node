@@ -324,7 +324,7 @@ class OfferController extends Controller
         return Offer::where('robosatsId', $offerDTO['robosatsId'])->first();
     }
 
-    public function calculateLargestAmount($offer, $channelBalances, $specificAmount = null) {
+    public function calculateLargestAmount($offer, $channelBalances, $specificAmount = null, $ignoreMaxSatoshiAmount = false) {
         // grab the offer price amount or max amount
         if (!$specificAmount) {
             if ($offer->has_range) {
@@ -356,13 +356,22 @@ class OfferController extends Controller
             $variationAmounts = [$specificAmount];
         }
 
-        // THIS FILTERS OUT ANY VARIATION AMOUNTS THAT ARE GREATER THAN THE MAX SATOSHI AMOUNT
-        $adminDashboard = AdminDashboard::all()->first();
-        $max_satoshi_amount = $adminDashboard->max_satoshi_amount;
-        // remove any variation amounts that are greater than the max_satoshi_amount
-        $variationAmounts = array_filter($variationAmounts, function ($variationAmount) use ($max_satoshi_amount) {
-            return $variationAmount <= $max_satoshi_amount;
-        });
+        if (!$ignoreMaxSatoshiAmount) {
+            // THIS FILTERS OUT ANY VARIATION AMOUNTS THAT ARE GREATER THAN THE MAX SATOSHI AMOUNT
+            $adminDashboard = AdminDashboard::all()->first();
+            $max_satoshi_amount = $adminDashboard->max_satoshi_amount;
+
+            // remove any variation amounts that are greater than the max_satoshi_amount and if there are no variation amounts left after filtering alert the user
+            $variationAmounts = array_filter($variationAmounts, function ($variationAmount) use ($max_satoshi_amount) {
+                return $variationAmount <= $max_satoshi_amount;
+            });
+
+            if (count($variationAmounts) == 0) {
+                // (new SlackService)->sendMessage('Error: No variation amounts left after filtering');
+                return 'No variation amounts left after filtering.  Increase max_satoshi_amount or accept smaller offers';
+            }
+        }
+
         //////
 
         // foreach $variationAmounts try to find the largest offer that can be accepted

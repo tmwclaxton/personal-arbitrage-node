@@ -132,6 +132,7 @@ class AutoAccept extends Command
             }
         }
 
+        // // this was code for avoiding situations where we accept offers that are the same amount & currency as an ongoing transaction, especially when the system is more automated
         // // grab ongoing transactions
         // $transactions = Transaction::where('status', '<', 14)->get();
         // // grab offer ids from ongoing transactions
@@ -147,6 +148,10 @@ class AutoAccept extends Command
         //     });
         // }
 
+        // remove any offers who satoshi amount is above AdminDashboard->max_satoshi_amount
+        $offers = $offers->filter(function ($value, $key) use ($adminDashboard) {
+            return $value->estimated_offer_amount_sat <= $adminDashboard->max_satoshi_amount;
+        });
 
 
         // remove any offers who estimated_profit_sat is less than AdminDashboard->min_satoshi_profit

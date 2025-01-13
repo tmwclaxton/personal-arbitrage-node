@@ -186,6 +186,8 @@ class Robosats
 
 
     public function createRobots($offer = null) {
+        $slackService = new SlackService();
+
         if ($offer) {
             // check if the offer already has a robot
             $robots = Robot::where('offer_id', $offer->id)->get();
@@ -234,8 +236,9 @@ class Robosats
         $providers = json_decode($adminDashboard->provider_statuses, true);
         $onlineProviders = [];
 
-        if ($offer && (!array_key_exists($offer->provider, $providers) || $providers[$offer->provider] == 'offline')) {
-            return 'Provider is offline';
+        if ($offer && sizeof($providers) == 0 && (!array_key_exists($offer->provider, $providers) || $providers[$offer->provider] == 'offline')) {
+            $slackService->sendMessage('Error creating robot: ' . $offer->provider . ' is not available');
+            return null;
         }
 
         foreach ($providers as $provider => $status) {
@@ -245,7 +248,8 @@ class Robosats
         }
 
         if ($offer && !in_array($offer->provider, $onlineProviders)) {
-            return 'Main provider is offline';
+            $slackService->sendMessage('Error creating robot: ' . $offer->provider . ' is offline');
+            return null;
         }
 
         foreach ($onlineProviders as $provider) {
@@ -536,7 +540,7 @@ class Robosats
             }
 
             // grab the largest amount we can accept whether it is range or not
-            $calculations = (new OfferController())->calculateLargestAmount($offer, $channelBalances, $specificAmountSats);
+            $calculations = (new OfferController())->calculateLargestAmount($offer, $channelBalances, $specificAmountSats, true);
             if (is_array($calculations) && $calculations['estimated_offer_amount'] > 0) {
                 $offer->accepted_offer_amount_sat = $calculations['estimated_offer_amount_sats'];
                 $offer->accepted_offer_amount = $calculations['estimated_offer_amount'];
@@ -546,7 +550,7 @@ class Robosats
                 $offer->accepted_offer_amount_sat = round($offer->accepted_offer_amount_sat, 0);
             } else {
                 $slackService = new SlackService();
-                $slackService->sendMessage('Error: Failed to accept offer: ' . $robosatsId . ' because the calculations failed');
+                $slackService->sendMessage('Error: Failed to accept offer: ' . $robosatsId . ' because the calculations failed. ' . json_encode($calculations));
                 return 'Failed to accept offer: ' . $robosatsId . ' because the calculations failed';
             }
 
@@ -617,14 +621,6 @@ class Robosats
                 (new SlackService)->sendMessage('Error: BtcFiat item is suspiciously old');
                 return 'BtcFiat is suspiciously old';
             }
-
-
-            // check if offer satoshi amount is above adminDashboard->max_satoshi_amount
-            if ($offer->accepted_offer_amount_sat > $adminDashboard->max_satoshi_amount) {
-                (new SlackService)->sendMessage('Error: Offer accepted amount is above max_satoshi_amount in admin dashboard');
-                return 'Offer accepted amount is above max_satoshi_amount in admin dashboard';
-            }
-
 
             // last chance to back out
             if ($adminDashboard->panicButton) {
