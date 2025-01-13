@@ -49,18 +49,21 @@ class GetRobosatsMessages implements ShouldQueue
             $client = new \WebSocket\Client($url);
             $messages = [];
 
-            $client->text(json_encode([
-                'type' => 'message',
-                'message' => $robot->public_key,
-                'nick' => $robot->nickname
-            ]));
+            try {
+                $client->text(json_encode([
+                    'type' => 'message',
+                    'message' => $robot->public_key,
+                    'nick' => $robot->nickname
+                ]));
 
-            $client->text(json_encode([
-                'type' => 'message',
-                'message' => '-----SERVE HISTORY-----',
-                'nick' => $robot->nickname
-            ]));
-
+                $client->text(json_encode([
+                    'type' => 'message',
+                    'message' => '-----SERVE HISTORY-----',
+                    'nick' => $robot->nickname
+                ]));
+            } catch (\Exception $e) {
+                (new \App\Services\SlackService())->sendMessage("Error starting Robosats chatroom messages retrieval: " . $e->getMessage(), $offer->slack_channel_id);
+            }
             $startTime = time();
             $duration = 10; // Duration in seconds
 
