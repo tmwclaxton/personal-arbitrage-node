@@ -145,21 +145,41 @@ class SendPaymentHandle implements ShouldQueue
                     $message = 'Hey! My ' . $paymentMethod->name . ' is ' . $paymentMethod->handle;
                 }
             } else {
-                // Plural case: "My handles are: Revolut: ... - Wise: ..."
-                $formattedHandles = [];
-                foreach ($paymentMethods as $paymentMethod) {
-                    if (!$paymentMethod->custom_sell_message && !($paymentMethod->name && $paymentMethod->handle)) {
-                        $slackService->sendMessage("*Missing both custom message / name and handle for payment method " . $paymentMethod->name . "*");
-                        $slackService->sendMessage("*Failed to send payment handle for offer with ID " . $this->offer->robosatsId . "*", $this->offer->slack_channel_id);
+                if ($this->offer->my_offer) {
+                    // Plural case: "My handles are: Revolut: ... - Wise: ..."
+                    $formattedHandles = [];
+                    foreach ($paymentMethods as $paymentMethod) {
+                        if (!$paymentMethod->custom_sell_message && !($paymentMethod->name && $paymentMethod->handle)) {
+                            $slackService->sendMessage("*Missing both custom message / name and handle for payment method " . $paymentMethod->name . "*");
+                            $slackService->sendMessage("*Failed to send payment handle for offer with ID " . $this->offer->robosatsId . "*", $this->offer->slack_channel_id);
+                            return ['', ''];
+                        }
+                        if ($paymentMethod->custom_sell_message) {
+                            $formattedHandles[] = $paymentMethod->custom_sell_message . "\n";
+                        } else {
+                            $formattedHandles[] = "$paymentMethod->name: $paymentMethod->handle \n";
+                        }
+                    }
+                    $message = "Hey! My handles are: \n\n" . implode("\n", $formattedHandles);
+                } else {
+                    // if it's not our offer, the onus is not on us to provide every handle listed, so we just provide the first one we can based on preference
+                    foreach ($paymentMethods as $paymentMethod) {
+                        if ($paymentMethod->custom_sell_message) {
+                            $message = $paymentMethod->custom_sell_message;
+                        } else if ($paymentMethod->name && $paymentMethod->handle) {
+                            $message = 'Hey! My ' . $paymentMethod->name . ' is ' . $paymentMethod->handle;
+                        }
+
+                        if ($message) {
+                            break;
+                        }
+                    }
+
+                    if (!$message) {
+                        $slackService->sendMessage("*Failed to send payment handle for offer with ID " . $this->offer->robosatsId . " due to missing custom message / name and handle for all payment methods available.", $this->offer->slack_channel_id);
                         return ['', ''];
                     }
-                    if ($paymentMethod->custom_sell_message) {
-                        $formattedHandles[] = $paymentMethod->custom_sell_message . "\n";
-                    } else {
-                        $formattedHandles[] = "$paymentMethod->name: $paymentMethod->handle \n";
-                    }
                 }
-                $message = "Hey! My handles are: \n\n" . implode("\n", $formattedHandles);
             }
 
             if ($this->adminDashboard->ask_for_reference) {
