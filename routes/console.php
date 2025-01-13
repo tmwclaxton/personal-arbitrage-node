@@ -59,7 +59,7 @@ Schedule::command('app:refresh-fiats')
 // this job add a timestamp for when the auto accept final job should actually accept the offer
 Schedule::command('app:auto-accept')
     ->description('auto accept')
-    ->everyMinute()->withoutOverlapping(1);
+    ->everyThreeMinutes()->withoutOverlapping(1);
 
 // auto accept final
 Schedule::command('app:auto-accept-final')
