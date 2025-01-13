@@ -63,10 +63,10 @@ class WarningSystem extends Command
                             if (Carbon::parse($lastWarning)->diffInMinutes(now()) >= 20) {
                                 $this->triggerWarning($offer, $data, $warnData);
                                 // if warning count is 2 reassure the counterparty that the offer is still being monitored and the operator has been notified.
-                                if ($warnCount == 2) {
-                                    $robosatsService->webSocketCommunicate($offer, $offer->robots()->first(),
-                                        'The operator of this machine is currently busy, but they have been notified and will be with you shortly.');
-                                }
+//                                if ($warnCount == 2) {
+//                                    $robosatsService->webSocketCommunicate($offer, $offer->robots()->first(),
+//                                        'The operator of this machine is currently busy, but they have been notified and will be with you shortly.');
+//                                }
                                 $warnData['last_warning'] = now();
                                 $warnData['warn_count'] += 1;
                                 Redis::set($warnKey, json_encode($warnData));
@@ -76,11 +76,11 @@ class WarningSystem extends Command
                             Redis::set($warnKey, json_encode(['last_warning' => now(), 'warn_count' => 1]));
 
                             // check if status is 9 or 10, and if the adminDashboard start and end time is out of hours
-                            if (($offer->status == 10 && $offer->type == 'sell') && !$now->between($startTime, $endTime)) {
+//                            if (($offer->status == 10 && $offer->type == 'sell') && !$now->between($startTime, $endTime)) {
                                     // send a message to the robosats chat room informing that an admin is not available to take action on the offer until x time
-                                $robosatsService->webSocketCommunicate($offer, $offer->robots()->first(),
-                                    'Unfortunately the operator of this machine is out of hours.  They have been pinged and will be back online in ' . Carbon::parse($adminDashboard->auto_accept_start_time)->diffForHumans() . '. Thank you for your patience.');
-                            }
+//                                $robosatsService->webSocketCommunicate($offer, $offer->robots()->first(),
+//                                    'Unfortunately the operator of this machine is out of hours.  They have been pinged and will be back online in ' . Carbon::parse($adminDashboard->auto_accept_start_time)->diffForHumans() . '. Thank you for your patience.');
+//                            }
                         }
                     }
                 } else {
