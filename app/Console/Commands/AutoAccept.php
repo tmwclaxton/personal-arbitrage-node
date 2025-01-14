@@ -43,7 +43,7 @@ class AutoAccept extends Command
         }
 
         $maxConcurrentTransactions = $adminDashboard->max_concurrent_transactions;
-        $offers = Offer::where([['status', '<=', 11],['my_offer', '=', false],['accepted', '=', true],['expires_at', '>', now()]]);
+        $offers = Offer::where([['status', '<=', 11],['my_offer', '=', false],['accepted', '=', true],['expires_at', '>', now()]])->orWhere([['auto_accept_at', '!=', null], ['expires_at', '>', now()]])->get();
         $count = $offers->count();
 
         if ($count >= $maxConcurrentTransactions) {
