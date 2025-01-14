@@ -37,7 +37,8 @@ class UpdateOffers implements ShouldQueue
         $transactions = Transaction::all();
         // grab ids by plucking the id from the transactions
         $ids = $transactions->pluck('offer_id')->toArray();
-        // grab offers that are not in the transactions / give expired offer 5 minutes leeway // used to have ['my_offer', '=', false]
+        // grab offers that are not in the transactions / give expired offer 5 minutes leeway in case of a short provider outage // used to have ['my_offer', '=', false]
+        // ! this code doesn't impact offers with a transaction
         $missingOffers = Offer::whereNotIn('id', $ids)->where([['expires_at', '<', now()->subMinutes(5)], ['accepted', '=', false], ['status', '<', 3]])->get();
         // loop through the missing offers and set them to expired so they can be retired safely
         foreach ($missingOffers as $missingOffer) {
