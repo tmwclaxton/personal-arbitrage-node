@@ -43,7 +43,7 @@ class AutoJobs extends Command
         // every second check status of offer
         $adminDashboard = AdminDashboard::all()->first();
         $slackService = new SlackService();
-        $offers = Offer::where([['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14]])->get();
+        $offers = Offer::where([['status', '!=', 99], ['status', '!=', 5], ['status', '!=', 14], ['expires_at', '>', now()]])->get();
         foreach ($offers as $offer) {
             // if status is 0 and robosatsIdStorage is not null then continue
             $stop = false;
