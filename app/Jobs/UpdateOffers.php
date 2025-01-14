@@ -38,6 +38,14 @@ class UpdateOffers implements ShouldQueue
         // grab ids by plucking the id from the transactions
         $ids = $transactions->pluck('offer_id')->toArray();
         // grab offers that are not in the transactions / give expired offer 5 minutes leeway // used to have ['my_offer', '=', false]
+        $missingOffers = Offer::whereNotIn('id', $ids)->where([['expires_at', '<', now()->subMinutes(5)], ['accepted', '=', false], ['status', '<', 3]])->get();
+        // loop through the missing offers and set them to expired so they can be retired safely
+        foreach ($missingOffers as $missingOffer) {
+            $missingOffer->status = 99;
+            $missingOffer->expires_at = now();
+            $missingOffer->status_message = 'Offer expired';
+            $missingOffer->save();
+        }
 
         $robosats = new Robosats();
         $response = $robosats->getBookOffers();
