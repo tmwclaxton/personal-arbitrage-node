@@ -41,9 +41,11 @@ class AutoAccept extends Command
         if (!$adminDashboard->autoAccept) {
             return 0;
         }
+
         $maxConcurrentTransactions = $adminDashboard->max_concurrent_transactions;
-        $offers = Offer::where([['status', '<=', 11],['my_offer', '=', false],['accepted', '=', true]])->get();
+        $offers = Offer::where([['status', '<=', 11],['my_offer', '=', false],['accepted', '=', true],['expires_at', '>', now()]]);
         $count = $offers->count();
+
         if ($count >= $maxConcurrentTransactions) {
             // (new SlackService())->sendMessage('Max concurrent transactions reached');
             return 0;
