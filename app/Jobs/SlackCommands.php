@@ -246,8 +246,7 @@ use Illuminate\Support\Facades\Redis;
                             case '!generateDepositAddress':
                                 //!todo use the command GenerateInvoice and remove the code below
                                 // kick off the job
-                                $job = new \App\Jobs\GenerateInvoice();
-                                $job->handle();
+                                GenerateInvoice::dispatch($adminDashboard);
                                 break;
 
 
