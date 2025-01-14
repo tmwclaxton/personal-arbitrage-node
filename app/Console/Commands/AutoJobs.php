@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use App\Jobs\PayBond;
 use App\Jobs\PayEscrow;
-use App\Jobs\GenerateInvoice;
+use App\Jobs\UpdateInvoice;
 use App\Jobs\SendPaymentHandle;
 use App\Models\AdminDashboard;
 use App\Models\Offer;
@@ -155,10 +155,10 @@ class AutoJobs extends Command
                 if ($offer->transaction()->first()->invoice_attempts > 1) {
                     $slackService->sendMessage("Don't worry! It's perfectly okay for the invoice to retry :) ", $offer->slack_channel_id);
                     if (now()->minute % 5 == 0) {
-                        GenerateInvoice::dispatch($offer, $adminDashboard);
+                        UpdateInvoice::dispatch($offer, $adminDashboard);
                     }
                 } else {
-                    GenerateInvoice::dispatch($offer, $adminDashboard);
+                    UpdateInvoice::dispatch($offer, $adminDashboard);
                 }
             }
 

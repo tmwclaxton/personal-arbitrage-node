@@ -245,42 +245,9 @@ use Illuminate\Support\Facades\Redis;
                                 break;
                             case '!generateDepositAddress':
                                 //!todo use the command GenerateInvoice and remove the code below
-                                $krakenService = new \App\Services\KrakenService();
-                                $btcBalance = $krakenService->getBTCBalance();
-                                $btc = $btcBalance->jsonSerialize();
-                                // ensure satoshis is an integer
-                                $satoshis = intval($btc * 100000000) - 2000; // possible fees?
-
-                                $adminDashboard = AdminDashboard::all()->first();
-                                $remoteBalance = $adminDashboard->remoteBalance;
-                                $localBalance = $adminDashboard->localBalance;
-                                if ($satoshis > $remoteBalance - 200000) {
-                                    $satoshis = $remoteBalance - 200000;
-                                }
-                                $idealLightningNodeBalance = $adminDashboard->ideal_lightning_node_balance;
-                                if ($localBalance + $satoshis > $idealLightningNodeBalance) {
-                                    $satoshis = $idealLightningNodeBalance - $localBalance;
-                                    if ($satoshis <= 0) {
-                                        $slackService->sendMessage('You have already reached the ideal balance', $channelId);
-                                        break;
-                                    }
-                                }
-                                $helpFunction = new \App\WorkerClasses\HelperFunctions();
-                                $satsInTransitArray = $helpFunction->calcSatsInTransit();
-                                // we need to remove the sats in transit from the satoshis
-                                $satoshis -= $satsInTransitArray['bondSatoshis'] + $satsInTransitArray['escrowSatoshis'];
-
-
-                                // if the satoshis is less than 2000, don't create an invoice
-                                if ($satoshis < 2000) {
-                                    $slackService->sendMessage('Not enough BTC to create an invoice', $channelId);
-                                    break;
-                                }
-
-
-                                $lightningNode = new LightningNode();
-                                $invoice = $lightningNode->createInvoice($satoshis, 'Kraken BTC Withdrawal of ' . $btcBalance . ' BTC at ' . Carbon::now()->toDateTimeString());
-                                $slackService->sendMessage($invoice, $channelId);
+                                // kick off the job
+                                $job = new \App\Jobs\GenerateInvoice();
+                                $job->handle();
                                 break;
 
 
