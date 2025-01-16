@@ -148,7 +148,7 @@ class Robosats
                 // "Origin" => "http://192.168.0.18:12596",
     ];
 
-    public function getHeaders($offer = null)
+    public function getHeaders($offer = null, $robots = null)
     {
         if ($offer) {
             $tokenSha256 = $offer->robots()->first()->sha256;
@@ -163,6 +163,12 @@ class Robosats
                 }
             }
             // remove new lines and \r
+        } else if ($robots) {
+            $tokenSha256 = $robots->first()->sha256;
+            $tokenSha256 = str_replace("\n", '', $tokenSha256);
+            $tokenSha256 = str_replace("\r", '', $tokenSha256);
+            $this->headers["Authorization"] = "Token " . $tokenSha256;
+            $this->headers["Priority"] = "u=1";
         }
         $adminDash = AdminDashboard::all()->first();
         $this->headers["Cookie"] = "UMBREL_PROXY_TOKEN=" . $adminDash->umbrel_token;
@@ -640,11 +646,8 @@ class Robosats
             $offer->save();
             return 'Error: ' . $e->getMessage();
         }
-        if (!$offer->has_range) {
-            $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'take', 'amount' => $offer->accepted_offer_amount]);
-        } else {
-            $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'take', 'amount' => $offer->accepted_offer_amount]);
-        }
+        $response = Http::withHeaders($this->getHeaders($offer))->timeout(30)->post($url, ['action' => 'take', 'amount' => $offer->accepted_offer_amount]);
+
         if ($response == null || $response->failed()) {
             (new SlackService)->sendMessage('Failed to accept offer' . $response->body());
             // {"bad_request":"You are not a participant in this order"}

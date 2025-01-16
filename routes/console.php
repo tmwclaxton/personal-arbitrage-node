@@ -114,6 +114,12 @@ Schedule::command('app:scheduler')
     ->description('scheduler')
     ->everyMinute()->withoutOverlapping(1);
 
+
+// suppressor app:order-suppression buy EUR 3
+ Schedule::command('app:order-suppression buy EUR 3')
+        ->description('order suppression')
+        ->everyTwoMinutes()->withoutOverlapping(1);
+
 // paybond
 // Schedule::command('pay:bond')
 //     ->description('pay bond')
