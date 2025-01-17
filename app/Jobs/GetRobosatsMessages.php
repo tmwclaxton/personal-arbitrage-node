@@ -10,6 +10,7 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Redis;
 
 class GetRobosatsMessages implements ShouldQueue
 {
@@ -62,7 +63,13 @@ class GetRobosatsMessages implements ShouldQueue
                     'nick' => $robot->nickname
                 ]));
             } catch (\Exception $e) {
-                (new \App\Services\SlackService())->sendMessage("Error starting Robosats chatroom messages retrieval: " . $e->getMessage(), $offer->slack_channel_id);
+                // record error in redis with a lifetime of 5 minutes, if the same error occurs in the next 5 minutes, send a slack message
+                if (Redis::get('robosats_chatroom_error_' . $offer->id)) {
+                    // send slack message
+                    (new \App\Services\SlackService())->sendMessage("Error starting Robosats chatroom messages retrieval: " . $e->getMessage(), $offer->slack_channel_id);
+                } else {
+                    Redis::set('robosats_chatroom_error_' . $offer->id, $e->getMessage(), 'EX', 300);
+                }
             }
             $startTime = time();
             $duration = 10; // Duration in seconds
