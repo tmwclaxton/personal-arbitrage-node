@@ -1,92 +1,115 @@
 #!/bin/bash
 
-# Set environment variables
-export AWS_ACCESS_KEY_ID="AKIA3Z6QG7OJFIWYPKUI"
-export AWS_SECRET_ACCESS_KEY="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"
+# Set environment variables these should be requested through the client communication container
+export AWS_ACCESS_KEY_ID=""
+export AWS_SECRET_ACCESS_KEY=""
 export AWS_REGION="eu-west-2"
 
-ECR_REGISTRY="811648613266.dkr.ecr.eu-west-2.amazonaws.com"
-IMAGE_NAME="arbitrage-bot"
-TAG="latest"
+ECR_REGISTRY=""
 
+# prune dangling images
+docker image prune -f
 
-# Delete log files older than 2 minutes
-find /home/tmwcl/Deployment/ -name "pull_latest_image_*.log" -type f -mmin +60 -exec echo "Deleting {}" \; -exec rm {} \;
+# Arrays of image names and container names
+IMAGE_NAMES=("arbitrage-bot")
+CONTAINER_NAMES=("deployment-arbitrage-bot-1")
+VOLUME_NAMES=("deployment_sail-laravel")
+
+# Delete log files older than 60 minutes
+find /home/las/Deployment/ -name "pull_latest_image_*.log" -type f -mmin +60 -exec echo "Deleting {}" \; -exec rm {} \;
+
 # Get current date and time
 CURRENT_DATE=$(date +"%Y-%m-%d_%H-%M-%S")
 
 # Define log file path
-LOG_FILE="/home/tmwcl/Deployment/Logs/pull_latest_image_${CURRENT_DATE}.log"
+LOG_FILE="/home/las/Deployment/Logs/pull_latest_image_${CURRENT_DATE}.log"
+
+# Create log file
+touch ${LOG_FILE}
 
 # Redirect stdout and stderr to log file
 exec > >(tee -a ${LOG_FILE}) 2>&1
 
-
-
-
 # Login to ECR
 aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
 
-# # Pull the latest image
-# docker pull $ECR_REGISTRY/$IMAGE_NAME:$TAG
+# Loop through the images and containers
+for i in "${!IMAGE_NAMES[@]}"; do
+    IMAGE_NAME="${IMAGE_NAMES[$i]}"
+    CONTAINER_NAME="${CONTAINER_NAMES[$i]}"
+    VOLUME_NAME="${VOLUME_NAMES[$i]}"
+    TAG="latest"
 
-#  check if the latest image is more recent than the current image
-docker pull $ECR_REGISTRY/$IMAGE_NAME:$TAG
+    echo "Processing $IMAGE_NAME with container $CONTAINER_NAME"
 
-#  check if there is a container running with the name 'deployment_arbitrage-bot_1' if not set tmp file to '0'
-docker ps -a | grep deployment_arbitrage-bot_1
-
-docker inspect --format='{{.Created}}' $ECR_REGISTRY/$IMAGE_NAME:$TAG > /tmp/latest_image_created
-
-if [ $? -eq 1 ]; then
-    echo "No container running with the name 'deployment_arbitrage-bot_1'"
-    echo "0" > /tmp/current_image_created
-else
-    echo "Container running with the name 'deployment_arbitrage-bot_1'"
-    #  grab the current image being used by deployment_arbitrage-bot_1
-    current_image=$(docker inspect --format='{{.Image}}' deployment_arbitrage-bot_1)
-
-    #  grab the creation date of the current image
-    docker inspect --format='{{.Created}}' $current_image > /tmp/current_image_created
-fi
+    # Login to ECR
+    aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
 
 
+    # Pull the latest image
+    docker pull $ECR_REGISTRY/$IMAGE_NAME:$TAG
 
-# echo the 2 dates to the console
-echo "Latest image created: $(cat /tmp/latest_image_created)"
-echo "Current image created: $(cat /tmp/current_image_created)"
+    # Get the creation date of the latest image
+    docker inspect --format='{{.Created}}' $ECR_REGISTRY/$IMAGE_NAME:$TAG > /tmp/latest_image_created_$i
 
+    # Check if the container is running
+    docker ps -a | grep $CONTAINER_NAME
 
-diff /tmp/latest_image_created /tmp/current_image_created
+    if [ $? -eq 1 ]; then
+        echo "No container running with the name '$CONTAINER_NAME'"
+        echo "0" > /tmp/current_image_created_$i
+    else
+        echo "Container running with the name '$CONTAINER_NAME'"
+        # Get the current image used by the container
+        current_image=$(docker inspect --format='{{.Image}}' $CONTAINER_NAME)
 
-if [ $? -eq 1 ]; then
-    echo "The latest image is more recent than the current image"
-
-    #  check if docker container exists
-    docker ps -a | grep deployment_arbitrage-bot_1
-
-    # if container exists, stop and remove it
-    if [ $? -eq 0 ]; then
-        docker stop deployment_arbitrage-bot_1
-        docker rm deployment_arbitrage-bot_1
+        # Get the creation date of the current image
+        docker inspect --format='{{.Created}}' $current_image > /tmp/current_image_created_$i
     fi
 
-    # check if volume deployment_sail-laravel exists if so delete it
-    docker volume ls | grep deployment_sail-laravel
+    # Compare the creation dates
+    echo "Latest image created: $(cat /tmp/latest_image_created_$i)"
+    echo "Current image created: $(cat /tmp/current_image_created_$i)"
 
-    if [ $? -eq 0 ]; then
-        docker volume rm deployment_sail-laravel
+    diff /tmp/latest_image_created_$i /tmp/current_image_created_$i
+
+    if [ $? -eq 1 ]; then
+        echo "The latest image is more recent than the current image"
+
+        # Check if the container exists, stop and remove it if it does
+        docker ps -a | grep $CONTAINER_NAME
+
+        if [ $? -eq 0 ]; then
+            docker stop $CONTAINER_NAME
+            docker rm $CONTAINER_NAME
+        fi
+
+        # Check if the volume exists, delete it if it does
+        docker volume ls | grep $VOLUME_NAME
+
+        if [ $? -eq 0 ]; then
+            docker stop $CONTAINER_NAME
+            docker rm $CONTAINER_NAME
+            docker volume rm $VOLUME_NAME
+        fi
+
+
+        # Optionally, wait for the container to start then run npm build (if needed)
+        # sleep 20
+        # docker exec -it $CONTAINER_NAME npm run build
+
+    else
+        echo "The latest image is not more recent than the current image for $CONTAINER_NAME"
     fi
 
-    docker-compose -f ~/Deployment/docker-compose.yml --env-file ~/Deployment/.env up -d
-
-    # wait for the container to start then run cmd 'npm run build'
-    # sleep 20
 
 
-    # docker exec -it deployment_arbitrage-bot_1 npm run build
+    # Clean up temporary files
+    rm /tmp/latest_image_created_$i /tmp/current_image_created_$i
+done
 
-else
-    echo "The latest image is not more recent than the current image"
-    exit 0
-fi
+docker compose -f ~/Deployment/docker-compose.yml --env-file ~/Deployment/.env up -d
+
+# docker image prune -a -f
+
+exit 0
