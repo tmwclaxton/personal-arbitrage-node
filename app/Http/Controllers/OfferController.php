@@ -26,15 +26,20 @@ use Inertia\Inertia;
 
 class OfferController extends Controller
 {
-    public function getOffersInternal($adminDashboard)
+    public function getOffersInternal($adminDashboard, $sellPremium = null, $buyPremium = null): Collection
     {
         if ($adminDashboard == null) {
             $adminDashboard = new AdminDashboard();
             $adminDashboard->save();
         }
 
-        $sellPremium = $adminDashboard->sell_premium;
-        $buyPremium = $adminDashboard->buy_premium;
+        if ($sellPremium == null) {
+            $sellPremium = $adminDashboard->sell_premium;
+        }
+        if ($buyPremium == null) {
+            $buyPremium = $adminDashboard->buy_premium;
+        }
+
         $excludedStatuses = [99, 5, 14];
 
         // first check if there are any offers that are not in the excluded statuses
@@ -69,6 +74,15 @@ class OfferController extends Controller
             return $offer->expires_at > now();
         });
 
+        $paymentMethods = json_decode($adminDashboard->payment_methods);
+
+        $currencies = json_decode($adminDashboard->payment_currencies);
+
+        // change the expires_at to a human readable format
+        foreach ($offers as $offer) {
+            $this->prepareOffer($offers, $offer, $paymentMethods, $currencies);
+        }
+
         return $offers;
     }
 
@@ -90,15 +104,6 @@ class OfferController extends Controller
         }
 
         $offers = $this->getOffersInternal($adminDashboard);
-
-        $paymentMethods = json_decode($adminDashboard->payment_methods);
-
-        $currencies = json_decode($adminDashboard->payment_currencies);
-
-        // change the expires_at to a human readable format
-        foreach ($offers as $offer) {
-            $this->prepareOffer($offers, $offer, $paymentMethods, $currencies);
-        }
 
         // convert the offers to an array
         $offersTemp = [];
@@ -569,8 +574,6 @@ class OfferController extends Controller
         $offerId = request('offer_id');
         $adminDashboard = AdminDashboard::all()->first();
         $offer = Offer::where('id', $offerId)->first();
-
-
 
         Bus::chain([
             new \App\Jobs\CreateRobots($offer, $adminDashboard),

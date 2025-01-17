@@ -58,6 +58,8 @@ use Illuminate\Support\Facades\Redis;
             '!setMinSatProfit',
             '!setMaxSatAmount',
             '!generateDepositAddress',
+            '!listProfitableOffers',
+            '!acceptSpecificOffer',
         ];
         $slackService = new SlackService();
         $adminDashboard = AdminDashboard::all()->first();
@@ -248,7 +250,48 @@ use Illuminate\Support\Facades\Redis;
                                 // kick off the job
                                 GenerateInvoice::dispatch($adminDashboard);
                                 break;
+                            case '!listProfitableOffers':
+                                $offerController = new \App\Http\Controllers\OfferController();
+                                $offers = $offerController->getOffersInternal($adminDashboard, 0.5, -0.5);
 
+                                // offer is a collection, remove any offers which are my_offer true
+                                $offers = $offers->filter(function ($offer) {
+                                    return !$offer->my_offer;
+                                });
+                                // remove any offers which are accepted
+                                $offers = $offers->filter(function ($offer) {
+                                    return !$offer->accepted;
+                                });
+
+                                $messages = [];
+                                foreach ($offers as $offer) {
+                                    // if it is a min - max offer
+                                    if ($offer->has_range) {
+                                        $messages[] = "ID: " . $offer->robosatsId . " | " . $offer->type . " BTC | " . $offer->min_amount . " - " . $offer->max_amount . " " . $offer->currency . " | Premium: " . $offer->premium
+                                          .  " | " . json_encode($offer->payment_methods);
+                                    } else {
+                                        $messages[] = "ID: " . $offer->robosatsId . " | " . $offer->type . " BTC | " . $offer->amount  . " " . $offer->currency . " | Premium: " . $offer->premium
+                                            .  " | " . json_encode($offer->payment_methods);
+                                    }
+                                }
+
+                                // reverse order
+                                $messages = array_reverse($messages);
+
+                                $slackService->sendMessage(implode("\n\n", $messages), $channelId);
+                                break;
+
+                            case '!acceptSpecificOffer':
+                                $offerId = explode(' ', $slackMessage['content'])[1];
+                                $offer = Offer::where('robosatsId', $offerId)->first();
+
+                                $slackService = new SlackService();
+                                $slackService->sendMessage('Auto accepting offer ' . $offer->robosatsId . ' in 1 minute.', $adminDashboard->slack_main_channel_id);
+
+                                $offer->auto_accept_at = Carbon::now()->addMinutes(1);
+                                $offer->save();
+
+                                break;
 
                             default:
                                 $slackService->sendMessage('Command not recognized', $channelId);
