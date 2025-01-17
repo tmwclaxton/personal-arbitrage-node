@@ -43,8 +43,11 @@ class AutoAccept extends Command
         }
 
         $maxConcurrentTransactions = $adminDashboard->max_concurrent_transactions;
-        $offers = Offer::where([['status', '<=', 11],['my_offer', '=', false],['accepted', '=', true],['expires_at', '>', now()]])->orWhere([['auto_accept_at', '!=', null], ['expires_at', '>', now()]])->get();
-        $count = $offers->count();
+        // orWhere apparently
+        $offers = Offer::where([['status', '>=', 3],['status', '<=', 11],['my_offer', '=', false],['accepted', '=', true],['expires_at', '>', now()]])->get();
+        $offersTwo = Offer::where([['auto_accept_at', '!=', null], ['expires_at', '>', now()]])->get();
+        $combinedOffers = $offers->merge($offersTwo);
+        $count = $combinedOffers->count();
 
         if ($count >= $maxConcurrentTransactions) {
             // (new SlackService())->sendMessage('Max concurrent transactions reached');
