@@ -36,7 +36,7 @@ class SlackService
     /**
      * @throws \Exception
      */
-    protected function retry(callable $callback, int $retries = 3, int $delay = 2)
+    protected function retry(callable $callback, int $retries = 5, int $delay = 4)
     {
         $attempt = 0;
         while ($attempt < $retries) {
@@ -50,6 +50,8 @@ class SlackService
                 sleep($delay); // wait before retrying
             }
         }
+
+        return null;
     }
 
     /**
