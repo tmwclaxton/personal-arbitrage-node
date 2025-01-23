@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\AdminDashboard;
 use App\Models\KitMessage;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Facades\Log;
 use JoliCode\Slack\Api\Client;
 use JoliCode\Slack\ClientFactory;
 
@@ -174,5 +175,73 @@ class SlackService
                 'channel' => $channelId,
             ]);
         });
+    }
+
+
+    // list users
+    public function listBotUsers(): array
+    {
+        $users = $this->client->usersList()->getMembers();
+        $botUsers = [];
+        foreach ($users as $user) {
+            if ($user->getIsBot()) {
+                $botUsers[] = $user;
+            }
+        }
+
+        return $botUsers;
+    }
+
+    // list channels made by the bot
+    public function archiveOldBotChannels($cursor = null, $repeats = 0): string
+    {
+
+        $botUserId = $this->listBotUsers()[0]->getId();
+
+        $data = [
+            'exclude_archived' => true,
+            'limit' => 1000,
+        ];
+
+        if ($cursor) {
+            $data['cursor'] = $cursor;
+        }
+
+
+        $convoData = $this->client->conversationsList($data);
+
+        $responseMetadata = $convoData->getResponseMetadata();
+
+        $nextCursor = $responseMetadata->getNextCursor();
+
+        $channels = $convoData->getChannels();
+
+        $channelsToArchive = [];
+
+         foreach ($channels as $channel) {
+             // if the channel was created by the bot and is older than 1 day (the timestamp is an epoch)
+            if ($channel->getCreator() === $botUserId && $channel->getCreated() < strtotime('-1 day')) {
+                $channelsToArchive[] = $channel;
+            }
+            sleep(1);
+        }
+
+         // archive the channels
+        foreach ($channelsToArchive as $channel) {
+            $this->client->conversationsArchive([
+                'channel' => $channel->getId(),
+            ]);
+            sleep(1);
+        }
+
+        Log::info('Archived ' . count($channelsToArchive) . ' channels, with repeat count at ' . $repeats);
+
+        if ($nextCursor && $repeats > 0) {
+            $this->archiveOldBotChannels($nextCursor, $repeats--);
+            sleep(1);
+        }
+
+
+        return "done";
     }
 }
