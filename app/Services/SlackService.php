@@ -225,7 +225,7 @@ class SlackService
             if ($channel->getCreator() === $botUserId && $channel->getCreated() < strtotime('-1 day')) {
                 $channelsToArchive[] = $channel;
             }
-            sleep(1);
+            sleep(0.3);
         }
 
          // archive the channels
@@ -233,14 +233,14 @@ class SlackService
             $this->client->conversationsArchive([
                 'channel' => $channel->getId(),
             ]);
-            sleep(1);
+            sleep(0.3);
         }
 
         Log::info('Archived ' . count($channelsToArchive) . ' channels, with repeat count at ' . $repeats);
 
         if ($nextCursor && $repeats > 0) {
             $this->archiveOldBotChannels($nextCursor, $repeats--);
-            sleep(1);
+            sleep(0.3);
         }
 
 
