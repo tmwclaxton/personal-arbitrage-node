@@ -58,7 +58,7 @@ class SlackService
     /**
      * @throws \Exception
      */
-    public function createChannel($channelName): ?string
+    public function createChannel($channelName, $offer = null): string
     {
         // lowercase the channel name
         $channelName = strtolower($channelName);
@@ -67,48 +67,47 @@ class SlackService
         $slackService = new SlackService();
 
         // Retry the channel creation
-        $channel = $this->retry(function () use ($slackService, $channelName) {
-            return $slackService->client->conversationsCreate(['name' => $channelName]);
-        });
-
-        if (!$channel) {
-            return null;
-        }
+        $channel = $slackService->client->conversationsCreate(['name' => $channelName]);
 
         $channelID = $channel->getChannel()->getId();
-
-        try {
-            sleep(3);
-
-            // Retry fetching users
-            $users = $this->retry(function () use ($slackService) {
-                return $slackService->client->usersList();
-            });
-            $members = $users->getMembers();
-
-            // Filter out bots
-            foreach ($members as $key => $member) {
-                if ($member->getIsBot() || $member->getId() == 'USLACKBOT') {
-                    unset($members[$key]);
-                }
-            }
-
-            // Retry adding users to the channel
-            foreach ($members as $member) {
-                $this->retry(function () use ($slackService, $channelID, $member) {
-                    $slackService->client->conversationsInvite([
-                        'channel' => $channelID,
-                        'users' => $member->getId(),
-                    ]);
-                });
-                sleep(5);
-            }
-        } catch (GuzzleException $e) {
-            // if there is an error, delete the channel
-            $this->deleteChannel($channelID);
-
-            return null;
+        if ($offer) {
+            // make sure the id is saved to the offer
+            $offer->slack_channel_id = $channelID;
+            $offer->save();
         }
+
+        sleep(3);
+
+        // Retry fetching users
+        $users = $this->retry(function () use ($slackService) {
+            return $slackService->client->usersList();
+        });
+
+        // get members who are not bots and are not deactivated
+        $members = $users->getMembers();
+
+        $members = collect($members)->filter(function ($member) {
+            return !$member->getIsBot() && !$member->getDeleted() && $member->getId() != 'USLACKBOT';
+        })->values();
+
+        // Filter out bots
+//        foreach ($members as $key => $member) {
+//            if ($member->getIsBot() || $member->getId() == 'USLACKBOT') {
+//                unset($members[$key]);
+//            }
+//        }
+
+        // Retry adding users to the channel
+        foreach ($members as $member) {
+            $this->retry(function () use ($slackService, $channelID, $member) {
+                $slackService->client->conversationsInvite([
+                    'channel' => $channelID,
+                    'users' => $member->getId(),
+                ]);
+            });
+            sleep(5);
+        }
+
         return $channelID;
     }
 
@@ -215,7 +214,7 @@ class SlackService
 
         $data = [
             'exclude_archived' => true,
-            'limit' => 100,
+            'limit' => 300,
         ];
 
         if ($cursor) {

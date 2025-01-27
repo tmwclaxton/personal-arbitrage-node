@@ -105,9 +105,6 @@ class AutoJobs extends Command
 
                         // send another message with the robot token in case manual intervention is needed
                         $slackService->sendMessage("Robot token: " . $offer->robots()->first()->token, $channel_id);
-
-
-
                 }
             }
 

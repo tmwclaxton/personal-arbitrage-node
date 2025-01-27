@@ -10,14 +10,12 @@ use App\Models\BtcPurchase;
 use App\Models\MonzoAccessToken;
 use App\Models\Offer;
 use App\Models\Payment;
-use App\Models\RevolutAccessToken;
 use App\Models\Robot;
 use App\Models\SlackMessage;
 use App\Models\Transaction;
 use App\Services\SlackService;
 use App\Services\MonzoService;
 use App\Services\PgpService;
-use App\Services\RevolutService;
 use App\Services\WiseService;
 use App\WorkerClasses\LightningNode;
 use App\WorkerClasses\Robosats;
@@ -188,6 +186,12 @@ Route::middleware('auth')->group(function () {
         return $robot->createRobots();
     });
 
+//    Route::get('create-slack-channel', function () {
+//        $slackService = new SlackService();
+//        $channelName = rand(1000, 9999);
+//        $channelId = $slackService->createChannel($channelName);
+//        return $channelId;
+//    });
 
 
 });

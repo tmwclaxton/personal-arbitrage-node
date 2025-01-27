@@ -18,7 +18,7 @@ class AutoCreate implements ShouldQueue
 
     public int $timeout = 1500;
 
-    public int $ordersInOneGo = 2;
+    public int $ordersInOneGo = 3;
 
     public function handle(): void
     {
@@ -79,16 +79,16 @@ class AutoCreate implements ShouldQueue
 
                 $this->ordersInOneGo--;
 
-                if ($this->ordersInOneGo == 0) {
-                    break 2;
-                }
-
                 sleep(5);
             }
 
             $template->last_created = Carbon::now();
             $template->last_accepted = Carbon::now();
             $template->save();
+
+            if ($this->ordersInOneGo <= 0) {
+                break;
+            }
         }
     }
 
@@ -185,9 +185,6 @@ class AutoCreate implements ShouldQueue
         $surgePremium = $averageOrders * 0.5;
         $maxSurgePremium = $template->premium * $maxSurgePercentage;
         $surgePremium = min($surgePremium, $maxSurgePremium); // Keep it within the cap
-
-        // add 10% to the surge premium for testing
-        $surgePremium = $surgePremium + 10;
 
         // if the order is a buy order, the surge premium should be negative
         if ($template->type == 'sell') {
