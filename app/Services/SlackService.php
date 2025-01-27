@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\AdminDashboard;
 use App\Models\KitMessage;
+use App\Models\Offer;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Log;
 use JoliCode\Slack\Api\Client;
@@ -36,7 +37,7 @@ class SlackService
     /**
      * @throws \Exception
      */
-    protected function retry(callable $callback, int $retries = 5, int $delay = 4)
+    protected function retry(callable $callback, int $retries = 5, int $delay = 4): mixed
     {
         $attempt = 0;
         while ($attempt < $retries) {
@@ -70,34 +71,44 @@ class SlackService
             return $slackService->client->conversationsCreate(['name' => $channelName]);
         });
 
+        if (!$channel) {
+            return null;
+        }
+
         $channelID = $channel->getChannel()->getId();
 
-        sleep(3);
+        try {
+            sleep(3);
 
-        // Retry fetching users
-        $users = $this->retry(function () use ($slackService) {
-            return $slackService->client->usersList();
-        });
-        $members = $users->getMembers();
-
-        // Filter out bots
-        foreach ($members as $key => $member) {
-            if ($member->getIsBot() || $member->getId() == 'USLACKBOT') {
-                unset($members[$key]);
-            }
-        }
-
-        // Retry adding users to the channel
-        foreach ($members as $member) {
-            $this->retry(function () use ($slackService, $channelID, $member) {
-                $slackService->client->conversationsInvite([
-                    'channel' => $channelID,
-                    'users' => $member->getId(),
-                ]);
+            // Retry fetching users
+            $users = $this->retry(function () use ($slackService) {
+                return $slackService->client->usersList();
             });
-            sleep(5);
-        }
+            $members = $users->getMembers();
 
+            // Filter out bots
+            foreach ($members as $key => $member) {
+                if ($member->getIsBot() || $member->getId() == 'USLACKBOT') {
+                    unset($members[$key]);
+                }
+            }
+
+            // Retry adding users to the channel
+            foreach ($members as $member) {
+                $this->retry(function () use ($slackService, $channelID, $member) {
+                    $slackService->client->conversationsInvite([
+                        'channel' => $channelID,
+                        'users' => $member->getId(),
+                    ]);
+                });
+                sleep(5);
+            }
+        } catch (GuzzleException $e) {
+            // if there is an error, delete the channel
+            $this->deleteChannel($channelID);
+
+            return null;
+        }
         return $channelID;
     }
 
@@ -200,9 +211,11 @@ class SlackService
 
         $botUserId = $this->listBotUsers()[0]->getId();
 
+        sleep(1);
+
         $data = [
             'exclude_archived' => true,
-            'limit' => 1000,
+            'limit' => 100,
         ];
 
         if ($cursor) {
@@ -221,11 +234,12 @@ class SlackService
         $channelsToArchive = [];
 
          foreach ($channels as $channel) {
-             // if the channel was created by the bot and is older than 1 day (the timestamp is an epoch)
-            if ($channel->getCreator() === $botUserId && $channel->getCreated() < strtotime('-1 day')) {
+             // if the channel was created by the bot and is older than 1 day (the timestamp is an epoch) and check that no offers have a slack channel id that matches this channel
+            if ($channel->getCreator() === $botUserId && $channel->getCreated() < strtotime('-10 minutes')) {
+//                && !Offer::where('slack_channel_id', $channel->getId())->exists()) {
                 $channelsToArchive[] = $channel;
             }
-            sleep(0.3);
+            sleep(1);
         }
 
          // archive the channels
@@ -233,14 +247,14 @@ class SlackService
             $this->client->conversationsArchive([
                 'channel' => $channel->getId(),
             ]);
-            sleep(0.3);
+            sleep(1);
         }
 
         Log::info('Archived ' . count($channelsToArchive) . ' channels, with repeat count at ' . $repeats);
 
         if ($nextCursor && $repeats > 0) {
+            sleep(10);
             $this->archiveOldBotChannels($nextCursor, $repeats--);
-            sleep(0.3);
         }
 
 
