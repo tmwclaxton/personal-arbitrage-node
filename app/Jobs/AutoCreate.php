@@ -18,6 +18,8 @@ class AutoCreate implements ShouldQueue
 
     public int $timeout = 1500;
 
+    public int $ordersInOneGo = 3;
+
     public function handle(): void
     {
         $adminDashboard = AdminDashboard::first();
@@ -44,11 +46,11 @@ class AutoCreate implements ShouldQueue
                 $surge_premium = $this->calculateSurgePremium($template);
                 $total_premium = $template->premium + $surge_premium; // Add surge premium to base premium
 
-                //         // if it is the weekend add to sell orders and subtract from buy orders to deal with forex market closure
+                // if it is the weekend add to sell orders and subtract from buy orders to deal with forex market closure
                 //!TODO: we should add some configuration around weekend premiums
-//                if (Carbon::now()->isWeekend() && $template->currency != 'GBP') {
-//                    $total_premium += $template->type == 'sell' ? 0.5 : -0.5;
-//                }
+                // if (Carbon::now()->isWeekend() && $template->currency != 'GBP') {
+                //     $total_premium += $template->type == 'sell' ? 0.5 : -0.5;
+                // }
 
                 // unpredicatability addition to avoid scalper bots when the market is slow
                 if ($surge_premium == 0) {
@@ -56,34 +58,37 @@ class AutoCreate implements ShouldQueue
                     $total_premium += rand(0, 2) == 0 ? 0 : (rand(0, 1) == 0 ? 0.1 : -0.1);
                 }
 
-
-                // round to 2 decimal places
                 $total_premium = round($total_premium, 1);
-//                dd($total_premium);
 
                 $robosats = new \App\WorkerClasses\Robosats();
                 $response = $robosats->createOffer(
                     $template->type,
                     $template->currency,
-                    $total_premium, // Use total premium
+                    $total_premium,
                     $chosen_provider,
                     $template->min_amount,
                     $template->payment_methods,
                     $template->bond_size,
                     $ttl,
                     $template->escrow_time,
-                    $template->latitude == 0 ? null : $template->latitude, // Simplified ternary
-                    $template->longitude == 0 ? null : $template->longitude, // Simplified ternary
+                    $template->latitude == 0 ? null : $template->latitude,
+                    $template->longitude == 0 ? null : $template->longitude,
                     $template->slug,
                     $template->max_amount == 0 ? null : $template->max_amount,
                 );
+
+                $this->ordersInOneGo--;
 
                 sleep(5);
             }
 
             $template->last_created = Carbon::now();
-            $template->last_accepted = Carbon::now(); // No need to add 0 seconds
+            $template->last_accepted = Carbon::now();
             $template->save();
+
+            if ($this->ordersInOneGo <= 0) {
+                break;
+            }
         }
     }
 

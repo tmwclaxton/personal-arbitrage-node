@@ -36,6 +36,8 @@ class AutoJobs extends Command
      */
     public function handle()
     {
+        // !TODO: this whole command should be broken up into separate jobs
+
         if (!(new HelperFunctions())->normalUmbrelCommandCheck()) {
             return;
         }
@@ -58,32 +60,31 @@ class AutoJobs extends Command
             }
 
             // rename slack channel
-            if ($offer->job_last_status !== $offer->status) {
-
-                if (isset($offer->slack_channel_id)) {
-                    $slackService = new SlackService();
-                    $sub = substr($offer->provider, 0, 3);
-                    $statusMessage = str_replace(' ', '-', $offer->status_message);
-                    $name = $sub . "-order-" . strval($offer->robosatsId) . "-" . $statusMessage;
-                    $slackService->renameChannel($name, $offer->slack_channel_id);
-                }
+            if ($offer->job_last_status !== $offer->status && $offer->slack_channel_id !== null) {
+                $slackService = new SlackService();
+                $sub = substr($offer->provider, 0, 3);
+                $statusMessage = str_replace(' ', '-', $offer->status_message);
+                $name = $sub . "-order-" . strval($offer->robosatsId) . "-" . $statusMessage;
+                $slackService->renameChannel($name, $offer->slack_channel_id);
             }
 
             // don't run the job again from auto job
             $offer->job_last_status = $offer->status;
             $offer->save();
 
-            // if status is less than 3 then it is not accepted
+            // if status is less than 3 then it is not accepted // this code is need when offer is accepted but bond is not paid and the order goes back a status
             if ($offer->status < 3) {
                 $offer->accepted = false;
                 $offer->save();
             }
 
+
+            // this section is for making the slack channel and sending the initial message
             if (($offer->status < 3 && $offer->my_offer  || (!$offer->my_offer && ($offer->status == 3 || $offer->status > 6 && $offer->status < 14)))) {
 
                     // we want to create a Slack channel for the offer if it doesn't exist
                     $slackService = new SlackService();
-                    if ($offer->slack_channel_id === null && $offer->robosatsId < 200000 && isset($offer->currency)) {
+                    if ($offer->slack_channel_id === null && isset($offer->currency)) {
                         // first 3 letters of the provider then the robosatsId
                         $providerSub = substr($offer->provider, 0, 3);
                         $statusWithoutSpaces = str_replace(' ', '-', $offer->status_message);
@@ -104,18 +105,15 @@ class AutoJobs extends Command
 
                         // send another message with the robot token in case manual intervention is needed
                         $slackService->sendMessage("Robot token: " . $offer->robots()->first()->token, $channel_id);
-
-
-
                 }
             }
 
             // if status is 3 then dispatch a bond job
-            if ( ((!$offer->my_offer && $offer->status == 3) || ($offer->my_offer && $offer->status == 0)) && $adminDashboard->autoBond && now()->minute % 2 == 0) {
+            if ( ((!$offer->my_offer && $offer->status == 3) || ($offer->my_offer && $offer->status == 0)) && $adminDashboard->autoBond) {
                 // PayBond::dispatch($offer, $adminDashboard);
                 if (Transaction::where('offer_id', $offer->id)->first() && $offer->transaction()->first()->bond_attempts > 1) {
                     $slackService->sendMessage("Don't worry! It's perfectly okay for the bond to retry :) ", $offer->slack_channel_id);
-                    if (now()->minute % 5 == 0) {
+                    if (now()->minute % 2 == 0) {
                         PayBond::dispatch($offer, $adminDashboard);
                     }
                 } else {

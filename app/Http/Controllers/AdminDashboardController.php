@@ -81,7 +81,7 @@ class AdminDashboardController extends Controller
     public function panic(): void
     {
         // if panic button has been pressed pause all offers
-        $offers = Offer::where('status', '=', 1)->get();
+        $offers = Offer::where([['status', '=', 1], ['my_offer', '=', true]])->get();
         foreach ($offers as $offer) {
             $robosats = new Robosats();
             $robosats->togglePauseOffer($offer);
