@@ -128,12 +128,18 @@ class SlackService
      */
     public function getLatestMessages($channelId): array
     {
-        return $this->retry(function () use ($channelId) {
-            return $this->client->conversationsHistory([
-                'channel' => $channelId,
-                'limit' => 20,
-            ])->getMessages();
-        });
+        try {
+            $messages = $this->retry(function () use ($channelId) {
+                return $this->client->conversationsHistory([
+                    'channel' => $channelId,
+                    'limit' => 20,
+                ])->getMessages();
+            });
+        } catch (\Exception $e) {
+            return [];
+        }
+
+        return $messages;
     }
 
     /**

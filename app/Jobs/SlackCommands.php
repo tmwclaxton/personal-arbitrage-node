@@ -64,7 +64,7 @@ use Illuminate\Support\Facades\Redis;
         $slackService = new SlackService();
         $adminDashboard = AdminDashboard::all()->first();
         $channelId = $adminDashboard->slack_main_channel_id;
-        $offerChannelIds = Offer::where('slack_channel_id', '!=', null)->pluck('slack_channel_id')->toArray();
+        $offerChannelIds = Offer::where([['slack_channel_id', '!=', null], ['status', '!=', 5], ['status', '!=', 99]])->pluck('slack_channel_id')->toArray();
         $combinedChannelIds = array_merge([$channelId], $offerChannelIds);
 
         foreach ($combinedChannelIds as $channelId) {
