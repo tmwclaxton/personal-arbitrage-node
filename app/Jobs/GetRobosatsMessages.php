@@ -35,6 +35,10 @@ class GetRobosatsMessages implements ShouldQueue
         }
         // 9 / 10
         $offers = Offer::where('status', 9)->orWhere('status', 10)->get();
+        // if expired remove from the list, this happens when trade is not completed and goes into dispute
+        $offers = $offers->filter(function ($offer) {
+            return $offer->expires_at > now();
+        });
 
         foreach ($offers as $offer) {
 
