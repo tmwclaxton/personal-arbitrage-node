@@ -112,8 +112,8 @@ class AutoJobs extends Command
             if ( ((!$offer->my_offer && $offer->status == 3) || ($offer->my_offer && $offer->status == 0)) && $adminDashboard->autoBond) {
                 // PayBond::dispatch($offer, $adminDashboard);
                 if (Transaction::where('offer_id', $offer->id)->first() && $offer->transaction()->first()->bond_attempts > 1) {
-                    $slackService->sendMessage("Don't worry! It's perfectly okay for the bond to retry :) ", $offer->slack_channel_id);
                     if (now()->minute % 2 == 0) {
+                        $slackService->sendMessage("Don't worry! It's perfectly okay for the bond to retry :) ", $offer->slack_channel_id);
                         PayBond::dispatch($offer, $adminDashboard);
                     }
                 } else {
@@ -140,8 +140,8 @@ class AutoJobs extends Command
             // these jobs are best effort, they can't be guaranteed to run again if they fail, so there are backup jobs in console.php
             if ($offer->type === "sell" && ($offer->status == 6 || $offer->status == 7) && $adminDashboard->autoEscrow && now()->minute % 2 == 0) {
                 if ($offer->transaction()->first()->escrow_attempts > 1) {
-                    $slackService->sendMessage("Don't worry! It's perfectly okay for the escrow to retry :) ", $offer->slack_channel_id);
-                    if (now()->minute % 5 == 0) {
+                    if (now()->minute % 2 == 0) {
+                        $slackService->sendMessage("Don't worry! It's perfectly okay for the escrow to retry :) ", $offer->slack_channel_id);
                         PayEscrow::dispatch($offer, $adminDashboard);
                     }
                 } else {
@@ -151,8 +151,8 @@ class AutoJobs extends Command
 
             if ($offer->type === "buy" && ($offer->status == 6 || $offer->status == 8 || $offer->status == 15) && $adminDashboard->autoInvoice && now()->minute % 2 == 0) {
                 if ($offer->transaction()->first()->invoice_attempts > 1) {
-                    $slackService->sendMessage("Don't worry! It's perfectly okay for the invoice to retry :) ", $offer->slack_channel_id);
-                    if (now()->minute % 5 == 0) {
+                    if (now()->minute % 2 == 0) {
+                        $slackService->sendMessage("Don't worry! It's perfectly okay for the invoice to retry :) ", $offer->slack_channel_id);
                         UpdateInvoice::dispatch($offer, $adminDashboard);
                     }
                 } else {
