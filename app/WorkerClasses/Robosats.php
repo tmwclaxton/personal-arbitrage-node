@@ -860,9 +860,9 @@ class Robosats
                 $transaction->status = 99;
                 $transaction->save();
             } else {
-                $slackService = new SlackService();
-                $slackService->sendMessage('Error on an offer that is already completed: ' . $response['bad_request'] . ' - ' . $offer->robosatsId . ' - ' .
-                    ' - This is likely due to the offer not being retired yet, but the transaction is still being checked.');
+//                $slackService = new SlackService();
+//                $slackService->sendMessage('Error on an offer that is already completed: ' . $response['bad_request'] . ' - ' . $offer->robosatsId . ' - ' .
+//                    ' - This is likely due to the offer not being retired yet, but the transaction is still being checked.');
             }
             return $response;
         }
