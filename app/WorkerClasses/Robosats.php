@@ -12,6 +12,7 @@ use App\Models\PostedOfferTemplate;
 use App\Models\RobosatsChatMessage;
 use App\Models\Robot;
 use App\Models\Transaction;
+use App\RobosatsErrors;
 use App\Services\SlackService;
 use App\Services\PgpService;
 use Exception;
@@ -850,6 +851,20 @@ class Robosats
 
         $response = json_decode($response->body(), true);
         if (isset($response['bad_request']) ) {
+
+            // after a dispute the offer will go into a bad_request state but will return the status of the transaction via a bad_request message, fucking awful
+            switch ($response['bad_request']) {
+                case RobosatsErrors::COLLABORATIVELY_CANCELLED_ERROR:
+                    $transaction->status_message = $response['bad_request'];
+                    $transaction->status = 12;
+                    $transaction->save();
+                    $offer->status_message = $response['bad_request'];
+                    $offer->status = 12;
+                    $offer->save();
+                    break;
+            }
+
+
             if ($offer->status < 14) {
                 $offer->status_message = $response['bad_request'];
                 $offer->status = 99;
