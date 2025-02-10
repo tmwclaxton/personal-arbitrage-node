@@ -852,6 +852,9 @@ class Robosats
         $response = json_decode($response->body(), true);
         if (isset($response['bad_request']) ) {
 
+            Log::info("<< LOG 1 >>");
+            Log::info($response['bad_request']);
+
             // after a dispute the offer will go into a bad_request state but will return the status of the transaction via a bad_request message, fucking awful
             switch ($response['bad_request']) {
                 case RobosatsErrors::COLLABORATIVELY_CANCELLED_ERROR:
