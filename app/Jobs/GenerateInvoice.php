@@ -36,7 +36,7 @@ class GenerateInvoice implements ShouldQueue
             $btcBalance = $krakenService->getBTCBalance();
             $btc = $btcBalance->jsonSerialize();
             // ensure satoshis is an integer
-            $satoshis = intval($btc * 100000000) - 2000; // possible fees?
+            $satoshis = intval($btc * 100000000) - 100000; // possible fees?
 
             $adminDashboard = AdminDashboard::all()->first();
             $remoteBalance = $adminDashboard->remoteBalance;
