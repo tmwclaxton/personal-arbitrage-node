@@ -33,7 +33,7 @@ class UpdateTransactions implements ShouldQueue
     public function handle(): void
     {
         // update all current transactions where status != 14, 12, 17, 18, 99
-        $transactions = Transaction::whereNotIn('status', [5, 14, 12, 17, 18, 99])->get();
+        $transactions = Transaction::whereNotIn('status', [4, 5, 14, 12, 14, 17, 18, 99])->get();
         foreach ($transactions as $transaction) {
             $offer = $transaction->offer;
             $robosats = new Robosats();
