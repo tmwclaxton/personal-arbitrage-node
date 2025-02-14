@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0058e6424150906bbae13ed79d4d2fad",
+    "content-hash": "d6a10af53672fe4606e863b3ed615ed1",
     "packages": [
         {
             "name": "aloha/twilio",
@@ -12818,7 +12818,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
@@ -12826,6 +12826,6 @@
         "ext-curl": "*",
         "ext-openssl": "*"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }

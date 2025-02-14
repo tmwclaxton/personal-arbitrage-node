@@ -50,7 +50,14 @@ use WebSocket\Middleware\CloseHandler;
 use WebSocket\Middleware\PingResponder;
 
 Route::get('/ping', function () {
-    echo "pong";
+//    $scraper = new \App\Services\MoneyHubService();
+//    $data = $scraper->scrape();
+//    dd( $data);
+//    echo "pong";
+
+    $mail = new \App\Services\GmailService();
+    $item = $mail->getLastEmail();
+    dd($item);
 });
 
 Route::middleware('auth')->group(function () {

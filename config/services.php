@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'moneyhub' => [
+        'email' => env('MONEYHUB_EMAIL'),
+        'password' => env('MONEYHUB_PASSWORD'),
+    ],
+
 ];
