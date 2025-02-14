@@ -50,7 +50,28 @@ use WebSocket\Middleware\CloseHandler;
 use WebSocket\Middleware\PingResponder;
 
 Route::get('/ping', function () {
-    echo "pong";
+
+    $mail_client = new \App\Services\GmailService();
+    return $mail_client->redirectToGoogle();
+
+//    echo "pong";
+});
+
+
+Route::get('/gmail_redirect', function () {
+
+    $gmailService =  new \App\Services\GmailService();
+
+//     Authenticate and get the token
+//    $accessToken = $gmailService->getClient()->fetchAccessTokenWithAuthCode(request()->input('code'));
+
+//     Store the access and refresh tokens for future use
+//    session(['gmail_access_token' => $accessToken]);
+
+    $data = $gmailService->fetchInbox("noreply@kraken.com");
+    dd($data, true);
+
+//    echo "pong";
 });
 
 Route::middleware('auth')->group(function () {

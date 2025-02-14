@@ -2,11 +2,163 @@
 
 namespace App\Services;
 
+use Google_Service_Gmail;
 use Illuminate\Support\Facades\Redis;
 use Webklex\IMAP\Facades\Client;
 
 class GmailService
 {
+
+    protected $client;
+    protected $service;
+
+
+    public function __construct()
+    {
+        $this->client = new \Google_Client();
+        $this->client->setAuthConfig([
+            "installed" => [
+                "client_id" => config('services.google.client_id'),
+                "client_secret" => config('services.google.client_secret'),
+            ]
+        ]);
+
+        $this->client->setRedirectUri('http://localhost:80/gmail_redirect');
+
+        $this->client->addScope(\Google_Service_Gmail::GMAIL_READONLY);
+        $this->client->setAccessType('offline');  // To get a refresh token
+        $this->client->setPrompt('select_account consent'); // Prompt to allow consent
+    }
+
+    public function getClient()
+    {
+        return $this->client;
+    }
+
+    public function getService()
+    {
+        if (!$this->service) {
+            $this->service = new \Google_Service_Gmail($this->client);
+        }
+        return $this->service;
+    }
+
+    public function authenticate()
+    {
+        return $this->client->createAuthUrl();
+    }
+
+    public function fetchInboxMessages($accessToken, $senderEmail = null)
+    {
+        $this->client->setAccessToken($accessToken);
+
+        if ($this->client->isAccessTokenExpired()) {
+            // Handle token refresh if needed
+        }
+
+        $service = new Google_Service_Gmail($this->client);
+
+        // Gmail query to filter emails
+        $query = '';
+        if ($senderEmail) {
+            $query .= "from:$senderEmail"; // Filter by sender email
+        }
+
+        // Get a list of message IDs that match the query
+        $messagesResponse = $service->users_messages->listUsersMessages('me', [
+            'q' => $query,
+            'maxResults' => 5 // Adjust as needed
+        ]);
+
+        $messages = [];
+
+        if ($messagesResponse->getMessages()) {
+            foreach ($messagesResponse->getMessages() as $msg) {
+                // Fetch full message content
+                $message = $service->users_messages->get('me', $msg->getId());
+
+                $emailData = [
+                    'id' => $message->getId(),
+                    'snippet' => $message->getSnippet(),
+                    'body' => $this->getEmailBody($message),
+                    'headers' => $this->getEmailHeaders($message)
+                ];
+
+                $messages[] = $emailData;
+            }
+        }
+
+        return $messages;
+    }
+
+
+    // Redirect to Google OAuth consent screen
+    public function redirectToGoogle()
+    {
+        $gmailService = new GmailService();
+        $authUrl = $gmailService->authenticate();
+        return redirect()->away($authUrl);
+    }
+
+// After user authorizes the app, Google will redirect back to this endpoint
+    public function handleGoogleCallback(Request $request)
+    {
+        $gmailService = new GmailService();
+
+        // Authenticate and get the token
+        $accessToken = $gmailService->getClient()->fetchAccessTokenWithAuthCode($request->input('code'));
+
+        // Store the access and refresh tokens for future use
+        session(['gmail_access_token' => $accessToken]);
+
+        return redirect()->route('gmail.inbox');
+    }
+
+    public function fetchInbox($senderEmail = null)
+    {
+        $accessToken = session('gmail_access_token');
+        if (!$accessToken) {
+            return redirect()->route('google.auth');
+        }
+
+        $gmailService = new GmailService();
+        $emails = $gmailService->fetchInboxMessages($accessToken, $senderEmail);
+
+        return $emails;
+    }
+
+    private function getEmailBody($message)
+    {
+        $payload = $message->getPayload();
+        $body = '';
+
+        // Check if message has parts (multipart emails)
+        if ($payload->getParts()) {
+            foreach ($payload->getParts() as $part) {
+                if ($part->getMimeType() === 'text/plain') {
+                    $body = base64_decode(strtr($part->getBody()->getData(), '-_', '+/'));
+                    break;
+                }
+            }
+        } else {
+            // Single-part message
+            $body = base64_decode(strtr($payload->getBody()->getData(), '-_', '+/'));
+        }
+
+        return trim($body);
+    }
+
+    private function getEmailHeaders($message)
+    {
+        $headers = [];
+        foreach ($message->getPayload()->getHeaders() as $header) {
+            $headers[$header->getName()] = $header->getValue();
+        }
+        return $headers;
+    }
+
+
+
 
 
     public function getLastEmail()
