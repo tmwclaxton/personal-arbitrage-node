@@ -866,14 +866,17 @@ class Robosats
             }
 
 
-            // robosats seems to return a bad_request response sometimes before trade hits a 14 completed status i.e. sending sats to the buyer, and we should just set expires_at to now rather than setting status to 99
+            // I think robosats returns a bad_request response before trade hits a 14 completed status i.e. sending sats to the buyer, and we should just set expires_at to now rather than setting status to 99
             if ($offer->status < 14) {
                 // set expires at to now
                 $offer->expires_at = date('Y-m-d H:i:s');
                 $offer->save();
+                $transaction->save();
+            } else {
+//                $slackService = new SlackService();
+//                $slackService->sendMessage('Error on an offer that is already completed: ' . $response['bad_request'] . ' - ' . $offer->robosatsId . ' - ' .
+//                    ' - This is likely due to the offer not being retired yet, but the transaction is still being checked.');
             }
-
-
             return $response;
         }
 
