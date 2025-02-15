@@ -1,8 +1,17 @@
 <?php
 
 use App\Console\Commands\UpdateOffers;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\BtcPurchaseController;
+use App\Http\Controllers\GraphController;
+use App\Http\Controllers\GuideController;
+use App\Http\Controllers\LogsController;
 use App\Http\Controllers\OfferController;
+use App\Http\Controllers\OfferTemplatesController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TaxReturnController;
+use App\Http\Controllers\TransactionController;
 use App\Jobs\ConfirmPayment;
 use App\Models\AdminDashboard;
 use App\Models\BtcFiat;
@@ -14,6 +23,8 @@ use App\Models\RevolutAccessToken;
 use App\Models\Robot;
 use App\Models\SlackMessage;
 use App\Models\Transaction;
+use App\Services\GmailService;
+use App\Services\KrakenService;
 use App\Services\SlackService;
 use App\Services\MonzoService;
 use App\Services\PgpService;
@@ -51,7 +62,7 @@ use WebSocket\Middleware\PingResponder;
 
 Route::get('/ping', function () {
 
-    $mail_client = new \App\Services\GmailService();
+    $mail_client = new GmailService();
     return $mail_client->redirectToGoogle();
 
 //    echo "pong";
@@ -59,19 +70,17 @@ Route::get('/ping', function () {
 
 
 Route::get('/gmail_redirect', function () {
-
-    $gmailService =  new \App\Services\GmailService();
-
-//     Authenticate and get the token
-//    $accessToken = $gmailService->getClient()->fetchAccessTokenWithAuthCode(request()->input('code'));
+    $gmailService =  new GmailService();
+//    $gmailService->exchangeCode(request()->input('code'));
 
 //     Store the access and refresh tokens for future use
 //    session(['gmail_access_token' => $accessToken]);
 
-    $data = $gmailService->fetchInbox("noreply@kraken.com");
-    dd($data, true);
+    $emails = $gmailService->fetchInbox(KrakenService::KRAKEN_EMAIL);
+   $link = GmailService::parseFirstLinkFromEmails($emails, KrakenService::KRAKEN_WITHDRAWAL_LINK_BASE);
 
-//    echo "pong";
+    dd($link);
+    return "No Kraken withdrawal approval link found.";
 });
 
 Route::middleware('auth')->group(function () {
@@ -86,12 +95,12 @@ Route::middleware('auth')->group(function () {
         // if panic button has been enabled iterate through all offers and set them to paused
         // if it was false and now true
         if (!$adminDashboard->panicButton && request()->adminDashboard['panicButton']) {
-            $adminDashboardController = new \App\Http\Controllers\AdminDashboardController();
+            $adminDashboardController = new AdminDashboardController();
             $adminDashboardController->panic();
         }
         // if it was true and now false
         if ($adminDashboard->panicButton && !request()->adminDashboard['panicButton']) {
-            $adminDashboardController = new \App\Http\Controllers\AdminDashboardController();
+            $adminDashboardController = new AdminDashboardController();
             $adminDashboardController->calm();
         }
 
@@ -146,24 +155,24 @@ Route::middleware('auth')->group(function () {
 //    Route::post('/resume-offer', [OfferController::class, 'resumeOffer'])->name('offers.resume');
     Route::post('/cancel-offer', [OfferController::class, 'cancelOffer'])->name('offers.cancel');
 
-    Route::get('/transactions', [\App\Http\Controllers\TransactionController::class, 'index'])->name('transactions.index');
-    Route::get('/purchases', [\App\Http\Controllers\BtcPurchaseController::class, 'index'])->name('purchases.index');
-    Route::get('/payments', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payments.index');
-    Route::get('/config', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('dashboard.index');
+    Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
+    Route::get('/purchases', [BtcPurchaseController::class, 'index'])->name('purchases.index');
+    Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
+    Route::get('/config', [AdminDashboardController::class, 'index'])->name('dashboard.index');
     // add payment method
-    Route::post('/add-payment-method', [\App\Http\Controllers\AdminDashboardController::class, 'addPaymentMethod'])->name('add-payment-method');
-    Route::post('/update-payment-method/{id}', [\App\Http\Controllers\AdminDashboardController::class, 'updatePaymentMethod'])->name('update-payment-method');
-    Route::get('/delete-payment-method/{id}', [\App\Http\Controllers\AdminDashboardController::class, 'deletePaymentMethod'])->name('delete-payment-method');
+    Route::post('/add-payment-method', [AdminDashboardController::class, 'addPaymentMethod'])->name('add-payment-method');
+    Route::post('/update-payment-method/{id}', [AdminDashboardController::class, 'updatePaymentMethod'])->name('update-payment-method');
+    Route::get('/delete-payment-method/{id}', [AdminDashboardController::class, 'deletePaymentMethod'])->name('delete-payment-method');
 
-    Route::get('/graphs', [\App\Http\Controllers\GraphController::class, 'index'])->name('graphs.index');
-    Route::get('/posting-offers', [\App\Http\Controllers\OfferTemplatesController::class, 'postingPage'])->name('offers.posting.index');
-    Route::post('/create-template', [\App\Http\Controllers\OfferTemplatesController::class, 'createTemplate'])->name('create-template');
-    Route::post('/edit-template', [\App\Http\Controllers\OfferTemplatesController::class, 'editTemplate'])->name('edit-template');
-    Route::get('/delete-template/{id}', [\App\Http\Controllers\OfferTemplatesController::class, 'deleteTemplate'])->name('delete-template');
+    Route::get('/graphs', [GraphController::class, 'index'])->name('graphs.index');
+    Route::get('/posting-offers', [OfferTemplatesController::class, 'postingPage'])->name('offers.posting.index');
+    Route::post('/create-template', [OfferTemplatesController::class, 'createTemplate'])->name('create-template');
+    Route::post('/edit-template', [OfferTemplatesController::class, 'editTemplate'])->name('edit-template');
+    Route::get('/delete-template/{id}', [OfferTemplatesController::class, 'deleteTemplate'])->name('delete-template');
 
-    Route::get('/tax-returns', [\App\Http\Controllers\TaxReturnController::class, 'index'])->name('tax-returns.index');
-    Route::get('/guide', [\App\Http\Controllers\GuideController::class, 'index'])->name('guide.index');
-    Route::get('/logs', [\App\Http\Controllers\LogsController::class, 'index'])->name('logs.index');
+    Route::get('/tax-returns', [TaxReturnController::class, 'index'])->name('tax-returns.index');
+    Route::get('/guide', [GuideController::class, 'index'])->name('guide.index');
+    Route::get('/logs', [LogsController::class, 'index'])->name('logs.index');
     // route for displaying error messages
 
 

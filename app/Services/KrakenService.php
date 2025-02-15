@@ -18,6 +18,10 @@ class KrakenService
     private \Butschster\Kraken\Client $client;
     private string $apiUrl = "https://api.kraken.com";
 
+    public const KRAKEN_WITHDRAWAL_LINK_BASE = '/https:\/\/www\.kraken\.com\/withdrawal-approve';
+    public const KRAKEN_EMAIL = 'noreply@kraken.com';
+
+
     private const API_VERSION = 0;
 
     private Client $httpClient;

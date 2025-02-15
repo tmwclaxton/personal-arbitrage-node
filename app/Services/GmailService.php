@@ -12,6 +12,9 @@ class GmailService
     protected $client;
     protected $service;
 
+    protected const REDIS_ACCESS_TOKEN_KEY = "google.access_token";
+    protected const REDIS_REFRESH_TOKEN_KEY = "google.refresh_token";
+
 
     public function __construct()
     {
@@ -30,9 +33,43 @@ class GmailService
         $this->client->setPrompt('select_account consent'); // Prompt to allow consent
     }
 
-    public function getClient()
-    {
+    public function getClient(){
         return $this->client;
+    }
+
+    private function getAccessToken(): string   {
+        return Redis::get($this::REDIS_ACCESS_TOKEN_KEY);
+    }
+
+    private function getRefreshToken(): string    {
+        return Redis::get($this::REDIS_REFRESH_TOKEN_KEY);
+    }
+
+    private function setAccessToken(string $accessToken)    {
+        return Redis::set($this::REDIS_ACCESS_TOKEN_KEY, $accessToken);
+    }
+
+    private function setRefreshToken(string $refreshToken)    {
+        return Redis::set($this::REDIS_REFRESH_TOKEN_KEY, $refreshToken);
+    }
+
+    public function refreshAccessToken()
+    {
+        $this->client->refreshToken($this->getRefreshToken());
+        $newToken = $this->client->getAccessToken();
+
+//        if (!isset($newToken['refresh_token'])) {
+//            $newToken['refresh_token'] = $refreshToken;
+//        }
+
+        return $newToken;
+    }
+
+    public function exchangeCode(string $code){
+        $tokens = $this->getClient()->fetchAccessTokenWithAuthCode($code);
+
+        $this->setAccessToken($tokens['access_token']);
+        $this->setRefreshToken($tokens['refresh_token']);
     }
 
     public function getService()
@@ -43,10 +80,6 @@ class GmailService
         return $this->service;
     }
 
-    public function authenticate()
-    {
-        return $this->client->createAuthUrl();
-    }
 
     public function fetchInboxMessages($accessToken, $senderEmail = null)
     {
@@ -92,11 +125,10 @@ class GmailService
     }
 
 
-    // Redirect to Google OAuth consent screen
     public function redirectToGoogle()
     {
         $gmailService = new GmailService();
-        $authUrl = $gmailService->authenticate();
+        $authUrl = $gmailService->getClient()->createAuthUrl();
         return redirect()->away($authUrl);
     }
 
@@ -106,7 +138,7 @@ class GmailService
         $gmailService = new GmailService();
 
         // Authenticate and get the token
-        $accessToken = $gmailService->getClient()->fetchAccessTokenWithAuthCode($request->input('code'));
+        $accessToken = $gmailService->client->fetchAccessTokenWithAuthCode($request->input('code'));
 
         // Store the access and refresh tokens for future use
         session(['gmail_access_token' => $accessToken]);
@@ -116,10 +148,11 @@ class GmailService
 
     public function fetchInbox($senderEmail = null)
     {
-        $accessToken = session('gmail_access_token');
-        if (!$accessToken) {
-            return redirect()->route('google.auth');
-        }
+//        $accessToken = session('gmail_access_token');
+        $accessToken = $this->getAccessToken();
+//        if (!$accessToken) {
+//            return redirect()->route('google.auth');
+//        }
 
         $gmailService = new GmailService();
         $emails = $gmailService->fetchInboxMessages($accessToken, $senderEmail);
@@ -156,6 +189,33 @@ class GmailService
         }
         return $headers;
     }
+
+
+
+    public static function parseFirstLinkFromEmails($emails, $link_base): string | false {
+        foreach ($emails as $email) {
+            if (isset($email['body'])) {
+                if (preg_match($link_base.'[^\s"]*/', $email['body'], $matches)) {
+                    return $matches[0];
+                }
+            }
+        }
+        return false;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
