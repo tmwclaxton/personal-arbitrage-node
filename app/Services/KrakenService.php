@@ -20,8 +20,7 @@ class KrakenService
 
     public const WITHDRAWAL_LINK_BASE = '/https:\/\/www\.kraken\.com\/withdrawal-approve';
     protected const REDIS_LINK_PREFIX = "kraken.link:";
-
-    public const USER_EMAIL = 'noreply@kraken.com';
+    public const KRAKEN_EMAIL = 'noreply@kraken.com';
 
 
     private const API_VERSION = 0;
@@ -116,6 +115,7 @@ class KrakenService
         // THIS IS TO SET REDIS KEYS plz dont delete
         $gmailService = new GmailService();
         $code = $gmailService->getLinkFromLastEmail();
+        // new method to be used getMostRecentNovelWithdrawalLink()
 
         $invoiceId = "ag_lightning_invoice_" . Carbon::now()->toDateTimeString();
 
@@ -272,13 +272,12 @@ class KrakenService
 
     public static function getMostRecentNovelWithdrawalLink(): string | null {
         $gmailService =  new GmailService();
-        $emails = $gmailService->fetchInboxMessages(KrakenService::USER_EMAIL);
+        $emails = $gmailService->fetchInboxMessages(KrakenService::KRAKEN_EMAIL, "10m");
         return GmailService::parseFirstNovelLinkFromEmails(
             $emails,
             KrakenService::WITHDRAWAL_LINK_BASE,
             KrakenService::REDIS_LINK_PREFIX,
-            10
+            3600
         );
     }
-
 }

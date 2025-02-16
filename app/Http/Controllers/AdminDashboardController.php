@@ -111,15 +111,9 @@ class AdminDashboardController extends Controller
 
     public function gmailRedirectForKraken() {
         $gmailService =  new GmailService();
-
         $gmailService->exchangeCode(request()->input('code'));
 
-//        $emails = $gmailService->fetchInbox(KrakenService::KRAKEN_EMAIL);
-//        $link = GmailService::parseFirstLinkFromEmails($emails, KrakenService::KRAKEN_WITHDRAWAL_LINK_BASE);
-
         return redirect()->route('dashboard.index')->with('success', 'Gmail successfully paired');
-
-//        return "No Kraken withdrawal approval link found.";
     }
 
 }

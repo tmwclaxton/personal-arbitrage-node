@@ -38,7 +38,7 @@ class GmailService
     }
 
     private function getAccessToken(): string   {
-         Redis::get($this::REDIS_ACCESS_TOKEN_KEY);
+         return Redis::get($this::REDIS_ACCESS_TOKEN_KEY);
     }
 
     private function getRefreshToken(): string    {
@@ -66,7 +66,7 @@ class GmailService
     public function refreshAccessToken()
     {
         $this->client->refreshToken($this->getRefreshToken());
-        return $this->client->getAccessToken();
+        return $this->client->getAccessToken()['access_token'];
     }
 
     public function exchangeCode(string $code){
@@ -102,7 +102,7 @@ class GmailService
         // Get a list of message IDs that match the query
         $messagesResponse = $service->users_messages->listUsersMessages('me', [
             'q' => $query,
-            'maxResults' => 5 // Adjust as needed
+            'maxResults' => 10 // Adjust as needed
         ]);
 
         $messages = [];
@@ -282,12 +282,12 @@ class GmailService
     {
 
         // grab email
-        $gmailService = new \App\Services\GmailService();
+        $gmailService = new GmailService();
         $text = $gmailService->getLastEmail();
 
         $link = $gmailService->grabLink($text, $start);
         if ($link === null) {
-            $slackService = new \App\Services\SlackService();
+            $slackService = new SlackService();
             $slackService->sendMessage("Link not found in email");
             return json_encode(['error' => 'Link not found']);
         }
