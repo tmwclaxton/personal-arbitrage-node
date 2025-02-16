@@ -38,7 +38,7 @@ class GmailService
     }
 
     private function getAccessToken(): string   {
-        return Redis::get($this::REDIS_ACCESS_TOKEN_KEY);
+         Redis::get($this::REDIS_ACCESS_TOKEN_KEY);
     }
 
     private function getRefreshToken(): string    {
@@ -53,16 +53,20 @@ class GmailService
         return Redis::set($this::REDIS_REFRESH_TOKEN_KEY, $refreshToken);
     }
 
+    private function getActiveAccessToken(): string {
+        $accessToken = $this->getAccessToken();
+        $this->client->setAccessToken($accessToken);
+
+        if ($this->client->isAccessTokenExpired()) {
+            $accessToken = $this->refreshAccessToken();
+        }
+        return $accessToken;
+    }
+
     public function refreshAccessToken()
     {
         $this->client->refreshToken($this->getRefreshToken());
-        $newToken = $this->client->getAccessToken();
-
-//        if (!isset($newToken['refresh_token'])) {
-//            $newToken['refresh_token'] = $refreshToken;
-//        }
-
-        return $newToken;
+        return $this->client->getAccessToken();
     }
 
     public function exchangeCode(string $code){
@@ -81,20 +85,18 @@ class GmailService
     }
 
 
-    public function fetchInboxMessages($accessToken, $senderEmail = null)
+    public function fetchInboxMessages($senderEmail = null, $newer_than = "2h")
     {
-        $this->client->setAccessToken($accessToken);
-
-        if ($this->client->isAccessTokenExpired()) {
-            // Handle token refresh if needed
-        }
-
+        $this->client->setAccessToken($this->getActiveAccessToken());
         $service = new Google_Service_Gmail($this->client);
 
         // Gmail query to filter emails
         $query = '';
         if ($senderEmail) {
-            $query .= "from:$senderEmail"; // Filter by sender email
+            $query .= "newer_than:$newer_than";
+        }
+        if ($senderEmail) {
+            $query .= "newer_than:$newer_than";
         }
 
         // Get a list of message IDs that match the query
@@ -132,7 +134,6 @@ class GmailService
         return redirect()->away($authUrl);
     }
 
-// After user authorizes the app, Google will redirect back to this endpoint
     public function handleGoogleCallback(Request $request)
     {
         $gmailService = new GmailService();
@@ -144,20 +145,6 @@ class GmailService
         session(['gmail_access_token' => $accessToken]);
 
         return redirect()->route('gmail.inbox');
-    }
-
-    public function fetchInbox($senderEmail = null)
-    {
-//        $accessToken = session('gmail_access_token');
-        $accessToken = $this->getAccessToken();
-//        if (!$accessToken) {
-//            return redirect()->route('google.auth');
-//        }
-
-        $gmailService = new GmailService();
-        $emails = $gmailService->fetchInboxMessages($accessToken, $senderEmail);
-
-        return $emails;
     }
 
     private function getEmailBody($message)
@@ -192,15 +179,19 @@ class GmailService
 
 
 
-    public static function parseFirstLinkFromEmails($emails, $link_base): string | false {
+    public static function parseFirstNovelLinkFromEmails($emails, $link_base, $redis_prefix, $expiry = 7200): string | null {
         foreach ($emails as $email) {
             if (isset($email['body'])) {
                 if (preg_match($link_base.'[^\s"]*/', $email['body'], $matches)) {
-                    return $matches[0];
+                    // Check if link has already been used
+                    if (!Redis::exists($redis_prefix.$matches[0])) {
+                        Redis::set($redis_prefix.$matches[0], true, 'EX', $expiry);
+                        return $matches[0];
+                    }
                 }
             }
         }
-        return false;
+        return null;
     }
 
 

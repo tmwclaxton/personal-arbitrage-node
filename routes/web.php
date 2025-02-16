@@ -62,26 +62,14 @@ use WebSocket\Middleware\PingResponder;
 
 Route::get('/ping', function () {
 
-    $mail_client = new GmailService();
-    return $mail_client->redirectToGoogle();
-
-//    echo "pong";
-});
-
-
-Route::get('/gmail_redirect', function () {
-    $gmailService =  new GmailService();
-//    $gmailService->exchangeCode(request()->input('code'));
-
-//     Store the access and refresh tokens for future use
-//    session(['gmail_access_token' => $accessToken]);
-
-    $emails = $gmailService->fetchInbox(KrakenService::KRAKEN_EMAIL);
-   $link = GmailService::parseFirstLinkFromEmails($emails, KrakenService::KRAKEN_WITHDRAWAL_LINK_BASE);
+    $link = KrakenService::getMostRecentNovelWithdrawalLink();
 
     dd($link);
-    return "No Kraken withdrawal approval link found.";
-});
+
+//    echo "pong";
+})->name('ping');
+
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -133,10 +121,10 @@ Route::middleware('auth')->group(function () {
     })->name('updateAdminDashboard');
 
 
-    Route::get('/', [\App\Http\Controllers\OfferController::class, 'index'])->name('welcome');
-    Route::get('/offers', [\App\Http\Controllers\OfferController::class, 'getOffers'])->name('offers.index');
-    Route::get('/offer/{offer_id}', [\App\Http\Controllers\OfferController::class, 'getOffer'])->name('offers.show');
-    Route::get('/completed-offers', [\App\Http\Controllers\OfferController::class, 'completedOffers'])->name('offers.completed');
+    Route::get('/', [OfferController::class, 'index'])->name('welcome');
+    Route::get('/offers', [OfferController::class, 'getOffers'])->name('offers.index');
+    Route::get('/offer/{offer_id}', [OfferController::class, 'getOffer'])->name('offers.show');
+    Route::get('/completed-offers', [OfferController::class, 'completedOffers'])->name('offers.completed');
     Route::post('/update-offer', [OfferController::class, 'manuallyUpdateOffer'])->name('offers.update');
     // Route::get('/offer/{offer_id}/chat', [\App\Http\Controllers\OfferController::class, 'chatRoom'])->name('offers.chat');
     // Route::post('/offer/{offer_id}/chat', [\App\Http\Controllers\OfferController::class, 'sendMessage'])->name('offers.chat');
@@ -159,6 +147,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/purchases', [BtcPurchaseController::class, 'index'])->name('purchases.index');
     Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
     Route::get('/config', [AdminDashboardController::class, 'index'])->name('dashboard.index');
+
+    //gmail
+    Route::get('/gmail_kraken_pair', [AdminDashboardController::class, 'pairGmailForKraken'])->name('gmail-kraken-pair');
+    Route::get('/gmail_redirect', [AdminDashboardController::class, 'gmailRedirectForKraken'])->name('gmail-kraken-redirect.');
+
+
     // add payment method
     Route::post('/add-payment-method', [AdminDashboardController::class, 'addPaymentMethod'])->name('add-payment-method');
     Route::post('/update-payment-method/{id}', [AdminDashboardController::class, 'updatePaymentMethod'])->name('update-payment-method');

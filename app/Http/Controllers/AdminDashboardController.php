@@ -6,6 +6,8 @@ use App\Models\AdminDashboard;
 use App\Models\BtcFiat;
 use App\Models\Offer;
 use App\Models\PaymentMethod;
+use App\Services\GmailService;
+use App\Services\KrakenService;
 use App\WorkerClasses\Robosats;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -89,7 +91,7 @@ class AdminDashboardController extends Controller
 
     }
 
-    public function calm(): void
+    public function calm()
     {
         // unpause all offers
         $offers = Offer::where('status', '=', 2)->get();
@@ -98,4 +100,26 @@ class AdminDashboardController extends Controller
             $robosats->togglePauseOffer($offer);
         }
     }
+
+
+
+    public function pairGmailForKraken() {
+        $mail_client = new GmailService();
+        return $mail_client->redirectToGoogle();
+    }
+
+
+    public function gmailRedirectForKraken() {
+        $gmailService =  new GmailService();
+
+        $gmailService->exchangeCode(request()->input('code'));
+
+//        $emails = $gmailService->fetchInbox(KrakenService::KRAKEN_EMAIL);
+//        $link = GmailService::parseFirstLinkFromEmails($emails, KrakenService::KRAKEN_WITHDRAWAL_LINK_BASE);
+
+        return redirect()->route('dashboard.index')->with('success', 'Gmail successfully paired');
+
+//        return "No Kraken withdrawal approval link found.";
+    }
+
 }

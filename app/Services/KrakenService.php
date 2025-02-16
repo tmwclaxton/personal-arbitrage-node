@@ -18,8 +18,10 @@ class KrakenService
     private \Butschster\Kraken\Client $client;
     private string $apiUrl = "https://api.kraken.com";
 
-    public const KRAKEN_WITHDRAWAL_LINK_BASE = '/https:\/\/www\.kraken\.com\/withdrawal-approve';
-    public const KRAKEN_EMAIL = 'noreply@kraken.com';
+    public const WITHDRAWAL_LINK_BASE = '/https:\/\/www\.kraken\.com\/withdrawal-approve';
+    protected const REDIS_LINK_PREFIX = "kraken.link:";
+
+    public const USER_EMAIL = 'noreply@kraken.com';
 
 
     private const API_VERSION = 0;
@@ -264,6 +266,18 @@ class KrakenService
                 'key' => $key,
                 'amount' => $amount,
             ],
+        );
+    }
+
+
+    public static function getMostRecentNovelWithdrawalLink(): string | null {
+        $gmailService =  new GmailService();
+        $emails = $gmailService->fetchInboxMessages(KrakenService::USER_EMAIL);
+        return GmailService::parseFirstNovelLinkFromEmails(
+            $emails,
+            KrakenService::WITHDRAWAL_LINK_BASE,
+            KrakenService::REDIS_LINK_PREFIX,
+            10
         );
     }
 

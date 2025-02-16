@@ -214,6 +214,32 @@ const refreshKey = ref(0);
 					 <ToggleButton v-model="tempAdminDashboard.kraken_action" @update:modelValue="refreshKey++"/>
 					</div>
 
+
+                        <!--                        <h2-->
+
+                    <div class="flex flex-row justify-between items-center" :key="refreshKey">
+                        <div class="flex flex-col gap-y-0.5">
+                            <span class="font-bold mr-1">Kraken Auto Withdraw:
+<!--                            <span class="text-red-500" v-text="tempAdminDashboard.autoTopup ? 'Enabled' : 'Disabled'"/>-->
+                            </span>
+                            <p class="text-sm">
+                                Do you want to automatically withdraw BTC to your lightning node?
+                            </p>
+
+                        </div>
+
+                        <a :href="route('gmail-kraken-pair')">
+                            <div
+                                class="border-2 bg-gray-800 rounded-2xl py-2 px-[0.9rem] hover:border-zinc-400 border-zinc-700 text-white inline-flex items-center w-min whitespace-nowrap">
+                                <font-awesome-icon :icon="['fab', 'google']" class="mr-2"/>
+                                Link Gmail for Kraken
+                            </div>
+                        </a>
+
+                        <ToggleButton v-model="tempAdminDashboard.autoWithdraw" @update:modelValue="refreshKey++"/>
+                    </div>
+
+
                     <div class="border-b border-gray-300 dark:border-zinc-700 mb-4"/>
 
                     <div class="mt-5 flex flex-row justify-between items-center">
@@ -311,10 +337,8 @@ const refreshKey = ref(0);
                             <PrimaryButton class="mt-2 mb-10" @click="addPaymentMethod" v-if="showAddPaymentMethod">Add Payment Method</PrimaryButton>
                         </div>
                     </div>
-
-
                 </div>
-				</div>
+            </div>
         </div>
     </guest-layout>
 </template>
