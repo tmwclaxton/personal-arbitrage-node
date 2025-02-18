@@ -63,7 +63,9 @@ class SlackService
         // lowercase the channel name
         $channelName = strtolower($channelName);
         // add some random string to the channel name to avoid conflicts
-        $channelName .= '-' . substr(md5(uniqid()), 0, 5);
+
+        // to try and mitigate slack rate limiting string will be day of the month and current hour
+        $channelName .= '-' . date('d') . date('H');
         $slackService = new SlackService();
 
         // Retry the channel creation
