@@ -1264,7 +1264,12 @@ class Robosats
         $response = json_decode($response->body(), true);
 
         $slackService = new SlackService();
-        $slackService->sendMessage('Paused offer ' . $offer->robosatsId, $offer->slack_channel_id);
+        // if offer->status is 1 then message is "Offer paused" else if 2 "Offer unpaused"
+        if ($offer->status == 1) {
+            $slackService->sendMessage('Offer paused ' . $offer->robosatsId, $offer->slack_channel_id);
+        } else if ($offer->status == 2) {
+            $slackService->sendMessage('Offer unpaused ' . $offer->robosatsId, $offer->slack_channel_id);
+        }
 
         return $response;
     }
