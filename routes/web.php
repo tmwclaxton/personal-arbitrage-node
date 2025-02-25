@@ -66,12 +66,12 @@ Route::middleware('auth')->group(function () {
         // if it was false and now true
         if (!$adminDashboard->panicButton && request()->adminDashboard['panicButton']) {
             $adminDashboardController = new \App\Http\Controllers\AdminDashboardController();
-            $adminDashboardController->panic();
+            $adminDashboardController->pauseAll();
         }
         // if it was true and now false
         if ($adminDashboard->panicButton && !request()->adminDashboard['panicButton']) {
             $adminDashboardController = new \App\Http\Controllers\AdminDashboardController();
-            $adminDashboardController->calm();
+            $adminDashboardController->unpauseAll();
         }
 
         foreach (request()->adminDashboard as $key => $value) {
