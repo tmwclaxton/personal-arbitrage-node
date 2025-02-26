@@ -295,24 +295,28 @@ use Illuminate\Support\Facades\Redis;
 
                                 break;
                             case '!sleep':
-                                // pause all offers
-                                $adminDashboardController = new \App\Http\Controllers\AdminDashboardController();
-                                $adminDashboardController->pauseAll();
                                 // turn off all auto settings
                                 $adminDashboard->autoAccept = false;
                                 $adminDashboard->autoCreate = false;
-                                $adminDashboard->autoSchedule = false;
+                                $adminDashboard->scheduler = false;
                                 $adminDashboard->save();
+                                // pause all offers
+                                $adminDashboardController = new \App\Http\Controllers\AdminDashboardController();
+                                $adminDashboardController->pauseAll();
+
+                                $slackService->sendMessage('All auto settings turned off and all offers paused', $channelId);
                                 break;
                             case '!wake':
-                                // unpause all offers
-                                $adminDashboardController = new \App\Http\Controllers\AdminDashboardController();
-                                $adminDashboardController->unpauseAll();
                                 // turn on all auto settings
                                 $adminDashboard->autoAccept = true;
                                 $adminDashboard->autoCreate = true;
-                                $adminDashboard->autoSchedule = true;
+                                $adminDashboard->scheduler = true;
                                 $adminDashboard->save();
+                                // unpause all offers
+                                $adminDashboardController = new \App\Http\Controllers\AdminDashboardController();
+                                $adminDashboardController->unpauseAll();
+
+                                $slackService->sendMessage('Auto accept, auto create, and scheduler turned on and all offers unpaused', $channelId);
                                 break;
                             default:
                                 $slackService->sendMessage('Command not recognized', $channelId);
