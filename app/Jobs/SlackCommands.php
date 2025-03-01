@@ -60,6 +60,8 @@ use Illuminate\Support\Facades\Redis;
             '!generateDepositAddress',
             '!listProfitableOffers',
             '!acceptSpecificOffer',
+            '!sleep',
+            '!wake'
         ];
         $slackService = new SlackService();
         $adminDashboard = AdminDashboard::all()->first();
@@ -108,13 +110,13 @@ use Illuminate\Support\Facades\Redis;
                                 $adminDashboard->panicButton = true;
                                 $adminDashboard->save();
                                 $adminDashboardController = new \App\Http\Controllers\AdminDashboardController();
-                                $adminDashboardController->panic();
+                                $adminDashboardController->pauseAll();
                                 break;
                             case '!calm':
                                 $adminDashboard->panicButton = false;
                                 $adminDashboard->save();
                                 $adminDashboardController = new \App\Http\Controllers\AdminDashboardController();
-                                $adminDashboardController->calm();
+                                $adminDashboardController->unpauseAll();
                                 break;
                             case '!confirm':
                                 $secondWord = explode(' ', $slackMessage['content'])[1];
@@ -292,7 +294,30 @@ use Illuminate\Support\Facades\Redis;
                                 $offer->save();
 
                                 break;
+                            case '!sleep':
+                                // turn off all auto settings
+                                $adminDashboard->autoAccept = false;
+                                $adminDashboard->autoCreate = false;
+                                $adminDashboard->scheduler = false;
+                                $adminDashboard->save();
+                                // pause all offers
+                                $adminDashboardController = new \App\Http\Controllers\AdminDashboardController();
+                                $adminDashboardController->pauseAll();
 
+                                $slackService->sendMessage('All auto settings turned off and all offers paused', $channelId);
+                                break;
+                            case '!wake':
+                                // turn on all auto settings
+                                $adminDashboard->autoAccept = true;
+                                $adminDashboard->autoCreate = true;
+                                $adminDashboard->scheduler = true;
+                                $adminDashboard->save();
+                                // unpause all offers
+                                $adminDashboardController = new \App\Http\Controllers\AdminDashboardController();
+                                $adminDashboardController->unpauseAll();
+
+                                $slackService->sendMessage('Auto accept, auto create, and scheduler turned on and all offers unpaused', $channelId);
+                                break;
                             default:
                                 $slackService->sendMessage('Command not recognized', $channelId);
                                 break;

@@ -78,7 +78,7 @@ class AdminDashboardController extends Controller
         return redirect()->route('dashboard.index');
     }
 
-    public function panic(): void
+    public function pauseAll(): void
     {
         // if panic button has been pressed pause all offers
         $offers = Offer::where([['status', '=', 1], ['my_offer', '=', true]])->get();
@@ -89,7 +89,7 @@ class AdminDashboardController extends Controller
 
     }
 
-    public function calm(): void
+    public function unpauseAll(): void
     {
         // unpause all offers
         $offers = Offer::where('status', '=', 2)->get();

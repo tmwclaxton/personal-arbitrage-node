@@ -63,7 +63,9 @@ class SlackService
         // lowercase the channel name
         $channelName = strtolower($channelName);
         // add some random string to the channel name to avoid conflicts
-        $channelName .= '-' . substr(md5(uniqid()), 0, 5);
+
+        // to try and mitigate slack rate limiting string will add ddmmyyhh to avoid conflicts
+        $channelName .= '-' . date('d') . date('m') . date('y') . date('H');
         $slackService = new SlackService();
 
         // Retry the channel creation
@@ -113,8 +115,8 @@ class SlackService
 
     public function renameChannel($newName, $channelId): void
     {
-        // lowercase the channel name
-        $newName = strtolower($newName) . '-' . substr(md5(uniqid()), 0, 5);
+        // lowercase the channel name and add ddmmyyhh to avoid conflicts
+        $newName = strtolower($newName) . '-' . date('d') . date('m') . date('y') . date('H');
         $this->retry(function () use ($channelId, $newName) {
             $this->client->conversationsRename([
                 'channel' => $channelId,
