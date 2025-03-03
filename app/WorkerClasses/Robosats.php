@@ -844,8 +844,9 @@ class Robosats
 
         try {
             $response = Http::withHeaders($this->getHeaders($offer))->timeout(20)->get($url);
+
         } catch (\Exception $e) {
-            //!TODO we need some error handling here
+            Log::info('Error: Failed to update transaction status: ' . $e->getMessage());
             return null;
         }
 

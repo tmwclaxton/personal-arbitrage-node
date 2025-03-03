@@ -25,6 +25,7 @@ class RobosatsStatus
         'WFR' => 16,
         'MLD' => 17,
         'TLD' => 18,
+        'BAD' => 99,
     ];
 
     public static array $statusText = [
