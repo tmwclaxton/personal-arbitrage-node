@@ -40,4 +40,9 @@ return [
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
     ],
 
+    'moneyhub' => [
+        'email' => env('MONEYHUB_EMAIL'),
+        'password' => env('MONEYHUB_PASSWORD'),
+    ],
+
 ];

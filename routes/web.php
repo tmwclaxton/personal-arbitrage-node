@@ -103,8 +103,6 @@ Route::middleware('auth')->group(function () {
             $adminDashboardController->calm();
         }
 
-//        dd(request()->adminDashboard);
-
         foreach (request()->adminDashboard as $key => $value) {
             // check if key does exist
             if (key_exists($key, $adminDashboard->getAttributes())) {
