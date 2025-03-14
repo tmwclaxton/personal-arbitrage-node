@@ -61,10 +61,21 @@ use WebSocket\Middleware\CloseHandler;
 use WebSocket\Middleware\PingResponder;
 
 Route::get('/ping', function () {
+//    $krakenService = new KrakenService();
+//    $ln_invoice = "lnbc1m1pnmyq9ypp5cv2p3ra0qpcrm7ku3rhxuh4j5cally2l6kckkr03zh8545np98xsdqcddexz6mpdcsxzurfyp6x2um5cqzzsxqrrsssp5tcp49nc2dhvk0pysrz9mgjg4kuqcuu9qsevupes9e63sm3ea4cas9p4gqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqysgqxfvar2mh2f3nmx6ffq70hgjy68l5ym2th5s23n62cfeqz8p69peq24r3fukg7lg6lu7kwkefvz038jv63rzd02ecmhzg6xl72w82clcpj8ndcu";
 
-    $link = KrakenService::getMostRecentNovelWithdrawalLink();
 
-    dd($link);
+//    $response = $krakenService->withdrawFunds("XBT", $ln_invoice, 0.001000);
+
+
+//    dd($response);
+
+//    $link = KrakenService::getMostRecentNovelWithdrawalLink();
+//    dd($link);
+
+    // Create the email
+
+//    \App\Services\ReportingService::sendReportingEmail("600 EUR", "JIM BOB");
 
 //    echo "pong";
 })->name('ping');
@@ -91,6 +102,8 @@ Route::middleware('auth')->group(function () {
             $adminDashboardController = new AdminDashboardController();
             $adminDashboardController->calm();
         }
+
+//        dd(request()->adminDashboard);
 
         foreach (request()->adminDashboard as $key => $value) {
             // check if key does exist
@@ -149,8 +162,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/config', [AdminDashboardController::class, 'index'])->name('dashboard.index');
 
     //gmail
+    Route::get('/gmail_reporting_pair', [AdminDashboardController::class, 'pairGmailForReporting'])->name('gmail-reporting-pair');
+    Route::get('/gmail_reporting_redirect', [AdminDashboardController::class, 'gmailRedirectForReporting'])->name('gmail-reporting-redirect.');
     Route::get('/gmail_kraken_pair', [AdminDashboardController::class, 'pairGmailForKraken'])->name('gmail-kraken-pair');
-    Route::get('/gmail_redirect', [AdminDashboardController::class, 'gmailRedirectForKraken'])->name('gmail-kraken-redirect.');
+    Route::get('/gmail_kraken_redirect', [AdminDashboardController::class, 'gmailRedirectForKraken'])->name('gmail-kraken-redirect.');
 
 
     // add payment method

@@ -44,7 +44,7 @@ class OfferController extends Controller
 
         // first check if there are any offers that are not in the excluded statuses
         if (Offer::all()->count() == 0) {
-            return [];
+            return collect();
         }
 
         $offers = Offer::whereNotIn('status', $excludedStatuses)

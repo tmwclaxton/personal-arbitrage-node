@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Google\Service\Gmail\Message;
 use Google_Service_Gmail;
 use Illuminate\Support\Facades\Redis;
 use Webklex\IMAP\Facades\Client;
@@ -16,8 +17,9 @@ class GmailService
     protected const REDIS_REFRESH_TOKEN_KEY = "google.refresh_token";
 
 
-    public function __construct()
+    public function __construct($service_prefix)
     {
+        $this->service_prefix = $service_prefix;
         $this->client = new \Google_Client();
         $this->client->setAuthConfig([
             "installed" => [
@@ -26,9 +28,9 @@ class GmailService
             ]
         ]);
 
-        $this->client->setRedirectUri('http://localhost:80/gmail_redirect');
+        $this->client->setRedirectUri('http://localhost:80/gmail_'.$service_prefix.'_redirect');
 
-        $this->client->addScope(\Google_Service_Gmail::GMAIL_READONLY);
+        $this->client->addScope([\Google_Service_Gmail::GMAIL_READONLY, Google_Service_Gmail::GMAIL_SEND]);
         $this->client->setAccessType('offline');  // To get a refresh token
         $this->client->setPrompt('select_account consent'); // Prompt to allow consent
     }
@@ -38,19 +40,19 @@ class GmailService
     }
 
     private function getAccessToken(): string   {
-         return Redis::get($this::REDIS_ACCESS_TOKEN_KEY);
+        return Redis::get($this->service_prefix.".".$this::REDIS_ACCESS_TOKEN_KEY);
     }
 
     private function getRefreshToken(): string    {
-        return Redis::get($this::REDIS_REFRESH_TOKEN_KEY);
+        return Redis::get($this->service_prefix.".".$this::REDIS_REFRESH_TOKEN_KEY);
     }
 
     private function setAccessToken(string $accessToken)    {
-        return Redis::set($this::REDIS_ACCESS_TOKEN_KEY, $accessToken);
+        return Redis::set($this->service_prefix.".".$this::REDIS_ACCESS_TOKEN_KEY, $accessToken);
     }
 
     private function setRefreshToken(string $refreshToken)    {
-        return Redis::set($this::REDIS_REFRESH_TOKEN_KEY, $refreshToken);
+        return Redis::set($this->service_prefix.".".$this::REDIS_REFRESH_TOKEN_KEY, $refreshToken);
     }
 
     private function getActiveAccessToken(): string {
@@ -126,17 +128,39 @@ class GmailService
         return $messages;
     }
 
+    public function sendEmail($recipient, $subject, $body){
+        $this->client->setAccessToken($this->getActiveAccessToken());
+        $service = new Google_Service_Gmail($this->client);
+
+        // Encode email
+        $message = "To: $recipient\r\n";
+        $message .= "Subject: $subject\r\n";
+        $message .= "MIME-Version: 1.0\r\n";
+        $message .= "Content-Type: text/plain; charset=utf-8\r\n\r\n";
+        $message .= $body;
+
+        $rawMessage = base64_encode($message);
+        $rawMessage = str_replace(['+', '/', '='], ['-', '_', ''], $rawMessage);
+
+        // Create and send email
+        $email = new Message();
+        $email->setRaw($rawMessage);
+        $service->users_messages->send('me', $email);
+    }
+
+
 
     public function redirectToGoogle()
     {
-        $gmailService = new GmailService();
+        $gmailService = new GmailService($this->service_prefix);
         $authUrl = $gmailService->getClient()->createAuthUrl();
+//        dd($authUrl);
         return redirect()->away($authUrl);
     }
 
     public function handleGoogleCallback(Request $request)
     {
-        $gmailService = new GmailService();
+        $gmailService = new GmailService($this->service_prefix);
 
         // Authenticate and get the token
         $accessToken = $gmailService->client->fetchAccessTokenWithAuthCode($request->input('code'));
@@ -179,13 +203,13 @@ class GmailService
 
 
 
-    public static function parseFirstNovelLinkFromEmails($emails, $link_base, $redis_prefix, $expiry = 7200): string | null {
+    public function parseFirstNovelLinkFromEmails($emails, $link_base, $expiry = 7200): string | null {
         foreach ($emails as $email) {
             if (isset($email['body'])) {
                 if (preg_match($link_base.'[^\s"]*/', $email['body'], $matches)) {
                     // Check if link has already been used
-                    if (!Redis::exists($redis_prefix.$matches[0])) {
-                        Redis::set($redis_prefix.$matches[0], true, 'EX', $expiry);
+                    if (!Redis::exists($this->service_prefix.".link:".$matches[0])) {
+                        Redis::set($this->service_prefix.".link:".$matches[0], true, 'EX', $expiry);
                         return $matches[0];
                     }
                 }
@@ -282,7 +306,7 @@ class GmailService
     {
 
         // grab email
-        $gmailService = new GmailService();
+        $gmailService = new GmailService($this->service_prefix);
         $text = $gmailService->getLastEmail();
 
         $link = $gmailService->grabLink($text, $start);

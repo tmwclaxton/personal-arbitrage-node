@@ -8,6 +8,7 @@ use App\Models\Offer;
 use App\Models\PaymentMethod;
 use App\Services\GmailService;
 use App\Services\KrakenService;
+use App\Services\ReportingService;
 use App\WorkerClasses\Robosats;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -104,13 +105,25 @@ class AdminDashboardController extends Controller
 
 
     public function pairGmailForKraken() {
-        $mail_client = new GmailService();
+        $mail_client = new GmailService(KrakenService::REDIS_PREFIX);
         return $mail_client->redirectToGoogle();
     }
 
 
     public function gmailRedirectForKraken() {
-        $gmailService =  new GmailService();
+        $gmailService =  new GmailService(KrakenService::REDIS_PREFIX);
+        $gmailService->exchangeCode(request()->input('code'));
+
+        return redirect()->route('dashboard.index')->with('success', 'Gmail successfully paired');
+    }
+
+    public function pairGmailForReporting() {
+        $mail_client = new GmailService(ReportingService::REDIS_PREFIX);
+        return $mail_client->redirectToGoogle();
+    }
+
+    public function gmailRedirectForReporting() {
+        $gmailService =  new GmailService(ReportingService::REDIS_PREFIX);
         $gmailService->exchangeCode(request()->input('code'));
 
         return redirect()->route('dashboard.index')->with('success', 'Gmail successfully paired');

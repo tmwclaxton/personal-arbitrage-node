@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\AdminDashboard;
 use App\Models\Offer;
 use App\Models\Transaction;
+use App\Services\ReportingService;
 use App\WorkerClasses\Robosats;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -47,6 +48,21 @@ class ConfirmPayment implements ShouldQueue
             } else {
                 $this->offer->auto_confirm_at = Carbon::now()->addSecond(15);
             }
+
+            if ($this->adminDashboard->email_reporting_enabled) {
+
+                $offer_amount = round($transaction->offer->accepted_offer_amount,2);
+                $currency = $transaction->offer->currency;
+
+                $formatted_amount = $offer_amount ." ". $currency;
+
+                ReportingService::sendReportingEmail($formatted_amount, $currency);
+
+                $this->offer->auto_confirm_at = Carbon::now()->addMinutes(
+                    $this->adminDashboard->email_reporting_auto_delay
+                );
+            }
+
             $this->offer->save();
 
             // send advert to the counterparty

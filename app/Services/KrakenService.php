@@ -19,7 +19,7 @@ class KrakenService
     private string $apiUrl = "https://api.kraken.com";
 
     public const WITHDRAWAL_LINK_BASE = '/https:\/\/www\.kraken\.com\/withdrawal-approve';
-    protected const REDIS_LINK_PREFIX = "kraken.link:";
+    public const REDIS_PREFIX = "kraken";
     public const KRAKEN_EMAIL = 'noreply@kraken.com';
 
 
@@ -113,7 +113,7 @@ class KrakenService
 
 
         // THIS IS TO SET REDIS KEYS plz dont delete
-        $gmailService = new GmailService();
+        $gmailService = new GmailService(self::REDIS_PREFIX);
         $code = $gmailService->getLinkFromLastEmail();
         // new method to be used getMostRecentNovelWithdrawalLink()
 
@@ -271,12 +271,11 @@ class KrakenService
 
 
     public static function getMostRecentNovelWithdrawalLink(): string | null {
-        $gmailService =  new GmailService();
+        $gmailService =  new GmailService(self::REDIS_PREFIX);
         $emails = $gmailService->fetchInboxMessages(KrakenService::KRAKEN_EMAIL, "10m");
-        return GmailService::parseFirstNovelLinkFromEmails(
+        return $gmailService->parseFirstNovelLinkFromEmails(
             $emails,
             KrakenService::WITHDRAWAL_LINK_BASE,
-            KrakenService::REDIS_LINK_PREFIX,
             3600
         );
     }

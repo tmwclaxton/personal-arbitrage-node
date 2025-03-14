@@ -39,7 +39,8 @@ const clicked = () => {
 			message: 'Admin Dashboard updated',
 			type: "success",
 		});
-	}).catch(error => {
+	})
+        .catch(error => {
 		console.log(error);
 		toastStore.add({
 			message: 'Error updating Admin Dashboard',
@@ -217,27 +218,27 @@ const refreshKey = ref(0);
 
                         <!--                        <h2-->
 
-                    <div class="flex flex-row justify-between items-center" :key="refreshKey">
-                        <div class="flex flex-col gap-y-0.5">
-                            <span class="font-bold mr-1">Kraken Auto Withdraw:
-<!--                            <span class="text-red-500" v-text="tempAdminDashboard.autoTopup ? 'Enabled' : 'Disabled'"/>-->
-                            </span>
-                            <p class="text-sm">
-                                Do you want to automatically withdraw BTC to your lightning node?
-                            </p>
+<!--                    <div class="flex flex-row justify-between items-center" :key="refreshKey">-->
+<!--                        <div class="flex flex-col gap-y-0.5">-->
+<!--                            <span class="font-bold mr-1">Kraken Auto Withdraw:-->
+<!--&lt;!&ndash;                            <span class="text-red-500" v-text="tempAdminDashboard.autoTopup ? 'Enabled' : 'Disabled'"/>&ndash;&gt;-->
+<!--                            </span>-->
+<!--                            <p class="text-sm">-->
+<!--                                Do you want to automatically withdraw BTC to your lightning node?-->
+<!--                            </p>-->
 
-                        </div>
+<!--                        </div>-->
 
-                        <a :href="route('gmail-kraken-pair')">
-                            <div
-                                class="border-2 bg-gray-800 rounded-2xl py-2 px-[0.9rem] hover:border-zinc-400 border-zinc-700 text-white inline-flex items-center w-min whitespace-nowrap">
-                                <font-awesome-icon :icon="['fab', 'google']" class="mr-2"/>
-                                Link Gmail for Kraken
-                            </div>
-                        </a>
+<!--                        <a :href="route('gmail-kraken-pair')">-->
+<!--                            <div-->
+<!--                                class="border-2 bg-gray-800 rounded-2xl py-2 px-[0.9rem] hover:border-zinc-400 border-zinc-700 text-white inline-flex items-center w-min whitespace-nowrap">-->
+<!--                                <font-awesome-icon :icon="['fab', 'google']" class="mr-2"/>-->
+<!--                                Link Gmail for Kraken-->
+<!--                            </div>-->
+<!--                        </a>-->
 
-                        <ToggleButton v-model="tempAdminDashboard.autoWithdraw" @update:modelValue="refreshKey++"/>
-                    </div>
+<!--                        <ToggleButton v-model="tempAdminDashboard.autoWithdraw" @update:modelValue="refreshKey++"/>-->
+<!--                    </div>-->
 
 
                     <div class="border-b border-gray-300 dark:border-zinc-700 mb-4"/>
@@ -276,6 +277,64 @@ const refreshKey = ref(0);
 
 					<div class="border-b border-gray-300 dark:border-zinc-700 mb-4"/>
 
+                    <div class="mt-5 flex flex-row justify-between items-center">
+                        <span class="font-bold text-2xl mx-auto mb-2">
+							Reporting Settings
+                          <span class="text-red-500"></span>
+                        </span>
+                    </div>
+
+                    <div class="flex flex-row justify-between items-center" :key="refreshKey">
+                        <div class="flex flex-col gap-y-0.5">
+                                <span class="font-bold mr-1">Auto-Reporting Emails:
+                                <span class="text-red-500" v-text="tempAdminDashboard.email_reporting_enabled ? 'Enabled' : 'Disabled'"/>
+                            </span>
+                            <p class="text-sm">
+                                Do you want to send an email to report each trade before confirming a trade as completed?
+                            </p>
+
+                        </div>
+                        <ToggleButton v-model="tempAdminDashboard.email_reporting_enabled" @update:modelValue="refreshKey++"/>
+                    </div>
+
+                    <div class="flex flex-row justify-between items-center" :key="refreshKey">
+                        <div class="flex flex-col gap-y-0.5">
+                            <span class="font-bold mr-1">Sending Email:</span>
+<!--                            <p class="text-sm">-->
+<!--                                Do you want to send an email to report each trade before confirming a trade as completed?-->
+<!--                            </p>-->
+                        </div>
+
+                        <a :href="route('gmail-reporting-pair')">
+                            <div
+                                class="border-2 bg-gray-800 rounded-2xl py-2 px-[0.9rem] hover:border-zinc-400 border-zinc-700 text-white inline-flex items-center w-min whitespace-nowrap">
+                                <font-awesome-icon :icon="['fab', 'google']" class="mr-2"/>
+                                Link Gmail for Reporting
+                            </div>
+                        </a>
+
+<!--                        <ToggleButton v-model="tempAdminDashboard.autoEmailReporting" @update:modelValue="refreshKey++"/>-->
+                    </div>
+                    <div class="grid grid-cols-2 gap-y-2">
+
+                        <label for="email_reporting_recipient" class="font-bold mr-1">Recipient</label>
+                        <TextInput class="w-full text-left" v-model="tempAdminDashboard.email_reporting_recipient"/>
+
+                        <div>
+                            <label for="reporting_message" class="font-bold mr-1">Email Message</label>
+                            <p class="text-sm">
+                                {amount} -> "600 EUR"<br/>
+                                {sender} -> "Whatever you enter as sender"
+                            </p>
+                        </div>
+                        <textarea class="w-full h-20 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" v-model="tempAdminDashboard.reporting_message"></textarea>
+
+                        <label for="preference" class="font-bold mr-1">Delay before confirming (seconds)</label>
+                        <input type="number" class="w-full text-left border border-gray-300 dark:border-gray-700 dark:bg-gray-900 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                               v-model="tempAdminDashboard.email_reporting_auto_delay"/>
+                    </div>
+
+                    <div class="border-b border-gray-300 dark:border-zinc-700 my-4"/>
 
 					<p class="font-bold mb-2">Payment Methods</p>
                     <PaymentsInput :payment_methods="tempAdminDashboard.payment_methods"
