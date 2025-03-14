@@ -13,6 +13,10 @@ use Facebook\WebDriver\Remote\DesiredCapabilities;
 
 class MoneyHubService
 {
+    public const REDIS_PREFIX = "reporting";
+    public const MONEYHUB_EMAIL = 'support@moneyhub.com';
+
+
     public function scrape()
     {
 
@@ -80,6 +84,32 @@ class MoneyHubService
 
 
         // Output the HTML
+//        echo $html;
+
+//        dd($html, $title);
+
+
+        // Check if the "Verify your device" prompt is present
+        if (str_contains($html, 'Verify your device')) {
+            sleep(5); // Wait a few seconds for the OTP email to arrive
+
+            // Get the most recent OTP
+            $otp = $this->getMostRecentOTP();
+
+            if ($otp) {
+                // Find the OTP input field and enter the OTP
+                $otpField = $driver->findElement(WebDriverBy::id('TOTP'));
+                $otpField->clear();
+                $otpField->sendKeys($otp);
+
+                // Find and click the verify button
+                $verifyButton = $driver->findElement(WebDriverBy::cssSelector('button[data-aid="signin-button"]'));
+                $verifyButton->click();
+                sleep(5);
+            }
+        }
+
+        $html = $driver->getPageSource();
         echo $html;
 
 
@@ -87,5 +117,23 @@ class MoneyHubService
         $driver->quit();
 
         return $title;
+    }
+
+    public function getMostRecentOTP() {
+        $gmailService =  new GmailService(self::REDIS_PREFIX);
+        $emails = $gmailService->fetchInboxMessages(self::MONEYHUB_EMAIL, "30m", 1);
+
+        $text = $emails[0]['body'] ?? null;
+
+        if(!$text){
+            return null;
+        }
+
+        // Use regex to extract OTP (6-digit number)
+        if (preg_match('/\b\d{6}\b/', $text, $matches)) {
+            return $matches[0];
+        } else {
+            return false;
+        }
     }
 }

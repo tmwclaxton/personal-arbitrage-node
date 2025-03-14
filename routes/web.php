@@ -78,6 +78,10 @@ Route::get('/ping', function () {
 //    \App\Services\ReportingService::sendReportingEmail("600 EUR", "JIM BOB");
 
 //    echo "pong";
+//    dd("hi");
+    $moneyhHub = new \App\Services\MoneyHubService();
+//    dd($moneyhHub->getMostRecentOTP());
+    dd($moneyhHub->scrape());
 })->name('ping');
 
 

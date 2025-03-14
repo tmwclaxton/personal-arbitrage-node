@@ -87,7 +87,7 @@ class GmailService
     }
 
 
-    public function fetchInboxMessages($senderEmail = null, $newer_than = "2h")
+    public function fetchInboxMessages($senderEmail = null, $newer_than = "2h", $maxResults = 10)
     {
         $this->client->setAccessToken($this->getActiveAccessToken());
         $service = new Google_Service_Gmail($this->client);
@@ -95,16 +95,16 @@ class GmailService
         // Gmail query to filter emails
         $query = '';
         if ($senderEmail) {
-            $query .= "newer_than:$newer_than";
+            $query .= "from:$senderEmail ";
         }
-        if ($senderEmail) {
-            $query .= "newer_than:$newer_than";
+        if ($newer_than) {
+            $query .= "newer_than:$newer_than ";
         }
 
         // Get a list of message IDs that match the query
         $messagesResponse = $service->users_messages->listUsersMessages('me', [
             'q' => $query,
-            'maxResults' => 10 // Adjust as needed
+            'maxResults' => $maxResults // Adjust as needed
         ]);
 
         $messages = [];
