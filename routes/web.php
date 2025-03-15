@@ -59,8 +59,87 @@ use Webklex\PHPIMAP\Message;
 use WebSocket\Connection;
 use WebSocket\Middleware\CloseHandler;
 use WebSocket\Middleware\PingResponder;
+use GuzzleHttp\Cookie\CookieJar;
 
 Route::get('/ping', function () {
+
+//    $files = scandir("/");
+//    dd($files);
+
+    $client = new \GuzzleHttp\Client();
+//
+//// Hardcoded CSRF token and SID cookie
+//    $csrfToken = '4789a5f92e5ac0152ddddd2764e3cb2ba29d860ba96930b49a2e7839a76b55c5';
+//    $sidCookie = 'sid-de1eab886fa696898bacb8a92f4a2c9c5fc7dca784d2a4c74c230d6280afb3b6=ba37eaaef43427985d14bac186bbd849407107e56b4896b741093fca9d7e80dd';
+//
+//// Create a CookieJar instance with the SID cookie
+//    $cookieJar = CookieJar::fromArray([
+//        'sid-de1eab886fa696898bacb8a92f4a2c9c5fc7dca784d2a4c74c230d6280afb3b6' => 'ba37eaaef43427985d14bac186bbd849407107e56b4896b741093fca9d7e80dd',
+//    ], 'asm.moneyhub.co.uk');
+//
+//    $cookieJar2 = CookieJar::fromArray([
+//        explode("=", $sidCookie)[0] => explode("=", $sidCookie)[1],
+//        "csrf-token" => $csrfToken
+//    ], 'asm.moneyhub.co.uk');
+//
+//    $cookieJar3 = CookieJar::fromArray([
+//        explode("=", $sidCookie)[0] => $sidCookie,
+//        "csrf-token" => $csrfToken
+//    ], 'asm.moneyhub.co.uk');
+////    dd($cookieJar, $cookieJar2);
+//
+//    $response = $client->request('POST', 'https://asm.moneyhub.co.uk/user/csv-export', [
+//        'headers' => [
+//            'accept' => 'application/json',
+//            'accept-language' => 'en-US,en;q=0.8',
+//            'authorization-mode' => 'v2',
+//            'content-type' => 'application/json',
+//            'csrf-token' => $csrfToken,
+//            'origin' => 'https://client.moneyhub.co.uk',
+//            'priority' => 'u=1, i',
+//            'sec-ch-ua' => '"Chromium";v="134", "Not:A-Brand";v="24", "Brave";v="134"',
+//            'sec-ch-ua-mobile' => '?0',
+//            'sec-ch-ua-platform' => '"Windows"',
+//            'sec-fetch-dest' => 'empty',
+//            'sec-fetch-mode' => 'cors',
+//            'sec-fetch-site' => 'same-site',
+//            'sec-gpc' => '1',
+//            'user-agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
+//            'x-force-date' => 'undefined',
+//            'x-requested-with' => 'XMLHttpRequest',
+//            'x-yw-client' => '2.7.1',
+//            'x-yw-device-id' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
+//        ],
+//        'cookies' => $cookieJar2,
+//        'json' => [
+//            'data' => [
+//                'accountUid' => '5991d74e-3570-42a8-b901-b8dd5710a7ef',
+//                'start' => '2025-03-01',
+//                'end' => '2025-03-15'
+//            ]
+//        ]
+//    ]);
+//
+//// Output response
+//    dd(json_decode($response->getBody()->getContents()));
+
+
+//    $response = $client->request('GET', 'https://asm.moneyhub.co.uk/text/resources', [
+//        'query' => [
+//            'tenantId' => '94d46269b0c2b7ecce341c094fdb9a809cd0a49b43a4a8b03f3ec83458a786a0',
+//            'type' => 'prelogin',
+//        ],
+//        'headers' => [
+//            'sec-ch-ua-platform' => '"Windows"',
+//            'Referer' => '', // If needed, add the actual value for the Referer header
+//            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
+//            'sec-ch-ua' => '"Chromium";v="134", "Not:A-Brand";v="24", "Brave";v="134"',
+//            'sec-ch-ua-mobile' => '?0',
+//        ]
+//    ]);
+//
+//    dd($response->getHeaders()['csrf-token'][0]);
+
 //    $krakenService = new KrakenService();
 //    $ln_invoice = "lnbc1m1pnmyq9ypp5cv2p3ra0qpcrm7ku3rhxuh4j5cally2l6kckkr03zh8545np98xsdqcddexz6mpdcsxzurfyp6x2um5cqzzsxqrrsssp5tcp49nc2dhvk0pysrz9mgjg4kuqcuu9qsevupes9e63sm3ea4cas9p4gqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqysgqxfvar2mh2f3nmx6ffq70hgjy68l5ym2th5s23n62cfeqz8p69peq24r3fukg7lg6lu7kwkefvz038jv63rzd02ecmhzg6xl72w82clcpj8ndcu";
 
@@ -80,7 +159,24 @@ Route::get('/ping', function () {
 //    echo "pong";
 //    dd("hi");
     $moneyhHub = new \App\Services\MoneyHubService();
+
+//    dd(\App\Services\MoneyHubService::filterReceivingPayments([
+//        ["DESCRIPTION"=>"from Joshua Stephen Young",
+//            "AMOUNT" => "100"],
+//        ["DESCRIPTION"=>"from Joshua Young",
+//            "AMOUNT" => "100"],
+//        ["DESCRIPTION"=>"from jim bo",
+//            "AMOUNT" => "100"],
+//        ["DESCRIPTION"=>"from Stephen Young",
+//            "AMOUNT" => "100"],
+//        ["DESCRIPTION"=>"from Stephen Bojum",
+//            "AMOUNT" => "-100"],
+//        ["DESCRIPTION"=>"from J Young",
+//            "AMOUNT" => "100"]
+//    ]));
 //    dd($moneyhHub->getMostRecentOTP());
+//    dd($moneyhHub->getMostRecentTransactionData());
+
     dd($moneyhHub->scrape());
 })->name('ping');
 

@@ -30,7 +30,7 @@ class GmailService
 
         $this->client->setRedirectUri('http://localhost:80/gmail_'.$service_prefix.'_redirect');
 
-        $this->client->addScope([\Google_Service_Gmail::GMAIL_READONLY, Google_Service_Gmail::GMAIL_SEND]);
+        $this->client->addScope([\Google_Service_Gmail::GMAIL_READONLY, Google_Service_Gmail::GMAIL_SEND, Google_Service_Gmail::GMAIL_MODIFY, Google_Service_Gmail::MAIL_GOOGLE_COM]);
         $this->client->setAccessType('offline');  // To get a refresh token
         $this->client->setPrompt('select_account consent'); // Prompt to allow consent
     }
@@ -87,7 +87,7 @@ class GmailService
     }
 
 
-    public function fetchInboxMessages($senderEmail = null, $newer_than = "2h", $maxResults = 10)
+    public function fetchInboxMessages($senderEmail = null, $newer_than = "2h", $maxResults = 10, $subject = null)
     {
         $this->client->setAccessToken($this->getActiveAccessToken());
         $service = new Google_Service_Gmail($this->client);
@@ -99,6 +99,9 @@ class GmailService
         }
         if ($newer_than) {
             $query .= "newer_than:$newer_than ";
+        }
+        if ($subject) {
+            $query .= "subject:$subject ";
         }
 
         // Get a list of message IDs that match the query
@@ -127,6 +130,51 @@ class GmailService
 
         return $messages;
     }
+
+    public function getCsvData($messageId)
+    {
+        $this->client->setAccessToken($this->getActiveAccessToken());
+        $service = new Google_Service_Gmail($this->client);
+
+        // Fetch the email details
+        $message = $service->users_messages->get('me', $messageId);
+        $payload = $message->getPayload();
+        $parts = $payload->getParts();
+
+        foreach ($parts as $part) {
+            if ($part->getFilename() && strpos($part->getFilename(), '.csv') !== false) {
+                $attachmentId = $part->getBody()->getAttachmentId();
+                $attachment = $service->users_messages_attachments->get('me', $messageId, $attachmentId);
+                $csvData = base64_decode(strtr($attachment->getData(), '-_', '+/')); // Decode CSV file content
+
+                // Parse CSV directly from memory
+                $stream = fopen('php://memory', 'r+');
+                fwrite($stream, $csvData);
+                rewind($stream);
+
+                $headers = fgetcsv($stream); // Get first row as headers
+                $rows = [];
+
+                while (($data = fgetcsv($stream)) !== false) {
+                    if (count($data) == count($headers)) { // Ensure data matches header count
+                        $rows[] = array_combine($headers, $data);
+                    }
+                }
+
+                fclose($stream);
+                return $rows; // Return structured data
+            }
+        }
+
+        return null; // No CSV file found
+    }
+
+    public function deleteEmail($messageId) {
+        $this->client->setAccessToken($this->getActiveAccessToken());
+        $service = new Google_Service_Gmail($this->client);
+        $service->users_messages->delete('me', $messageId);
+    }
+
 
     public function sendEmail($recipient, $subject, $body){
         $this->client->setAccessToken($this->getActiveAccessToken());
