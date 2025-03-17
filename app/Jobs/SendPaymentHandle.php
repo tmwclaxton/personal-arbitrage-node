@@ -195,8 +195,8 @@ class SendPaymentHandle implements ShouldQueue
             if ($paymentMethods->count() > 1) {
                 // Add a final note if there are multiple handles
                 $secondaryMessage = "Also kindly state which payment method you will be using. Thanks! \n\n"
-                    . "Additionally I do not accept payments from multiple accounts, LLCs or accounts with names that sound like old people!"
-                    . " In other words if you're not paying for the purpose of stacking sats, please cancel the trade now."
+                    . "Additionally I do not accept payments from multiple accounts, LLCs or accounts owned by women / old people! "
+                    . " This is to avoid fraud cases! In other words if you're not paying for the purpose of stacking sats, please cancel the trade now."
                     . " - Otherwise your payments will be returned and I will insist on collaborative cancel!";
             }
 

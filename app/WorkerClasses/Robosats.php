@@ -1054,6 +1054,10 @@ class Robosats
         }
         $slackService->sendMessage($message);
 
+        // add 'LAS' to the payment methods at beginning (payment methods is a json array)
+        $paymentMethods = json_decode($paymentMethods);
+        array_unshift($paymentMethods, 'LAS Trade');
+        $paymentMethods = json_encode($paymentMethods);
 
         // create temp  offer, create robots, create offer, pay bond.
         $tempOffer = new Offer([
