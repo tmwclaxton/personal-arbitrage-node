@@ -45,7 +45,14 @@ class ConfirmPayment implements ShouldQueue
             if ($this->adminDashboard->adverts_enabled) {
                 $this->offer->auto_confirm_at = Carbon::now()->addMinutes(5);
             } else {
-                $this->offer->auto_confirm_at = Carbon::now()->addSecond(15);
+                if ($this->offer->type === "buy") {
+                    $this->offer->auto_confirm_at = Carbon::now()->addSecond(15);
+                } else {
+                    $this->offer->auto_confirm_at = Carbon::now()->addHours(2);
+                    $message = "Fiat has been received, thank you; however, for necessary bank checks to complete and to prevent me losing funds "
+                        . "from a transaction being reversed.  Confirmation will occur in 2 hours. Thank you for waiting. ";
+                    $robosats->webSocketCommunicate($this->offer, $this->offer->robots()->first(), $message);
+                }
             }
             $this->offer->save();
 
