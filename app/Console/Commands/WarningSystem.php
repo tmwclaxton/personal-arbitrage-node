@@ -35,6 +35,7 @@ class WarningSystem extends Command
     {
         $offers = Offer::where('status', '>', 2)
             ->where('status', '<', 14)
+            ->where('status', '!=', RobosatsStatus::STATUS_SENDING_FIAT_IN_CHATROOM)
             ->whereNotIn('status', [4,5,12])
             ->get();
 
