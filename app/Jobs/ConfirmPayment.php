@@ -36,6 +36,11 @@ class ConfirmPayment implements ShouldQueue
      */
     public function handle(): void
     {
+        // check the offer doesn't have a auto_confirm_at set already
+        if ($this->offer->auto_confirm_at) {
+            return;
+        }
+
         if (!$this->adminDashboard->panicButton) {
             $transaction = Transaction::where('offer_id', $this->offer->id)->first();
             $robosats = new Robosats();

@@ -61,7 +61,8 @@ use Illuminate\Support\Facades\Redis;
             '!listProfitableOffers',
             '!acceptSpecificOffer',
             '!sleep',
-            '!wake'
+            '!wake',
+            '!forceConfirm',
         ];
         $slackService = new SlackService();
         $adminDashboard = AdminDashboard::all()->first();
@@ -317,6 +318,13 @@ use Illuminate\Support\Facades\Redis;
                                 $adminDashboardController->unpauseAll();
 
                                 $slackService->sendMessage('Auto accept, auto create, and scheduler turned on and all offers unpaused', $channelId);
+                                break;
+                            case '!forceConfirm':
+                                $offerId = explode(' ', $slackMessage['content'])[1];
+                                $offer = Offer::where('robosatsId', $offerId)->first();
+                                // set auto_confirm_at to 10 seconds from now
+                                $offer->auto_confirm_at = Carbon::now()->addSeconds(10);
+                                $offer->save();
                                 break;
                             default:
                                 $slackService->sendMessage('Command not recognized', $channelId);
