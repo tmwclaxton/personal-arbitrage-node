@@ -194,11 +194,13 @@ class SendPaymentHandle implements ShouldQueue
 
             if ($paymentMethods->count() > 1) {
                 // Add a final note if there are multiple handles
-                $secondaryMessage = "Also kindly state which payment method you will be using. Thanks! \n\n"
-                    . "Additionally I do not accept payments from multiple accounts, LLCs or accounts with names that sound like old people!"
-                    . " In other words if you're not paying for the purpose of stacking sats, please cancel the trade now."
-                    . " - Otherwise your payments will be returned and I will insist on collaborative cancel!";
+                $secondaryMessage = "Also kindly state which payment method you will be using. Thanks! \n\n";
             }
+
+            $secondaryMessage .= "Additionally I do not accept payments from multiple accounts, LLCs or accounts with names that sound like old people!"
+            . " In other words if you're not paying for the purpose of stacking sats, please cancel the trade now."
+            . " - Otherwise your payments will be returned and I will insist on collaborative cancel!"
+            .  " Finally payments may take 1-2 hours to confirm to ensure transaction has settled.";
 
             (new SlackService)->sendMessage("Expect a payment for " . round($robot->offer->accepted_offer_amount, 2) . " " . $robot->offer->currency
                 . " from one of these payment methods: " . $robot->offer->payment_methods .
